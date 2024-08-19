@@ -860,6 +860,7 @@ bool gridToFile(const Grid<T> &grid, const QString &fileName, std::function<U(co
     } else {
         QString result = gridToESRIRaster(grid, valueFunction);
         Helper::saveToTextFile(fileName, result);
+        return true;
     }
 }
 
@@ -901,6 +902,7 @@ bool gridToFile(const Grid<T> &grid, const QString &fileName, GeoTIFF::TIFDataty
         QString result = gridToESRIRaster<T>(grid);
 
         Helper::saveToTextFile(fileName, result);
+        return true;
 
     }
 }
@@ -1020,6 +1022,7 @@ bool Grid<T>::loadGridFromFile(const QString &fileName)
 
 template<typename T>
 bool Grid<T>::loadGridFromGeoTIFF(const QString &fileName) {
+    Q_UNUSED(fileName)
     return false; // not impl
 }
 

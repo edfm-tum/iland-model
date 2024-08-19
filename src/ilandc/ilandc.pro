@@ -27,81 +27,74 @@ CONFIG += exceptions
 CONFIG += rtti
 
 # LIBS += -lQt5Concurrent
+# get the path of plugins build
+# Define potential plugin locations relative to the build directory
+PLUGIN_LOCATIONS = $$OUT_PWD/../plugins $$OUT_PWD/../../../plugins/build/plugins
+
+# Find the actual plugin location
+for(plugin_loc, PLUGIN_LOCATIONS) {
+    !isEmpty(plugin_loc) {
+        exists($$plugin_loc) {
+            PLUGIN_PATH = $$plugin_loc
+            break()
+        }
+    }
+}
+
+
+THIRDPARTY_LOCATIONS = $$OUT_PWD/../3rdparty $$OUT_PWD/../../../3rdparty
+
+# Find the actual plugin location
+for(plugin_loc, THIRDPARTY_LOCATIONS) {
+    !isEmpty(plugin_loc) {
+        exists($$plugin_loc) {
+            THIRDPARTY_PATH = $$plugin_loc
+            break()
+        }
+    }
+}
+message("Plugins path: " $$PLUGIN_PATH " 3rd party libs:" $$THIRDPARTY_PATH)
 
 CONFIG(debug, debug|release) {
-win32-msvc*:contains(QMAKE_TARGET.arch, x86_64):{
-#debug msvc
-PRE_TARGETDEPS += ../plugins/iland_fired.lib
-PRE_TARGETDEPS += ../plugins/iland_windd.lib
-PRE_TARGETDEPS += ../plugins/iland_barkbeetled.lib
-LIBS += -L../plugins -liland_fired -liland_windd -liland_barkbeetled
-message(windows debug)
-}
-win32:*gcc*: {
-PRE_TARGETDEPS += ../plugins/libiland_fired.a
-PRE_TARGETDEPS += ../plugins/libiland_windd.a
-PRE_TARGETDEPS += ../plugins/libiland_barkbeetled.a
-LIBS += -L../plugins -liland_fired -liland_windd -liland_barkbeetled
-message(gcc debug)
-}
-linux-g++: {
- ## debug on linux
-message("linux g++ debug")
-# QMAKE_CXXFLAGS += -g -O2
-PRE_TARGETDEPS += ../plugins/libiland_fire.a
-PRE_TARGETDEPS += ../plugins/libiland_wind.a
-PRE_TARGETDEPS += ../plugins/libiland_barkbeetle.a
-LIBS += -L../plugins -liland_fire -liland_wind -liland_barkbeetle
-}
-
+    BUILDS += debug
+    PLUGIN_SUFFIX = d # Suffix for debug builds
+} else {
+    BUILDS += release
+    PLUGIN_SUFFIX = # Empty suffix for release builds
 }
 
 
-CONFIG(release, debug|release) {
-win32:*gcc*: {
-# release stuff
-PRE_TARGETDEPS += ../plugins/libiland_fire.a
-PRE_TARGETDEPS += ../plugins/libiland_wind.a
-PRE_TARGETDEPS += ../plugins/libiland_barkbeetle.a
-LIBS += -L../plugins -liland_fire -liland_wind -liland_barkbeetle
-message(gcc release)
+*msvc*: {
+    LIBPOST = .lib # .lib for Windows / MSVC
+    LIBPRAE = iland_ # no lib as praefix
+} else {
+    LIBPRAE = libiland_
+    LIBPOST = .a # .a for GCC on Windows/Linux
+    PLUGIN_SUFFIX = # Empty suffix in any case for GCC
 }
-win32-msvc*:contains(QMAKE_TARGET.arch, x86_64):{
-#debug msvc
-PRE_TARGETDEPS += ../plugins/iland_fire.lib
-PRE_TARGETDEPS += ../plugins/iland_wind.lib
-PRE_TARGETDEPS += ../plugins/iland_barkbeetle.lib
-### debug symbols...
-#QMAKE_CXXFLAGS_RELEASE += /Zi
-#QMAKE_LFLAGS_RELEASE += /DEBUG
-LIBS += -L../plugins -liland_fire -liland_wind -liland_barkbeetle
-message(windows release x)
-}
-linux-g++*: {
- ## release on linux
-message("linux g++ release")
-PRE_TARGETDEPS += ../plugins/libiland_fire.a
-PRE_TARGETDEPS += ../plugins/libiland_wind.a
-PRE_TARGETDEPS += ../plugins/libiland_barkbeetle.a
-LIBS += -L../plugins -liland_fire -liland_wind -liland_barkbeetle
-#QMAKE_CXXFLAGS_RELEASE = $$QMAKE_CFLAGS_RELEASE_WITH_DEBUGINFO
-#QMAKE_LFLAGS_RELEASE = $$QMAKE_LFLAGS_RELEASE_WITH_DEBUGINFO
-#message($$QMAKE_LFLAGS_RELEASE_WITH_DEBUGINFO)
 
-}
+# build the full filename of the library file:
+parts_to_join_fire = $$PLUGIN_PATH / $$LIBPRAE fire $$PLUGIN_SUFFIX $$LIBPOST
+parts_to_join_wind = $$PLUGIN_PATH / $$LIBPRAE wind $$PLUGIN_SUFFIX $$LIBPOST
+parts_to_join_barkbeetle = $$PLUGIN_PATH / $$LIBPRAE barkbeetle $$PLUGIN_SUFFIX $$LIBPOST
+
+PRE_TARGETDEPS += $$join(parts_to_join_fire)
+PRE_TARGETDEPS += $$join(parts_to_join_wind)
+PRE_TARGETDEPS += $$join(parts_to_join_barkbeetle)
+
+LIBS += -L$$PLUGIN_PATH -liland_fire$$PLUGIN_SUFFIX -liland_wind$$PLUGIN_SUFFIX -liland_barkbeetle$$PLUGIN_SUFFIX
+
+message("PRE_TARGETDEPS:" $$PRE_TARGETDEPS)
+
+# external freeimage library (geotiff)
+LIBS += -L$$THIRDPARTY_PATH/FreeImage -lFreeImage
+
+# special settings
 linux-icc*: {
- ## release on linux
+ ## intel compiler linux
 message("linux intel icc release")
 QMAKE_CXXFLAGS -= -O2
 QMAKE_CXXFLAGS += -O3
-PRE_TARGETDEPS += ../plugins/libiland_fire.a
-PRE_TARGETDEPS += ../plugins/libiland_wind.a
-PRE_TARGETDEPS += ../plugins/libiland_barkbeetle.a
-LIBS += -L../plugins -liland_fire -liland_wind -liland_barkbeetle
-#QMAKE_CXXFLAGS_RELEASE = $$QMAKE_CFLAGS_RELEASE_WITH_DEBUGINFO
-#QMAKE_LFLAGS_RELEASE = $$QMAKE_LFLAGS_RELEASE_WITH_DEBUGINFO
-
-}
 }
 
 DEFINES += NO_DEBUG_MSGS
@@ -160,6 +153,7 @@ SOURCES += main.cpp \
     ../core/speciesset.cpp \
     ../core/resourceunit.cpp \
     ../tools/xmlhelper.cpp \
+    ../tools/geotiff.cpp \
     ../core/standloader.cpp \
     ../core/resourceunitspecies.cpp \
     ../core/production3pg.cpp \
@@ -284,6 +278,7 @@ HEADERS += \
     ../core/model.h \
     ../core/resourceunit.h \
     ../tools/xmlhelper.h \
+    ../tools/geotiff.h \
     ../core/standloader.h \
     ../core/resourceunitspecies.h \
     ../core/production3pg.h \

@@ -1,8 +1,5 @@
 #include "geotiff.h"
 
-#include <iostream>
-#include <sstream>
-
 
 #include "grid.h"
 
@@ -132,9 +129,9 @@ void GeoTIFF::copyToIntGrid(Grid<int> *grid)
     int value_null = -1;
 
     if (dtype == FIT_INT32) {
-        for(size_t y = 0; y < FreeImage_GetHeight(dib); y++) {
+        for(unsigned int y = 0; y < FreeImage_GetHeight(dib); y++) {
             LONG *bits = (LONG*)FreeImage_GetScanLine(dib, y);
-            for(size_t x = 0; x < FreeImage_GetWidth(dib); x++) {
+            for(unsigned int x = 0; x < FreeImage_GetWidth(dib); x++) {
                 grid->valueAtIndex(x,y) = bits[x] < value_null ? null_value : bits[x];
             }
         }
@@ -142,9 +139,9 @@ void GeoTIFF::copyToIntGrid(Grid<int> *grid)
 
     if (dtype == FIT_UINT16) {
         value_null = std::numeric_limits<WORD>::max();
-        for(size_t y = 0; y < FreeImage_GetHeight(dib); y++) {
+        for(unsigned int y = 0; y < FreeImage_GetHeight(dib); y++) {
             WORD *bits = (WORD*)FreeImage_GetScanLine(dib, y);
-            for(size_t x = 0; x < FreeImage_GetWidth(dib); x++) {
+            for(unsigned int x = 0; x < FreeImage_GetWidth(dib); x++) {
                 grid->valueAtIndex(x,y) = bits[x] == value_null ? null_value : bits[x];
             }
         }
@@ -152,9 +149,9 @@ void GeoTIFF::copyToIntGrid(Grid<int> *grid)
 
     if (dtype == FIT_INT16) {
         value_null = std::numeric_limits<short>::min();
-        for(size_t y = 0; y < FreeImage_GetHeight(dib); y++) {
+        for(uint y = 0; y < FreeImage_GetHeight(dib); y++) {
             short *bits = (short*)FreeImage_GetScanLine(dib, y);
-            for(size_t x = 0; x < FreeImage_GetWidth(dib); x++) {
+            for(uint x = 0; x < FreeImage_GetWidth(dib); x++) {
                 grid->valueAtIndex(x,y) = bits[x] == value_null ? null_value : bits[x];
             }
         }
@@ -177,36 +174,36 @@ void GeoTIFF::copyToDoubleGrid(Grid<double> *grid)
     switch (FreeImage_GetImageType(dib)) {
     case FIT_DOUBLE: {
 
-        for(size_t y = 0; y < FreeImage_GetHeight(dib); y++) {
+        for(uint y = 0; y < FreeImage_GetHeight(dib); y++) {
             double *bits = (double*)FreeImage_GetScanLine(dib, y);
-            for(size_t x = 0; x < FreeImage_GetWidth(dib); x++) {
+            for(uint x = 0; x < FreeImage_GetWidth(dib); x++) {
                 grid->valueAtIndex(x,y) = bits[x] == noDataDouble() ? noDataDouble() : bits[x];
             }
         }
         return;
     }
     case FIT_FLOAT: {
-        for(size_t y = 0; y < FreeImage_GetHeight(dib); y++) {
+        for(uint y = 0; y < FreeImage_GetHeight(dib); y++) {
             float *bits = (float*)FreeImage_GetScanLine(dib, y);
-            for(size_t x = 0; x < FreeImage_GetWidth(dib); x++) {
+            for(uint x = 0; x < FreeImage_GetWidth(dib); x++) {
                 grid->valueAtIndex(x,y) = bits[x] == noDataFloat() ? noDataDouble() : bits[x];
             }
         }
         return;
     }
     case FIT_INT16:  {
-        for(size_t y = 0; y < FreeImage_GetHeight(dib); y++) {
+        for(uint y = 0; y < FreeImage_GetHeight(dib); y++) {
             short int *bits = (short int *)FreeImage_GetScanLine(dib, y);
-            for(size_t x = 0; x < FreeImage_GetWidth(dib); x++) {
+            for(uint x = 0; x < FreeImage_GetWidth(dib); x++) {
                 grid->valueAtIndex(x,y) = bits[x] == noDataShort() ? noDataDouble() : bits[x];
             }
         }
         return;
     }
     case FIT_INT32:  {
-        for(size_t y = 0; y < FreeImage_GetHeight(dib); y++) {
+        for(uint y = 0; y < FreeImage_GetHeight(dib); y++) {
             int *bits = (int *)FreeImage_GetScanLine(dib, y);
-            for(size_t x = 0; x < FreeImage_GetWidth(dib); x++) {
+            for(uint x = 0; x < FreeImage_GetWidth(dib); x++) {
                 grid->valueAtIndex(x,y) = bits[x] == noDataInt() ? noDataDouble() : bits[x];
             }
         }
@@ -235,36 +232,36 @@ void GeoTIFF::copyToFloatGrid(Grid<float> *grid)
     switch (FreeImage_GetImageType(dib)) {
     case FIT_DOUBLE: {
 
-        for(size_t y = 0; y < FreeImage_GetHeight(dib); y++) {
+        for(uint y = 0; y < FreeImage_GetHeight(dib); y++) {
             double *bits = (double*)FreeImage_GetScanLine(dib, y);
-            for(size_t x = 0; x < FreeImage_GetWidth(dib); x++) {
+            for(uint x = 0; x < FreeImage_GetWidth(dib); x++) {
                 grid->valueAtIndex(x,y) = bits[x];
             }
         }
         return;
     }
     case FIT_FLOAT: {
-        for(size_t y = 0; y < FreeImage_GetHeight(dib); y++) {
+        for(uint y = 0; y < FreeImage_GetHeight(dib); y++) {
             float *bits = (float*)FreeImage_GetScanLine(dib, y);
-            for(size_t x = 0; x < FreeImage_GetWidth(dib); x++) {
+            for(uint x = 0; x < FreeImage_GetWidth(dib); x++) {
                 grid->valueAtIndex(x,y) = bits[x];
             }
         }
         return;
     }
     case FIT_INT16:  {
-        for(size_t y = 0; y < FreeImage_GetHeight(dib); y++) {
+        for(uint y = 0; y < FreeImage_GetHeight(dib); y++) {
             short int *bits = (short int *)FreeImage_GetScanLine(dib, y);
-            for(size_t x = 0; x < FreeImage_GetWidth(dib); x++) {
+            for(uint x = 0; x < FreeImage_GetWidth(dib); x++) {
                 grid->valueAtIndex(x,y) = bits[x];
             }
         }
         return;
     }
     case FIT_INT32:  {
-        for(size_t y = 0; y < FreeImage_GetHeight(dib); y++) {
+        for(uint y = 0; y < FreeImage_GetHeight(dib); y++) {
             int *bits = (int *)FreeImage_GetScanLine(dib, y);
-            for(size_t x = 0; x < FreeImage_GetWidth(dib); x++) {
+            for(uint x = 0; x < FreeImage_GetWidth(dib); x++) {
                 grid->valueAtIndex(x,y) = bits[x];
             }
         }
@@ -289,20 +286,20 @@ bool GeoTIFF::saveToFile(const QString &fileName)
 
 }
 
-void GeoTIFF::initialize(size_t width, size_t height, TIFDatatype dtype)
+void GeoTIFF::initialize(uint width, uint height, TIFDatatype dtype)
 {
     if (!mProjectionBitmap)
         throw IException("GeoTif: init write: no projection information is available. You need to load at least one TIF including projection info before writing a TIF.");
 
     mDType = dtype;
-    if (dtype != DTSINT16 && dtype!=DTSINT32 && dtype!=DTFLOAT && dtype!=DTDOUBLE)
-        throw IException("GeoTif: init write: invalid data type!");
 
     switch (mDType) {
     case DTSINT16: mNoDataValue = std::numeric_limits<short int>::lowest(); break;
     case DTSINT32: mNoDataValue = std::numeric_limits<int>::lowest(); break;
     case DTFLOAT: mNoDataValue = std::numeric_limits<float>::lowest(); break;
     case DTDOUBLE: mNoDataValue = std::numeric_limits<double>::lowest(); break;
+    default:
+        throw IException("GeoTif: init write: invalid data type!");
     }
 
     FREE_IMAGE_TYPE fit = FREE_IMAGE_TYPE(dtype);
@@ -313,7 +310,7 @@ void GeoTIFF::initialize(size_t width, size_t height, TIFDatatype dtype)
     //   throw std::logic_error("GeoTif: set metadata (NODATA) to xyz not successful!");
 }
 
-void GeoTIFF::setValue(size_t ix, size_t iy, double value)
+void GeoTIFF::setValue(uint ix, uint iy, double value)
 {
     if (!dib)
         return;
@@ -338,8 +335,10 @@ void GeoTIFF::setValue(size_t ix, size_t iy, double value)
         ((int*)FreeImage_GetScanLine(dib, iy))[ix] = int_value;
         return;
     }
+    default:
+        throw IException(QString("GeoTif:setValue(): invalid type of TIF: %1").arg(mDType));
     }
 
-    throw IException(QString("GeoTif:setValue(): invalid type of TIF: %1").arg(mDType));
+
 }
 

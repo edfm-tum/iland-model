@@ -1,9 +1,9 @@
 build-iland*
 build-plugins*
-*.pro.user
+*.pro.user*
 *.lib
 *.pdb
 .Rproj.user
 project_file.xml
-
+.qtc_clangd
 build/

@@ -31,79 +31,69 @@ DEPENDPATH += plugins
 CONFIG += exceptions
 CONFIG += rtti
 
+# get the path of plugins build
+# Define potential plugin locations relative to the build directory
+PLUGIN_LOCATIONS = $$OUT_PWD/../plugins $$OUT_PWD/../../../plugins/build/plugins
+
+# Find the actual plugin location
+for(plugin_loc, PLUGIN_LOCATIONS) {
+    !isEmpty(plugin_loc) {
+        exists($$plugin_loc) {
+            PLUGIN_PATH = $$plugin_loc
+            break()
+        }
+    }
+}
+
+
+THIRDPARTY_LOCATIONS = $$OUT_PWD/../3rdparty $$OUT_PWD/../../../3rdparty
+
+# Find the actual plugin location
+for(plugin_loc, THIRDPARTY_LOCATIONS) {
+    !isEmpty(plugin_loc) {
+        exists($$plugin_loc) {
+            THIRDPARTY_PATH = $$plugin_loc
+            break()
+        }
+    }
+}
+message("Plugins path: " $$PLUGIN_PATH " 3rd party libs:" $$THIRDPARTY_PATH)
+
 CONFIG(debug, debug|release) {
-win32-msvc*:{
-#debug msvc
-PRE_TARGETDEPS += ../plugins/iland_fired.lib
-PRE_TARGETDEPS += ../plugins/iland_windd.lib
-PRE_TARGETDEPS += ../plugins/iland_barkbeetled.lib
-LIBS += -L../plugins -liland_fired -liland_windd -liland_barkbeetled
-# external freeimage library (geotiff)
-LIBS += -L../3rdparty/FreeImage -lFreeImage
-
-}
-win32:*gcc*: {
-# debug GCC, windows
-PRE_TARGETDEPS += ../plugins/libiland_fire.a
-PRE_TARGETDEPS += ../plugins/libiland_wind.a
-PRE_TARGETDEPS += ../plugins/libiland_barkbeetle.a
-LIBS += -L../plugins -liland_fire -liland_wind -liland_barkbeetle
-}
-linux-g++: {
- ## debug on linux
-message("linux g++ debug ")
-PRE_TARGETDEPS += ../plugins/libiland_fire.a
-PRE_TARGETDEPS += ../plugins/libiland_wind.a
-PRE_TARGETDEPS += ../plugins/libiland_barkbeetle.a
-LIBS += -L../plugins -liland_fire -liland_wind -liland_barkbeetle
-}
+    BUILDS += debug
+    PLUGIN_SUFFIX = d # Suffix for debug builds
+} else {
+    BUILDS += release
+    PLUGIN_SUFFIX = # Empty suffix for release builds
 }
 
-## win32-msvc*:contains(QMAKE_TARGET.arch, x86_64):{ ... } nur 64bit
 
-CONFIG(release, debug|release) {
-# release gcc, windows
-win32:*gcc*: {
-PRE_TARGETDEPS += ../plugins/libiland_fire.a
-PRE_TARGETDEPS += ../plugins/libiland_wind.a
-PRE_TARGETDEPS += ../plugins/libiland_barkbeetle.a
-LIBS += -L../plugins -liland_fire -liland_wind -liland_barkbeetle
-}
-linux-g++: {
- ## release on linux
-message("linux g++ release")
-PRE_TARGETDEPS += ../plugins/libiland_fire.a
-PRE_TARGETDEPS += ../plugins/libiland_wind.a
-PRE_TARGETDEPS += ../plugins/libiland_barkbeetle.a
-LIBS += -L../plugins -liland_fire -liland_wind -liland_barkbeetle
-# include debug information
-#QMAKE_CFLAGS_RELEASE += -g
-#QMAKE_CXXFLAGS_RELEASE += -g
-QMAKE_CXXFLAGS_RELEASE = $$QMAKE_CFLAGS_RELEASE_WITH_DEBUGINFO
-QMAKE_LFLAGS_RELEASE = $$QMAKE_LFLAGS_RELEASE_WITH_DEBUGINFO
-#message($$QMAKE_LFLAGS_RELEASE_WITH_DEBUGINFO)
+*msvc*: {
+    LIBPOST = .lib # .lib for Windows / MSVC
+    LIBPRAE = iland_ # no lib as praefix
+} else {
+    LIBPRAE = libiland_
+    LIBPOST = .a # .a for GCC on Windows/Linux
+    PLUGIN_SUFFIX = # Empty suffix in any case for GCC
 }
 
-win32-msvc*:{
-#release msvc
+# build the full filename of the library file:
+parts_to_join_fire = $$PLUGIN_PATH / $$LIBPRAE fire $$PLUGIN_SUFFIX $$LIBPOST
+parts_to_join_wind = $$PLUGIN_PATH / $$LIBPRAE wind $$PLUGIN_SUFFIX $$LIBPOST
+parts_to_join_barkbeetle = $$PLUGIN_PATH / $$LIBPRAE barkbeetle $$PLUGIN_SUFFIX $$LIBPOST
 
-PRE_TARGETDEPS += ../plugins/iland_fire.lib
-PRE_TARGETDEPS += ../plugins/iland_wind.lib
-PRE_TARGETDEPS += ../plugins/iland_barkbeetle.lib
-LIBS += -L../plugins -liland_fire -liland_wind -liland_barkbeetle
+PRE_TARGETDEPS += $$join(parts_to_join_fire)
+PRE_TARGETDEPS += $$join(parts_to_join_wind)
+PRE_TARGETDEPS += $$join(parts_to_join_barkbeetle)
+
+LIBS += -L$$PLUGIN_PATH -liland_fire$$PLUGIN_SUFFIX -liland_wind$$PLUGIN_SUFFIX -liland_barkbeetle$$PLUGIN_SUFFIX
+
+message("PRE_TARGETDEPS:" $$PRE_TARGETDEPS)
 
 # external freeimage library (geotiff)
-LIBS += -L../3rdparty/FreeImage -lFreeImage
-}
-}
+LIBS += -L$$THIRDPARTY_PATH/FreeImage -lFreeImage
 
-linux-g++ {
-# The "FreeImage" library is used for processing GeoTIFF data files.
-# FreeImage on Linux: see https://codeyarns.com/2014/02/11/how-to-install-and-use-freeimage/
-# basically sudo apt-get install libfreeimage3 libfreeimage-dev
 
-LIBS += -lfreeimage
-}
 
 DEFINES += ILAND_GUI
 # enable/disble DBGMODE messages: dbg messages are removed when the define is added

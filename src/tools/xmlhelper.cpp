@@ -248,7 +248,7 @@ QDomElement XmlHelper::node(const QString &path) const
 {
     QStringList elem = path.split('.', Qt::SkipEmptyParts);
     QDomElement c;
-    if (path.count()>0 && path.at(0) == '.')
+    if (path.size()>0 && path.at(0) == '.')
         c = mCurrentTop;
     else
         c = mTopNode;
@@ -315,7 +315,7 @@ QString XmlHelper::fullName(const QString &keyname) const
 {
     QStringList elem = keyname.split('.', Qt::SkipEmptyParts);
 
-    if (keyname.count()==0 || keyname.at(0) != '.')
+    if (keyname.size()==0 || keyname.at(0) != '.')
         return keyname;
 
     // we have a relative path
@@ -339,10 +339,9 @@ void XmlHelper::dump_rec(QDomElement c, QStringList &stack, QStringList &out)
     QDomElement ch = c.firstChildElement();
     bool hasChildren = !ch.isNull();
     bool nChildren = !ch.isNull() && !ch.nextSiblingElement().isNull();
-    int child_index=-1;
     while (!ch.isNull()) {
         if (nChildren) {
-            child_index++;
+            //child_index++;
             // stack.push_back(QString("%1[%2]").arg(ch.nodeName()).arg(child_index)); // including child index
             stack.push_back(QString("%1").arg(ch.nodeName()));
         } else

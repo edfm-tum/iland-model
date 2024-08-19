@@ -1,7 +1,7 @@
 #ifndef GEOTIFF_H
 #define GEOTIFF_H
 
-#include <string>
+#include <QString>
 
 
 struct FIBITMAP;
@@ -40,23 +40,23 @@ public:
     // write Grid to file + free memory
     bool saveToFile(const QString &fileName);
     /// create a bitmap with the the size of the full grid, and provide the data type
-    void initialize(size_t width, size_t height, TIFDatatype dtype=DTDOUBLE);
+    void initialize(uint width, uint height, TIFDatatype dtype=DTDOUBLE);
     /// set value at ix/iy to *double* value
-    void setValue(size_t ix, size_t iy, double value);
+    void setValue(uint ix, uint iy, double value);
     /// set value at ix/iy to *float* value
-    void setValue(size_t ix, size_t iy, float value) {setValue(ix, iy, static_cast<double>(value));}
+    void setValue(uint ix, uint iy, float value) {setValue(ix, iy, static_cast<double>(value));}
     /// set value at ix/iy to int* value
-    void setValue(size_t ix, size_t iy, int value) {setValue(ix, iy, static_cast<double>(value));}
+    void setValue(uint ix, uint iy, int value) {setValue(ix, iy, static_cast<double>(value));}
     /// set value at ix/iy to *short int* value
-    void setValue(size_t ix, size_t iy, short int value) {setValue(ix, iy, static_cast<double>(value));}
+    void setValue(uint ix, uint iy, short int value) {setValue(ix, iy, static_cast<double>(value));}
 
     double noDataValue() const { return mNoDataValue; }
     // getters
     double ox() const { return mOx; }
     double oy() const { return mOy; }
     double cellsize() const { return mCellsize; }
-    size_t ncol() const { return mNcol; }
-    size_t nrow() const { return mNrow; }
+    uint ncol() const { return mNcol; }
+    uint nrow() const { return mNrow; }
 private:
     static short int noDataShort() { return std::numeric_limits<short int>::lowest(); }
     static  int noDataInt() { return std::numeric_limits<int>::lowest(); }
@@ -68,7 +68,7 @@ private:
 
     double mOx, mOy;
     double mCellsize;
-    size_t mNcol, mNrow;
+    uint mNcol, mNrow;
 
     double mNoDataValue;
 };
