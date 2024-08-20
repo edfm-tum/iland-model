@@ -54,6 +54,8 @@ StandLoader::~StandLoader()
         delete mRandom;
     if (mHeightGridResponse)
         delete mHeightGridResponse;
+    if (mInitHeightGrid)
+        delete mInitHeightGrid;
 }
 
 
@@ -92,17 +94,19 @@ void StandLoader::processInit()
 
     bool height_grid_enabled = xml.valueBool("heightGrid.enabled", false);
     mHeightGridTries = xml.valueInt("heightGrid.maxTries", 10);
-    QScopedPointer<const MapGrid> height_grid; // use a QScopedPointer to guarantee that the resource is freed at the end of the processInit() function
+    mInitHeightGrid = nullptr;
+    //QScopedPointer<const MapGrid> height_grid; // use a QScopedPointer to guarantee that the resource is freed at the end of the processInit() function
+    const MapGrid *height_grid;
     if (height_grid_enabled) {
         QString init_height_grid_file = GlobalSettings::instance()->path(xml.value("heightGrid.fileName"), "init");
         qDebug() << "initialization: using predefined tree heights map" << init_height_grid_file;
 
-        QScopedPointer<const MapGrid> p(new MapGrid(init_height_grid_file, false));
-        if (!p->isValid()) {
+        height_grid = new MapGrid(init_height_grid_file, false);
+        if (!height_grid->isValid()) {
+            delete height_grid;
             throw IException(QString("Error when loading grid with tree heights for stand initalization: file %1 not found or not valid.").arg(init_height_grid_file));
         }
-        height_grid.swap(p);
-        mInitHeightGrid = height_grid.data();
+        mInitHeightGrid = height_grid;
 
         QString expr=xml.value("heightGrid.fitFormula", "polygon(x, 0,0, 0.8,1, 1.1, 1, 1.25,0)");
         mHeightGridResponse = new Expression(expr);
@@ -164,7 +168,7 @@ void StandLoader::processInit()
                     loadInitFile(file_name, type, key, NULL);
             }
         }
-        mInitHeightGrid = 0;
+        mInitHeightGrid = nullptr;
         evaluateDebugTrees();
         return;
     }
@@ -279,7 +283,7 @@ void StandLoader::evaluateDebugTrees()
                 if (!GlobalSettings::instance()->model()->grid()->isIndexValid(t->positionIndex()))
                     qDebug() << "evaluateDebugTrees: debugstamp: invalid position found!";
             }
-            qDebug() << "debug_tree = debugstamp: try touching all trees finished...";
+            qDebug() << "debug_tree = debugstamp: try touching all trees finished..." << total_offset;
             return;
         }
         TreeWrapper tw;

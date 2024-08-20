@@ -164,6 +164,7 @@ void CustomAggOutLevel::setup()
                 case CustomAggOut::Trees: var_index = tw.variableIndex(field); break;
                 case CustomAggOut::Saplings: var_index = sw.variableIndex(field); break;
                 case CustomAggOut::RU: var_index = rw.variableIndex(field); break;
+                default: throw IException("Invalid aggregation in custom agg output!");
                 }
 
                 dfield->var_index = var_index;
@@ -204,6 +205,7 @@ void CustomAggOutLevel::exec()
     switch (mEntity) {
     case CustomAggOut::Trees: runTrees(); break;
     case CustomAggOut::Saplings: runSaplings(); break;
+    default: throw IException("Invalid aggregation level in custom agg output!");
     }
 
 }
@@ -294,6 +296,7 @@ void CustomAggOutLevel::runTrees()
         break;
 
     }
+    default: return;
 
     }
 
@@ -371,6 +374,7 @@ void CustomAggOutLevel::runSaplings()
         break;
 
     }
+    default: return;
     }
 
 }

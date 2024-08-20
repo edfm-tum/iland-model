@@ -75,7 +75,7 @@ void ThreadRunner::runGrid(void (*funcptr)(T *, T*), T *begin, T *end, const boo
         T* p = begin;
         while (p<end) {
             T* pend = std::min(p+chunksize, end);
-            QtConcurrent::run(funcptr, p, pend);
+            QFuture result = QtConcurrent::run(funcptr, p, pend);
             p = pend;
         }
     } else {

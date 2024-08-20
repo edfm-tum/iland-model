@@ -620,7 +620,7 @@ void ModelController::paintGrid(Grid<double> *grid, QString name, GridViewType v
         qDebug() << "painted custom grid min-value (blue):" << min_value << "max-value(red):" << max_value;
     }
 #else
-    Q_UNUSED(grid);Q_UNUSED(min_value);Q_UNUSED(max_value);
+    Q_UNUSED(grid);Q_UNUSED(min_value);Q_UNUSED(max_value);Q_UNUSED(name); Q_UNUSED(view_type)
 #endif
 }
 
@@ -692,7 +692,7 @@ void ModelController::addPaintLayers(QObject *handler, const QStringList names, 
         mViewerWindow->addPaintLayers(handler, names, view_types);
 
 #else
-    Q_UNUSED(handler) Q_UNUSED(names)
+    Q_UNUSED(handler) Q_UNUSED(names) Q_UNUSED(view_types)
 #endif
 }
 
