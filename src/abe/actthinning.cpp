@@ -136,7 +136,7 @@ bool ActThinning::execute(FMStand *stand)
 
 void ActThinning::setupCustom(QJSValue value)
 {
-    events().setup(value, QStringList() << "onEvaluate");
+    events().setup(value, FomeScript::bridge()->activityJS(), QStringList() << "onEvaluate");
     mCustomThinnings.clear();
     if (value.hasProperty("thinnings") && value.property("thinnings").isArray()) {
         QJSValueIterator it(value.property("thinnings"));
@@ -155,9 +155,10 @@ void ActThinning::setupCustom(QJSValue value)
 
 void ActThinning::setupSelective(QJSValue value)
 {
-    mSelectiveThinning.N = FMSTP::valueFromJs(value, "N", "400").toInt();
+    mSelectiveThinning.N = FMSTP::valueFromJs(value, "N", "400");
     mSelectiveThinning.speciesProb = FMSTP::valueFromJs(value, "speciesSelectivity");
-    mSelectiveThinning.rankingExpr = FMSTP::valueFromJs(value, "ranking", "").toString();
+    mSelectiveThinning.rankingExpr = FMSTP::valueFromJs(value, "ranking", "");
+    mSelectiveThinning.Ncompetitors = FMSTP::valueFromJs(value, "NCompetitors", "1.5");
 }
 
 // setup of the "custom" thinning operation
@@ -485,6 +486,18 @@ bool ActThinning::markCropTrees(FMStand *stand, bool selective_species)
     treelist->loadAll();
     clearTreeMarks(treelist);
 
+    // evaluate dynamic variables
+    double selective_n = FMSTP::evaluateJS(mSelectiveThinning.N).toInt();
+    if (selective_n == 0. || isnan(selective_n))
+        throw IException(QString("Invalid value for 'N' in selective Thinning: '%1'").arg(selective_n));
+    double selective_competitor = FMSTP::evaluateJS(mSelectiveThinning.Ncompetitors).toNumber();
+    if (selective_competitor == 0. || isnan(selective_competitor))
+        throw IException(QString("Invalid value for 'NCompetitors' in selective Thinning: '%1'").arg(selective_competitor));
+
+    QString selective_ranking_expr = FMSTP::evaluateJS(mSelectiveThinning.rankingExpr).toString();
+    if (selective_ranking_expr == "undefined")
+        selective_ranking_expr.clear();
+
     // get the 2x2m grid for the current stand
     Grid<float> &grid = treelist->localStandGrid();
     // clear (except the out of "stand" pixels)
@@ -492,10 +505,12 @@ bool ActThinning::markCropTrees(FMStand *stand, bool selective_species)
         if (*p > -1.f)
             *p = 0.f;
 
-    int target_n = mSelectiveThinning.N * stand->area();
+    int target_n = selective_n * stand->area();
 
     if (target_n>=treelist->trees().count())
         target_n = treelist->trees().count();
+
+    qCDebug(abe) << "using user-defined number of competitors: " << selective_competitor;
 
     int max_target_n = qMax(target_n * 1.5, treelist->trees().count()/2.);
     if (max_target_n>=treelist->trees().count())
@@ -505,24 +520,28 @@ bool ActThinning::markCropTrees(FMStand *stand, bool selective_species)
     // if *more* trees should be marked, some trees need to be on neighbor pixels:
     // pixels = 2500 / N; if 9 px are the Moore neighborhood, the "overprint" is N*9 / 2500.
     // N*9/2500 -1 = probability of having more than zero overlapping pixels
-    double overprint = (mSelectiveThinning.N * 9) / double(cPxPerHectare) - 1.;
+    //double overprint = (mSelectiveThinning.N * 9) / double(cPxPerHectare) - 1.;
+    //double overprint = (mSelectiveThinning.N * 49) / double(cPxPerHectare) - 1.; // JM: Adjusted, since we have a 7x7 Kernle now instead of 3x3
 
     // rank the trees according to their ranking
-    if (mSelectiveThinning.rankingExpr.isEmpty()) {
+    if (selective_ranking_expr.isEmpty()) {
         // order the list of trees according to tree height
         treelist->sort("-height");
     } else {
         // order the list of trees according to a user defined ranking expression
-        treelist->sort(mSelectiveThinning.rankingExpr);
-        qCDebug(abe) << "using user-defined ranking for selective thinning: " << mSelectiveThinning.rankingExpr;
+        treelist->sort(QString("-(%1)").arg(selective_ranking_expr));
+        qCDebug(abe) << "using user-defined ranking for selective thinning: " << selective_ranking_expr;
 
     }
+
+    qCDebug(abe) << "Target number of crop trees: " << target_n;
+
 
     // start with a part of N and 0 overlap
     int n_found = 0;
     int tests=0;
     int i=0;
-    while (n_found < target_n/3 && i<target_n/2) {
+    while (n_found < target_n/3 && i<target_n/2) {                        //JM: why do we need this part?
         float f=testPixel(treelist->trees().at(i).first->position(), grid); ++tests;
         if (f==0.f) {
             // no neighbors: check species
@@ -538,6 +557,14 @@ bool ActThinning::markCropTrees(FMStand *stand, bool selective_species)
         }
         ++i;
     }
+
+
+
+    qCDebug(abe) << "numbers found in first round: " << n_found;
+
+
+
+
     // continue with a higher probability
     for (int run=0;run<4;++run) {
         for (int i=0; i<max_target_n;++i) {
@@ -546,11 +573,11 @@ bool ActThinning::markCropTrees(FMStand *stand, bool selective_species)
 
             float f=testPixel(treelist->trees().at(i).first->position(), grid); ++tests;
 
-            if ( (f==0.f) ||
-                 (f<=2.f && drandom()<overprint) ||
-                 (run==1 && f<=4 && drandom()<overprint) ||
-                 (run==2 && drandom()<overprint) ||
-                 (run==3) ) {
+            if ((f==0.f) ||
+                (f<=(0.0805*selective_n-2.4256)) ||                  // JM: define kernel thresholds here     scaled: max(0, 0.0805*NZBaum-2.4256)
+                (run==1 && f<=(0.1484*selective_n-5.4919)) ||        // JM: define kernel thresholds here     scaled: max(0, 0.1484*NZBaum-5.4919)
+                (run==2 && f<=(0.1679*selective_n-4.8988)) ||        // JM: define kernel thresholds here     scaled: max(0, 0.1679*NZBaum-4.8988)
+                ((run==3) && f<=(0.0805*selective_n-2.4256))) {    // JM: define kernel thresholds here     scaled: max(0, 0.0805*NZBaum-2.4256) or 4*(0.1679*mSelectiveThinning.N-4.8988)
 
                 if (selective_species & !( drandom() < mSpeciesSelectivity[treelist->trees().at(i).first->species()]) )
                     continue;
@@ -569,19 +596,28 @@ bool ActThinning::markCropTrees(FMStand *stand, bool selective_species)
     // now mark the competitors:
     // competitors are trees up to 75th percentile of the tree population that
     int n_competitor=0;
-    for (int run=0;run<3;++run) {
-        for (int i=0; i<max_target_n;++i) {
+    int target_competitors = std::round(selective_competitor * target_n);
+
+    int max_target_n_competitor = qMax(target_competitors * 1.5, treelist->trees().count()/2.);
+    if (max_target_n_competitor>=treelist->trees().count())
+        max_target_n_competitor = treelist->trees().count();
+
+
+    for (int run=0;run<3 && n_competitor<target_competitors;++run) {
+        for (int i=0; i<max_target_n_competitor;++i) {
             Tree *tree = treelist->trees().at(i).first;
             if (tree->isMarkedAsCropTree() || tree->isMarkedAsCropCompetitor())
                 continue;
 
             float f=testPixel(treelist->trees().at(i).first->position(), grid); ++tests;
 
-            if ( (f>12.f) ||
-                 (run==1 && f>8) ||
-                 (run==2 && f>4) ) {
+            if ( (f>1.f) ||            // 12.f
+                 (run==1 && f>0.5) ||     // 8.f
+                 (run==2)) {    // 4.f
                 tree->markCropCompetitor(true);
                 n_competitor++;
+                if (n_competitor >= target_competitors)
+                    break;
             }
         }
     }
@@ -602,39 +638,130 @@ float ActThinning::testPixel(const QPointF &pos, Grid<float> &grid)
     int y=grid.indexAt(pos).y();
 
     float sum = 0.f;
-    sum += grid.isIndexValid(x-1,y-1) ? grid.valueAtIndex(x-1, y-1) : 0;
-    sum += grid.isIndexValid(x,y-1) ? grid.valueAtIndex(x, y-1) : 0;
-    sum += grid.isIndexValid(x+1,y-1) ? grid.valueAtIndex(x+1, y-1) : 0;
+    for (int i=-3;i<=3;++i){
+        for (int j=-3;j<=3;++j){
+            sum += grid.isIndexValid(x+i,y+j) ? grid.valueAtIndex(x+i, y+j) : 0;
+        }
+    }
+    // sum += grid.isIndexValid(x-2,y-2) ? grid.valueAtIndex(x-2,y-2) : 0;
+    // sum += grid.isIndexValid(x-2,y-1) ? grid.valueAtIndex(x-2,y-1) : 0;
+    // sum += grid.isIndexValid(x-2,y) ? grid.valueAtIndex(x-2,y) : 0;
+    // sum += grid.isIndexValid(x-2,y+1) ? grid.valueAtIndex(x-2,y+1) : 0;
+    // sum += grid.isIndexValid(x-2,y+2) ? grid.valueAtIndex(x-2,y+2) : 0;
 
-    sum += grid.isIndexValid(x-1,y) ? grid.valueAtIndex(x-1, y) : 0;
-    sum += grid.isIndexValid(x,y) ? grid.valueAtIndex(x, y) : 0;
-    sum += grid.isIndexValid(x+1,y) ? grid.valueAtIndex(x+1, y) : 0;
+    // sum += grid.isIndexValid(x-1,y-2) ? grid.valueAtIndex(x-1,y-2) : 0;
+    // sum += grid.isIndexValid(x-1,y-1) ? grid.valueAtIndex(x-1,y-1) : 0;
+    // sum += grid.isIndexValid(x-1,y) ? grid.valueAtIndex(x-1,y) : 0;
+    // sum += grid.isIndexValid(x-1,y+1) ? grid.valueAtIndex(x-1,y+1) : 0;
+    // sum += grid.isIndexValid(x-1,y+2) ? grid.valueAtIndex(x-1,y+2) : 0;
 
-    sum += grid.isIndexValid(x-1,y+1) ? grid.valueAtIndex(x-1, y+1) : 0;
-    sum += grid.isIndexValid(x,y+1) ? grid.valueAtIndex(x, y+1) : 0;
-    sum += grid.isIndexValid(x+1,y+1) ? grid.valueAtIndex(x+1, y+1) : 0;
+    // sum += grid.isIndexValid(x,y-2) ? grid.valueAtIndex(x,y-2) : 0;
+    // sum += grid.isIndexValid(x,y-1) ? grid.valueAtIndex(x,y-1) : 0;
+    // sum += grid.isIndexValid(x,y) ? grid.valueAtIndex(x,y) : 0;
+    // sum += grid.isIndexValid(x,y+1) ? grid.valueAtIndex(x,y+1) : 0;
+    // sum += grid.isIndexValid(x,y+2) ? grid.valueAtIndex(x,y+2) : 0;
+
+    // sum += grid.isIndexValid(x+1,y-2) ? grid.valueAtIndex(x+1,y-2) : 0;
+    // sum += grid.isIndexValid(x+1,y-1) ? grid.valueAtIndex(x+1,y-1) : 0;
+    // sum += grid.isIndexValid(x+1,y) ? grid.valueAtIndex(x+1,y) : 0;
+    // sum += grid.isIndexValid(x+1,y+1) ? grid.valueAtIndex(x+1,y+1) : 0;
+    // sum += grid.isIndexValid(x+1,y+2) ? grid.valueAtIndex(x+1,y+2) : 0;
+
+    // sum += grid.isIndexValid(x+2,y-2) ? grid.valueAtIndex(x+2,y-2) : 0;
+    // sum += grid.isIndexValid(x+2,y-1) ? grid.valueAtIndex(x+2,y-1) : 0;
+    // sum += grid.isIndexValid(x+2,y) ? grid.valueAtIndex(x+2,y) : 0;
+    // sum += grid.isIndexValid(x+2,y+1) ? grid.valueAtIndex(x+2,y+1) : 0;
+    // sum += grid.isIndexValid(x+2,y+2) ? grid.valueAtIndex(x+2,y+2) : 0;
 
     return sum;
 }
 
+
+QVector<QPair<QPoint, float> > rel_positions = { //calculated using 9 minus squared distance to center
+    {{-3, -3}, 1/19.f},
+    {{-3, -2}, 6/19.f},
+    {{-3, -1}, 9/19.f},
+    {{-3,  0}, 10/19.f},
+    {{-3,  1}, 9/19.f},
+    {{-3,  2}, 6/19.f},
+    {{-3,  3}, 1/19.f},
+    {{-2, -3}, 6/19.f},
+    {{-2, -2}, 11/19.f},
+    {{-2, -1}, 14/19.f},
+    {{-2,  0}, 15/19.f},
+    {{-2,  1}, 14/19.f},
+    {{-2,  2}, 11/19.f},
+    {{-2,  3}, 6/19.f},
+    {{-1, -3}, 9/19.f},
+    {{-1, -2}, 14/19.f},
+    {{-1, -1}, 17/19.f},
+    {{-1,  0}, 18/19.f},
+    {{-1,  1}, 17/19.f},
+    {{-1,  2}, 14/19.f},
+    {{-1,  3}, 9/19.f},
+    {{ 0, -3}, 10/19.f},
+    {{ 0, -2}, 15/19.f},
+    {{ 0, -1}, 18/19.f},
+    {{ 0,  0}, 19/19.f},
+    {{ 0,  1}, 18/19.f},
+    {{ 0,  2}, 15/19.f},
+    {{ 0,  3}, 10/19.f},
+    {{ 1, -3}, 9/19.f},
+    {{ 1, -2}, 14/19.f},
+    {{ 1, -1}, 17/19.f},
+    {{ 1,  0}, 18/19.f},
+    {{ 1,  1}, 17/19.f},
+    {{ 1,  2}, 14/19.f},
+    {{ 1,  3}, 9/19.f},
+    {{ 2, -3}, 6/19.f},
+    {{ 2, -2}, 11/19.f},
+    {{ 2, -1}, 14/19.f},
+    {{ 2,  0}, 15/19.f},
+    {{ 2,  1}, 14/19.f},
+    {{ 2,  2}, 11/19.f},
+    {{ 2,  3}, 6/19.f},
+    {{ 3, -3}, 1/19.f},
+    {{ 3, -2}, 6/19.f},
+    {{ 3, -1}, 9/19.f},
+    {{ 3,  0}, 10/19.f},
+    {{ 3,  1}, 9/19.f},
+    {{ 3,  2}, 6/19.f},
+    {{ 3,  3}, 1/19.f}
+};
+
 void ActThinning::setPixel(const QPointF &pos, Grid<float> &grid)
 {
     // check Moore neighborhood
-    int x=grid.indexAt(pos).x();
-    int y=grid.indexAt(pos).y();
+    QPoint center_point(grid.indexAt(pos).x(),
+                        grid.indexAt(pos).y());
 
-    if (grid.isIndexValid(x-1,y-1)) grid.valueAtIndex(x-1, y-1)++;
-    if (grid.isIndexValid(x,y-1)) grid.valueAtIndex(x, y-1)++;
-    if (grid.isIndexValid(x+1,y-1)) grid.valueAtIndex(x+1, y-1)++;
+    for (auto &p : rel_positions) {
+        QPoint pt = center_point + p.first;
+        if (grid.isIndexValid(pt))
+            grid.valueAtIndex(pt) += p.second;
+    }
 
-    if (grid.isIndexValid(x-1,y)) grid.valueAtIndex(x-1, y)++;
-    if (grid.isIndexValid(x,y)) grid.valueAtIndex(x, y) += 3; // more impact on center pixel
-    if (grid.isIndexValid(x+1,y)) grid.valueAtIndex(x+1, y)++;
-
-    if (grid.isIndexValid(x-1,y+1)) grid.valueAtIndex(x-1, y+1)++;
-    if (grid.isIndexValid(x,y+1)) grid.valueAtIndex(x, y+1)++;
-    if (grid.isIndexValid(x+1,y+1)) grid.valueAtIndex(x+1, y+1)++;
 }
+
+
+//void ActThinning::setPixelOld(const QPointF &pos, Grid<float> &grid)
+//{
+//    // check Moore neighborhood
+//    int x=grid.indexAt(pos).x();
+//    int y=grid.indexAt(pos).y();
+//
+//    if (grid.isIndexValid(x-1,y-1)) grid.valueAtIndex(x-1, y-1)++;
+//    if (grid.isIndexValid(x,y-1)) grid.valueAtIndex(x, y-1)++;
+//    if (grid.isIndexValid(x+1,y-1)) grid.valueAtIndex(x+1, y-1)++;
+//
+//    if (grid.isIndexValid(x-1,y)) grid.valueAtIndex(x-1, y)++;
+//    if (grid.isIndexValid(x,y)) grid.valueAtIndex(x, y) += 3; // more impact on center pixel
+//    if (grid.isIndexValid(x+1,y)) grid.valueAtIndex(x+1, y)++;
+//
+//    if (grid.isIndexValid(x-1,y+1)) grid.valueAtIndex(x-1, y+1)++;
+//    if (grid.isIndexValid(x,y+1)) grid.valueAtIndex(x, y+1)++;
+//    if (grid.isIndexValid(x+1,y+1)) grid.valueAtIndex(x+1, y+1)++;
+//}
 
 bool ActThinning::populateSpeciesSelectivity(QJSValue value)
 {

@@ -229,15 +229,15 @@ double SaplingWrapper::value(const int variableIndex)
               return sp->biomassFoliage(dbh); }
     case 6:  { size_t diff = (int*)(mSapling) - (int*)( mRU->saplingCellArray() ); // difference in int* ptr (64bit, usually)
               size_t index = diff * sizeof(int) / sizeof(SaplingCell); // convert to difference in "SaplingCell" (with size (currently) 72 bytes)
-              QPointF p = Saplings::coordOfCell(mRU, index);
+              QPointF p = Saplings::coordOfCell(mRU, static_cast<int>(index));
               return p.x();    }
     case 7:  { size_t diff = (int*)(mSapling) - (int*)( mRU->saplingCellArray() ); // difference in int* ptr (64bit, usually)
               size_t index = diff * sizeof(int) / sizeof(SaplingCell); // convert to difference in "SaplingCell" (with size (currently) 72 bytes)
-              QPointF p = Saplings::coordOfCell(mRU, index);
+              QPointF p = Saplings::coordOfCell(mRU, static_cast<int>(index));
               return p.y();    }
     case 8:  { size_t diff = (int*)(mSapling) - (int*)( mRU->saplingCellArray() ); // difference in int* ptr (64bit, usually)
               size_t index = diff * sizeof(int) / sizeof(SaplingCell); // convert to difference in "SaplingCell" (with size (currently) 72 bytes)
-              QPoint p = Saplings::coordOfCellLIF(mRU, index);
+              QPoint p = Saplings::coordOfCellLIF(mRU, static_cast<int>(index));
               return ABE::Patches::getPatch(p);    }
 
     }

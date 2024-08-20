@@ -69,6 +69,9 @@ private:
     /// do the actual seed distribution processing
     void distributeSeeds(Grid<float> *seed_map=0);
 
+    /// external seeds on full area (in case of low probability)
+    void addExternalBackgroundSeeds(Grid<float> &map, double background_value);
+
 
     double mTM_as1, mTM_as2, mTM_ks; ///< seed dispersal paramaters (treemig)
     double mTM_fecundity_cell; ///< maximum seeds per source cell

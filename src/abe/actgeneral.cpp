@@ -55,7 +55,8 @@ bool ActGeneral::execute(FMStand *stand)
     if (FMSTP::verbose() || stand->trace())
         qCDebug(abe) << stand->context() << "activity 'general': execute of" << name();
 
-    QJSValue result = mAction.call();
+    //QJSValue result = mAction.call();
+    QJSValue result = mAction.callWithInstance(FomeScript::bridge()->activityJS()); // the activity as 'this'
     if (result.isError()) {
         throw IException(QString("%1 Javascript error in 'general' activity '%3': %2. \n %4").arg(stand->context())
                              .arg(result.toString())

@@ -49,6 +49,51 @@ void Patches::updateGrid()
     }
 }
 
+int Patches::createExtendedPatch(short patchId, short newPatchId, int grow_by)
+{
+    short int *neighbor[8];
+    int n_extended = 0;
+    Patch *patch=new Patch(this, newPatchId);
+    GridRunner<short int> runner(mLocalStandGrid, mLocalStandGrid.rectangle());
+    while (runner.next()) {
+        if (*runner.current() == patchId) {
+            runner.neighbors8(neighbor);
+            for (int i=0;i<8;++i)
+                if (neighbor[i]) {
+                    if (*neighbor[i] == 0) {
+                        *neighbor[i] = newPatchId;
+                        patch->indices().push_back(mLocalStandGrid.index( mLocalStandGrid.indexOf(neighbor[i]) ));
+                        ++n_extended;
+                    }
+                }
+        }
+    }
+    if (n_extended>0) {
+        patch->update();
+        mPatches.push_back(patch);
+    } else {
+        delete patch;
+    }
+
+    return n_extended;
+
+}
+
+double Patches::lif(Patch *patch)
+{
+    float lif_value = 0.f;
+    int n=0;
+    for (auto idx : patch->indices()) {
+        QRectF cell_rect = mLocalStandGrid.cellRect(mLocalStandGrid.indexOf(idx)).translated(mStandRect.topLeft());
+        GridRunner<float> runner(GlobalSettings::instance()->model()->grid(), cell_rect);
+        while (runner.next()) {
+            lif_value += *runner.current();
+            ++n;
+        }
+    }
+    return n>0 ? lif_value / n : 0.;
+}
+
 int Patches::getPatch(QPoint position_lif)
 {
     if (!GlobalSettings::instance()->model()->ABEngine()) return -1;
@@ -125,8 +170,8 @@ QList<Patch *> Patches::createRegular(int size, int spacing)
             int dx = p.x() / box_size;
             int dy = p.y() / box_size;
             int id = dy * d_box + dx + 1;
-            if (p.x() % box_size <= size &&
-                p.y() % box_size <= size)
+            if (p.x() % box_size < size &&
+                p.y() % box_size < size)
                 getPatch(patches, id, true)->indices().push_back(pg - mLocalStandGrid.begin());
         }
     }

@@ -139,7 +139,7 @@ void ActPlanting::setup(QJSValue value)
     if (GlobalSettings::instance()->model()->settings().regenerationEnabled == false)
         throw IException("Cannot set up planting acitivities when iLand regeneration module is disabled.");
     Activity::setup(value); // setup base events
-    events().setup(value, QStringList() << "onEvaluate");
+    events().setup(value, FomeScript::bridge()->activityJS(), QStringList() << "onEvaluate");
 
     QJSValue items = FMSTP::valueFromJs(value, "items");
     mItems.clear();

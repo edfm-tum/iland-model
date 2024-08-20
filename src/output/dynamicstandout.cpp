@@ -84,7 +84,7 @@ void DynamicStandOut::setup()
 
             mFieldList.append(SDynamicField());
             // parse field
-            if (field.count()>0 && !field.contains('(')) {
+            if (field.size()>0 && !field.contains('(')) {
                 // simple expression
                 mFieldList.back().var_index = tw.variableIndex(field);
             } else {

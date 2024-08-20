@@ -21,6 +21,8 @@
 #include "abe_global.h"
 #include "fomescript.h"
 
+#include <QQmlEngine>
+
 #include "forestmanagementengine.h"
 #include "fmstp.h"
 #include "agenttype.h"
@@ -99,6 +101,10 @@ void FomeScript::setupScriptEnvironment()
     //access to the current activity
     mActivityObj = new ActivityObj;
     mActivityJS = ForestManagementEngine::scriptEngine()->newQObject(mActivityObj);
+    QQmlEngine::setObjectOwnership(mActivityObj, QQmlEngine::CppOwnership);
+
+
+    //QJSValue activity_value = ForestManagementEngine::scriptEngine()->newQObject(mActivityObj);
     //ForestManagementEngine::scriptEngine()->globalObject().setProperty("activity", activity_value);
 
     // general simulation variables (mainly scenariolevel)
@@ -108,6 +114,8 @@ void FomeScript::setupScriptEnvironment()
 
     // options of the STP
     mSTPObj = new STPObj;
+    mSTPJS = ForestManagementEngine::scriptEngine()->newQObject(mSTPObj);
+    QQmlEngine::setObjectOwnership(mSTPObj, QQmlEngine::CppOwnership);
     //QJSValue stp_value = ForestManagementEngine::scriptEngine()->newQObject(mSTPObj);
     //ForestManagementEngine::scriptEngine()->globalObject().setProperty("stp", stp_value);
 
@@ -151,7 +159,7 @@ void FomeScript::setExecutionContext(FMStand *stand, bool add_agent)
 void FomeScript::setActivity(Activity *act)
 {
     FomeScript *br = bridge();
-    setExecutionContext(0);
+    setExecutionContext(nullptr);
     br->mActivityObj->setActivity(act);
 }
 
@@ -464,6 +472,12 @@ QJSValue FomeScript::stpByName(QString name)
 
 }
 
+bool FomeScript::isValidStp(QString name)
+{
+    FMSTP *stp = ForestManagementEngine::instance()->stp(name);
+    return stp != nullptr;
+}
+
 QJSValue FomeScript::test(QJSValue val)
 {
     qDebug() << "value:"<<  val.toString();
@@ -681,7 +695,20 @@ void StandObj::setSTP(QString stp_name)
         return;
 
     }
-    throwError(QString("The stp cannot be set, because the agent for stand %1 is not properly defined.").arg(mStand->id()));
+    throwError(QString("The stp cannot be set, because the agent for stand %1 is not properly defined.").arg(mStand ? mStand->id() : -1));
+}
+
+void StandObj::repeat(QJSValue repeat_obj, QJSValue repeat_fun, int repeat_interval, int repeat_count)
+{
+    if (!repeat_fun.isCallable()) {
+        throwError(QString("Stand::repeat: the 'what' to repeat needs to be a callable JavaScript object. It is: %1").arg(repeat_fun.toString()));
+        return;
+    }
+    ForestManagementEngine::instance()->addRepeatJS(mStand->id(),
+                                                  repeat_obj,
+                                                  repeat_fun,
+                                                  repeat_interval,
+                                                  repeat_count);
 }
 
 void StandObj::throwError(QString msg) const
@@ -722,6 +749,7 @@ void ActivityObj::setEnabled(bool do_enable)
         qCDebug(abe) << mStand->context() << "disabled currently active activity " << old_activity << ", new next activity:" << (mStand->currentActivity() ? mStand->currentActivity()->name() : QStringLiteral("*** no activity ***"));
     }
 }
+
 
 ActivityFlags &ActivityObj::flags() const
 {
@@ -999,6 +1027,16 @@ QStringList STPObj::activityNames()
         names.push_back(mSTP->activities()[i]->name());
     return names;
 
+}
+
+bool STPObj::signal(QString signalname)
+{
+    if (!mSTP) {
+        ScriptGlobal::throwError("stp not valid!"); return false; }
+    if (FomeScript::bridge()->standId() < 0) {
+        ScriptGlobal::throwError("STP::signal: no valid stand id!"); return false; }
+
+    return mSTP->signal(signalname, FomeScript::bridge()->standObj()->stand());
 }
 
 

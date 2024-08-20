@@ -42,11 +42,20 @@ public:
     void setList(QList<Patch*> l) { mPatches = l; updateGrid(); }
     QRectF rectangle() const { return mStandRect; }
 
-    /// re-create the internal stand grid from the list of patches
-    void updateGrid();
     /// get patch from a tree (static)
     static int getPatch(QPoint position_lif);
 public slots:
+    /// re-create the internal stand grid from the list of patches
+    void updateGrid();
+
+    /// create a new patch that surrounds existing patches (with id `patchId`) in up to `grow_by` distance
+    int createExtendedPatch(short patchId, short newPatchId, int grow_by=1);
+    // query patches
+
+    /// get the average value of the Light Influence Field (4m) on the patch `patch`
+    double lif(Patch *patch);
+
+    // create patches
     void createRandomPatches(int n);
     void clear();
     bool createPatch(double x, double y, QString shape_string, int id=-1);

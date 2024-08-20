@@ -92,12 +92,12 @@ const ClimateDay *Climate::day(const int month, const int day) const
 {
     if (mDayIndices.isEmpty())
         return &mInvalidDay;
-    return mStore.constBegin() + mDayIndices[mCurrentYear*12 + month] + day;
+    return mStore.data() + mDayIndices[mCurrentYear*12 + month] + day;
 }
 void Climate::monthRange(const int month, const ClimateDay **rBegin, const ClimateDay **rEnd) const
 {
-    *rBegin = mStore.constBegin() + mDayIndices[mCurrentYear*12 + month];
-    *rEnd = mStore.constBegin() + mDayIndices[mCurrentYear*12 + month+1];
+    *rBegin = mStore.data() + mDayIndices[mCurrentYear*12 + month];
+    *rEnd = mStore.data() + mDayIndices[mCurrentYear*12 + month+1];
     //qDebug() << "monthRange returning: begin:"<< (*rBegin)->toString() << "end-1:" << (*rEnd-1)->toString();
 }
 
@@ -205,7 +205,7 @@ void Climate::load()
 
     ClimateDay lastDay = *day(11,30); // 31.december
     mMinYear = mMaxYear;
-    QVector<ClimateDay>::iterator store=mStore.begin();
+    ClimateDay *store=mStore.data();
 
     mDayIndices.clear();
     ClimateDay *cday = store;
@@ -285,7 +285,7 @@ void Climate::load()
                 // new month...
                 lastmon = cday->month;
                 // save relative position of the beginning of the new month
-                mDayIndices.push_back( cday - mStore.constBegin() );
+                mDayIndices.push_back( cday - mStore.data() );
             }
             if (yeardays==1) {
                 // check on first day of the year
@@ -295,19 +295,19 @@ void Climate::load()
             if (cday->month==12 && cday->dayOfMonth==31)
                 break;
 
-            if (cday==mStore.end())
+            if (cday >= mStore.data() + mStore.size() )
                 throw IException("Error in reading climate file: read across the end!");
         }
         lastyear = cday->year;
     }
-    while (store!=mStore.end())
+    while (store < mStore.data() + mStore.size())
         *store++ = mInvalidDay; // save a invalid day at the end...
 
-    mDayIndices.push_back(cday- mStore.begin()); // the absolute last day...
+    mDayIndices.push_back(cday- mStore.data()); // the absolute last day...
     mMaxYear = mMinYear+mLoadYears;
     mCurrentYear = 0;
-    mBegin = mStore.begin() + mDayIndices[mCurrentYear*12];
-    mEnd = mStore.begin() + mDayIndices[(mCurrentYear+1)*12];; // point to the 1.1. of the next year
+    mBegin = mStore.data() + mDayIndices[mCurrentYear*12];
+    mEnd = mStore.data() + mDayIndices[(mCurrentYear+1)*12];; // point to the 1.1. of the next year
 
     climateCalculations(lastDay); // perform additional calculations based on the climate data loaded from the database
 
@@ -351,8 +351,8 @@ void Climate::nextYear()
     // update ambient CO2 level
     updateCO2concentration();
 
-    mBegin = mStore.begin() + mDayIndices[mCurrentYear*12];
-    mEnd = mStore.begin() + mDayIndices[(mCurrentYear+1)*12];; // point to the 1.1. of the next year
+    mBegin = mStore.data() + mDayIndices[mCurrentYear*12];
+    mEnd = mStore.data() + mDayIndices[(mCurrentYear+1)*12];; // point to the 1.1. of the next year
 
     // some aggregates:
     // calculate radiation sum of the year and monthly precipitation
@@ -381,7 +381,7 @@ void Climate::nextYear()
 
 void Climate::climateCalculations(const ClimateDay &lastDay)
 {
-    ClimateDay *c = mStore.begin();
+    ClimateDay *c = mStore.data();
     const double tau = Model::settings().temperatureTau;
     // handle first day: use tissue temperature of the last day of the last year (if available)
     if (lastDay.isValid())

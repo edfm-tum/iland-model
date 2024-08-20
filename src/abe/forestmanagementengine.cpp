@@ -219,6 +219,71 @@ void ForestManagementEngine::runJavascript(bool after_processing)
     }
 }
 
+void ForestManagementEngine::runRepeatedItems(int stand_id)
+{
+    QList<QPair< int, SRepeatItem> > buffer_store; // used to add new items while iterating
+    mRepeatStoreBuffer = &buffer_store; // "install" buffer
+
+    auto it = mRepeatStore.find(stand_id);
+    while (it != mRepeatStore.end() && it.key() == stand_id) {
+
+        bool is_erased = false;
+        if (--it->waitYears < 0) {
+            // run the item
+            it->N++; // number of invocation, 1,2,3,...
+
+
+            FMStand* stnd = stand(stand_id);
+            if (!stnd)
+                throw IException(QString("Invalid stand-id for repeating activity: '%1'").arg(stand_id));
+            FomeScript::setExecutionContext(stnd);
+
+            if (it->activity) {
+                // run the activity
+                bool res = it->activity->execute(stnd);
+                qCDebug(abe) << "executed activity (repeated): " << it->activity->name() << ". Result: " << res;
+            } else {
+                // run javascript function
+                QJSValueList params = { it->N };
+                QJSValue result;
+
+
+                if (it->jsobj.isUndefined())
+                    result = it->callback.call(params);
+                else
+                    result = it->callback.callWithInstance(it->jsobj, params);
+
+                if (result.isError())
+                    FomeScript::bridge()->abort(result);
+
+                qCDebug(abe) << "executed repeated op for stand" << stand_id << ", result:" << result.toString();
+            }
+
+            // reset
+            it->waitYears = it->interval; // start again the countdown
+
+            if (it->N >= it->times) {
+                // done - remove repeater again
+                it = mRepeatStore.erase(it);
+                is_erased = true;
+            }
+
+
+        }
+        if (!is_erased)
+            ++it;
+    }
+
+    if (!buffer_store.empty()) {
+        // copy to repeat store
+        for (auto &p : buffer_store) {
+            mRepeatStore.insert(p.first, p.second);
+        }
+    }
+    mRepeatStoreBuffer = nullptr; // remove again
+
+}
+
 AgentType *ForestManagementEngine::agentType(const QString &name)
 {
     for (int i=0;i<mAgentTypes.count();++i)
@@ -770,6 +835,34 @@ QVariantList ForestManagementEngine::standIds() const
     foreach(FMStand *s, mStands)
         standids.push_back(s->id());
     return standids;
+}
+
+void ForestManagementEngine::addRepeatJS(int stand_id, QJSValue obj, QJSValue callback, int repeatInterval, int repeatTimes)
+{
+    if (mRepeatStoreBuffer)
+        mRepeatStoreBuffer->push_back({stand_id, SRepeatItem(repeatInterval, repeatTimes, obj, callback)}); // to avoid problems with invalid iterators
+    else
+        mRepeatStore.insert(stand_id, SRepeatItem(repeatInterval, repeatTimes, obj, callback));
+}
+
+void ForestManagementEngine::addRepeatActivity(int stand_id, Activity *act, int repeatInterval, int repeatTimes)
+{
+    if (mRepeatStoreBuffer)
+        mRepeatStoreBuffer->push_back({stand_id, SRepeatItem(repeatInterval, repeatTimes, act)});
+    else
+        mRepeatStore.insert(stand_id, SRepeatItem(repeatInterval, repeatTimes, act));
+}
+
+void ForestManagementEngine::stopRepeat(int stand_id, QJSValue obj)
+{
+    auto it = mRepeatStore.find(stand_id);
+    while (it != mRepeatStore.end() && it.key() == stand_id) {
+        if (it->jsobj.equals(obj))
+            it = mRepeatStore.erase(it);
+        else
+            ++it;
+    }
+
 }
 
 void ForestManagementEngine::notifyTreeRemoval(Tree *tree, int reason)

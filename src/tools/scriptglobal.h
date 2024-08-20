@@ -146,6 +146,7 @@ public slots:
     void print(QString message); ///< print the contents of the message to the log
     void alert(QString message); ///< shows a message box to the user (if in GUI mode)
     void include(QString filename); ///< "include" the given script file and evaluate. The path is relative to the "script" path
+    void loadModule(QString moduleName, QString filename);
     /// return a random number between from and to (inclusive).
     /// Note: when using standard JS Math.random(), the random seed of iLand is not effective
     double random(double from=0., double to=1.);

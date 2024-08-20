@@ -54,9 +54,10 @@ private:
         QJSValue remainingStems; ///< minimum remaining stems/ha (>minDbh)
     };
     struct SSelectiveThinning {
-        int N; ///< stems pro ha target
-        QJSValue speciesProb;
-        QString rankingExpr;
+        QJSValue N; ///< stems pro ha target
+        QJSValue speciesProb; ///< probability [0...1] for each species to get picked as crop tree (second order after ranking)
+        QJSValue rankingExpr; ///< ranking expression to order trees for selecting crop trees (default: 'height', but can be e.g. 'height + 10*(species=fasy)')
+        QJSValue Ncompetitors; ///< number of competitors to mark per crop tree (default: 1.5)
     };
 
     SSelectiveThinning mSelectiveThinning;

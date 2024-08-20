@@ -195,7 +195,7 @@ void StandLoader::processInit()
         }
 
         if (mStandInitItems.isEmpty()) {
-            qDebug() << "Initialize trees ('standgrid'-mode): no items to process (empty landscape).";
+            qDebug() << "Initialize trees ('standgrid'-mode): no items to process (empty landscape)(no 'stand_id' column present?).";
             return;
             //throw IException("StandLoader::processInit: 'mode' is 'standgrid' but the init file is either empty or contains no 'stand_id'-column.");
         }

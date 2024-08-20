@@ -21,7 +21,7 @@
 #include "fmstp.h"
 #include "fmstand.h"
 #include "fomescript.h"
-
+#include "forestmanagementengine.h"
 
 namespace ABE {
 
@@ -91,7 +91,7 @@ void FMSTP::setup(QJSValue &js_value, const QString &name)
     }
 
     // (3) set up top-level events
-    mEvents.setup(js_value, QStringList() << QStringLiteral("onInit") << QStringLiteral("onExit"));
+    mEvents.setup(js_value, FomeScript::bridge()->stpJS(), QStringList() << QStringLiteral("onInit") << QStringLiteral("onExit"));
 }
 
 bool FMSTP::executeRepeatingActivities(FMStand *stand)
@@ -116,6 +116,23 @@ bool FMSTP::executeRepeatingActivities(FMStand *stand)
 
 }
 
+bool FMSTP::signal(QString signalstr, FMStand *stand)
+{
+    int found = 0;
+    for (auto *act : mActivities) {
+        if (act->schedule().listensToSignal(signalstr)) {
+            int delta_yrs = act->schedule().signalExecutionDelay(signalstr);
+            ForestManagementEngine::instance()->addRepeatActivity(stand->id(),
+                                                                  act,
+                                                                  delta_yrs);
+            if (verbose())
+                qCDebug(abe) << "Signal" << signalstr << "sent for stand" << stand->id() << "received by activity" << act->name() << "delta yrs:" << delta_yrs;
+            ++found;
+        }
+    }
+    return found > 0;
+}
+
 void FMSTP::evaluateDynamicExpressions(FMStand *stand)
 {
     foreach(Activity *act, mActivities)
@@ -138,7 +155,7 @@ void FMSTP::internalSetup(const QJSValue &js_value, int level)
         while (it.hasNext()) {
             it.next();
             // parse special properties
-            if (it.name()=="U" && it.value().isArray()) {
+            if (it.name()=="U") {
                 if (it.value().isArray()) {
                     QVariantList list = it.value().toVariant().toList();
                     if (list.length()!=3)
@@ -168,10 +185,14 @@ void FMSTP::internalSetup(const QJSValue &js_value, int level)
                     internalSetup(it.value(), ++level);
                 else
                     throw IException("setup of STP: too many nested levels (>=10) - check your syntax!");
+            } else {
+                QString name = it.name();
+                if (name.left(2) != "on") // skip events
+                    qCDebug(abeSetup) << "SetupSTP: element not used: name: " << name << ", value: " << it.value().toString();
             }
         }
     } else {
-        qCDebug(abeSetup) << "FMSTP::setup: not a valid javascript object.";
+        throw IException("FMSTP::setup: not a valid javascript object.");
     }
 }
 
@@ -269,8 +290,8 @@ QJSValue FMSTP::evaluateJS(QJSValue value)
     if (value.isCallable()) {
         QJSValue result = value.call();
         if (result.isError()) {
-            throw IException(QString("Erron in evaluating Javascript expression: %1").
-                             arg(result.toString()));
+            throw IException(QString("Error in evaluating Javascript expression '%1': '%2'").
+                             arg(value.toString(), result.toString()));
         }
         return result;
     }

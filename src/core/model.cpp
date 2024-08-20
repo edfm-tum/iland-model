@@ -174,6 +174,8 @@ void Model::initialize()
 void Model::setupSpace()
 {
     setCurrentTask("setup landscape");
+    GeoTIFF::clearProjection(); // first chance to load a tif
+
     XmlHelper xml(GlobalSettings::instance()->settings().node("model.world"));
     double cellSize = xml.value("cellSize", "2").toDouble();
     double width = xml.value("width", "100").toDouble();

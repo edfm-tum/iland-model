@@ -1,11 +1,11 @@
 build-iland*
 build-plugins*
-*.pro.user
+*.pro.user*
 *.lib
 *.pdb
 *.a
+.Rproj.user
 project_file.xml
 iland
-ilandc
-
+.qtc_clangd
 build/

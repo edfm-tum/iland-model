@@ -70,7 +70,12 @@ void Schedule::setup(const QJSValue &js_value)
         force_execution = FMSTP::boolValueFromJs(js_value, "force", false);
         repeat = FMSTP::boolValueFromJs(js_value, "repeat", false);
         absolute = FMSTP::boolValueFromJs(js_value, "absolute", false);
-        if (!repeat) {
+        // signals
+        mSignalStr = FMSTP::valueFromJs(js_value, "signal").toString();
+        if (!mSignalStr.isEmpty())
+            mSignalDelta = FMSTP::valueFromJs(js_value, "wait","0").toInt();
+
+        if (!repeat && mSignalStr.isEmpty()) {
 
             if (tmin>-1 && tmax>-1 && topt==-1)
                 topt = (tmax+tmin) / 2;
@@ -228,9 +233,9 @@ void Events::clear()
     mEvents.clear();
 }
 
-void Events::setup(QJSValue &js_value, QStringList event_names)
+void Events::setup(QJSValue &js_value, QJSValue &this_object, QStringList event_names)
 {
-    mInstance = js_value; // save the object that contains the events
+    mInstance = this_object; //
     foreach (QString event, event_names) {
         QJSValue val = FMSTP::valueFromJs(js_value, event);
         if (val.isCallable()) {
@@ -491,7 +496,7 @@ void Activity::setup(QJSValue value)
 
     // setup of events
     mEvents.clear();
-    mEvents.setup(value, QStringList() << "onCreate" << "onSetup" << "onEnter" << "onExit" << "onExecute" << "onExecuted" << "onCancel");
+    mEvents.setup(value, FomeScript::bridge()->activityJS(), QStringList() << "onCreate" << "onSetup" << "onEnter" << "onExit" << "onExecute" << "onExecuted" << "onCancel");
     if (FMSTP::verbose())
         qCDebug(abeSetup) << "Events: " << mEvents.dump();
 
@@ -507,6 +512,9 @@ void Activity::setup(QJSValue value)
 
     QJSValue description = FMSTP::valueFromJs(value, "description");
     mDescription = description.toString();
+
+    // initial value for the general purpose JS object
+    mJSObj = value.property("obj");
 }
 
 double Activity::scheduleProbability(FMStand *stand, const int specific_year)

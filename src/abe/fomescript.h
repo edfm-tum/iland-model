@@ -80,6 +80,7 @@ public:
     FMTreeList *treesObj() const { return mTrees; }
     ActivityObj *activityObj() const { return mActivityObj; }
     STPObj* stpObj() const { return mSTPObj; }
+    QJSValue &stpJS() { return mSTPJS; }
     /// get a JS-Object referencing a single tree
     QJSValue treeRef(Tree *tree);
 
@@ -139,6 +140,8 @@ public slots:
     // access to elements
     /// return the internal representation of a STP with the given name
     QJSValue stpByName(QString name);
+    /// test if a STP with name 'name' exists
+    bool isValidStp(QString name);
     // just for testing
     QJSValue test(QJSValue val);
 public:
@@ -154,15 +157,15 @@ private:
     UnitObj *mUnitObj;
     SimulationObj *mSimulationObj;
     ActivityObj *mActivityObj;
+    QJSValue mActivityJS;
     FMTreeList *mTrees;
     SchedulerObj *mSchedulerObj;
     STPObj *mSTPObj;
+    QJSValue mSTPJS;
     QString mLastErrorMessage;
     QString mStandVisualization;
     QJSValue mTreeValue;
     ScriptTree mTree;
-    QJSValue mActivityJS;
-
 
 };
 
@@ -198,6 +201,8 @@ class StandObj: public QObject
     Q_PROPERTY(FMTreeList* trees READ trees);
     Q_PROPERTY(Patches* patches READ patches);
 
+    Q_PROPERTY(QJSValue obj READ JSObj WRITE setJSObj);
+
 
 /*    basalArea: 0, // total basal area/ha of the stand
     volume: 100, // total volume/ha of the stand
@@ -231,6 +236,8 @@ public slots:
     void sleep(int years) { if (mStand) mStand->sleep(years); }
     void wakeup() { if (mStand) mStand->wakeUp(); }
 
+    void repeat(QJSValue repeat_obj, QJSValue repeat_fun, int repeat_interval, int repeat_count);
+
     void setAbsoluteAge(double arg);
     /// start the management program again (initialize the stand)
     void reset();
@@ -241,6 +248,7 @@ public:
     void setStand(FMStand* stand) { mStand = stand; }
     bool trace() const;
     void setTrace(bool do_trace);
+    FMStand* stand() { return mStand; }
     UnitObj* unit();
     ActivityObj *activity();
     STPObj* stp();
@@ -267,6 +275,11 @@ public:
     void setRotationLength(int new_length);
     QString speciesComposition() const;
     QString thinningIntensity() const;
+
+    /// get general purpose javascript object for a stand
+    QJSValue JSObj() { if (mStand) return mStand->JSobj(); throwError("JS object"); return QJSValue(); }
+    /// set general purpose javascript object for a stand
+    void setJSObj(QJSValue val) {if (mStand) mStand->JSobj() = val; }
 
 
 private:
@@ -357,6 +370,7 @@ public:
     int activityCount() const;
     QStringList activityNames();
 public slots:
+    bool signal(QString signalname);
 
 
 private:
@@ -376,19 +390,23 @@ class ActivityObj : public QObject
     Q_PROPERTY (bool enabled READ enabled WRITE setEnabled)
     Q_PROPERTY(bool active READ active WRITE setActive)
     Q_PROPERTY(bool finalHarvest READ finalHarvest WRITE setFinalHarvest)
+    Q_PROPERTY(bool manualExit READ manualExit WRITE setManualExit)
     Q_PROPERTY(bool scheduled READ scheduled WRITE setScheduled)
     Q_PROPERTY(QString name READ name)
+    Q_PROPERTY(int index READ index)
     Q_PROPERTY(QString description READ description)
+    Q_PROPERTY(QJSValue obj READ JSObj WRITE setJSObj);
+
 public:
-    explicit ActivityObj(QObject *parent = 0): QObject(parent) { mActivityIndex=-1; mStand=0; mActivity=0; }
-    // used to construct a link to a given activity (with an index that could be not the currently active index!)
+    explicit ActivityObj(QObject *parent = nullptr): QObject(parent) { mActivityIndex=-1; mStand=nullptr; mActivity=nullptr; }
+    // used to construct a link to a given activty (with an index that could be not the currently active index!)
     ActivityObj(FMStand *stand, Activity *act, int index ): QObject(nullptr) { mActivityIndex=index; mStand=stand; mActivity=act; }
     /// default-case: set a forest stand as the context.
     void setStand(FMStand *stand, Activity *act=nullptr, int activity_index=-1) { mStand = stand; mActivity=act; mActivityIndex=activity_index;}
     /// set an activity context (without a stand) to access base properties of activities
     void setActivity(Activity *act) { mStand = nullptr; mActivity=act; mActivityIndex=-1;}
     /// set an activity that is not the current activity of the stand
-    void setActivityIndex(const int index) { mActivityIndex = index; }
+    void setActivityIndex(const int index, Activity *act) { mActivityIndex = index; mActivity = act; }
 
     /// access the current activity
     Activity* activity() const { return mActivity; }
@@ -397,6 +415,7 @@ public:
 
     QString name() const;
     QString description() const;
+    int index() const { if( mActivity) return mActivity->index(); return -1; }
     bool enabled() const;
     void setEnabled(bool do_enable);
 
@@ -406,8 +425,17 @@ public:
     bool finalHarvest() const { return flags().isFinalHarvest(); }
     void setFinalHarvest(bool isfinal) { flags().setFinalHarvest(isfinal);}
 
+    bool manualExit() const { return flags().manualExit(); }
+    void setManualExit(bool ismanual) { flags().setManualExit(ismanual);}
+
     bool scheduled() const { return flags().isScheduled(); }
     void setScheduled(bool issched) { flags().setIsScheduled(issched);}
+
+    /// get general purpose javascript object for a stand
+    QJSValue JSObj() { if (mActivity) return mActivity->JSobj(); return QJSValue(); }
+    /// set general purpose javascript object for a stand
+    void setJSObj(QJSValue val) {if (mActivity) mActivity->JSobj() = val; }
+
 public slots:
 private:
     ActivityFlags &flags() const; // get (depending on the linked objects) the right flags

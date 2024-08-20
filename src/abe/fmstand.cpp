@@ -139,8 +139,8 @@ void FMStand::initialize()
         // run the onSetup event
         // specifically set 'i' as the activity to be evaluated.
         FomeScript::setExecutionContext(this);
-        FomeScript::bridge()->activityObj()->setActivityIndex(i);
-        mStandFlags[i].activity()->events().run(QStringLiteral("onSetup"), 0);
+        FomeScript::bridge()->activityObj()->setActivityIndex(i, mStandFlags[i].activity());
+        mStandFlags[i].activity()->events().run(QStringLiteral("onSetup"), nullptr);
 
         if (!mStandFlags[i].enabled() || !mStandFlags[i].active())
             continue;
@@ -379,11 +379,11 @@ bool FMStand::execute()
         if (!currentActivity()) // special case: the activity invalidated the active activtity
             return executed;
 
-        if (!currentActivity()->isRepeatingActivity()) {
+        if (!currentActivity()->isRepeatingActivity() && !currentFlags().manualExit()) {
             currentFlags().setActive(false);
             afterExecution(!executed); // check what comes next for the stand
         } else {
-            // run the onExecuted handler in also for repeating activities
+            // run the onExecuted handler also for repeating activities
             currentActivity()->events().run(QStringLiteral("onExecuted"),this);
         }
         return executed;

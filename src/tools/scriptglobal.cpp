@@ -159,6 +159,21 @@ void ScriptGlobal::include(QString filename)
 
 }
 
+void ScriptGlobal::loadModule(QString moduleName, QString filename)
+{
+    QString path = GlobalSettings::instance()->path(filename);
+    if (!QFile::exists(path)) {
+        throwError(QString("include(): The javascript module file '%1' could not be found.").arg(path)); return;
+    }
+    QJSValue module = GlobalSettings::instance()->scriptEngine()->importModule(path);
+    if (module.isError()) {
+        throwError("Error in javascript-include():" + module.toString());
+        return;
+    }
+    GlobalSettings::instance()->scriptEngine()->globalObject().setProperty(moduleName, module);
+
+}
+
 double ScriptGlobal::random(double from, double to)
 {
     return nrandom(from, to);
@@ -658,21 +673,29 @@ void ScriptGlobal::setViewport(double x, double y, double scale_px_per_m)
         GlobalSettings::instance()->controller()->setViewport(QPointF(x,y), scale_px_per_m);
 }
 
-// helper function...
-QString heightGrid_height(const HeightGridValue &hgv) {
-    return QString::number(hgv.height);
-}
-
 /// write grid to a file...
 bool ScriptGlobal::gridToFile(QString grid_type, QString file_name, double hlevel)
 {
     if (!GlobalSettings::instance()->model())
         return false;
-    QString result;
-    if (grid_type == "height")
-        result = gridToESRIRaster(*GlobalSettings::instance()->model()->heightGrid(), *heightGrid_height);
-    if (grid_type == "lif")
-        result = gridToESRIRaster(*GlobalSettings::instance()->model()->grid());
+    //QString result;
+
+    try{
+    file_name = GlobalSettings::instance()->path(file_name);
+
+    if (grid_type == "height") {
+        //result = gridToESRIRaster(*GlobalSettings::instance()->model()->heightGrid(), *heightGrid_height);
+        ::gridToFile<HeightGridValue, float>(*GlobalSettings::instance()->model()->heightGrid(), file_name,
+                                             [](const HeightGridValue &hgv){ return hgv.height; });
+        return true;
+    }
+
+
+    if (grid_type == "lif") {
+        //result = gridToESRIRaster(*GlobalSettings::instance()->model()->grid());
+        ::gridToFile(*GlobalSettings::instance()->model()->grid(), file_name);
+        return true;
+    }
     if (grid_type == "lifc") {
         FloatGrid lif10m_grid = GlobalSettings::instance()->model()->grid()->averaged(5); // average LIF value with 10m resolution
         HeightGrid *height_grid = GlobalSettings::instance()->model()->heightGrid();
@@ -686,15 +709,15 @@ bool ScriptGlobal::gridToFile(QString grid_type, QString file_name, double hleve
             double rel_height = hlevel / ph->height;
             *pl = sset->LRIcorrection(*pl, rel_height); // correction based on height
         }
-        result = gridToESRIRaster(lif10m_grid);
-    }
-
-    if (!result.isEmpty()) {
-        file_name = GlobalSettings::instance()->path(file_name);
-        Helper::saveToTextFile(file_name, result);
-        qDebug() << "saved grid to " << file_name;
+        ::gridToFile(lif10m_grid, file_name);
         return true;
     }
+
+    } catch( const IException &e) {
+    throwError(e.message());
+    return false;
+    }
+
     throwError("gridToFile(): could not save gridToFile because '" +  grid_type + "' is not a valid option.");
     return false;
 
@@ -1051,7 +1074,7 @@ void ScriptGlobal::test_tree_mortality(double thresh, int years, double p_death)
 void ScriptGlobal::throwError(const QString &errormessage)
 {
     GlobalSettings::instance()->scriptEngine()->throwError(errormessage);
-    mLastErrorMessage += errormessage + "\n";
+    // mLastErrorMessage += errormessage + "\n"; // not sure if it works to remove this?
     qWarning() << "Scripterror:" << errormessage;
 }
 
@@ -1306,7 +1329,14 @@ void ScriptGlobal::setupGlobalScripting()
     QString code = "function print(x) { Globals.print(x); } " \
                      "function include(x) { Globals.include(x); } " \
                      "function alert(x) { Globals.alert(x); } " \
-                     "function printObj(x) { console.log(JSON.stringify(x, null, 4)); } ";
+                    "function printObj(x) { " \
+                    "  function replacer(key, value) { " \
+                    "   if (typeof value === 'undefined') { return '<undefined>'; " \
+                    "   } else if (typeof value === 'function') { return '<function>'; " \
+                    "   } return value; " \
+                    "  } " \
+                    "console.log(JSON.stringify(x, replacer, 4)); " \
+                    "}";
     ScriptGlobal::executeScript(code);
     // add a (fake) console.log / console.print
 /*/    engine->evaluate("var console = { log: function(x) {Globals.print(x); }, " \

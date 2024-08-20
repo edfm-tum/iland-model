@@ -691,6 +691,7 @@ void SeedDispersal::execute()
     }
 
     if (!mDumpNextYearFileName.isEmpty()) {
+        gridToFile<float>(seedMap(), GlobalSettings::instance()->path(mDumpNextYearFileName));
         Helper::saveToTextFile(GlobalSettings::instance()->path(mDumpNextYearFileName), gridToESRIRaster(seedMap()));
         qDebug() << "saved seed map for " << species()->id() << "to" << GlobalSettings::instance()->path(mDumpNextYearFileName);
         mDumpNextYearFileName = QString();
@@ -850,7 +851,6 @@ void SeedDispersal::distributeSeeds(Grid<float> *seed_map)
     }
 }
 
-
 void SeedDispersal::addExternalBackgroundSeeds(Grid<float> &map, double background_value)
 {
     if (background_value > 0.01) {
@@ -880,3 +880,4 @@ void SeedDispersal::addExternalBackgroundSeeds(Grid<float> &map, double backgrou
     if (logLevelDebug())
         qDebug() << "add external seeds (background): value=" << background_value << "set" << ncells << "cells with value" << effective_prob;
 }
+

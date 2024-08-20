@@ -5,6 +5,7 @@ QT += xml
 QT += qml
 QT += sql
 QT += widgets
+# charts for the function plotter
 QT += charts
 # quick: for QML based user interface
 QT += quick
@@ -30,66 +31,77 @@ DEPENDPATH += plugins
 CONFIG += exceptions
 CONFIG += rtti
 
+# get the path of plugins build
+# Define potential plugin locations relative to the build directory
+PLUGIN_LOCATIONS = $$OUT_PWD/../plugins $$OUT_PWD/../../../plugins/build/plugins
+
+# Find the actual plugin location
+for(plugin_loc, PLUGIN_LOCATIONS) {
+    !isEmpty(plugin_loc) {
+        exists($$plugin_loc) {
+            PLUGIN_PATH = $$plugin_loc
+            break()
+        }
+    }
+}
+
+
+THIRDPARTY_LOCATIONS = $$OUT_PWD/../3rdparty $$OUT_PWD/../../../3rdparty
+
+# Find the actual plugin location
+for(plugin_loc, THIRDPARTY_LOCATIONS) {
+    !isEmpty(plugin_loc) {
+        exists($$plugin_loc) {
+            THIRDPARTY_PATH = $$plugin_loc
+            break()
+        }
+    }
+}
+message("Plugins path: " $$PLUGIN_PATH " 3rd party libs:" $$THIRDPARTY_PATH)
+
 CONFIG(debug, debug|release) {
-win32-msvc*:{
-#debug msvc
-PRE_TARGETDEPS += ../plugins/iland_fired.lib
-PRE_TARGETDEPS += ../plugins/iland_windd.lib
-PRE_TARGETDEPS += ../plugins/iland_barkbeetled.lib
-LIBS += -L../plugins -liland_fired -liland_windd -liland_barkbeetled
-}
-win32:*gcc*: {
-# debug GCC, windows
-PRE_TARGETDEPS += ../plugins/libiland_fire.a
-PRE_TARGETDEPS += ../plugins/libiland_wind.a
-PRE_TARGETDEPS += ../plugins/libiland_barkbeetle.a
-LIBS += -L../plugins -liland_fire -liland_wind -liland_barkbeetle
-}
-linux-g++: {
- ## debug on linux
-message("linux g++ debug ")
-PRE_TARGETDEPS += ../plugins/libiland_fire.a
-PRE_TARGETDEPS += ../plugins/libiland_wind.a
-PRE_TARGETDEPS += ../plugins/libiland_barkbeetle.a
-LIBS += -L../plugins -liland_fire -liland_wind -liland_barkbeetle
-}
+    BUILDS += debug
+    PLUGIN_SUFFIX = d # Suffix for debug builds
+} else {
+    BUILDS += release
+    PLUGIN_SUFFIX = # Empty suffix for release builds
 }
 
-## win32-msvc*:contains(QMAKE_TARGET.arch, x86_64):{ ... } nur 64bit
 
-CONFIG(release, debug|release) {
-# release gcc, windows
-win32:*gcc*: {
-PRE_TARGETDEPS += ../plugins/libiland_fire.a
-PRE_TARGETDEPS += ../plugins/libiland_wind.a
-PRE_TARGETDEPS += ../plugins/libiland_barkbeetle.a
-LIBS += -L../plugins -liland_fire -liland_wind -liland_barkbeetle
-}
-linux-g++: {
- ## release on linux
-message("linux g++ release")
-PRE_TARGETDEPS += ../plugins/libiland_fire.a
-PRE_TARGETDEPS += ../plugins/libiland_wind.a
-PRE_TARGETDEPS += ../plugins/libiland_barkbeetle.a
-LIBS += -L../plugins -liland_fire -liland_wind -liland_barkbeetle
-# include debug information
-#QMAKE_CFLAGS_RELEASE += -g
-#QMAKE_CXXFLAGS_RELEASE += -g
-QMAKE_CXXFLAGS_RELEASE = $$QMAKE_CFLAGS_RELEASE_WITH_DEBUGINFO
-QMAKE_LFLAGS_RELEASE = $$QMAKE_LFLAGS_RELEASE_WITH_DEBUGINFO
-#message($$QMAKE_LFLAGS_RELEASE_WITH_DEBUGINFO)
+*msvc*: {
+    LIBPOST = .lib # .lib for Windows / MSVC
+    LIBPRAE = iland_ # no lib as praefix
+} else {
+    LIBPRAE = libiland_
+    LIBPOST = .a # .a for GCC on Windows/Linux
+    PLUGIN_SUFFIX = # Empty suffix in any case for GCC
 }
 
-win32-msvc*:{
-#release msvc
+# build the full filename of the library file:
+parts_to_join_fire = $$PLUGIN_PATH / $$LIBPRAE fire $$PLUGIN_SUFFIX $$LIBPOST
+parts_to_join_wind = $$PLUGIN_PATH / $$LIBPRAE wind $$PLUGIN_SUFFIX $$LIBPOST
+parts_to_join_barkbeetle = $$PLUGIN_PATH / $$LIBPRAE barkbeetle $$PLUGIN_SUFFIX $$LIBPOST
 
-PRE_TARGETDEPS += ../plugins/iland_fire.lib
-PRE_TARGETDEPS += ../plugins/iland_wind.lib
-PRE_TARGETDEPS += ../plugins/iland_barkbeetle.lib
-LIBS += -L../plugins -liland_fire -liland_wind -liland_barkbeetle
+PRE_TARGETDEPS += $$join(parts_to_join_fire)
+PRE_TARGETDEPS += $$join(parts_to_join_wind)
+PRE_TARGETDEPS += $$join(parts_to_join_barkbeetle)
 
+LIBS += -L$$PLUGIN_PATH -liland_fire$$PLUGIN_SUFFIX -liland_wind$$PLUGIN_SUFFIX -liland_barkbeetle$$PLUGIN_SUFFIX
+
+message("PRE_TARGETDEPS:" $$PRE_TARGETDEPS)
+
+
+linux-g++ {
+# The "FreeImage" library is used for processing GeoTIFF data files.
+# FreeImage on Linux: see https://codeyarns.com/2014/02/11/how-to-install-and-use-freeimage/
+# basically sudo apt-get install libfreeimage3 libfreeimage-dev
+
+LIBS += -lfreeimage
+} else {
+# external freeimage library (geotiff)
+LIBS += -L$$THIRDPARTY_PATH/FreeImage -lFreeImage
 }
-}
+
 
 DEFINES += ILAND_GUI
 # enable/disble DBGMODE messages: dbg messages are removed when the define is added
@@ -97,17 +109,20 @@ DEFINES += NO_DEBUG_MSGS
 
 # querying git repo
 win32 {
+ !defined(GIT_HASH) {
 GIT_HASH="\\\"$$quote($$system(git rev-parse --short HEAD))\\\""
 GIT_BRANCH="\\\"$$quote($$system(git rev-parse --abbrev-ref HEAD))\\\""
 BUILD_TIMESTAMP="\\\"$$quote($$system(date /t))\\\""
 DEFINES += GIT_HASH=$$GIT_HASH GIT_BRANCH=$$GIT_BRANCH BUILD_TIMESTAMP=$$BUILD_TIMESTAMP
+}
 } else {
+!defined(GIT_HASH) {
 GIT_HASH="\\\"$$system(git -C \""$$_PRO_FILE_PWD_"\" rev-parse --short HEAD)\\\""
 GIT_BRANCH="\\\"$$system(git -C \""$$_PRO_FILE_PWD_"\" rev-parse --abbrev-ref HEAD)\\\""
 BUILD_TIMESTAMP="\\\"$$system(date -u +\""%Y-%m-%dT%H:%M:%SUTC\"")\\\""
 DEFINES += GIT_HASH=$$GIT_HASH GIT_BRANCH=$$GIT_BRANCH BUILD_TIMESTAMP=$$BUILD_TIMESTAMP
 }
-
+}
 
 # to enable debug symbols in release code
 # CONFIG += force_debug_info
@@ -132,6 +147,7 @@ SOURCES += main.cpp \
     ../core/permafrost.cpp \
     ../output/devstageout.cpp \
     ../output/ecovizout.cpp \
+    ../tools/geotiff.cpp \
     mainwindow.cpp \
     paintarea.cpp \
     ../core/grid.cpp \
@@ -263,6 +279,7 @@ HEADERS += mainwindow.h \
     ../core/permafrost.h \
     ../output/devstageout.h \
     ../output/ecovizout.h \
+    ../tools/geotiff.h \
     stable.h \
     paintarea.h \
     ../core/version.h \
@@ -421,6 +438,12 @@ OTHER_FILES += maindoc.cpp \
     ../apidoc/abe/abe_context_doc.js
 
 DISTFILES += \
+    ../abe-lib/ABE-library.js \
+    ../abe-lib/harvest/femel.js \
+    ../abe-lib/harvest/harvest.js \
+    ../abe-lib/lib_helper.js \
+    ../abe-lib/planting/planting.js \
+    ../abe-lib/thinning/thinning.js \
     ../apidoc/ABE/abe_patches.js \
     ../apidoc/ABE/saplinglist_doc.js \
     ../apidoc/iLand/grid_doc.js \

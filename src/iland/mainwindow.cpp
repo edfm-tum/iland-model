@@ -2815,6 +2815,7 @@ void MainWindow::on_dataTree_itemDoubleClicked(QTreeWidgetItem *item, int column
 
 void MainWindow::on_speciesFilterBox_currentIndexChanged(int index)
 {
+    Q_UNUSED(index)
     mDoRepaint = true;
     repaint();
 }
