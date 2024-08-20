@@ -3,6 +3,9 @@ build-plugins*
 *.pro.user
 *.lib
 *.pdb
+*.a
 project_file.xml
+iland
+ilandc
 
 build/
