@@ -90,9 +90,17 @@ LIBS += -L$$PLUGIN_PATH -liland_fire$$PLUGIN_SUFFIX -liland_wind$$PLUGIN_SUFFIX 
 
 message("PRE_TARGETDEPS:" $$PRE_TARGETDEPS)
 
+
+linux-g++ {
+# The "FreeImage" library is used for processing GeoTIFF data files.
+# FreeImage on Linux: see https://codeyarns.com/2014/02/11/how-to-install-and-use-freeimage/
+# basically sudo apt-get install libfreeimage3 libfreeimage-dev
+
+LIBS += -lfreeimage
+} else {
 # external freeimage library (geotiff)
 LIBS += -L$$THIRDPARTY_PATH/FreeImage -lFreeImage
-
+}
 
 
 DEFINES += ILAND_GUI
@@ -115,7 +123,6 @@ BUILD_TIMESTAMP="\\\"$$system(date -u +\""%Y-%m-%dT%H:%M:%SUTC\"")\\\""
 DEFINES += GIT_HASH=$$GIT_HASH GIT_BRANCH=$$GIT_BRANCH BUILD_TIMESTAMP=$$BUILD_TIMESTAMP
 }
 }
-
 
 # to enable debug symbols in release code
 # CONFIG += force_debug_info
