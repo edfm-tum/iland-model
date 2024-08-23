@@ -23,7 +23,6 @@
 #include <QDateTime>
 #include <QStringList>
 #include "version.h"
-#include <stdexcept>
 #include <QTimer>
 #include <QString>
 

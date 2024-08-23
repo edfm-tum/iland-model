@@ -434,10 +434,10 @@ bool GlobalSettings::setupDatabaseConnection(const QString& dbname, const QStrin
         // db.exec("pragma temp_store(2)"); // temp storage in memory
         // db.exec("pragma synchronous(1)"); // medium synchronization between memory and disk (faster than "full", more than "none")
         // db.exec("pragma journal_mode(OFF)"); // disable transactions
-
+        QSqlQuery query;
         // https://stackoverflow.com/questions/1711631/improve-insert-per-second-performance-of-sqlite
-        db.exec("PRAGMA synchronous = OFF");
-        db.exec("PRAGMA journal_mode = MEMORY");
+        query.exec("PRAGMA synchronous = OFF");
+        query.exec("PRAGMA journal_mode = MEMORY");
     }
     return true;
 }

@@ -6,6 +6,5 @@ build-plugins*
 *.a
 .Rproj.user
 project_file.xml
-iland
 .qtc_clangd
 build/
