@@ -7,8 +7,10 @@
 #include <QStackedWidget>
 #include <QScrollArea>
 #include <QMessageBox>
+#include <QAction>
 
-
+#include "qactiongroup.h"
+#include "qdir.h"
 #include "qpushbutton.h"
 #include "ui/dialogcomment.h"
 #include "ui/genericinputwidget.h"

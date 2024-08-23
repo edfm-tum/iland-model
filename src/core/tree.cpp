@@ -648,7 +648,7 @@ void Tree::grow()
 //    if (mId==m_statAboveZ)
 //        qDebug() << "debug id hit!";
 
-    if (mFoliageMass>1000.)
+    if (mFoliageMass>1000. && logLevelDebug())
         qDebug() << "high foliage mass (>1000kg):" << mSpecies->id() << ", dbh:" << mDbh;
 
     // step 1: get "interception area" of the tree individual [m2]
