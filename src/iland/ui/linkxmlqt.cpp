@@ -5,6 +5,7 @@
 #include <QtXml>
 #include <QDomDocument>
 #include <QPlainTextEdit>
+#include <QComboBox>
 
 /*
  * Module used to read/write data from/to xml file.

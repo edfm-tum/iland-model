@@ -5,6 +5,7 @@
 #include "ui/linkxmlqt.h"
 #include <QWidget>
 #include <QLabel>
+#include <QComboBox>
 
 struct SettingsItem;
 class DialogComment; // forward

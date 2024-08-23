@@ -125,7 +125,7 @@ DEFINES += GIT_HASH=$$GIT_HASH GIT_BRANCH=$$GIT_BRANCH BUILD_TIMESTAMP=$$BUILD_T
 }
 
 
-CONFIG += precompile_header
+#CONFIG += precompile_header
 
 TARGET = ilandc
 CONFIG   += console

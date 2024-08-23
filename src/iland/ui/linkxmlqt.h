@@ -6,6 +6,7 @@
 #include <QLineEdit>
 #include <QCheckBox>
 #include <QPlainTextEdit>
+#include <QDomDocument>
 
 #include "exception.h"
 

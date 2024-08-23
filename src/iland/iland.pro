@@ -102,11 +102,6 @@ LIBS += -lfreeimage
 LIBS += -L$$THIRDPARTY_PATH/FreeImage -lFreeImage
 }
 
-
-DEFINES += ILAND_GUI
-# enable/disble DBGMODE messages: dbg messages are removed when the define is added
-DEFINES += NO_DEBUG_MSGS
-
 # querying git repo
 win32 {
  !defined(GIT_HASH) {
@@ -138,8 +133,19 @@ DEFINES += GIT_HASH=$$GIT_HASH GIT_BRANCH=$$GIT_BRANCH BUILD_TIMESTAMP=$$BUILD_T
 ### you also need to modify boot.ini ... not necessary for 64bit
 #QMAKE_LFLAGS_WINDOWS += -Wl,--large-address-aware
 
+
+# This is the UI version of iLand!
+DEFINES += ILAND_GUI
+# enable/disble DBGMODE messages: dbg messages are removed when the define is added
+DEFINES += NO_DEBUG_MSGS
+
+# for debugging only: print all qmake variables
+for(var, $$list($$enumerate_vars())) {
+    message($$var ": " $$eval($$var))
+}
+
 # Use Precompiled headers (PCH)
-PRECOMPILED_HEADER = stable.h
+#PRECOMPILED_HEADER = stable.h
 SOURCES += main.cpp \
     ../abe/patch.cpp \
     ../abe/patches.cpp \
