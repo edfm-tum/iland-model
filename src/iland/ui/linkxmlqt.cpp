@@ -272,6 +272,48 @@ void LinkXmlQt::readValuesXml(QStackedWidget* stackedWidget) {
     }
 }
 
+// function checks if a node to a valid input item corresponding to key exists
+// if not, a node will be added to xml file
+// function is called, when SettingsDialog is opened to ensure proper comment and data handling
+void LinkXmlQt::checkXmlNodes(QString key) {
+
+    QDomDocument curXml = mLoadedXml;
+
+    //QFile file(xmlFile);
+    if (!xmlFileLoaded) {
+        qDebug() << "Error with loading data. Check xml file! Abort.";
+        return;
+    }
+
+    else {
+        //QTabWidget* moduleTabs = tabWidget;
+        QDomElement rootElement = curXml.documentElement();
+        QDomElement curNode = rootElement;
+        QStringList xmlPath = key.split(".");
+        bool inputElement = xmlPath.contains("connected") ? false: true;
+
+        foreach (QString node, xmlPath) {
+            curNode = curNode.firstChildElement(node);
+            //qDebug() << "Current node: " << curNode.nodeName();
+        }
+
+        if (curNode.isNull() && inputElement == true) {
+            qDebug() << "Add node " << xmlPath << " to xml file.";
+            QDomNode childBranch, newNode;
+            newNode = rootElement;
+            for (int i = 0; i < xmlPath.length(); i++) {
+                childBranch = newNode.firstChildElement(xmlPath[i]);
+                if ( childBranch.isNull() ) {
+                    newNode = newNode.appendChild(curXml.createElement(xmlPath[i]));
+                }
+                else {
+                    newNode = childBranch;
+                }
+            }
+            newNode.appendChild(curXml.createTextNode(""));
+        }
+    }
+}
 
 // Values from the gui are read and written into the xml tree
 // In general, procedure follows the approach described in loadValuesXml
@@ -298,41 +340,55 @@ void LinkXmlQt::writeValuesXml(QStackedWidget* stackedWidget) {
             QString widgetName = curWidget->objectName();
             QStringList xmlPath = widgetName.split(".");
 
+            //QString curValue = curNode.firstChild().toText().data();
+            //qDebug() << "Aktueller Wert: " << curValue;
+            if (QLineEdit* lineEdit = dynamic_cast<QLineEdit*>(curWidget)) {
+                elementValue = lineEdit->text();
+            }
+            else if (QComboBox* comboBox = dynamic_cast<QComboBox*>(curWidget)) {
+                elementValue = comboBox->currentText();
+            }
+            else if (QCheckBox* checkBox = dynamic_cast<QCheckBox*>(curWidget)) {
+                if (checkBox->isChecked()) {
+                    elementValue = "true";
+                }
+                else {
+                    elementValue = "false";
+                }
+            } else {
+                //inputElement = false;
+            }
+
             curNode = rootElement;
+
             foreach (QString node, xmlPath) {
                 curNode = curNode.firstChildElement(node);
                 //qDebug() << "Current node: " << curNode.nodeName();
             }
 
-
             if (!curNode.isNull()) {
-
-                //QString curValue = curNode.firstChild().toText().data();
-                //qDebug() << "Aktueller Wert: " << curValue;
-                if (QLineEdit* lineEdit = dynamic_cast<QLineEdit*>(curWidget)) {
-                    elementValue = lineEdit->text();
-                }
-                else if (QComboBox* comboBox = dynamic_cast<QComboBox*>(curWidget)) {
-                    elementValue = comboBox->currentText();
-                }
-                else if (QCheckBox* checkBox = dynamic_cast<QCheckBox*>(curWidget)) {
-                    if (checkBox->isChecked()) {
-                        elementValue = "true";
-                    }
-                    else {
-                        elementValue = "false";
-                    }
-                }
-                else {
-                    //qDebug() << "Widget not specified: " << curWidget->objectName();
-                }
 
                 curNode.firstChild().setNodeValue(elementValue);
                 if ( curNode.firstChild().isNull() ) {
                     curNode.appendChild(curXml.createTextNode(""));
                 }
 
-            }
+            } /*else if (curNode.isNull() && inputElement == true){
+                qDebug() << "Add node " << xmlPath << " to xml file.";
+                QDomNode childBranch, newNode;
+                newNode = rootElement;
+                for (int i = 0; i < xmlPath.length(); i++) {
+                    childBranch = newNode.firstChildElement(xmlPath[i]);
+                    if ( childBranch.isNull() ) {
+                        newNode = newNode.appendChild(curXml.createElement(xmlPath[i]));
+                    }
+                    else {
+                        newNode = childBranch;
+                    }
+                }
+                newNode.appendChild(curXml.createTextNode(""));
+
+            }*/
 
         }
 

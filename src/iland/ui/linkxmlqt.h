@@ -69,6 +69,7 @@ public:
     QString getXmlFile();
     bool loadXmlFile();
 
+    void checkXmlNodes(QString key);
     void writeValuesXml(QStackedWidget* stackedWidget);
     void readValuesXml(QStackedWidget* stackedWidget);
 

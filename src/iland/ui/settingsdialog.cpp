@@ -655,6 +655,7 @@ void SettingsDialog::readXMLValues()
 {
     for (auto &item : mKeys) {
         if (item->widget) {
+            mLinkxqt->checkXmlNodes(item->key);
             QString value = mLinkxqt->readXmlValue(item->key);
             QString comment = mLinkxqt->readXmlComment(item->key);
             item->strValue = value;
