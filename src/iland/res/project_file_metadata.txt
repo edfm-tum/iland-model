@@ -25,7 +25,7 @@ gui.layout = group|Special (dynamic) state outputs
 output.dynamic.enabled = connected| dynamic (landscape level)
 output.dynamicstand.enabled = connected|Dynamic stand
 output.customagg.enabled = connected|Custom aggregagations
-output.devStage.enabled = connected|development stages
+output.devstage.enabled = connected|development stages
 
 gui.layout = group|Flows
 output.landscape_removed.enabled = connected|Landscape removed
@@ -149,8 +149,10 @@ gui.layout = group|Custom aggregagtes|`customagg` are advanced outputs, that all
 output.customagg.enabled = boolean|true|Enabled|Output of dynamic|simple
 
 gui.layout = group|Development stage https://iland-model.org/development+stages
-output.devStage.enabled = boolean|true|devStage|Output of dynamic|simple
-
+output.devstage.enabled = boolean|true|Enable|Output of dynamic|simple
+output.devstage.cellsize = combo|10;20;50;100|Cellsize|Defines the cell size in meters. The value need to align with the 100m / 10m cells. Possible values are therefore: 10, 20, 50, 100 |simple
+output.devstage.handler = string|JavaScript handler file|Handler|The name of the Javascript object that is handling the calculation of development stages.|simple
+output.devstage.filter = string|in(year,100,200,300)|Filter|Filter to limit output to specific years (variable: simulation year, e.g., 'in(year, 100, 200, 300)' |simple
 
 ; **** Vegetation flows *********
 gui.layout = tab|tabFlows|Ecosystem flows
@@ -418,8 +420,9 @@ model.settings.permafrost.enabled = boolean|false|Enable|Permafrost sub module s
 model.settings.permafrost.onlySimulate = booelan|false|Only simulate|If true, permafrost is calculated but has no effect on water cycle|simple
 model.settings.permafrost.initialGroundTemperature = numeric|4|Initial ground temperature|Initial temperature in depth ‘groundBaseDepth’ below the active layer: at depth "groundBaseDepth" the temperature is assumed to remain +- constant within a year and to follow MAT with a 10yr delay. The initial value is given with 'initialGroundTemperature' and the depth from which thermal energy flows.|simple
 model.settings.permafrost.initialDepthFrozen = numeric|2|Initial depth frozen|Depth (m) up to which the soil is frozen at the start of the simulation (1st of January). For permanent permafrost the value is capped at 2m.|simple
-model.settings.permafrost.groudBaseDepth = numeric|3|Ground base depth|Depth (m) of the zone below the active layer from where the secondary heat flux (from below) originates.|simple
+model.settings.permafrost.groundBaseDepth = numeric|3|Ground base depth|Depth (m) of the zone below the active layer from where the secondary heat flux (from below) originates.|simple
 model.settings.permafrost.lambdaOrganicLayer = numeric|1|Lambda organic layer|Thermal conductivity W/m*K of soil organic layer and moss|simple
+model.settings.permafrost.lambdaSnow = numeric|0.5|Lambda snow|Thermal conductivity W/m*K of snow|simple
 model.settings.permafrost.organicLayerDensity = numeric|50|Organic layer density|Density (kg/m3) of the soil organic layer (default: 50).|simple
 model.settings.permafrost.organicLayerDefaultDepth = numeric|0.1|Organic layer default depth|Depth of the soil organic layer (m) (only relevant when dynamic carbon cycle is disabled) (default: 0.1)|simple
 model.settings.permafrost.maxFreezeThawPerDay = numeric|10|Max. freeze/thaw per day|Cap for daily freezing and thawing (mm water column)|simple
@@ -652,6 +655,8 @@ modules.fire.rLand = numeric|1|r Land|"Multiplier for the fire spread probabilit
 modules.fire.meanAnnualPrecipitation = numeric|240|Mean Annual Precipitation|Mean annual precipitation (mm)|simple
 modules.fire.averageFireSize = numeric||Average Fire Size|Average fire size in m2|simple
 modules.fire.fireSizeSigma = numeric||Fire Size Sigma|""|simple
+modules.fire.minFireSize = numeric||Minimum Fire Size|Minimum fire size (m2). If minFireSize is set to a very high value, the fire size distribution has effectively no limiting effect on the simulated fire sizes.|simple
+modules.fire.maxFireSize = numeric||Maximum Fire Size|Maximum fire size (m2).|simple
 modules.fire.fireReturnInterval = numeric|100|Fire Return Interval|Average number of years between two fires affecting a single pixel. A value of e.g. 100 means, that, on average, a pixel burns every 100 years"|simple
 modules.fire.fireExtinctionProbability = numeric|0|Fire Ext. Probability|Probability that a the fire on a burning pixel extincts without a chance to spread further|simple
 
@@ -660,7 +665,7 @@ modules.fire.fireExtinctionProbability = numeric|0|Fire Ext. Probability|Probabi
 gui.layout = tab|tabWind|Wind|The wind modules simulates the disturbance agent wind on landscape level. <br/>See https://iland-model.org/wind%20disturbance and https://iland-model.org/wind+module for modeling concept and implementation, respectively.
 modules.wind.enabled = boolean|true|Enable|Turn wind simulation on or off|simple
 modules.wind.triggeredByTimeEvent = boolean|false|Time triggers wind|If checked, then wind events are triggered by time events (i.e. defined in an external input file). |simple
-modules.wind.onbeforeWind = string|javascript expression|on BeforeWind|Javascript expression evaluated before a wind event is executed. For example, you could define a function that sets an event-specifc topo grid. (Note: it is "on BeforeWind" (without space) not "onbeforeWind" - the wiki does not allow the correct term) |simple
+modules.wind.onBeforeWind = string|javascript expression|on BeforeWind|Javascript expression evaluated before a wind event is executed. For example, you could define a function that sets an event-specifc topo grid. (Note: it is "on BeforeWind" (without space) not "onbeforeWind" - the wiki does not allow the correct term) |simple
 modules.wind.onAfterWind = string|javascript expression|on AfterWind|Javascript function that is called after every wind event (e.g. for postprocessing). For example, you can provide myTestFunction() in XML, and defined a myTestFunction within the iLand Javascript engine. (Note: it is "on AfterWind" (no space) not "onafterWind" - the wiki does not allow the correct term )|simple
 
 gui.layout = layout|hl
