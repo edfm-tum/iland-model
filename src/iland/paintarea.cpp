@@ -25,7 +25,7 @@ QColor PaintObject::background_color = Qt::white;
 
 /** @class PaintArea
   @ingroup GUI
-  A small compoenent that acts as the "window" for special drawing.
+  A small component that acts as the "window" for special drawing.
   The PaintArea is embedded in the MainWindow. The PaintArea receives UI events from Qt and,
   after some processing emits signals.
   */
@@ -45,6 +45,8 @@ void PaintArea::resizeEvent(QResizeEvent *event)
 {
     Q_UNUSED(event);
     m_bitmap = QImage(this->size(), QImage::Format_ARGB32_Premultiplied);
+    m_bitmap.fill(Qt::white);
+
     emit doRepaint();
     //qDebug() << "paintarea resize" << this->size();
 }
