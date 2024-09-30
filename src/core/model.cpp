@@ -793,6 +793,7 @@ void Model::beforeRun()
     GlobalSettings::instance()->outputManager()->execute("saplingdetail"); // year=0
     GlobalSettings::instance()->outputManager()->execute("tree"); // year=0
     GlobalSettings::instance()->outputManager()->execute("dynamicstand"); // year=0
+    GlobalSettings::instance()->outputManager()->execute("carbon"); // year=0
     GlobalSettings::instance()->outputManager()->execute("svdstate"); // year=0
     GlobalSettings::instance()->outputManager()->execute("devstage"); // year=0
     GlobalSettings::instance()->outputManager()->execute("ecoviz"); // tree output for visualization, year 0
