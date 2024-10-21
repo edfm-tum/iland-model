@@ -232,6 +232,8 @@ output.svdgpp.enabled = boolean|false|Enable GPP|GPP potential (as conditioned b
 
 gui.layout = group|<h2>Ecoviz</h2>|Ecoviz is a forest landscape visualization tool, and this output produces tree data in required format for Ecoviz.
 output.ecoviz.enabled = boolean|true|ecoviz|Output of dynamic|simple
+output.ecoviz.condition = string|details|Condition details|The condition determines if output should be generated. Variable: 'year' (the current year).|advanced
+
 
 
 

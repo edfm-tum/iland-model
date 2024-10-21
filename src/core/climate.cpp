@@ -235,7 +235,7 @@ void Climate::load()
         while(1==1) {
             if(!mClimateQuery.next()) {
                 if (mDoRandomSampling)
-                    throw IException(QString("Climate: not enough years in climate database - tried to load %1 years (random sampling of climate is enabled)").arg(mLoadYears) );
+                    throw IException(QString("Climate: not enough years in climate database - tried to load %1 years (random sampling of climate is enabled).\n%2").arg(mLoadYears).arg(mClimateQuery.lastQuery()) );
 
                 // rewind to the start of the time series
                 qDebug() << "restart of climate table";
