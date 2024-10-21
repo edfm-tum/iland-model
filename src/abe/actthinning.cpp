@@ -953,7 +953,7 @@ bool ActThinning::runTending(FMStand* stand)
         ++p;
     }
 
-    qDebug() << "Tending. Found " <<  trees_to_tend << "trees and" << saps_to_tend << "saplings to tend. Removed" << tree_marked << " trees, and" << sap_removed << "saplings from stand" << stand->id();
+    qDebug() << "Tending. Found " <<  trees_to_tend << "trees and" << saps_to_tend << "saplings to promote. Removed" << tree_marked << " trees, and" << sap_removed << "saplings from stand" << stand->id();
 
     return true;
 }

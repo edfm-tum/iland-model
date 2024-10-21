@@ -221,66 +221,81 @@ void ForestManagementEngine::runJavascript(bool after_processing)
 
 void ForestManagementEngine::runRepeatedItems(int stand_id)
 {
+    // anything to do?
+    auto it = mRepeatStore.find(stand_id);
+    if (it == mRepeatStore.end())
+        return;
+
+    // set a temporary buffer to allow new repeats while processing repeats
     QList<QPair< int, SRepeatItem> > buffer_store; // used to add new items while iterating
     mRepeatStoreBuffer = &buffer_store; // "install" buffer
 
-    auto it = mRepeatStore.find(stand_id);
     while (it != mRepeatStore.end() && it.key() == stand_id) {
-
-        bool is_erased = false;
-        if (--it->waitYears < 0) {
-            // run the item
-            it->N++; // number of invocation, 1,2,3,...
-
-
-            FMStand* stnd = stand(stand_id);
-            if (!stnd)
-                throw IException(QString("Invalid stand-id for repeating activity: '%1'").arg(stand_id));
-            FomeScript::setExecutionContext(stnd);
-
-            if (it->activity) {
-                // run the activity
-                bool res = it->activity->execute(stnd);
-                qCDebug(abe) << "executed activity (repeated): " << it->activity->name() << ". Result: " << res;
-            } else {
-                // run javascript function
-                QJSValueList params = { it->N };
-                QJSValue result;
-
-
-                if (it->jsobj.isUndefined())
-                    result = it->callback.call(params);
-                else
-                    result = it->callback.callWithInstance(it->jsobj, params);
-
-                if (result.isError())
-                    FomeScript::bridge()->abort(result);
-
-                qCDebug(abe) << "executed repeated op for stand" << stand_id << ", result:" << result.toString();
-            }
-
-            // reset
-            it->waitYears = it->interval; // start again the countdown
-
-            if (it->N >= it->times) {
-                // done - remove repeater again
-                it = mRepeatStore.erase(it);
-                is_erased = true;
-            }
-
-
-        }
-        if (!is_erased)
+        // execute (and update!) the current item:
+        bool do_erase = runSingleRepeatedItem(stand_id, *it);
+        if (do_erase)
+            it = mRepeatStore.erase(it);
+        else
             ++it;
     }
 
+    // process items that were added during the execution
+    // run immediately and add non-single-shot items to the repeat store
     if (!buffer_store.empty()) {
-        // copy to repeat store
         for (auto &p : buffer_store) {
-            mRepeatStore.insert(p.first, p.second);
+            bool do_erase = runSingleRepeatedItem(stand_id, p.second);
+            if (!do_erase)
+                mRepeatStore.insert(p.first, p.second);
         }
     }
     mRepeatStoreBuffer = nullptr; // remove again
+
+}
+
+bool ForestManagementEngine::runSingleRepeatedItem(int stand_id, SRepeatItem &item) {
+    if (--item.waitYears <= 0) {
+        // run the item
+        item.N++; // number of invocation, 1,2,3,...
+
+
+        FMStand* stnd = stand(stand_id);
+        if (!stnd)
+            throw IException(QString("Invalid stand-id for repeating activity: '%1'").arg(stand_id));
+        FomeScript::setExecutionContext(stnd);
+
+        if (item.activity) {
+            // run the activity
+            //bool res = stnd->executeActivity(it->activity);
+            int old_index = stnd->currentActivityIndex();
+            stnd->setActivityIndex( item.activity->index() );
+            bool res = item.activity->execute(stnd);
+            stnd->setActivityIndex( old_index );
+            qCDebug(abe) << "executed activity (repeated): " << item.activity->name() << ". Result: " << res;
+        } else {
+            // run javascript function
+            QJSValueList params = { item.N };
+            QJSValue result;
+
+
+            if (item.jsobj.isUndefined())
+                result = item.callback.call(params);
+            else
+                result = item.callback.callWithInstance(item.jsobj, params);
+
+            if (result.isError())
+                FomeScript::bridge()->abort(result);
+
+            qCDebug(abe) << "executed repeated op for stand" << stand_id << ", result:" << result.toString();
+        }
+
+        // reset
+        item.waitYears = item.interval; // start again the countdown
+
+        if (item.N >= item.times) {
+            return true;
+        }
+    }
+    return false;
 
 }
 
@@ -316,10 +331,14 @@ FMUnit *nc_execute_unit(FMUnit *unit)
         int executed = 0;
         int total = 0;
         while (it!=stand_map.constEnd() && it.key()==unit) {
+            // execute repeating activities for the stand
             it.value()->stp()->executeRepeatingActivities(it.value());
+            ForestManagementEngine::instance()->runRepeatedItems(it.value()->id());
+
+            // run the "normal" management for the stand
             if (it.value()->execute())
                 ++executed;
-            //MapGrid::freeLocksForStand( it.value()->id() );
+
             if (ForestManagementEngine::instance()->isCancel())
                 break;
 

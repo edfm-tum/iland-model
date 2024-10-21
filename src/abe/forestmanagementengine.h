@@ -129,6 +129,7 @@ private:
     void runJavascript(bool after_processing);
 
 
+
     static ForestManagementEngine *singleton_fome_engine;
     int mCurrentYear; ///< current year of the simulation (=year of the model)
 
@@ -160,9 +161,10 @@ private:
         QJSValue callback; // callback function
         Activity *activity; //
     };
+    bool runSingleRepeatedItem(int stand_id, SRepeatItem &item);
 
     QMultiHash<int, SRepeatItem> mRepeatStore; ///< store multiple repeat-items per stand (int)
-    QList<QPair< int, SRepeatItem> >* mRepeatStoreBuffer {nullptr}; // used to store elements while
+    QList<QPair< int, SRepeatItem> >* mRepeatStoreBuffer {nullptr}; // used to store elements while iterating
 
     // agents
     QVector<AgentType*> mAgentTypes; ///< collection of agent types
