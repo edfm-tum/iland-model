@@ -230,9 +230,10 @@ output.svdindicator.enabled = boolean|false|Enable Indicator|Indicator data per 
 gui.layout = group|SVD GPP
 output.svdgpp.enabled = boolean|false|Enable GPP|GPP potential (as conditioned by climate/site) per species and m2.|simple
 
-gui.layout = group|<h2>Ecoviz</h2>|Ecoviz is a forest landscape visualization tool, and this output produces tree data in required format for Ecoviz.
+gui.layout = group|<h2>Ecoviz</h2>|Ecoviz is a forest landscape visualization tool, and this output produces tree data in required format for Ecoviz. Note that output files can become quite large!
 output.ecoviz.enabled = boolean|true|ecoviz|Output of dynamic|simple
 output.ecoviz.condition = string|details|Condition details|The condition determines if output should be generated. Variable: 'year' (the current year).|advanced
+output.ecoviz.fileName = string|ecvoiz_$.pdb|file path|Specify the output path (relative to project root) for output files <$> is replaced with the simulation year.|advanced
 
 
 
@@ -593,7 +594,7 @@ model.site.soilHumificationRate = numeric|0.3|Soil humification rate|humificatio
 
 ; ************* Climate **************
 ; model.climate
-gui.layout = tab|tabClimate|Climate|This section controls the processing of climate data in iLand. <br/> https://iland-model.org/ClimateData
+gui.layout = tab|tabClimate|Climate|This section controls the processing of climate data in iLand. See the section "System->Database" to change the climate scenario!<br/> https://iland-model.org/ClimateData
 gui.layout = group|database table|The table name in the climate database and a SQL filter to select a subset of data. See environment file mechanism for spatial data https://iland-model.org/simulation+extent#spatially_distributed_parameters
 model.climate.tableName = string|name sqlite table|Table name|Name of the SQLite table within the defined climate database to load (system.database.climate).|simple
 model.climate.filter = string|filter expression|Filter|An optional filter criterion that is added to the where clause of the SQL for reading the climate data. This can be useful e.g. for skipping parts of the climate records. Example: 'year>2000 and year<2010' limits used climate data to the years 2001 to 2009.|simple

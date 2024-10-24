@@ -165,3 +165,59 @@ lib.selectOptimalPatches = function(options) {
         }
     }
 }
+
+/* STP switcher */
+lib.changeSTP = function(options) {
+    // 1. Default Options
+    const defaultOptions = {
+        STP: undefined, // the STP that should follow after the end of the currently running STP
+        schedule: { signal: 'end' }, // default behavior: trigger on end signal
+
+        // ... add other default  parameters
+    };
+
+    const opts = lib.mergeOptions(defaultOptions, options || {});
+
+    return {
+      type: 'general', schedule: opts.schedule,
+        action: function() {
+            fmengine.log("The next STP will be: " + opts.STP);
+            // TODO: find a way to actually do that :=)
+        }
+    };
+
+}
+
+/** repeater activity
+*/
+lib.repeater = function(options) {
+    // 1. Default Options
+    const defaultOptions = {
+        count: undefined, ///< number of repetitions
+        interval: 1, ///< interval between repetitions
+        signal: undefined, ///< signal of the activity to be executed
+        block: true ///< all other activities only resume after the repeater ends
+    };
+
+    const opts = lib.mergeOptions(defaultOptions, options || {});
+
+    return {
+            type: 'general', schedule: 40,
+            action: function() {
+                const repeat_interval = opts.interval;
+                const repeat_count = opts.count;
+                const signal = opts.signal;
+                stand.repeat(this,
+                    function(n) { console.log(`repeater: emit signal "${opts.signal}". Execution #${n}`);
+                                  stand.stp.signal(opts.signal);
+                                  //fmengine.runActivity(stand.id, activity);
+                                   },
+                    opts.interval,
+                    opts.count);
+                // make sure that only the repeater runs
+                if (opts.block)
+                    stand.sleep(opts.interval * opts.count);
+
+            }
+        }
+}

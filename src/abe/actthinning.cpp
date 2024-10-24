@@ -746,14 +746,22 @@ bool ActThinning::evaluateTending(FMStand *stand)
 /// hacky as hell, but I dont want to create a new grid just
 /// for this purpose.
 struct STendingIndex {
-    std::int8_t flag; // 0: unused, 1: a tree, 2: a sapling
-    std::uint8_t selectivity; // 0..255: higher = more selectivity
+    std::int8_t flag; // 0: unused, 1: a tree, 2: a sapling, 3: do not process
+    std::uint8_t selectivity_byte; // 0..255: higher = more selectivity
     std::uint16_t index; // index to tree list or sapling array
     void set(bool is_tree, double dbl_selectivity, int index) {
         flag = is_tree ? 1 : 2;
-        selectivity = 255 * dbl_selectivity;
+        selectivity_byte = 255 * limit(dbl_selectivity, 0., 1.);
         this->index = index;
     }
+    void setSelectivity(double dbl_sel) { selectivity_byte = 255 * limit(dbl_sel, 0., 1.); }
+    double selectivity() { return selectivity_byte / 255.; }
+    void lock() { flag = 3; }
+    bool isLocked() { return flag == 3; }
+    bool isEmpty() { return flag == 0; }
+    bool isTree() { return flag == 1; }
+    bool isSapling() { return flag == 2; }
+    bool isAffected() { return flag < 0; }
 };
 
 bool ActThinning::runTending(FMStand* stand)
@@ -768,12 +776,7 @@ bool ActThinning::runTending(FMStand* stand)
     clearTreeMarks(treelist);
 
     if (treelist->count() > 65535)
-        throw IException("Tending operation: the number of trees on the stand is too high (>2^16). This is awkward and due to a implementation detail of the tending operation.");
-
-    // evaluate dynamic variables
-    //double selective_n = FMSTP::evaluateJS(mSelectiveThinning.N).toInt();
-    //if (selective_n == 0. || isnan(selective_n))
-    //    throw IException(QString("Invalid value for 'N' in selective Thinning: '%1'").arg(selective_n));
+        throw IException("Tending operation: the number of trees on the stand is too high (>2^16). This is awkward and due to a implementation detail of the tending operation. Use smaller stands?");
 
     // get the 2x2m grid for the current stand
     Grid<float> &grid = treelist->localStandGrid();
@@ -792,21 +795,40 @@ bool ActThinning::runTending(FMStand* stand)
         QPoint lc = grid.indexAt(tree_location);
         double selectivity = mSpeciesSelectivity[t->species()];
         STendingIndex *ti = reinterpret_cast<STendingIndex *>(&grid[lc]);
+        if (ti->isLocked())
+            continue;
+        if (t->height() >= 10.) {
+            // skip tall trees
+            ti->lock();
+            continue;
+        }
         if (t->height() < 10. && selectivity> 0.5) {
-            if (ti->flag == 0) {
-                ti->set(true, selectivity, i);
+            // relative height between 4m and 10m:
+            double rel_height = std::max((t->height() - 4.) / 6., 0.);
+            double eff_selectivity = pow(selectivity, 1. - rel_height);
+            // select the focal tree if its effective selectivity is higher
+            if (ti->flag == 0 || eff_selectivity > ti->selectivity()) {
+                ti->set(true, eff_selectivity, i);
                 ++trees_to_tend;
-            } else if ( selectivity > mSpeciesSelectivity[ treelist->trees().at(ti->index).first->species()] ) {
-                ti->set(true, selectivity, i);
-
             }
         }
     }
+    // pass 1.5: we used the "effective selectivity" in the grid, but later on we continue
+    // with the species selectivity. So we need to reset the values in the grid to
+    // the species selectivity:
+    // We skip for now, as *higher* values (effective selectivity) make it less
+    // probable that a tree is removed to promote saplings
+    // for (float *g = grid.begin(); g!=grid.end(); ++g) {
+    //     if (*g != -1.) {
+    //         STendingIndex *ti = reinterpret_cast<STendingIndex *>(g);
+    //         if (ti->isTree()) {
+    //             ti->setSelectivity( mSpeciesSelectivity[treelist->trees()[ti->index].first->species()] );
+    //         }
+    //     }
+    // }
 
     // pass 2: mark positions with favorable saplings
-    // for saplings the selectivity is calculated as:
-    // (species_sel + rel_treeheight) / 2
-    // (but only when species selectivity is > 0.5)
+    // for saplings the selectivity is calculated as a function that reaches species selectivity close to 4m
     // larger saplings (with slightly less selectivity) are therefore favored more strongly
     float *p = grid.begin();
     int saps_to_tend = 0;
@@ -819,15 +841,16 @@ bool ActThinning::runTending(FMStand* stand)
             if (scr.currentCoord() != grid.cellCenterPoint(p)) {
                 qDebug() << "problem: " << scr.currentCoord() << grid.cellCenterPoint(p);
             }
-            double max_sel = 0.5;
+            double max_sel = 0.0;
             int which_max = -1;
             for (int i=0;i<NSAPCELLS;++i) {
                 if (sc->saplings[i].is_occupied()) {
 
-                    double selectivity = (mSpeciesSelectivity[sc->saplings[i].resourceUnitSpecies(scr.ru())->species()] +
-                        sc->saplings[i].height / 4.) / 2.;
-                    if (selectivity > max_sel) {
-                        max_sel = selectivity;
+                    double selectivity = mSpeciesSelectivity[sc->saplings[i].resourceUnitSpecies(scr.ru())->species()];
+                    double eff_selectivity = selectivity / (1. + exp(-20*(sc->saplings[i].height / 4. - (1.-selectivity))));
+
+                    if (selectivity > 0.5 && eff_selectivity > max_sel) {
+                        max_sel = eff_selectivity;
                         which_max = i;
                     }
 
@@ -836,7 +859,8 @@ bool ActThinning::runTending(FMStand* stand)
             if (which_max > -1) {
                 // sapling to save found!
                 STendingIndex *ti = reinterpret_cast<STendingIndex *>(p);
-                ti->set(false, max_sel, which_max);
+                double selectivity = mSpeciesSelectivity[sc->saplings[which_max].resourceUnitSpecies(scr.ru())->species()];
+                ti->set(false, selectivity, which_max);
                 ++saps_to_tend;
             }
         }
@@ -849,7 +873,7 @@ bool ActThinning::runTending(FMStand* stand)
     for (float *g = grid.begin(); g!=grid.end(); ++g) {
         if (*g != -1.) {
            STendingIndex *ti = reinterpret_cast<STendingIndex *>(g);
-            if (ti->flag > 0) {
+            if (ti->isTree() || ti->isSapling()) {
                 // we have a tree or sapling to protect here
                 QPoint p = grid.indexOf(g);
                 // look at the 5x5 neighborhood (~5m radius around)
@@ -862,10 +886,10 @@ bool ActThinning::runTending(FMStand* stand)
                                 // pixels closer to the source pixel will be stronger impacted
                                 if (abs(i)<=1 && abs(j) <=1) {
                                     ttest->flag = -1;
-                                    ttest->selectivity = ti->selectivity * 0.8;
+                                    ttest->setSelectivity( ti->selectivity() * 0.8 );
                                 } else {
                                     ttest->flag = -2;
-                                    ttest->selectivity = ti->selectivity * 0.5;
+                                    ttest->setSelectivity( ti->selectivity() * 0.5 );
                                 }
                             }
                         }
@@ -887,9 +911,9 @@ bool ActThinning::runTending(FMStand* stand)
         QPoint lc = grid.indexAt(tree_location);
         double selectivity = mSpeciesSelectivity[t->species()];
         STendingIndex *ti = reinterpret_cast<STendingIndex *>(&grid[lc]);
-        if (ti->flag == 0 || t->height() > 10.)
+        if (ti->isEmpty() || ti->isLocked() || t->height() > 10.)
             continue; // nothing to do here (in any case, we do not cut trees above 10m)
-        if (ti->flag == 1) {
+        if (ti->isTree()) {
             if (ti->index == i) {
                 continue;
             } else {// this is a tree on a pixel where *another* tree is to be favored.
@@ -898,7 +922,7 @@ bool ActThinning::runTending(FMStand* stand)
             }
         } else {
             // calculate how much we want to favor this spot: higher (closer to 1): higher likelyhood to clear
-            double favor =  (1. - selectivity) * (ti->selectivity / 256.);
+            double favor =  (1. - selectivity) * ti->selectivity();
             // we translate the favor rating (0..1)
             double p_cut = pow(favor,  (1. / impact_strength));
             if (drandom() < p_cut) {
@@ -916,40 +940,40 @@ bool ActThinning::runTending(FMStand* stand)
         while (p!=grid.end() && *p < 0) ++p; // skip pixels outside of the stand
         if (p == grid.end()) throw IException("activity tending: grid reached end");
 
-        if (*p != -1.) {
-            STendingIndex *ti = reinterpret_cast<STendingIndex *>(p);
 
-            if (ti->flag == 2) {
-                // a sapling to be favored: remove all other saplings from the cell
-                for (int i=0;i<NSAPCELLS;++i) {
-                    if (sc->saplings[i].is_occupied()) {
-                        if (i != ti->index) {
-                            sc->saplings[i].clear();
-                            ++sap_removed;
-                        }
+        STendingIndex *ti = reinterpret_cast<STendingIndex *>(p);
+
+        if (ti->isSapling()) {
+            // a sapling to be favored: remove all other saplings from the cell
+            for (int i=0;i<NSAPCELLS;++i) {
+                if (sc->saplings[i].is_occupied()) {
+                    if (i != ti->index) {
+                        sc->saplings[i].clear();
+                        ++sap_removed;
                     }
                 }
-                sc->checkState();
             }
-            if (ti->flag < 0) {
-                // neighborhood of favored cells.
-                for (int i=0;i<NSAPCELLS;++i) {
-                    if (sc->saplings[i].is_occupied()) {
-                        double selectivity = mSpeciesSelectivity[sc->saplings[i].resourceUnitSpecies(scr.ru())->species()];
-                        // calculate how much we want to favor this spot: higher (closer to 1): higher likelyhood to clear
-                        double favor =  (1. - selectivity) * (ti->selectivity / 256.);
-                        // we translate the favor rating (0..1)
-                        double p_cut = pow(favor,  (1. / impact_strength));
-                        if (drandom() < p_cut) {
-                            sc->saplings[i].clear();
-                            ++sap_removed;
-                        }
-
-                    }
-                }
-                sc->checkState();
-            }
+            sc->checkState();
         }
+        if (ti->isAffected()) {
+            // neighborhood of favored cells.
+            for (int i=0;i<NSAPCELLS;++i) {
+                if (sc->saplings[i].is_occupied()) {
+                    double selectivity = mSpeciesSelectivity[sc->saplings[i].resourceUnitSpecies(scr.ru())->species()];
+                    // calculate how much we want to favor this spot: higher (closer to 1): higher likelyhood to clear
+                    double favor =  (1. - selectivity) * ti->selectivity();
+                    // we translate the favor rating (0..1)
+                    double p_cut = pow(favor,  (1. / impact_strength));
+                    if (drandom() < p_cut) {
+                        sc->saplings[i].clear();
+                        ++sap_removed;
+                    }
+
+                }
+            }
+            sc->checkState();
+        }
+
         ++p;
     }
 
