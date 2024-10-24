@@ -99,7 +99,7 @@ linux-g++ {
 LIBS += -lfreeimage
 } else {
 # external freeimage library (geotiff)
-LIBS += -L$$THIRDPARTY_PATH/FreeImage -lFreeImage
+LIBS += -L$$THIRDPARTY_PATH\FreeImage -lFreeImage
 }
 
 # querying git repo
@@ -279,6 +279,7 @@ SOURCES += main.cpp \
     ui/settingsdialog.cpp
 
 HEADERS += mainwindow.h \
+    ../3rdparty/FreeImage/FreeImage.h \
     ../abe/patch.h \
     ../abe/patches.h \
     ../core/microclimate.h \
@@ -444,6 +445,8 @@ OTHER_FILES += maindoc.cpp \
     ../apidoc/abe/abe_context_doc.js
 
 DISTFILES += \
+    ../3rdparty/FreeImage/FreeImage.dll \
+    ../3rdparty/FreeImage/FreeImage.lib \
     ../abe-lib/ABE-library.js \
     ../abe-lib/harvest/femel.js \
     ../abe-lib/harvest/harvest.js \
