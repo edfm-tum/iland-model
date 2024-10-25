@@ -16,7 +16,7 @@ lib.harvest.femel = function(options) {
 
     function femelStep(n) {
 
-        lib.dbg("femel step...");
+        lib.dbg(`femel step... test: ${opts.steps}`);
 
         // (1) enlarge the patches
         stand.patches.createExtendedPatch(n, // which patch id
@@ -30,6 +30,7 @@ lib.harvest.femel = function(options) {
         if (n === stand.obj.lib.femel.opts.steps) {
             lib.dbg(`reached end of femel at step ${n}.`);
             stand.activity.enabled = false;
+            stand.stp.signal('end');
         }
     }
 

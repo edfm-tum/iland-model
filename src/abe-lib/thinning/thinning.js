@@ -1,9 +1,58 @@
 lib.thinning = {};
 
+lib.thinning.fromBelow = function(options) {
+    // 1. Default Options
+    const defaultOptions = {
+		mode: 'simple',
+        thinningShare: 0.2,
+		ranking: 'volume', 
+		repeatInterval: 5,
+		repeatTimes: 5,
+		constraint: undefined,
+		
+        // ... add other default thinning parameters
+    };
+    const opts = lib.mergeOptions(defaultOptions, options || {});
+	
+	
+	// dynamic parameters of selective thinning
+	function dynamic_thinningShare() {
+		// retrieve thinning share from stand flag during runtime
+		var value = stand.flag('thinningShare');
+		if (value === undefined) value = opts.thinningShare;
+		return value;
+	};
+
+	// changing parameters if mode is dynamic
+	if (opts.mode == 'dynamic') {
+		opts.thinningShare = dynamic_thinningShare;
+	};
+	
+	const program = {
+		type: 'thinning',
+		id: 'from_below', 
+        schedule: { repeat: true, repeatInterval: opts.repeatInterval, repeatTimes: opts.repeatTimes},
+		constraint: ["stand.age>30 and stand.age<70"],
+        thinning: 'custom',
+        targetValue: opts.thinningShare * 100, targetVariable: opts.ranking, targetRelative: true,
+        minDbh: 0,
+        classes: [70, 30, 0, 0, 0],
+		onExecute: function() {
+		}
+	};		
+	if (opts.constraint !== undefined) program.constraint = opts.constraint;
+	
+	//program.description = `A simple repeating harvest operation (every ${opts.repeatTimes} years), that removes all trees above a target diameter ( ${opts.TargetDBH} cm)).`;
+						
+	return program;	
+}
+
+
 lib.thinning.selectiveThinning = function(options) {
     // 1. Default Options
     const defaultOptions = {
 		mode: 'simple',
+        SpeciesMode: 'simple',
         NTrees: 80, 
 		NCompetitors: 4,
         speciesSelectivity: {},
@@ -38,11 +87,25 @@ lib.thinning.selectiveThinning = function(options) {
 		if (value === undefined) value = opts.ranking;
 		return value;
 	};
+
+	function dynamic_speciesSelectivity() {
+		// retrieve species Selectivity from stand flag during runtime
+		var value = stand.flag('speciesSelectivity');
+		if (value === undefined) value = opts.speciesSelectivity;
+		return value;
+	};
 	
+	// changing parameters if mode is dynamic
 	if (opts.mode == 'dynamic') {
 		opts.NTrees = dynamic_NTrees;
 		opts.NCompetitors = dynamic_NCompetitors;
 		opts.ranking = dynamic_ranking;
+	};
+
+	// changing parameters if SpeciesMode is dynamic
+	if (opts.SpeciesMode == 'dynamic') {
+		opts.speciesSelectivity = dynamic_speciesSelectivity;
+		//opts.ranking = dynamic_ranking; 
 	};
 	
 	const program = {};
@@ -57,7 +120,7 @@ lib.thinning.selectiveThinning = function(options) {
 		speciesSelectivity: opts.speciesSelectivity,
 		ranking: opts.ranking, 		
 		
-		onExit: function() {		// JM: what does this do?
+		onExit: function() {		
 			//Globals.alert(stand.flag('NTrees') + ', ' + stand.flag('NCompetitors') + ', ' + stand.flag('ranking'));
 			let a = stand.activityByName('remove_trees');
 			if (a !== undefined) a.active = true;	
@@ -111,9 +174,41 @@ lib.thinning.selectiveThinning = function(options) {
 	
 	program["remover"] = remove_selection;
 	
-	if (opts.constraint !== undefined) program.constraint = opts.constraint;// JM: What does this do?
+	if (opts.constraint !== undefined) program.constraint = opts.constraint;
 	
 	//program.description = `A simple repeating harvest operation (every ${opts.repeatTimes} years), that removes all trees above a target diameter ( ${opts.TargetDBH} cm)).`;
 						
 	return program;	
+}
+
+
+lib.thinning.Tending = function(options) {
+    // 1. Default Options
+    const defaultOptions = {
+		id: 'Tending',
+		schedule: {repeat: true, repeatInterval: 3},
+        speciesSelectivity: { 'fasy': 0.9, 'abal': 0.8 },
+        intensity: 10,
+		constraint: undefined,
+		
+        // ... add other default thinning parameters
+    };
+    const opts = lib.mergeOptions(defaultOptions, options || {});
+	
+	
+	const tending = {
+		id: opts.id,
+		type: 'thinning',
+        schedule: opts.schedule,
+        thinning: 'tending',
+        speciesSelectivity: opts.speciesSelectivity, 
+        intensity: opts.intensity,
+		onSetup: function() { stand.trace = true;  }
+	};		
+	
+	if (opts.constraint !== undefined) tending.constraint = opts.constraint;
+	
+	//program.description = `A simple repeating harvest operation (every ${opts.repeatTimes} years), that removes all trees above a target diameter ( ${opts.TargetDBH} cm)).`;
+						
+	return tending;	
 }

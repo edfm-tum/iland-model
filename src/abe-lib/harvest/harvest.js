@@ -33,6 +33,79 @@ lib.harvest = function(options) {
 };
 */
 
+lib.harvest.noHarvest = function() {
+	var act = {
+		type: 'general', 
+		schedule: { repeat: true, repeatInterval: 100},
+		action: function() {
+		}
+	};
+	
+	act.description = `No harvest management`;
+						
+	return act;
+};
+
+lib.harvest.HarvestAllBigTrees = function(options) {
+	// 1. Default Options
+    const defaultOptions = { 
+		id: 'HarvestAllBigTrees',
+		schedule: {absolute: true, opt: 3},
+		ranking: 'height > 10',
+		constraint: undefined,
+    };
+
+    const opts = lib.mergeOptions(defaultOptions, options || {});
+	
+	var act = {
+		id: opts.id,
+		type: 'general', 
+		schedule: opts.schedule,
+		action: function() {
+			stand.trees.load(opts.ranking);
+			stand.trees.harvest();
+		}
+	};
+
+	act.description = `Harvest all trees with a ${opts.ranking} after every ${opts.schedule.opt} years.`;
+	return act;
+};
+
+
+lib.harvest.clearcut = function(options) {
+    // 1. Default Options
+    const defaultOptions = { 
+		minRel: 0.9,
+		optRel: 1,
+		maxRel: 1.15,
+		dbhThreshold: 0,
+		constraint: undefined
+    };
+    const opts = lib.mergeOptions(defaultOptions, options || {});
+
+	const act = { // available function remain(x) kill all but x random trees
+			type: "scheduled", 
+			schedule: {minRel: opts.minRel, optRel: opts.optRel, maxRel: opts.maxRel, force: true }, //JM: does it work/make a difference to include repeat=T here aswell?
+			onSetup: function() { 
+                lib.initStandObj(); // create an empty object as stand property
+			},
+			onEvaluate: function(){
+				stand.trees.loadAll();
+				stand.trees.harvest();
+				return true; 
+			},
+			onExecute: function() {
+				stand.trees.removeMarkedTrees();
+				stand.activity.finalHarvest=true;
+				//stand.obj.act["harvest.year"] = Globals.year;
+			}
+	};
+	if (opts.constraint !== undefined) act.constraint = opts.constraint;
+	
+	act.description = `A simple repeating clearcut operation, that removes all trees above a minimum diameter of ( ${opts.dbhThreshold} cm)).`;
+  return act;  
+};
+
 
 lib.harvest.stripCut = function(options) {
 	// 1. Default Options
@@ -176,51 +249,6 @@ lib.harvest.stripCut2 = function(options) {
 	if (opts.constraint !== undefined) act.constraint = opts.constraint;
 	
 	act.description = `Stripcut system which first devides the stand into ${opts.stripWidth} meter wide stripes and harvests on these stripes every ${opts.harvestInterval} years.`;
-  return act;  
-};
-
-lib.harvest.clearcut = function(options) {
-    // 1. Default Options
-    const defaultOptions = { 
-		minRel: 0.9,
-		optRel: 1,
-		maxRel: 1.15,
-		dbhThreshold: 0,
-		constraint: undefined,
-		
-        // ... add other default thinning parameters
-    };
-    const opts = lib.mergeOptions(defaultOptions, options || {});
-
-	const act = { // available function remain(x) kill all but x random trees
-			type: "scheduled", 
-			schedule: {minRel: opts.minRel, optRel: opts.optRel, maxRel: opts.maxRel, force: true }, //JM: does it work/make a difference to include repeat=T here aswell?
-			onSetup: function() { // JM: do we nee this aswell?
-				initStandObj(); // create an empty object as stand property
-				//Globals.alert('onSetup ...');
-				//printObj(stand.activity);
-				// stand.obj.act: some information specific for a activity (coded by unique activity index)
-				stand.obj.act[ stand.activity.index ] = { "mon": "dieu!"};
-			},
-			onEvaluate: function(){ //JM: is this logical for clear cut to only do the harvest on selected, if executed 5 years later?
-				//Globals.alert('Evaluated');
-				stand.trees.loadAll();
-				stand.trees.harvest();
-				console.log(stand.obj.act[stand.activity.index].mon);
-				return true; 
-			},
-			onExecute: function() {
-				//stand.trees.load('dbh > ' + opts.dbhThreshold);
-				//stand.trees.harvest();
-				stand.trees.removeMarkedTrees();
-				stand.activity.finalHarvest=true;
-				//stand.obj.act["harvest.year"] = Globals.year;
-			}//,// but do the same thing as the default operation 				
-			//onCreate: function() {stand.activity.finalHarvest=true; }
-	};
-	if (opts.constraint !== undefined) act.constraint = opts.constraint;// JM: What does this do?
-	
-	act.description = `A simple repeating clearcut operation, that removes all trees above a minimum diameter of ( ${opts.dbhThreshold} cm)).`;
   return act;  
 };
 
@@ -371,7 +399,7 @@ lib.harvest.targetDBHforNo3 = function(options) {
 			stand.obj.act["NHarvests"] = 0;
 		},
 		onSetup: function() { // JM: do we nee this aswell?
-			initStandObj();
+            lib.initStandObj();
 			stand.obj.act["NHarvests"] = 0;
 		},
 	};
@@ -383,17 +411,4 @@ lib.harvest.targetDBHforNo3 = function(options) {
 	return act;
 };
 
-
-lib.harvest.noHarvest = function() {
-	var act = {
-		type: 'general', 
-		schedule: { repeat: true, repeatInterval: 100},
-		action: function() {
-		}
-	};
-	
-	act.description = `No harvest management`;
-						
-	return act;
-};
 

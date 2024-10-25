@@ -68,7 +68,11 @@ const femel_step_plant = { type: 'general', schedule: { signal: 'step'},
     }
 }
 
-lib.createSTP('femel', femel, femel_sel, femel_step_plant, femel_step_manage);
+lib.createSTP('femel', femel,
+              femel_sel,
+              femel_step_plant,
+              femel_step_manage,
+              lib.changeSTP({STP: 'phase2'}));
 
 
 /**
