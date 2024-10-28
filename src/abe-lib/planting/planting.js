@@ -94,3 +94,72 @@ lib.planting = function(options) {
 
     return plantingActivities;
 }*/
+lib.planting.dynamic = function(options) {
+    const defaultOptions = {
+        schedule: undefined,
+        speciesDefaults: lib.planting.speciesDefaults,
+
+    };
+    const opts = lib.mergeOptions(defaultOptions, options || {});
+
+    // dynamic generation of planting items
+    function buildDynamicItems() {
+        // read species selectivty from stand meta data....
+        let species_list = { 'piab': 0.5, 'lade': 0.3 };
+        let items=[];
+
+        // loop over each species and fetch the default planting item per species
+        // update the dynamic element (e.g. the number of planting patches)
+        for (species in species_list) {
+            let species_default = opts.speciesDefaults[species];
+            if (species_default === undefined)
+                throw new Error(`Planting-defaults: no data for species ${species}.`);
+
+            const evaluatedItem = {};
+            for (let key in species_default) {
+                console.log(`key: ${key} value: ${species_default[key]}`);
+                if (typeof species_default[key] === 'function') {
+                    // Call the method defined in the default object
+                    evaluatedItem[key] = species_default[key].call(species_default, species_list[species]);
+                    console.log(`function called with ${species_list[species]}: result: ${evaluatedItem[key]} `);
+                } else {
+                    evaluatedItem[key] = species_default[key];
+                }
+            }
+
+            items.push( evaluatedItem  );
+        }
+        return items;
+    }
+
+    // build the ABE activity
+    return {
+        type: 'planting',
+        schedule: opts.schedule,
+        random: false,
+        items: [],
+        onExecute: function() {
+            // build planting items dynamically and run them
+            let items = buildDynamicItems();
+            items.forEach(item => {
+                fmengine.runPlanting(stand.id, item);
+            });
+        },
+        buildItems: function() {
+            // this is a test function to view resulting planting items
+            let items = buildDynamicItems();
+            return items;
+        }
+    }
+}
+
+// defaults per species
+
+lib.planting.speciesDefaults = {
+    // spruce, .... use wall-to-wall planting
+    'piab': { species: 'piab', h: 0.3, age: 1, fraction: function(proportion) {return proportion * 1 }},
+    'abal': { species: 'abal', h: 0.3, age: 1, fraction: function(proportion) {return proportion * 1.2 }},
+    // for larix, ... use groups
+    'lade': { species: 'lade', h: 0.3, age: 1, pattern: 'circle10', random: true,
+        n: function(proportion) {return proportion*10000/272; /* 272: area circle10 */} }
+};

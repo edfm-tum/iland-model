@@ -97,8 +97,10 @@ lib.harvest.clearcut = function(options) {
 			onExecute: function() {
 				stand.trees.removeMarkedTrees();
 				stand.activity.finalHarvest=true;
+                lib.activityLog('clearcut');
 				//stand.obj.act["harvest.year"] = Globals.year;
-			}
+            },
+            onCreate: function() { this.finalHarvest = true; }
 	};
 	if (opts.constraint !== undefined) act.constraint = opts.constraint;
 	

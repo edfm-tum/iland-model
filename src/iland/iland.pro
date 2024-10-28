@@ -449,6 +449,7 @@ DISTFILES += \
     ../abe-lib/harvest/harvest.js \
     ../abe-lib/lib_helper.js \
     ../abe-lib/planting/planting.js \
+    ../abe-lib/thinning/selective.js \
     ../abe-lib/thinning/thinning.js \
     ../apidoc/ABE/abe_patches.js \
     ../apidoc/ABE/saplinglist_doc.js \

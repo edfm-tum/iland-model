@@ -15,12 +15,33 @@ lib.initStandObj = function() {
 /* helper functions within the library */
 
 
-lib.mergeOptions = function(defaults, options) {
+lib.mergeOptions2 = function(defaults, options) {
     const merged = {};
     for (const key in defaults) {
         merged[key] = options[key] !== undefined ? options[key] : defaults[key];
     }
     return merged;
+}
+
+lib.mergeOptions = function(defaults, options) {
+  const merged = {};
+  for (const key in defaults) {
+    if (options && options.hasOwnProperty(key)) {
+      merged[key] = options[key];
+    } else {
+      merged[key] = defaults[key];
+    }
+  }
+
+  // Check for invalid options
+  const validOptions = Object.keys(defaults);
+  for (const key in options) {
+    if (!defaults.hasOwnProperty(key)) {
+        throw new Error(`Invalid option: "${key}". \nValid options are: ${validOptions.join(', ')}`);
+    }
+  }
+
+  return merged;
 }
 
 lib.buildProgram = function (...concepts) {
@@ -72,7 +93,48 @@ lib.createSTP = function(stp_name, ...concepts) {
     }
 }
 
+/** Management history
+    Stands store a activity log, also used for DNN training
+    activity items are added by individual activities defined in the library
 
+ */
+lib.activityLog = function(actName, extraValues) {
+    if (typeof stand.obj !== 'object' || typeof stand.obj.lib !== 'object')
+        throw new Error(`activityLog() for stand ${stand.id}: stand.obj not available. Call lib.initStandObj()!`);
+    if (typeof stand.obj.history !== 'object')
+        stand.obj.history = [];
+    const log_item = { year: Globals.year,
+                       standId: stand.id,
+                       stp: stand.stp.name,
+                       activity: actName,
+                       details: extraValues};
+    stand.obj.history.push(log_item);
+}
+
+
+lib.formattedLog = function() {
+  if (typeof stand.obj !== 'object' || !Array.isArray(stand.obj.history)) {
+    return "No activity log available.";
+  }
+
+  let htmlLog = "<h1>Activity Log</h1>";
+    stand.obj.history.forEach(item => {
+      const year = item.year;
+      htmlLog += `<div>
+                    <h2>${year} - ${item.activity}</h2>
+                    <ul>
+                      <li>Stand ID: ${item.standId}</li>
+                      <li>STP: ${item.stp}</li>`;
+      if (item.details) {
+        htmlLog += `<li>Details: <pre>${JSON.stringify(item.details, null, 2)}</pre></li>`;
+      }
+      htmlLog += `</ul>
+                  </div>`;
+    });
+
+    return htmlLog;
+
+}
 
 /** Create Patch activity
 */
@@ -177,12 +239,16 @@ lib.changeSTP = function(options) {
     };
 
     const opts = lib.mergeOptions(defaultOptions, options || {});
+    if (!fmengine.isValidStp(opts.STP)) {
+        throw new Error(`lib.changeSTP: the target STP "${opts.STP}" is not available!`);
+    }
 
     return {
       type: 'general', schedule: opts.schedule,
         action: function() {
             fmengine.log("The next STP will be: " + opts.STP);
             // TODO: find a way to actually do that :=)
+            stand.setSTP(opts.STP);
         }
     };
 
@@ -193,6 +259,7 @@ lib.changeSTP = function(options) {
 lib.repeater = function(options) {
     // 1. Default Options
     const defaultOptions = {
+        schedule: undefined, ///< when to start the repeater
         count: undefined, ///< number of repetitions
         interval: 1, ///< interval between repetitions
         signal: undefined, ///< signal of the activity to be executed
@@ -202,7 +269,7 @@ lib.repeater = function(options) {
     const opts = lib.mergeOptions(defaultOptions, options || {});
 
     return {
-            type: 'general', schedule: 40,
+            type: 'general', schedule: opts.schedule,
             action: function() {
                 const repeat_interval = opts.interval;
                 const repeat_count = opts.count;
