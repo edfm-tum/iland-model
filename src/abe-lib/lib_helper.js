@@ -12,6 +12,16 @@ lib.initStandObj = function() {
 
 }
 
+lib.initAllStands = function() {
+    for (const id of fmengine.standIds) {
+      // set the focus of ABE to this stand:
+      fmengine.standId = id;
+      // access data for the stand
+      initStandObj();
+    }
+}
+
+
 /* helper functions within the library */
 
 
@@ -117,7 +127,7 @@ lib.formattedLog = function() {
     return "No activity log available.";
   }
 
-  let htmlLog = "<h1>Activity Log</h1>";
+  let htmlLog = `<h1>Activity Log - ${stand.id}</h1>`;
     stand.obj.history.forEach(item => {
       const year = item.year;
       htmlLog += `<div>
@@ -133,6 +143,26 @@ lib.formattedLog = function() {
     });
 
     return htmlLog;
+
+}
+
+lib.formattedPlan = function() {
+
+
+  let htmlLog = `<h1>Planned Activities - ${stand.id}</h1>`;
+  for (name of stand.stp.activityNames) {
+      let act = stand.activityByName(name);
+      let col = act.active ? 'black' : 'gray';
+      htmlLog += `<div>
+                    <h2 style="color: ${col};">${act.optimalTime} - ${act.name}</h2>
+                    <ul><li>Active (in this rotation): <b>${act.active}</b></li>
+                      <li>Enabled (at all): <b>${act.enabled}</b></li>
+                      <li>Description: ${act.description}</li>
+                    </ul>
+                   </div> `;
+  }
+  return htmlLog;
+
 
 }
 
@@ -285,6 +315,8 @@ lib.repeater = function(options) {
                 if (opts.block)
                     stand.sleep(opts.interval * opts.count);
 
-            }
+            },
+        onEnter: function(){ Globals.alert('repeater enter'); },
+        onExit: function(){ Globals.alert('repeater exit'); }
         }
 }

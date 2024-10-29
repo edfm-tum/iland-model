@@ -53,7 +53,7 @@ lib.thinning.fromBelow = function(options) {
 
 
 
-lib.thinning.Tending = function(options) {
+lib.thinning.tending = function(options) {
     // 1. Default Options
     const defaultOptions = {
 		id: 'Tending',
@@ -66,7 +66,9 @@ lib.thinning.Tending = function(options) {
     };
     const opts = lib.mergeOptions(defaultOptions, options || {});
 	
-	
+    //if (typeof opts.speciesSelectivity === 'function')
+    //    opts.speciesSelectivity = opts.speciesSelectivity.call(opts);
+
 	const tending = {
 		id: opts.id,
 		type: 'thinning',
@@ -74,7 +76,7 @@ lib.thinning.Tending = function(options) {
         thinning: 'tending',
         speciesSelectivity: opts.speciesSelectivity, 
         intensity: opts.intensity,
-        onSetup: function() { stand.trace = true;  },
+        onSetup: function() { /* stand.trace = true; */  },
         onExecuted: function() {lib.activityLog('thinning_tending'); }
 	};		
 	

@@ -67,7 +67,7 @@ lib.thinning.selectiveThinning = function(options) {
 
     const select_trees = {
         type: 'thinning',
-        id: 'select_trees',
+        id: 'selective_select_trees',
         schedule: opts.schedule,			//absolute: true, opt: 3},	//repeat: true, repeatInterval: 10
         thinning: 'selection',
         N: opts.NTrees,
@@ -77,22 +77,19 @@ lib.thinning.selectiveThinning = function(options) {
 
         onEnter: function() {
             stand.obj.lib.selective_thinning_counter = 0;
-            Globals.alert('onEnter');
         },
 
         onExit: function() {
-            //Globals.alert(stand.flag('NTrees') + ', ' + stand.flag('NCompetitors') + ', ' + stand.flag('ranking'));
-            //let a = stand.activityByName('remove_trees');
-            //if (a !== undefined) a.active = true;
             stand.stp.signal('selective_start_repeat');
             lib.activityLog('thinning_selection'); // details? target species?
         },
+        description: `Selective thinning. Repeated ${opts.repeatTimes} times every ${opts.repeatInterval} years.`
     };
 
     program["selector"] = select_trees;
     const remove_trees = {
         type: 'general',
-        id: 'remove_trees',
+        id: 'selective_remove_trees',
         schedule: { signal: 'selective_thinning_remove'},
         action: function() {
             if (stand.obj.lib.selective_thinning_counter == 0) {
@@ -112,10 +109,6 @@ lib.thinning.selectiveThinning = function(options) {
             const harvested = stand.trees.harvest();
             //stand.trees.removeMarkedTrees(); // ? necessary ??
             lib.dbg(`selectiveThinning: repeat ${stand.obj.lib.selective_thinning_counter}, removed ${harvested} trees.`);
-        },
-        onSetup: function() {
-            lib.initStandObj();
-            Globals.alert('onSetup');
         },
         description: `Selective thinning (every ${opts.repeatTimes} years), that removes all trees above a target diameter ( ${opts.TargetDBH} cm)).`
 

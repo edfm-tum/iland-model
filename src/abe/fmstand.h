@@ -191,6 +191,7 @@ public:
 
     int lastExecutionAge() const { return absoluteAge()>0 ? static_cast<int>(absoluteAge()) : mLastRotationAge; }
 
+    void setLastExecution(int index);
     // custom property storage
     static void clearAllProperties() { mStandPropertyStorage.clear(); }
     /// set a property value for the current stand with the name 'name'

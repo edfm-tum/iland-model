@@ -1120,6 +1120,9 @@ QString ScriptGlobal::executeScript(QString cmd)
         qDebug() << msg;
         mLastErrorMessage += msg + "\n";
 
+        mLastErrorMessage += result.property("stack").toString();
+
+
         // throw only a exception during a simulation
         if (GlobalSettings::instance()->controller()->isRunning())
             throw IException("A Javascript error occured: " + msg);

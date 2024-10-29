@@ -26,7 +26,7 @@ lib.planting.general = function(options) {
 			clear: opts.clear}],
 		onEvaluate: function() { // Space for quitting planting if condition is met
 			Globals.alert("Planting whoooohoooo");
-			return true
+            return true;
 		}
 	}	
 	return plant;
@@ -97,15 +97,26 @@ lib.planting = function(options) {
 lib.planting.dynamic = function(options) {
     const defaultOptions = {
         schedule: undefined,
-        speciesDefaults: lib.planting.speciesDefaults,
-
+        speciesSelectivity: undefined, ///< species to plant
+        speciesDefaults: lib.planting.speciesDefaults
     };
     const opts = lib.mergeOptions(defaultOptions, options || {});
 
     // dynamic generation of planting items
     function buildDynamicItems() {
         // read species selectivty from stand meta data....
-        let species_list = { 'piab': 0.5, 'lade': 0.3 };
+        let species_list = {};
+        if (opts.speciesSelectivity !== undefined) {
+            if (typeof opts.speciesSelectivity === 'function')
+                species_list = opts.speciesSelectivity.call(opts);
+            else
+                species_list = opts.speciesSelectivity;
+        } else if (typeof stand.obj !== undefined && stand.obj.hasOwnProperty('speciesSelectivity')) {
+            species_list = stand.obj.speciesSelectivity;
+        } else {
+            throw new Error('dynamic planting: no speciesSelectivty provided. Either set as option or in stand.obj!')
+        }
+
         let items=[];
 
         // loop over each species and fetch the default planting item per species
@@ -117,11 +128,10 @@ lib.planting.dynamic = function(options) {
 
             const evaluatedItem = {};
             for (let key in species_default) {
-                console.log(`key: ${key} value: ${species_default[key]}`);
                 if (typeof species_default[key] === 'function') {
                     // Call the method defined in the default object
                     evaluatedItem[key] = species_default[key].call(species_default, species_list[species]);
-                    console.log(`function called with ${species_list[species]}: result: ${evaluatedItem[key]} `);
+                    // console.log(`function called with ${species_list[species]}: result: ${evaluatedItem[key]} `);
                 } else {
                     evaluatedItem[key] = species_default[key];
                 }
@@ -144,12 +154,15 @@ lib.planting.dynamic = function(options) {
             items.forEach(item => {
                 fmengine.runPlanting(stand.id, item);
             });
+            lib.activityLog('planting');
         },
         buildItems: function() {
             // this is a test function to view resulting planting items
             let items = buildDynamicItems();
             return items;
-        }
+        },
+        description : `Planting; species and properties are determined dynamically`
+
     }
 }
 
@@ -158,8 +171,18 @@ lib.planting.dynamic = function(options) {
 lib.planting.speciesDefaults = {
     // spruce, .... use wall-to-wall planting
     'piab': { species: 'piab', h: 0.3, age: 1, fraction: function(proportion) {return proportion * 1 }},
-    'abal': { species: 'abal', h: 0.3, age: 1, fraction: function(proportion) {return proportion * 1.2 }},
+    'abal': { species: 'abal', h: 0.3, age: 1, fraction: function(proportion) {return proportion * 0.8 }},
+    'fasy': { species: 'fasy', h: 0.3, age: 1, fraction: function(proportion) {return proportion * 0.8 }},
     // for larix, ... use groups
     'lade': { species: 'lade', h: 0.3, age: 1, pattern: 'circle10', random: true,
-        n: function(proportion) {return proportion*10000/272; /* 272: area circle10 */} }
+        n: function(proportion) {return proportion*10000/272; /* 272: area circle10 */} },
+    'quro': { species: 'quro', h: 0.3, age: 1, pattern: 'circle10', random: true,
+        n: function(proportion) {return proportion*10000/272; /* 272: area circle10 */} },
+    'qupe': { species: 'qupe', h: 0.3, age: 1, pattern: 'circle10', random: true,
+        n: function(proportion) {return proportion*10000/272; /* 272: area circle10 */} },
+    'acps': { species: 'acps', h: 0.3, age: 1, pattern: 'circle10', random: true,
+        n: function(proportion) {return proportion*10000/272; /* 272: area circle10 */} },
+    'pisy': { species: 'pisy', h: 0.3, age: 1, pattern: 'circle10', random: true,
+        n: function(proportion) {return proportion*10000/272; /* 272: area circle10 */} },
+
 };

@@ -394,6 +394,7 @@ class ActivityObj : public QObject
     Q_PROPERTY(bool scheduled READ scheduled WRITE setScheduled)
     Q_PROPERTY(QString name READ name)
     Q_PROPERTY(int index READ index)
+    Q_PROPERTY(int optimalTime READ optimalTime)
     Q_PROPERTY(QString description READ description)
     Q_PROPERTY(QJSValue obj READ JSObj WRITE setJSObj);
 
@@ -416,6 +417,7 @@ public:
     QString name() const;
     QString description() const;
     int index() const { if( mActivity) return mActivity->index(); return -1; }
+    int optimalTime() { if (mActivity) return mActivity->optimalSchedule(); return -1; }
     bool enabled() const;
     void setEnabled(bool do_enable);
 

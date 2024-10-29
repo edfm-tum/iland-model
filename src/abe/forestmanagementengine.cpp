@@ -292,6 +292,14 @@ bool ForestManagementEngine::runSingleRepeatedItem(int stand_id, SRepeatItem &it
         item.waitYears = item.interval; // start again the countdown
 
         if (item.N >= item.times) {
+            /*if (item.activity && item.times * item.interval > 1) {
+                // call also the offboarding code for activities when the repeating activity
+                // was active for a longer time (make sure we do not miss activities)
+                int old_index = stnd->currentActivityIndex();
+                stnd->setActivityIndex( item.activity->index() );
+                stnd->afterExecution();
+                //stnd->setActivityIndex( old_index );
+            }*/
             return true;
         }
     }

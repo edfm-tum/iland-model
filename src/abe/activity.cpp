@@ -72,6 +72,7 @@ void Schedule::setup(const QJSValue &js_value)
         absolute = FMSTP::boolValueFromJs(js_value, "absolute", false);
         // signals
         mSignalStr = FMSTP::valueFromJs(js_value, "signal").toString();
+        if (mSignalStr == "undefined") mSignalStr.clear();
         if (!mSignalStr.isEmpty())
             mSignalDelta = FMSTP::valueFromJs(js_value, "wait","0").toInt();
 
@@ -195,7 +196,7 @@ double Schedule::value(const FMStand *stand, const int specific_year)
 double Schedule::minValue(const double U) const
 {
     if (absolute && tmin>-1) return tmin;
-    if (repeat) return 100000000.;
+    if (repeat || !mSignalStr.isEmpty()) return 100000000.;
     if (tmin>-1) return tmin;
     if (tminrel>-1.) return tminrel * U; // assume a fixed U of 100yrs
     if (repeat) return -1.; // repeating executions are treated specially
@@ -205,6 +206,7 @@ double Schedule::minValue(const double U) const
 
 double Schedule::maxValue(const double U) const
 {
+    if (!mSignalStr.isEmpty()) return 1000000000;
     if (absolute && tmax>-1) return tmax;
     if (tmax>-1) return tmax;
     if (tmaxrel>-1.) return tmaxrel * U; // assume a fixed U of 100yrs

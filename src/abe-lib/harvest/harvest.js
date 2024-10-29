@@ -75,9 +75,7 @@ lib.harvest.HarvestAllBigTrees = function(options) {
 lib.harvest.clearcut = function(options) {
     // 1. Default Options
     const defaultOptions = { 
-		minRel: 0.9,
-		optRel: 1,
-		maxRel: 1.15,
+        schedule: { optRel: 1, force: true }, // use standard rotation period
 		dbhThreshold: 0,
 		constraint: undefined
     };
@@ -85,26 +83,24 @@ lib.harvest.clearcut = function(options) {
 
 	const act = { // available function remain(x) kill all but x random trees
 			type: "scheduled", 
-			schedule: {minRel: opts.minRel, optRel: opts.optRel, maxRel: opts.maxRel, force: true }, //JM: does it work/make a difference to include repeat=T here aswell?
+            schedule: opts.schedule, //JM: does it work/make a difference to include repeat=T here aswell?
 			onSetup: function() { 
                 lib.initStandObj(); // create an empty object as stand property
 			},
 			onEvaluate: function(){
-				stand.trees.loadAll();
+                stand.trees.loadAll(`dbh>${opts.dbhThreshold}`);
 				stand.trees.harvest();
 				return true; 
 			},
 			onExecute: function() {
 				stand.trees.removeMarkedTrees();
-				stand.activity.finalHarvest=true;
                 lib.activityLog('clearcut');
-				//stand.obj.act["harvest.year"] = Globals.year;
             },
             onCreate: function() { this.finalHarvest = true; }
 	};
 	if (opts.constraint !== undefined) act.constraint = opts.constraint;
 	
-	act.description = `A simple repeating clearcut operation, that removes all trees above a minimum diameter of ( ${opts.dbhThreshold} cm)).`;
+    act.description = `A clearcut operation, that removes all trees above a minimum diameter of ( ${opts.dbhThreshold} cm)).`;
   return act;  
 };
 

@@ -376,6 +376,8 @@ bool FMStand::execute()
             qCDebug(abe) << context() << "executing activity" << currentActivity()->name();
         mScheduledHarvest = 0.;
         bool executed = currentActivity()->execute(this);
+        setLastExecution(mCurrentIndex);
+
         if (!currentActivity()) // special case: the activity invalidated the active activtity
             return executed;
 
@@ -459,7 +461,7 @@ bool FMStand::afterExecution(bool cancel)
             mStandFlags[indexmin].activity()->events().run(QStringLiteral("onEnter"), this);
 
     }
-    mLastExecutedIndex = mCurrentIndex;
+
 
     mCurrentIndex = indexmin;
     if (mCurrentIndex>-1) {
@@ -472,8 +474,6 @@ bool FMStand::afterExecution(bool cancel)
             qCDebug(abe) << context() << "no activity found to execute next!";
     }
     mScheduledHarvest = 0.; // reset
-
-    mLastExecution = ForestManagementEngine::instance()->currentYear();
 
     return mCurrentIndex > -1;
 }
@@ -508,8 +508,7 @@ void FMStand::notifyTreeRemoval(Tree *tree, int reason)
                 mSalvaged += removed_volume;
                 tree->setIsHarvested(); // set the flag that the tree is removed from the forest
                 // the last executed activity is the salvage activity...
-                mLastExecutedIndex = mSTP->salvageActivity()->index();
-                mLastExecution = ForestManagementEngine::instance()->currentYear();
+                setLastExecution(mSTP->salvageActivity()->index());
             }
         }
 
@@ -594,6 +593,12 @@ int FMStand::setToLatestForcedActivity()
     }
     return i;
 
+}
+
+void FMStand::setLastExecution(int index)
+{
+    mLastExecutedIndex = index;
+    mLastExecution = ForestManagementEngine::instance()->currentYear();
 }
 
 // storage for properties (static)
