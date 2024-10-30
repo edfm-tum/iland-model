@@ -423,6 +423,8 @@ FORMS += mainwindow.ui \
     ui/dialogfunctionplotter.ui \
     ui/settingsTestDialog.ui
 RESOURCES += ./res/iland.qrc \
+    ../abe-lib/abe-library.qrc \
+    abe-library.qrc \
     qml_res.qrc
 
 # QMAKE_EXTRA_TARGETS += revtarget

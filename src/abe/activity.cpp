@@ -58,6 +58,11 @@ void Schedule::setup(const QJSValue &js_value)
 {
     clear();
     if (js_value.isObject()) {
+        const QStringList allowed = {"min", "max", "opt", "minRel", "maxRel", "optRel",
+                               "repeatInterval", "repeatStart", "force", "absolute",
+                               "signal" };
+        FMSTP::checkObjectProperties(js_value, allowed, "Schedule" );
+
         tmin = FMSTP::valueFromJs(js_value, "min", "-1").toInt();
         tmax = FMSTP::valueFromJs(js_value, "max", "-1").toInt();
         topt = FMSTP::valueFromJs(js_value, "opt", "-1").toInt();
@@ -218,6 +223,7 @@ double Schedule::maxValue(const double U) const
 
 double Schedule::optimalValue(const double U) const
 {
+    if (!mSignalStr.isEmpty()) return 1000000000;
     if (topt>-1) return topt;
     if (toptrel>-1) return toptrel*U;
     if (tmin>-1 && tmax>-1) return (tmax+tmin)/2.;

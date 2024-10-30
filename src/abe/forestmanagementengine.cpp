@@ -590,6 +590,10 @@ void ForestManagementEngine::setup()
 void ForestManagementEngine::initialize()
 {
 
+    if (isCancel()) {
+        qCDebug(abeSetup) << "ABE setup stopped due to errors.";
+        return;
+    }
     DebugTimer time_setup("ABE:setup");
 
     foreach (FMStand* stand, mStands) {

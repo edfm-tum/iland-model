@@ -1,3 +1,12 @@
+/**
+  The planting module include activities thinning operations.
+
+
+
+  @module abe-lib
+  @submodule thinning
+  */
+
 lib.thinning = {};
 
 Globals.include(lib.path.dir + '/thinning/selective.js');

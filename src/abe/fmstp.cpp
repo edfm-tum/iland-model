@@ -79,7 +79,10 @@ void FMSTP::setup(QJSValue &js_value, const QString &name)
     mActivityNames.clear();
     mHasRepeatingActivities = false;
     for (int i=0;i<mActivities.count();++i) {
-        mActivityNames.push_back(mActivities.at(i)->name());
+        QString act_name = mActivities.at(i)->name();
+        if (activity(act_name))
+            throw IException(QString("Setup of STP %1: activity name / id is not unique: %2").arg(mName, act_name));
+        mActivityNames.push_back(act_name);
         mActivityStand.push_back(mActivities.at(i)->standFlags()); // stand = null: create a copy of the activities' base flags
         mActivities.at(i)->setIndex(i);
         if (mActivities.at(i)->isRepeatingActivity())
@@ -223,7 +226,8 @@ void FMSTP::setupActivity(const QJSValue &js_value, const QString &name)
     try {
 
         // use id-property if available, or the object-name otherwise
-        act->setName(valueFromJs(js_value, "id", name).toString());
+        QString act_name = valueFromJs(js_value, "id", name).toString();
+        act->setName(act_name);
         // call the setup routine (overloaded version)
         act->setup(js_value);
 
@@ -279,13 +283,18 @@ bool FMSTP::checkObjectProperties(const QJSValue &js_value, const QStringList &a
 {
     QJSValueIterator it(js_value);
     bool found_issues = false;
+    QString message;
     while (it.hasNext()) {
         it.next();
         if (!allowed_properties.contains(it.name()) && it.name()!=QLatin1String("length")) {
-            qCDebug(abe) << "Syntax-warning: The javascript property" << it.name() << "is not used! In:" << errorMessage;
+            message += QString("%1,").arg(it.name());
             found_issues = true;
         }
     }
+
+    if (found_issues)
+        throw IException(QString("Invalid properties detected: %1 in %2!").arg(message, errorMessage));
+
     return !found_issues;
 }
 
