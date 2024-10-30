@@ -1,7 +1,47 @@
 /** Helper functions
 * ABE Library
+
+Building STPs
+-------------
+
+The library provides functions to simplify the construction of Stand treatment programs.
+
++ `lib.buildProgram`: takes one or several activites and creates a STP with a given name
+
+Introspection
+-------------
+
++ use `formattedLog()` and `formattedSTP()` for a detailed look into past and plant activitites
+
+Miscallaneous
+-------------
+
++ Logging: use `log()` and `dbg()` functions and `lib.logevel` to control the amount of log information
++ Activity log: use `activityLog()` (internally) to add to the stand-level log data
+
+
+Internals
+-------------
+
++ `lib.mergeOptions`: help with global / local settings
++ `lib.selectOptimalPatches`: compare patches and select the best based on a criterion
+
+Useful activites
+----------------
+
++ `changeSTP`: set follow-up STP when the current STP ends
++ `repeater`: simple activity to repeatedly run a single JS function / activity
+
+
+@class lib.helper
 */
 
+
+/**
+*  Initializes the `stand.obj` Javascript object for the current stand (`stand.id`).
+*
+*  @method lib.initStandObj
+*/
 lib.initStandObj = function() {
     if (typeof stand.obj === 'object' && typeof stand.obj.lib === 'object') return;
 
@@ -12,6 +52,11 @@ lib.initStandObj = function() {
 
 }
 
+/**
+*  Initializes all stands of the current simulation (`initStandObj()`).
+*
+*  @method lib.initAllStands
+*/
 lib.initAllStands = function() {
     for (const id of fmengine.standIds) {
       // set the focus of ABE to this stand:
@@ -146,15 +191,16 @@ lib.formattedLog = function() {
 
 }
 
-lib.formattedPlan = function() {
+lib.formattedSTP = function() {
 
 
   let htmlLog = `<h1>Planned Activities - ${stand.id}</h1>`;
   for (name of stand.stp.activityNames) {
       let act = stand.activityByName(name);
       let col = act.active ? 'black' : 'gray';
+      let year = act.optimalTime > 10000 ? '(signal)' : act.optimalTime;
       htmlLog += `<div>
-                    <h2 style="color: ${col};">${act.optimalTime} - ${act.name}</h2>
+                    <h2 style="color: ${col};">${year} - ${act.name}</h2>
                     <ul><li>Active (in this rotation): <b>${act.active}</b></li>
                       <li>Enabled (at all): <b>${act.enabled}</b></li>
                       <li>Description: ${act.description}</li>
@@ -264,7 +310,7 @@ lib.changeSTP = function(options) {
     const defaultOptions = {
         STP: undefined, // the STP that should follow after the end of the currently running STP
         schedule: { signal: 'end' }, // default behavior: trigger on end signal
-
+        id: 'change_stp'
         // ... add other default  parameters
     };
 
@@ -275,6 +321,7 @@ lib.changeSTP = function(options) {
 
     return {
       type: 'general', schedule: opts.schedule,
+        id: opts.id,
         action: function() {
             fmengine.log("The next STP will be: " + opts.STP);
             // TODO: find a way to actually do that :=)
@@ -290,6 +337,7 @@ lib.repeater = function(options) {
     // 1. Default Options
     const defaultOptions = {
         schedule: undefined, ///< when to start the repeater
+        id: 'repeater',
         count: undefined, ///< number of repetitions
         interval: 1, ///< interval between repetitions
         signal: undefined, ///< signal of the activity to be executed
@@ -300,6 +348,7 @@ lib.repeater = function(options) {
 
     return {
             type: 'general', schedule: opts.schedule,
+            id: opts.id,
             action: function() {
                 const repeat_interval = opts.interval;
                 const repeat_count = opts.count;

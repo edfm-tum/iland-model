@@ -1,3 +1,12 @@
+/**
+  The planting module include activities harvesting operations.
+
+
+
+  @module abe-lib
+  @submodule harvest
+  */
+
 lib.harvest = {};
 
 
@@ -76,6 +85,7 @@ lib.harvest.clearcut = function(options) {
     // 1. Default Options
     const defaultOptions = { 
         schedule: { optRel: 1, force: true }, // use standard rotation period
+        id: 'clearcut',
 		dbhThreshold: 0,
 		constraint: undefined
     };
@@ -83,6 +93,7 @@ lib.harvest.clearcut = function(options) {
 
 	const act = { // available function remain(x) kill all but x random trees
 			type: "scheduled", 
+            id: opts.id,
             schedule: opts.schedule, //JM: does it work/make a difference to include repeat=T here aswell?
 			onSetup: function() { 
                 lib.initStandObj(); // create an empty object as stand property

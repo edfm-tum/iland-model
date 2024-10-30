@@ -6,6 +6,7 @@ lib.thinning.selectiveThinning = function(options) {
     // 1. Default Options
     const defaultOptions = {
         schedule: undefined,
+        id: 'selective_select_trees',
         mode: 'simple',
         SpeciesMode: 'simple',
         NTrees: 80,
@@ -67,7 +68,7 @@ lib.thinning.selectiveThinning = function(options) {
 
     const select_trees = {
         type: 'thinning',
-        id: 'selective_select_trees',
+        id: opts.id,
         schedule: opts.schedule,			//absolute: true, opt: 3},	//repeat: true, repeatInterval: 10
         thinning: 'selection',
         N: opts.NTrees,

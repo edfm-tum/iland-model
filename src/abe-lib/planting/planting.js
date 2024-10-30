@@ -1,3 +1,12 @@
+/**
+  The planting module include activities for artificial regeneration.
+
+
+
+  @module abe-lib
+  @submodule lib.planting
+  */
+
 lib.planting = {};
 
 
@@ -94,9 +103,38 @@ lib.planting = function(options) {
 
     return plantingActivities;
 }*/
+
+/**
+Description
+-----------
+
+<bla bla bla>
+
+
+
+
+
+
+@class lib.planting.dynamic
+*/
+
+
+/**
+@type {Options}
+@param schedule {Schedule} object
+@param id {string} (unique) name of the activity
+@param speciesSelectivity {object} define the target species (and their relative weights). This
+information is used to build the actual planting items. Can be an object with key-value pairs,
+or a JS function that returns such an object
+@param speciesDefaults {object}
+@property defaultOptions
+  */
+
 lib.planting.dynamic = function(options) {
+
     const defaultOptions = {
         schedule: undefined,
+        id: 'planting',
         speciesSelectivity: undefined, ///< species to plant
         speciesDefaults: lib.planting.speciesDefaults
     };
@@ -145,6 +183,7 @@ lib.planting.dynamic = function(options) {
     // build the ABE activity
     return {
         type: 'planting',
+        id: opts.id,
         schedule: opts.schedule,
         random: false,
         items: [],

@@ -1,10 +1,28 @@
 /**
-  Main include file for the ABE management library.
+ * The ABE-library
 
-To use the library: ...
+Overview
+========
+The ABE-library:
++ is a pure JavaScript on top of the iLand ABE system
++ simplifies the use of ABE by providing a set of pre-defined building blocks to construct forest management
++ each building block can be further customized, and "standard" ABE / JS activities can be used as well
 
-  */
-// ABE-library.js
+High-level description.....
+
+Loading and using the library
+-----------------------------
+
+Extending the libray
+--------------------
+
+
+
+ *
+ * @module abe-lib
+*/
+
+
 
 function get_js_file_path() {
     // hacky way to get the file name of the currently running script
@@ -12,7 +30,8 @@ function get_js_file_path() {
         throw new Error("give me the filename!");
 
     } catch (error) {
-        const filename = error.fileName.replace(/^file:\/\/\//, ''); // remove file:///
+        // remove file:/// and remove "qrc" (when loaded from Qt resource files)
+        const filename = error.fileName.replace(/^file:\/\/\//, '').replace(/^qrc:\//, ':\/');
         return { fileName: filename,
                  dir: filename.substring(0, filename.lastIndexOf("/")) }
     }
