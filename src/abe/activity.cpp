@@ -60,7 +60,7 @@ void Schedule::setup(const QJSValue &js_value)
     if (js_value.isObject()) {
         const QStringList allowed = {"min", "max", "opt", "minRel", "maxRel", "optRel",
                                "repeatInterval", "repeatStart", "force", "absolute",
-                               "signal" };
+                                     "signal", "repeat", "wait" };
         FMSTP::checkObjectProperties(js_value, allowed, "Schedule" );
 
         tmin = FMSTP::valueFromJs(js_value, "min", "-1").toInt();

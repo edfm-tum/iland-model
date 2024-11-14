@@ -557,7 +557,7 @@ bool ActThinning::markCropTrees(FMStand *stand, bool selective_species)
     int n_found = 0;
     int tests=0;
     int i=0;
-    while (n_found < target_n/3 && i<target_n/2) {                        //JM: why do we need this part?
+    while (n_found < target_n/3 && i<target_n/2) {
         float f=testPixel(treelist->trees().at(i).first->position(), grid); ++tests;
         if (f==0.f) {
             // no neighbors: check species
@@ -590,10 +590,10 @@ bool ActThinning::markCropTrees(FMStand *stand, bool selective_species)
             float f=testPixel(treelist->trees().at(i).first->position(), grid); ++tests;
 
             if ((f==0.f) ||
-                (f<=(0.0805*selective_n-2.4256)) ||                  // JM: define kernel thresholds here     scaled: max(0, 0.0805*NZBaum-2.4256)
-                (run==1 && f<=(0.1484*selective_n-5.4919)) ||        // JM: define kernel thresholds here     scaled: max(0, 0.1484*NZBaum-5.4919)
-                (run==2 && f<=(0.1679*selective_n-4.8988)) ||        // JM: define kernel thresholds here     scaled: max(0, 0.1679*NZBaum-4.8988)
-                ((run==3) && f<=(0.0805*selective_n-2.4256))) {    // JM: define kernel thresholds here     scaled: max(0, 0.0805*NZBaum-2.4256) or 4*(0.1679*mSelectiveThinning.N-4.8988)
+                (f<=(0.0805*selective_n-2.4256)) ||                  // JM: define kernel thresholds here     scaled: max(0, 0.0805*selective_n-2.4256)
+                (run==1 && f<=(0.1484*selective_n-5.4919)) ||        // JM: define kernel thresholds here     scaled: max(0, 0.1484*selective_n-5.4919)
+                (run==2 && f<=(0.1679*selective_n-4.8988)) ||        // JM: define kernel thresholds here     scaled: max(0, 0.1679*selective_n-4.8988)
+                ((run==3) && f<=(4*(0.1679*selective_n-4.8988)))) {  // JM: define kernel thresholds here     scaled: max(0, 0.0805*selective_n-2.4256) or 4*(0.1679*selective_n-4.8988)
 
                 if (selective_species & !( drandom() < mSpeciesSelectivity[treelist->trees().at(i).first->species()]) )
                     continue;
