@@ -60,7 +60,8 @@ void Schedule::setup(const QJSValue &js_value)
     if (js_value.isObject()) {
         const QStringList allowed = {"min", "max", "opt", "minRel", "maxRel", "optRel",
                                "repeatInterval", "repeatStart", "force", "absolute",
-                                     "signal", "repeat", "wait" };
+                               "signal", "repeat", "wait" };
+
         FMSTP::checkObjectProperties(js_value, allowed, "Schedule" );
 
         tmin = FMSTP::valueFromJs(js_value, "min", "-1").toInt();
@@ -558,6 +559,11 @@ void Activity::evaluateDyanamicExpressions(FMStand *stand)
         bool result = mEnabledIf.evaluate(stand);
         stand->flags(mIndex).setEnabled(result);
     }
+}
+
+void Activity::runEvent(const QString &event_name, FMStand *stand)
+{
+    events().run(event_name, stand);
 }
 
 QStringList Activity::info()

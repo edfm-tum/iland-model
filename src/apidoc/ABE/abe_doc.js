@@ -1,6 +1,13 @@
 // Javascript API documentation framework http://yui.github.io/yuidoc/
+
 // create with "yuidoc ." in /apidoc directory (/build/apidocs must be available!)
+
 // or with "yuidoc --server ." for interactive mode.
+
+// to include the abe-library, run:
+
+// yuidoc --server . ../abe-lib
+
 // see also the yuidoc.json for more options.
 // http://127.0.0.1:3000/
 

@@ -6,7 +6,7 @@ Building STPs
 
 The library provides functions to simplify the construction of Stand treatment programs.
 
-+ `lib.buildProgram`: takes one or several activites and creates a STP with a given name
++ `lib.createSTP`: takes one or several activites and creates a STP with a given name
 
 Introspection
 -------------
@@ -67,6 +67,49 @@ lib.initAllStands = function() {
 }
 
 
+
+lib.loglevel = 0; // 0: none, 1: normal, 2: debug
+/**
+*  Internal function to log a string `str` to the iLand logfile.
+*  You can control the amount of log messages by setting `lib.loglevel` to the following values:
+*  * `0`: None - no messages from abe-library
+*  * `1`: Normal - limited amount of messages from the library, usually only high level
+*  * `2`: Debug - high number of log messages. Use for debugging and not in productive model applications.
+*
+*  See also: lib.dbg()
+*
+*  @example
+*      // set log level (e.g. in iLand Javascript console or in your code) after loading the library
+*      lib.loglevel = 2; //debug!
+*      ...
+*      // somewhere in library code: running the function now produces log messages
+*      lib.dbg(`selectiveThinning: repeat ${stand.obj.lib.selective_thinning_counter}, removed ${harvested} trees.`);
+*
+*
+*  @param str {String} string to log
+*  @method lib.log
+*/
+lib.log = function(str) {
+    if (lib.loglevel > 0)
+        fmengine.log(str);
+}
+/**
+*  Internal debug function to log a string `str` to the iLand logfile.
+*  You can control the amount of log messages by setting `lib.loglevel` to the following values:
+*  * `0`: None - no messages from abe-library
+*  * `1`: Normal - limited amount of messages from the library, usually only high level
+*  * `2`: Debug - high number of log messages. Use for debugging and not in productive model applications.
+*
+*  See also: lib.dbg()
+*
+*  @param str {String} string to log
+*  @method lib.dbg
+*/
+lib.dbg = function(str) {
+    if (lib.loglevel > 1)
+        fmengine.log(str);
+}
+
 /* helper functions within the library */
 
 
@@ -78,6 +121,25 @@ lib.mergeOptions2 = function(defaults, options) {
     return merged;
 }
 
+/**
+*  Helper function to combine deafult options and user-provided options for activities.
+*
+*  The function throws an error when `options` include values not defined in `defaults`.
+*  You should therefore define all potential keys that can be used by the user with value `undefined`!
+*
+*    @example
+*      // pattern
+*      const default_options = { schedule: undefined, intensity: 10 };
+*      // create an object with combined options (even if not provided)
+*      const opts = lib.mergeOptions(defaultOptions, options || {});
+*      // ...
+*
+*
+*    @param defaults object containing default values
+*    @param options object user-defined options
+*    @return object that contains default values updated with user-provided options
+*    @method lib.mergeOptions
+*/
 lib.mergeOptions = function(defaults, options) {
   const merged = {};
   for (const key in defaults) {
@@ -98,6 +160,34 @@ lib.mergeOptions = function(defaults, options) {
 
   return merged;
 }
+/**
+*  Library function to build a full iLand STP from a collection of elements.
+*
+*  The function takes one or multiple elements that are typically Javascript objects to define iLand activities.
+*  These Javascript objects typically are returnd by library functions; for example, the library function `lib.thinning.tending()`
+*  returns (one or more) *definitions* of iLand activities. `buildProgram` combines multiple elements to a single Javascript
+*  object. Note that this function does not intitalize iLand activities - it merely operates on Javascript objects. Use `createSTP`
+*  to actually create a stand treatment program in iLand!
+*
+*  @see
+*
+*    @example
+*      //
+*       const StructureThinning = lib.thinning.selectiveThinning({mode = 'dynamic'});
+*       const StructureHarvest = lib.harvest.targetDBH({dbhList = {"fasy":65,   //source: 'Waldbau auf ökologischer Grundlage', p.452
+*            "frex":60, "piab":45, "quro":75, "pisy":45, "lade":65,
+*            "qupe":75, "psme":65, "abal":45, "acps":60, "pini":45}});
+*
+*        const stp = lib.buildProgram(StructureThinning, StructureHarvest);
+*        // you can still modify the program, e.g, by adding activities!
+*        stp['a_new_activity'] = { type: 'general', schedule: .... };
+*
+*
+*
+*    @param concepts one or multiple concepts, typically the result of calls to library function
+*    @return object a definitions of multiple activities combined in a single object
+*    @method lib.buildProgram
+*/
 
 lib.buildProgram = function (...concepts) {
   const program = {};
@@ -114,16 +204,30 @@ lib.buildProgram = function (...concepts) {
   return program;
 }
 
-lib.loglevel = 0; // 0: none, 1: normal, 2: debug
-lib.log = function(str) {
-    if (lib.loglevel > 0)
-        fmengine.log(str);
-}
-lib.dbg = function(str) {
-    if (lib.loglevel > 1)
-        fmengine.log(str);
-}
 
+/**
+*  Main library function to create stand treatment programs in iLand.
+*
+*  The function takes one or multiple elements that are typically Javascript objects to define iLand activities, combines them,
+*  and creates a STP in iLand. If the STP already exists, it updates the existing STP (using `fmengine.updateManagement`),
+*  and creates a new stp otherwise (using `fmengine.addManagement`).
+*
+*
+*  See also: {{#crossLink "lib.helper/buildProgram:method"}}{{/crossLink}},{{#crossLink "FMEngine/updateManagement:method"}}{{/crossLink}}
+*
+*    @example
+*      //
+*       const StructureThinning = lib.thinning.selectiveThinning({mode = 'dynamic'});
+*       const StructureHarvest = lib.harvest.targetDBH({dbhList = {"fasy":65,   //source: 'Waldbau auf ökologischer Grundlage', p.452
+*            "frex":60, "piab":45, "quro":75, "pisy":45, "lade":65,
+*            "qupe":75, "psme":65, "abal":45, "acps":60, "pini":45}});
+*
+*        lib.createSTP('my_structure_stp',StructureThinning, StructureHarvest);
+*
+*    @param stp_name {string} name of the stand treatment program
+*    @param concepts one or multiple concepts, typically the result of calls to library function
+*    @method lib.createSTP
+*/
 lib.createSTP = function(stp_name, ...concepts) {
     const program = {};
     let activityCounter = 1;
@@ -149,10 +253,16 @@ lib.createSTP = function(stp_name, ...concepts) {
 }
 
 /** Management history
-    Stands store a activity log, also used for DNN training
-    activity items are added by individual activities defined in the library
+    Stands store a activity log, also used for DNN training.
+    `activityLog` is the internal function to populate the management history. The `extraValues` is
+    any value that can be defined by the activity itself.
 
- */
+See also: TODO: write management history, activityLog()
+
+@param actName {String} the activity name to log
+@param extraValues {String}  extra values (activity specific)
+@method activityLog
+*/
 lib.activityLog = function(actName, extraValues) {
     if (typeof stand.obj !== 'object' || typeof stand.obj.lib !== 'object')
         throw new Error(`activityLog() for stand ${stand.id}: stand.obj not available. Call lib.initStandObj()!`);
@@ -166,7 +276,17 @@ lib.activityLog = function(actName, extraValues) {
     stand.obj.history.push(log_item);
 }
 
-
+/**
+*  returns the activity log for the currently active stand as formatted HTML.
+*
+*
+*  @example
+*      // show the log for stand 13 in a popup window
+*      fmengine.standId = 13;
+*      Globals.alert( lib.formattedLog() );
+*
+* @method lib.formattedLog
+*/
 lib.formattedLog = function() {
   if (typeof stand.obj !== 'object' || !Array.isArray(stand.obj.history)) {
     return "No activity log available.";
@@ -191,16 +311,30 @@ lib.formattedLog = function() {
 
 }
 
+/**
+*  returns a readable description of the current STP as formatted HTML.
+*
+*  The description is a list of activites of the STP that is assigned the currently active stand.
+*  Items are greyed out if they have already been run in the current rotation, provide the planned year
+*  and a detailed descriptions (as provdied by the library functions)
+*
+*  @example
+*      // show the log for stand 13 in a popup window
+*      fmengine.standId = 13;
+*      Globals.alert( lib.formattedSTP() );
+*
+* @method lib.formattedLog
+*/
 lib.formattedSTP = function() {
 
 
-  let htmlLog = `<h1>Planned Activities - ${stand.id}</h1>`;
+  let htmlLog = `<h1>Planned Activities</h1><h2>Stand: ${stand.id} STP: ${stand.stp.name}</h2>`;
   for (name of stand.stp.activityNames) {
       let act = stand.activityByName(name);
       let col = act.active ? 'black' : 'gray';
       let year = act.optimalTime > 10000 ? '(signal)' : act.optimalTime;
       htmlLog += `<div>
-                    <h2 style="color: ${col};">${year} - ${act.name}</h2>
+                    <h3 style="color: ${col};">${year} - ${act.name}</h3>
                     <ul><li>Active (in this rotation): <b>${act.active}</b></li>
                       <li>Enabled (at all): <b>${act.enabled}</b></li>
                       <li>Description: ${act.description}</li>
@@ -341,10 +475,13 @@ lib.repeater = function(options) {
         count: undefined, ///< number of repetitions
         interval: 1, ///< interval between repetitions
         signal: undefined, ///< signal of the activity to be executed
-        block: true ///< all other activities only resume after the repeater ends
+        block: true, ///< all other activities only resume after the repeater ends
+        parameter: undefined ///< function that provides the signal parameter
     };
 
     const opts = lib.mergeOptions(defaultOptions, options || {});
+    if (opts.signal === undefined)
+        throw new Error("Repeater: signal is required!");
 
     return {
             type: 'general', schedule: opts.schedule,
@@ -354,18 +491,21 @@ lib.repeater = function(options) {
                 const repeat_count = opts.count;
                 const signal = opts.signal;
                 stand.repeat(this,
-                    function(n) { console.log(`repeater: emit signal "${opts.signal}". Execution #${n}`);
-                                  stand.stp.signal(opts.signal);
-                                  //fmengine.runActivity(stand.id, activity);
-                                   },
+                    function() {
+                        console.log(`repeater: emit signal "${opts.signal}"`);
+                        let param = opts.parameter;
+                        if (typeof opts.parameter === 'function')
+                            param = opts.parameter.call(opts);
+
+                        stand.stp.signal(opts.signal, param);
+                    },
                     opts.interval,
                     opts.count);
+
                 // make sure that only the repeater runs
                 if (opts.block)
                     stand.sleep(opts.interval * opts.count);
 
             },
-        onEnter: function(){ Globals.alert('repeater enter'); },
-        onExit: function(){ Globals.alert('repeater exit'); }
         }
 }
