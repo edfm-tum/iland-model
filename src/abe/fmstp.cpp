@@ -119,15 +119,21 @@ bool FMSTP::executeRepeatingActivities(FMStand *stand)
 
 }
 
-bool FMSTP::signal(QString signalstr, FMStand *stand)
+bool FMSTP::signal(QString signalstr, FMStand *stand, QJSValue parameter)
 {
     int found = 0;
     for (auto *act : mActivities) {
         if (act->schedule().listensToSignal(signalstr)) {
+            // only respond when the activity is enabled
+            if (!stand->flags(act->index()).enabled())
+                continue;
+
             int delta_yrs = act->schedule().signalExecutionDelay(signalstr);
             ForestManagementEngine::instance()->addRepeatActivity(stand->id(),
                                                                   act,
-                                                                  delta_yrs);
+                                                                  delta_yrs,
+                                                                  1,
+                                                                  parameter);
             if (verbose())
                 qCDebug(abe) << "Signal" << signalstr << "sent for stand" << stand->id() << "received by activity" << act->name() << "delta yrs:" << delta_yrs;
             ++found;

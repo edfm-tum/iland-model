@@ -63,7 +63,7 @@ public:
     /// run repeating activities
     bool executeRepeatingActivities(FMStand *stand);
     // signals
-    bool signal(QString signalstr, FMStand *stand);
+    bool signal(QString signalstr, FMStand *stand, QJSValue parameter=QJSValue());
 
     /// evaluate bound expressions for all activities of the STP for the given stand
     void evaluateDynamicExpressions(FMStand *stand);

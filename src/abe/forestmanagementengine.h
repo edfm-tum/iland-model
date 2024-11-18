@@ -101,7 +101,7 @@ public:
     // functions
 
     void addRepeatJS(int stand_id, QJSValue obj, QJSValue callback, int repeatInterval=1, int repeatTimes=-1);
-    void addRepeatActivity(int stand_id, Activity *act, int repeatInterval=1, int repeatTimes=-1);
+    void addRepeatActivity(int stand_id, Activity *act, int repeatInterval=1, int repeatTimes=-1, QJSValue parameter=QJSValue());
     void stopRepeat(int stand_id, QJSValue obj);
     // run advanced repeated operations
     void runRepeatedItems(int stand_id);
@@ -150,16 +150,17 @@ private:
         SRepeatItem(): interval(1), times(-1), N(0), waitYears(1),activity(nullptr) {}
         SRepeatItem(int ainterval, int atimes, QJSValue &aobj, QJSValue &acallback): interval(ainterval), times(atimes),
             N(0), waitYears(ainterval), jsobj(aobj), callback(acallback), activity(nullptr) {}
-        SRepeatItem(int ainterval, int atimes, Activity *act): interval(ainterval), times(atimes),
-            N(0), waitYears(ainterval), activity(act) {}
+        SRepeatItem(int ainterval, int atimes, Activity *act, QJSValue aparam=QJSValue()): interval(ainterval), times(atimes),
+            N(0), waitYears(ainterval), parameter(aparam), activity(act) {}
 
         int interval;
         int times;
         int N; // times already repeated
         int waitYears; // years until next execution
-        QJSValue jsobj; // this object
-        QJSValue callback; // callback function
-        Activity *activity; //
+        QJSValue jsobj; // this object (for JS calls)
+        QJSValue callback; // callback function (for JS)
+        QJSValue parameter; // signal parameter
+        Activity *activity; // activity to execute
     };
     bool runSingleRepeatedItem(int stand_id, SRepeatItem &item);
 

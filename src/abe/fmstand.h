@@ -201,6 +201,8 @@ public:
 
     /// general JS object of a stand
     QJSValue &JSobj() { return mJSObj; }
+    QJSValue signalParameter() { return mJSSignalParameter; }
+    void setSignalParameter(QJSValue value) { mJSSignalParameter = value; }
 
     // retrieve current state of the object
     QStringList info();
@@ -258,6 +260,7 @@ private:
     Patches *mPatches;
     static QHash<const FMStand*, QHash<QString, QJSValue> > mStandPropertyStorage;
     QJSValue mJSObj;
+    QJSValue mJSSignalParameter;
 
     friend class StandObj;
 };

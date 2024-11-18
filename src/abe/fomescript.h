@@ -202,6 +202,7 @@ class StandObj: public QObject
     Q_PROPERTY(Patches* patches READ patches);
 
     Q_PROPERTY(QJSValue obj READ JSObj WRITE setJSObj);
+    Q_PROPERTY(QJSValue signalParameter READ signalParameter);
 
 
 /*    basalArea: 0, // total basal area/ha of the stand
@@ -281,6 +282,7 @@ public:
     /// set general purpose javascript object for a stand
     void setJSObj(QJSValue val) {if (mStand) mStand->JSobj() = val; }
 
+    QJSValue signalParameter() { if (mStand) return mStand->signalParameter(); return QJSValue(); }
 
 private:
     void throwError(QString msg) const;
@@ -370,7 +372,7 @@ public:
     int activityCount() const;
     QStringList activityNames();
 public slots:
-    bool signal(QString signalname);
+    bool signal(QString signalname, QJSValue parameter=QJSValue());
 
 
 private:

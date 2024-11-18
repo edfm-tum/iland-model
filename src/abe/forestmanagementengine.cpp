@@ -267,13 +267,16 @@ bool ForestManagementEngine::runSingleRepeatedItem(int stand_id, SRepeatItem &it
             // run the activity
             //bool res = stnd->executeActivity(it->activity);
             int old_index = stnd->currentActivityIndex();
+            stnd->setSignalParameter(item.parameter);
             stnd->setActivityIndex( item.activity->index() );
             bool res = item.activity->execute(stnd);
+            item.activity->runEvent(QStringLiteral("onExecuted"),stnd);
             stnd->setActivityIndex( old_index );
+            stnd->setSignalParameter(QJSValue());
             qCDebug(abe) << "executed activity (repeated): " << item.activity->name() << ". Result: " << res;
         } else {
             // run javascript function
-            QJSValueList params = { item.N };
+            QJSValueList params = { item.parameter };
             QJSValue result;
 
 
@@ -876,12 +879,12 @@ void ForestManagementEngine::addRepeatJS(int stand_id, QJSValue obj, QJSValue ca
         mRepeatStore.insert(stand_id, SRepeatItem(repeatInterval, repeatTimes, obj, callback));
 }
 
-void ForestManagementEngine::addRepeatActivity(int stand_id, Activity *act, int repeatInterval, int repeatTimes)
+void ForestManagementEngine::addRepeatActivity(int stand_id, Activity *act, int repeatInterval, int repeatTimes, QJSValue parameter)
 {
     if (mRepeatStoreBuffer)
-        mRepeatStoreBuffer->push_back({stand_id, SRepeatItem(repeatInterval, repeatTimes, act)});
+        mRepeatStoreBuffer->push_back({stand_id, SRepeatItem(repeatInterval, repeatTimes, act, parameter)});
     else
-        mRepeatStore.insert(stand_id, SRepeatItem(repeatInterval, repeatTimes, act));
+        mRepeatStore.insert(stand_id, SRepeatItem(repeatInterval, repeatTimes, act, parameter));
 }
 
 void ForestManagementEngine::stopRepeat(int stand_id, QJSValue obj)
