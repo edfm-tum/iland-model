@@ -108,9 +108,9 @@ lib.planting = function(options) {
 Description
 -----------
 
-<bla bla bla>
+bla bla bla
 
-
+asdfadsf
 
 
 

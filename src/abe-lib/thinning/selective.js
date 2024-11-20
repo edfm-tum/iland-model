@@ -104,6 +104,7 @@ lib.thinning.selectiveThinning = function(options) {
 
 
             lib.log("Year: " + Globals.year + ", selective thinning harvest");
+            fmengine.log(stand.signalParameter);
 
             stand.trees.load('markcompetitor=true');
             stand.trees.filterRandomExclude(n);
@@ -119,7 +120,8 @@ lib.thinning.selectiveThinning = function(options) {
     program['repeater'] = lib.repeater({ schedule: { signal: 'selective_start_repeat'},
                                            signal: 'selective_thinning_remove',
                                            interval: opts.repeatInterval,
-                                           count: opts.repeatTimes });
+                                           count: opts.repeatTimes,
+                                           parameter: function() {return "test" }});
 
     program["remover"] = remove_trees;
 
