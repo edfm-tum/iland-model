@@ -78,12 +78,10 @@ namespace ABE {
  * @ingroup abe
 */
 
-ForestManagementEngine *ForestManagementEngine::singleton_fome_engine = nullptr;
 int ForestManagementEngine::mMaxStandId = -1;
 ForestManagementEngine::ForestManagementEngine()
 {
     mScriptBridge = nullptr;
-    singleton_fome_engine = this;
     mCancel = false;
     mEnabled = true;
     setupOutputs(); // add ABE output definitions
@@ -96,7 +94,6 @@ ForestManagementEngine::~ForestManagementEngine()
     // script bridge: script ownership?
     //if (mScriptBridge)
     //    delete mScriptBridge;
-    singleton_fome_engine = nullptr;
 }
 
 const MapGrid *ForestManagementEngine::standGrid()

@@ -48,7 +48,10 @@ class GlobalSettings
 {
 public:
     // singleton-access
-    static GlobalSettings *instance() { if (mInstance) return mInstance; mInstance = new GlobalSettings(); return mInstance; }
+    static GlobalSettings* instance() {
+        static GlobalSettings theInstance;
+        return &theInstance;
+    }
     ~GlobalSettings();
     // Access
     // model and clock
@@ -123,7 +126,6 @@ public:
 
 private:
     GlobalSettings(); // private ctor
-    static GlobalSettings *mInstance;
     Model *mModel;
     ModelController *mModelController;
     OutputManager *mOutputManager;

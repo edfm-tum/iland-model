@@ -127,7 +127,6 @@ void setLogLevel(int loglevel)
     }
 }
 
-GlobalSettings *GlobalSettings::mInstance = nullptr;
 
 GlobalSettings::GlobalSettings()
 {
@@ -145,7 +144,6 @@ GlobalSettings::GlobalSettings()
 GlobalSettings::~GlobalSettings()
 {
     delete mSystemStatistics;
-    mInstance = nullptr;
     delete mOutputManager;
     // clear all databases
     clearDatabaseConnections();

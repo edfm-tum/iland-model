@@ -48,7 +48,11 @@ public:
     ForestManagementEngine();
     ~ForestManagementEngine();
     // engine instance (singleton)
-    static ForestManagementEngine *instance() { if (singleton_fome_engine) return singleton_fome_engine; singleton_fome_engine = new ForestManagementEngine; return singleton_fome_engine; }
+    static ForestManagementEngine *instance() {
+        static ForestManagementEngine theInstance;
+        return &theInstance;
+
+    }
     /// link to stand grid
     static const MapGrid *standGrid();
 
@@ -128,9 +132,6 @@ private:
     void setupOutputs();
     void runJavascript(bool after_processing);
 
-
-
-    static ForestManagementEngine *singleton_fome_engine;
     int mCurrentYear; ///< current year of the simulation (=year of the model)
 
     QVector<FMSTP*> mSTP;
