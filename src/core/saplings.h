@@ -49,38 +49,38 @@ struct SaplingTree {
     // get resource unit species of the sapling tree
     ResourceUnitSpecies *resourceUnitSpecies(const ResourceUnit *ru) const;
 };
-#define NSAPCELLS 5
 struct SaplingCell {
-    enum ECellState { CellInvalid=0, ///< not stockable (outside project area)
+    static constexpr int NSapCells = 5;
+    enum class ECellState : uint8_t { CellInvalid=0, ///< not stockable (outside project area)
                       CellEmpty=1,   ///< the cell has no slots occupied (no saplings on the cell)
                       CellGrass=2,   ///< the cell is empty and has grass cover (see grass module)
                       CellFree=3,    ///< seedlings may establish on the cell (at least one slot occupied)
                       CellFull=4};   ///< cell is full (no establishment) (either all slots used or one slot > 1.3m)
     SaplingCell() {
-        state=CellInvalid;
+        state=ECellState::CellInvalid;
         ru=nullptr;
     }
     ECellState state;
-    SaplingTree saplings[NSAPCELLS];
+    SaplingTree saplings[NSapCells];
     ResourceUnit *ru;
     /// returns true if establishment is allowed for the cell
-    bool hasFreeSlots() const {return state>CellInvalid && state<CellFull; }
-    void checkState() { if (state==CellInvalid) return;
+    bool hasFreeSlots() const {return state>ECellState::CellInvalid && state<ECellState::CellFull; }
+    void checkState() { if (state==ECellState::CellInvalid) return;
                         bool free = false;
                         bool occupied=false;
-                        for (int i=0;i<NSAPCELLS;++i) {
+                        for (int i=0;i<NSapCells;++i) {
                             // locked for all species, if a sapling of one species >1.3m
-                            if (saplings[i].height>1.3f) {state = CellFull; return; }
+                            if (saplings[i].height>1.3f) {state = ECellState::CellFull; return; }
                             occupied |= saplings[i].is_occupied();
                             // locked, if all slots are occupied.
                             if (!saplings[i].is_occupied())
                                 free=true;
                         }
-                        state = free? (occupied? CellEmpty: CellFree) : CellFull;
+                        state = free? (occupied? ECellState::CellEmpty: ECellState::CellFree) : ECellState::CellFull;
                       }
     /// get an index to an open slot in the cell, or -1 if all slots are occupied
     int free_index() {
-        for (int i=0;i<NSAPCELLS;++i)
+        for (int i=0;i<NSapCells;++i)
             if (!saplings[i].is_occupied())
                 return i;
         return -1;
@@ -88,7 +88,7 @@ struct SaplingCell {
     /// count the number of occupied slots on the pixel
     int n_occupied() {
         int n=0;
-        for (int i=0;i<NSAPCELLS;++i)
+        for (int i=0;i<NSapCells;++i)
             n+=saplings[i].is_occupied();
         return n;
     }
@@ -102,22 +102,22 @@ struct SaplingCell {
         return &saplings[idx];
     }
     /// return the maximum height on the pixel
-    float max_height() { if (state==CellInvalid) return 0.f;
+    float max_height() { if (state==ECellState::CellInvalid) return 0.f;
                          float h_max = 0.f;
-                         for (int i=0;i<NSAPCELLS;++i)
+                         for (int i=0;i<NSapCells;++i)
                              h_max = std::max(saplings[i].height, h_max);
                          return h_max;
                        }
-    bool has_new_saplings() { if (state==CellInvalid) return 0.f;
-                        for (int i=0;i<NSAPCELLS;++i)
+    bool has_new_saplings() { if (state==ECellState::CellInvalid) return 0.f;
+                        for (int i=0;i<NSapCells;++i)
                             if (saplings[i].is_occupied() && saplings[i].age<2)
                                 return true;
                         return false;
     }
     /// return the sapling tree of the requested species, or 0
     SaplingTree *saplingOfSpecies(int species_index) {
-        if (state==CellInvalid) return nullptr;
-        for (int i=0;i<NSAPCELLS;++i)
+        if (state==ECellState::CellInvalid) return nullptr;
+        for (int i=0;i<NSapCells;++i)
             if (saplings[i].species_index == species_index)
                 return &saplings[i];
         return nullptr;

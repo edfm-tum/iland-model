@@ -48,9 +48,9 @@ void Saplings::setup()
         SaplingCell *s = cell(lif_grid->indexOf(i), false); // false: retrieve also invalid cells
         if (s) {
             if (!hg->valueAtIndex(lif_grid->index5(i)).isValid())
-                s->state = SaplingCell::CellInvalid;
+                s->state = SaplingCell::ECellState::CellInvalid;
             else
-                s->state = SaplingCell::CellEmpty;
+                s->state = SaplingCell::ECellState::CellEmpty;
         }
 
     }
@@ -66,9 +66,9 @@ void Saplings::calculateInitialStatistics(const ResourceUnit *ru)
     SaplingCell *s = sap_cells;
 
     for (int i=0; i<cPxPerHectare; ++i, ++s) {
-        if (s->state != SaplingCell::CellInvalid) {
+        if (s->state != SaplingCell::ECellState::CellInvalid) {
             int cohorts_on_px = s->n_occupied();
-            for (int j=0;j<NSAPCELLS;++j) {
+            for (int j=0;j<SaplingCell::NSapCells;++j) {
                 if (s->saplings[j].is_occupied()) {
                     SaplingTree &tree=s->saplings[j];
                     ResourceUnitSpecies *rus = tree.resourceUnitSpecies(ru);
@@ -156,7 +156,7 @@ void Saplings::establishment(const ResourceUnit *ru)
                     // * test for grass-cover already in cell state
                     SaplingTree *stree=nullptr;
                     SaplingTree *slot=s->saplings;
-                    for (int i=0;i<NSAPCELLS;++i, ++slot) {
+                    for (int i=0;i<SaplingCell::NSapCells;++i, ++slot) {
                         if (!stree && !slot->is_occupied())
                             stree=slot;
                         if (slot->species_index == species_idx) {
@@ -211,10 +211,10 @@ void Saplings::saplingGrowth(const ResourceUnit *ru)
         int isc = lif_grid->index(imap.x(), imap.y()+iy);
 
         for (int ix=0;ix<cPxPerRU; ++ix, ++s, ++isc) {
-            if (s->state != SaplingCell::CellInvalid) {
+            if (s->state != SaplingCell::ECellState::CellInvalid) {
                 need_check=false;
                 int n_on_px = s->n_occupied();
-                for (int i=0;i<NSAPCELLS;++i) {
+                for (int i=0;i<SaplingCell::NSapCells;++i) {
                     if (s->saplings[i].is_occupied()) {
                         // growth of this sapling tree
                         HeightGridValue &hgv = height_grid->valueAtIndex(lif_grid->index5(isc));
@@ -273,8 +273,8 @@ void Saplings::simplifiedGrassCover(const ResourceUnit *ru)
         int isc = lif_grid->index(imap.x(), imap.y()+iy);
 
         for (int ix=0;ix<cPxPerRU; ++ix, ++s, ++isc) {
-            if (s->state == SaplingCell::CellEmpty || s->state== SaplingCell::CellGrass) {
-                s->state =  (*lif_grid)[isc] > threshold ? SaplingCell::CellGrass : SaplingCell::CellEmpty;
+            if (s->state == SaplingCell::ECellState::CellEmpty || s->state== SaplingCell::ECellState::CellGrass) {
+                s->state =  (*lif_grid)[isc] > threshold ? SaplingCell::ECellState::CellGrass : SaplingCell::ECellState::CellEmpty;
             }
         }
     }
@@ -287,7 +287,7 @@ double Saplings::topHeight(const ResourceUnit *ru) const
     //int n_cells = ru->stockableArea() / (cPxSize*cPxSize);
     float h_max = 0.f;
     for (int iy=0; iy<cPxPerRU; ++iy, ++sap_cell) {
-        if (sap_cell->state!=SaplingCell::CellInvalid) {
+        if (sap_cell->state!=SaplingCell::ECellState::CellInvalid) {
             h_max = qMax(sap_cell->max_height(), h_max);
         }
     }
@@ -312,7 +312,7 @@ SaplingCell *Saplings::cell(QPoint lif_coords, bool only_valid, ResourceUnit **r
                  qDebug("invalid coords in Saplings::cell");
                     );
         SaplingCell *s=&ru->saplingCellArray()[idx];
-        if (s && (!only_valid || s->state!=SaplingCell::CellInvalid))
+        if (s && (!only_valid || s->state!=SaplingCell::ECellState::CellInvalid))
             return s;
     }
     return nullptr;
@@ -353,7 +353,7 @@ void Saplings::clearSaplings(const QRectF &rectangle, const bool remove_biomass,
 void Saplings::clearSaplings(SaplingCell *s, ResourceUnit *ru, const bool remove_biomass, bool resprout)
 {
     if (s) {
-        for (int i=0;i<NSAPCELLS;++i)
+        for (int i=0;i<SaplingCell::NSapCells;++i)
             if (s->saplings[i].is_occupied()) {
                 ResourceUnitSpecies *rus = s->saplings[i].resourceUnitSpecies(ru);
                 if (!remove_biomass) {
@@ -599,7 +599,7 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTr
         total_carbon_added -= total_carbon_added - (woody_bm + foliage + fineroot)*biomassCFraction;
 
         tree.clear(); // clear this tree (no carbon flow to the ground)
-        for (int i=0;i<NSAPCELLS;++i) {
+        for (int i=0;i<SaplingCell::NSapCells;++i) {
             if (scell.saplings[i].is_occupied()) {
                 // add carbon to the ground
                 ResourceUnitSpecies *srus = scell.saplings[i].resourceUnitSpecies(ru);
