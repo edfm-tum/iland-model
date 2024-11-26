@@ -29,9 +29,12 @@ Microclimate::~Microclimate()
 
 void Microclimate::calculateVegetation()
 {
-    QVector<double> ba_total(cHeightPerRU*cHeightPerRU, 0.);
-    QVector<double> lai_total(cHeightPerRU*cHeightPerRU, 0.);
-    QVector<double> shade_tol(cHeightPerRU*cHeightPerRU, 0.);
+    std::array<double,cHeightPerRU*cHeightPerRU> shade_tol;
+    std::array<double,cHeightPerRU*cHeightPerRU> lai_total;
+    std::array<double,cHeightPerRU*cHeightPerRU> ba_total;
+    ba_total.fill(0.);
+    shade_tol.fill(0.);
+    lai_total.fill(0.);
 
     if (!mIsSetup)
         // calculate (only once) northness and other factors that only depend on elevation model

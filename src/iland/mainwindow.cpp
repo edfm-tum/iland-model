@@ -1568,7 +1568,7 @@ void MainWindow::paintMapGrid(QPainter &painter,
             if (clip_with_stand_grid && !GlobalSettings::instance()->model()->heightGrid()->valueAt(world).isValid()) {
                 fill_color = Qt::white;
             } else {
-                fill_color = view_type<10? Colors::colorFromValue(value, min_val, max_val, reverse,black_white) : Colors::colorFromPalette(value, view_type);
+                fill_color = view_type<10? Colors::colorFromValue(value, view_type, min_val, max_val) : Colors::colorFromPalette(value, view_type);
                 if (shading) {
                     fill_color = Colors::shadeColor(fill_color, world, mRemoteControl.model()->dem()).rgb();
                 }
@@ -1758,7 +1758,7 @@ void MainWindow::showRegenDetails(const QPointF &coord)
     SaplingWrapper sw;
     const QStringList &names = sw.getVariablesList();
 
-    for (int i=0;i<NSAPCELLS;++i) {
+    for (int i=0;i<SaplingCell::NSapCells;++i) {
         if (sc->saplings[i].is_occupied()) {
             sw.setSaplingTree(&sc->saplings[i], rRU);
             items.append(new QTreeWidgetItem(QStringList() << "species" << mRemoteControl.model()->speciesSet()->species(sw.valueByName("species"))->id() ));

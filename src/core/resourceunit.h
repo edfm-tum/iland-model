@@ -140,6 +140,7 @@ public:
 
     void analyzeMicroclimate(); ///< run vegetation analysis for microclimate
 
+
     // snag / snag dynamics
     // snag dynamics, soil carbon and nitrogen cycle
     void snagNewYear() { if (snag()) snag()->newYear(); } ///< clean transfer pools

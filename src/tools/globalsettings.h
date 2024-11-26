@@ -147,20 +147,20 @@ private:
 // Light-Grid: 2x2m
 // Height-Grid: 10x10m
 // Resource-Unit: 100x100m
-const int cPxSize = 2; // size of light grid (m)
-const int cRUSize = 100; // size of resource unit (m)
-const double cRUArea = 10000.; // area of a resource unit (m2)
-const int cHeightSize = 10; // size of a height grid pixel (m)
-const int cPxPerHeight = 5; // 10 / 2 LIF pixels per height pixel
-const int cPxPerRU = 50; // 100/2
-const int cHeightPerRU = 10; // 100/10 height pixels per resource unit
-const int cPxPerHectare = 2500; // pixel/ha ( 10000 / (2*2) )
-const double cHeightPixelArea = 100.; // 100m2 area of a height pixel
-const float cSapHeight = 4.f; // height from which on trees are modeled as individual trees (instead of saplings)
+constexpr int cPxSize = 2; // size of light grid (m)
+constexpr int cRUSize = 100; // size of resource unit (m)
+constexpr double cRUArea = 10000.; // area of a resource unit (m2)
+constexpr int cHeightSize = 10; // size of a height grid pixel (m)
+constexpr int cPxPerHeight = 5; // 10 / 2 LIF pixels per height pixel
+constexpr int cPxPerRU = 50; // 100/2
+constexpr int cHeightPerRU = 10; // 100/10 height pixels per resource unit
+constexpr int cPxPerHectare = 2500; // pixel/ha ( 10000 / (2*2) )
+constexpr double cHeightPixelArea = 100.; // 100m2 area of a height pixel
+constexpr float cSapHeight = 4.f; // height from which on trees are modeled as individual trees (instead of saplings)
 
 // other constants
-const double biomassCFraction = 0.5; // fraction of (dry) biomass which is carbon
-const double cAutotrophicRespiration = 0.47;
+constexpr double biomassCFraction = 0.5; // fraction of (dry) biomass which is carbon
+constexpr double cAutotrophicRespiration = 0.47;
 
 /// shortcut to the GlobalSettings Singleton object.
 #define Globals (GlobalSettings::instance())

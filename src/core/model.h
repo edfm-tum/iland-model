@@ -33,6 +33,7 @@ class ResourceUnit;
 class SpeciesSet;
 class Management;
 class Saplings;
+class Understorey;
 
 namespace ABE {
 class ForestManagementEngine;
@@ -112,6 +113,7 @@ public:
 
     Environment *environment() const {return mEnvironment; }
     Saplings *saplings() const {return mSaplings; }
+    Understorey *understorey() const { return mUnderstorey; }
     TimeEvents *timeEvents() const { return mTimeEvents; }
     Modules *modules() const { return mModules; }
     const DEM *dem() const { return mDEM; }
@@ -124,6 +126,8 @@ public:
     FloatGrid *grid() { return mGrid; } ///< this is the global 'LIF'-grid (light patterns) (currently 2x2m)
     HeightGrid *heightGrid() { return mHeightGrid; } ///< stores maximum heights of trees and some flags (currently 10x10m)
     const MapGrid *standGrid() { return mStandGrid; } ///< retrieve the spatial grid that defines the stands (10m resolution)
+
+    /// landscape Grid of ResourceUnit pointers
     const Grid<ResourceUnit*> &RUgrid() { return mRUmap; }
     /// get the value of the (10m) Height grid at the position index ix and iy (of the LIF grid)
     const HeightGridValue heightGridValue(const int ix, const int iy) const { return  mHeightGrid->constValueAtIndex(ix/cPxPerHeight, iy/cPxPerHeight); }
@@ -184,7 +188,8 @@ private:
     // global grids...
     FloatGrid *mGrid; ///< the main LIF grid of the model (2x2m resolution)
     HeightGrid *mHeightGrid; ///< grid with 10m resolution that stores maximum-heights, tree counts and some flags
-    Saplings *mSaplings;
+    Saplings *mSaplings; ///< sub module for sapling trees
+    Understorey *mUnderstorey; ///< sub module for ground generation
     Management *mManagement; ///< management sub-module (simple mode)
     ABE::ForestManagementEngine *mABEManagement; ///< management sub-module (agent based management engine)
     BITE::BiteEngine *mBiteEngine; ///< biotic disturbance module BITE

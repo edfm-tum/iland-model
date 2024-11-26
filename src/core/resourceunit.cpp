@@ -171,7 +171,7 @@ double ResourceUnit::saplingCoveredArea(bool below130cm) const
     if (below130cm) {
         for (int i=0;i<cPxPerHectare;++i) {
             // either grass *OR* hmax<1.3m
-            if (mSaplings[i].state == SaplingCell::CellGrass) {
+            if (mSaplings[i].state == SaplingCell::ECellState::CellGrass) {
                 ++n_covered;
             } else {
                 float hmx = mSaplings[i].max_height();

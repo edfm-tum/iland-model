@@ -145,6 +145,8 @@ public:
     int index5(int idx) const {return ((idx/mSizeX)/5)*(mSizeX/5) + (idx%mSizeX)/5; }
     /// returns the index of an aligned grid (the same size) with the 10 times bigger cells (e.g. to scale from a 2m grid to a 20m grid)
     int index10(int idx) const {return ((idx/mSizeX)/10)*(mSizeX/10) + (idx%mSizeX)/10; }
+    /// returns the index of an aligned grid (the same size) with the 50 times bigger cells (e.g. to scale from a 2m grid to a 100m grid)
+    int index50(int idx) const {return ((idx/mSizeX)/50)*(mSizeX/50) + (idx%mSizeX)/50; }
 
     /// force @param pos to contain valid indices with respect to this grid.
     void validate(QPoint &pos) const{ pos.setX( qMax(qMin(pos.x(), mSizeX-1), 0) );  pos.setY( qMax(qMin(pos.y(), mSizeY-1), 0) );} ///< ensure that "pos" is a valid key. if out of range, pos is set to minimum/maximum values.

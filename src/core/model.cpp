@@ -53,6 +53,7 @@
 #include "dem.h"
 #include "grasscover.h"
 #include "svdstate.h"
+#include "understorey.h"
 
 #include "outputmanager.h"
 
@@ -166,6 +167,7 @@ void Model::initialize()
    mDEM = nullptr;
    mGrassCover = nullptr;
    mSaplings=nullptr;
+   mUnderstorey=nullptr;
    mSVDStates=nullptr;
 }
 
@@ -463,6 +465,8 @@ void Model::clear()
         delete mHeightGrid;
     if (mSaplings)
         delete mSaplings;
+    if (mUnderstorey)
+        delete mUnderstorey;
     if (mManagement)
         delete mManagement;
     if (mEnvironment)
@@ -485,6 +489,8 @@ void Model::clear()
         delete mSVDStates;
     if (mBiteEngine)
         delete  mBiteEngine;
+    if (mUnderstorey)
+        delete mUnderstorey;
 
     mGrid = nullptr;
     mHeightGrid = nullptr;
@@ -497,6 +503,7 @@ void Model::clear()
     mGrassCover = nullptr;
     mABEManagement = nullptr;
     mBiteEngine = nullptr;
+    mUnderstorey = nullptr;
     mSVDStates = nullptr;
 
     GlobalSettings::instance()->outputManager()->close();
@@ -576,14 +583,19 @@ void Model::loadProject()
     if (mRU.isEmpty())
         throw IException("Setup of Model: no resource units present!");
 
-    // (3) additional issues
+    // (3) additional components
 
-    // (3.2) setup of regeneration
+    // (3.1) setup of regeneration
     if (settings().regenerationEnabled) {
         foreach(SpeciesSet *ss, mSpeciesSets)
             ss->setupRegeneration();
     }
     Saplings::setRecruitmentVariation(xml.valueDouble("model.settings.seedDispersal.recruitmentDimensionVariation",0.1));
+
+    // (3.2) Understorey
+    if (settings().understoreyEnabled) {
+        mUnderstorey = new Understorey();
+    }
 
     // (3.3) management
     bool use_abe = xml.valueBool("model.management.abeEnabled");
@@ -759,8 +771,15 @@ void Model::beforeRun()
     // microclimate
     if (Model::settings().microclimateEnabled) {
         MicroclimateVisualizer::setupVisualization();
-        DebugTimer t("Microclimate setup");
+        DebugTimer t("Microclimate");
         executePerResourceUnit(nc_microclimate, false /* true to force single threaded execution */);
+    }
+
+    // understorey
+    if (Model::settings().understoreyEnabled) {
+        UnderstoreyVisualizer::setupVisualization();
+        DebugTimer t("Understory setup");
+        mUnderstorey->setup();
 
     }
 
@@ -918,6 +937,12 @@ void Model::runYear()
         // Establishment::debugInfo(); // debug test
         threadRunner.checkErrors();
 
+    }
+
+    // understorey
+    if (settings().understoreyEnabled) {
+        DebugTimer t("understorey");
+        mUnderstorey->run();
     }
 
     // external modules/disturbances

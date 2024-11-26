@@ -109,7 +109,7 @@ bool EcoVizOut::writePDBFile(QString fileName, int n_trees, int n_cohorts, int y
 
                     QPointF coord = saplings->coordOfCell(ru, px);
 
-                    for (int i=0;i<NSAPCELLS;++i) {
+                    for (int i=0;i<SaplingCell::NSapCells;++i) {
                         if (s->saplings[i].is_occupied()) {
                             ResourceUnitSpecies *rus = s->saplings[i].resourceUnitSpecies(ru);
                             const Species *species = rus->species();

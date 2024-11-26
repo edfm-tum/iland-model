@@ -132,7 +132,7 @@ void SaplingDetailsOut::exec()
         for (int px=0;px<cPxPerHectare;++px, ++s) {
             int n_on_px = s->n_occupied();
             if (n_on_px>0) {
-                for (int i=0;i<NSAPCELLS;++i) {
+                for (int i=0;i<SaplingCell::NSapCells;++i) {
                     if (s->saplings[i].is_occupied()) {
                         ResourceUnitSpecies *rus = s->saplings[i].resourceUnitSpecies(ru);
                         const Species *species = rus->species();

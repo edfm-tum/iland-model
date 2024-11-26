@@ -151,6 +151,9 @@ SOURCES += main.cpp \
     ../abe/patches.cpp \
     ../core/microclimate.cpp \
     ../core/permafrost.cpp \
+    ../core/understorey.cpp \
+    ../core/understoreypft.cpp \
+    ../core/understoreyplant.cpp \
     ../output/devstageout.cpp \
     ../output/ecovizout.cpp \
     ../tools/geotiff.cpp \
@@ -283,6 +286,9 @@ HEADERS += mainwindow.h \
     ../abe/patches.h \
     ../core/microclimate.h \
     ../core/permafrost.h \
+    ../core/understorey.h \
+    ../core/understoreypft.h \
+    ../core/understoreyplant.h \
     ../output/devstageout.h \
     ../output/ecovizout.h \
     ../tools/geotiff.h \

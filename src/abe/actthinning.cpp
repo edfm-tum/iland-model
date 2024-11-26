@@ -843,7 +843,7 @@ bool ActThinning::runTending(FMStand* stand)
             }
             double max_sel = 0.0;
             int which_max = -1;
-            for (int i=0;i<NSAPCELLS;++i) {
+            for (int i=0;i<SaplingCell::NSapCells;++i) {
                 if (sc->saplings[i].is_occupied()) {
 
                     double selectivity = mSpeciesSelectivity[sc->saplings[i].resourceUnitSpecies(scr.ru())->species()];
@@ -945,7 +945,7 @@ bool ActThinning::runTending(FMStand* stand)
 
         if (ti->isSapling()) {
             // a sapling to be favored: remove all other saplings from the cell
-            for (int i=0;i<NSAPCELLS;++i) {
+            for (int i=0;i<SaplingCell::NSapCells;++i) {
                 if (sc->saplings[i].is_occupied()) {
                     if (i != ti->index) {
                         sc->saplings[i].clear();
@@ -957,7 +957,7 @@ bool ActThinning::runTending(FMStand* stand)
         }
         if (ti->isAffected()) {
             // neighborhood of favored cells.
-            for (int i=0;i<NSAPCELLS;++i) {
+            for (int i=0;i<SaplingCell::NSapCells;++i) {
                 if (sc->saplings[i].is_occupied()) {
                     double selectivity = mSpeciesSelectivity[sc->saplings[i].resourceUnitSpecies(scr.ru())->species()];
                     // calculate how much we want to favor this spot: higher (closer to 1): higher likelyhood to clear

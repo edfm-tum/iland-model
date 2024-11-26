@@ -19,7 +19,7 @@ int FMSaplingList::loadFromRect(ResourceUnit *ru, const QRectF &rect)
     GridRunner<float> lif_runner(GlobalSettings::instance()->model()->grid(), rect);
     while (lif_runner.next()) {
         SaplingCell *cell = ru->saplingCell(lif_runner.currentIndex());
-        for (int j=0;j<NSAPCELLS;++j) {
+        for (int j=0;j<SaplingCell::NSapCells;++j) {
             if (cell->saplings[j].is_occupied()) {
                 mSaplings.push_back(QPair<SaplingTree*, SaplingCell*>( &(cell->saplings[j]), cell));
             }
@@ -37,7 +37,7 @@ int FMSaplingList::loadFromRU(ResourceUnit *ru, bool append)
 
     SaplingCell *sapcell = ru->saplingCellArray();
     for (int i=0;i<cPxPerHectare;++i, ++sapcell) {
-        for (int j=0;j<NSAPCELLS;++j) {
+        for (int j=0;j<SaplingCell::NSapCells;++j) {
             if (sapcell->saplings[j].is_occupied()) {
                 mSaplings.push_back(QPair<SaplingTree*, SaplingCell*>( &(sapcell->saplings[j]), sapcell));
             }
@@ -64,7 +64,7 @@ int FMSaplingList::loadFromStand(int standId, QString filter, bool do_append)
     SaplingCellRunner scr(standId, GlobalSettings::instance()->model()->standGrid());
     while (SaplingCell *sc = scr.next()) {
         if (sc){
-            for (int i=0;i<NSAPCELLS;++i) {
+            for (int i=0;i<SaplingCell::NSapCells;++i) {
                 if (sc->saplings[i].is_occupied()) {
                     sw.setSaplingTree(&sc->saplings[i], sc->ru);
                     if (filter.isEmpty() || filter_expr.execute()) {

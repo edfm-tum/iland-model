@@ -33,6 +33,7 @@ public:
     bool mortalityEnabled; ///< if false, no natural (intrinsic+stress) mortality occurs
     bool regenerationEnabled; ///< if true, seed dispersal, establishment, ... is modelled
     bool carbonCycleEnabled; ///< if true, snag dynamics and soil CN cycle is modelled
+    bool understoreyEnabled; ///< if true, the understorey submodule is used
     // light
     double lightExtinctionCoefficient; ///< "k" parameter (beer lambert) used for calc. of absorbed light on resourceUnit level
     double lightExtinctionCoefficientOpacity; ///< "k" for beer lambert used for opacity of single trees

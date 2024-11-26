@@ -358,7 +358,7 @@ bool Snapshot::saveStandSnapshot(const int stand_id, const MapGrid *stand_grid, 
 
         SaplingCellRunner scr(stand_id, stand_grid);
         while (SaplingCell *sc = scr.next()) {
-            for (int i=0;i<NSAPCELLS;++i)
+            for (int i=0;i<SaplingCell::NSapCells;++i)
                 if (sc->saplings[i].is_occupied()) {
                     QPointF t = scr.currentCoord() + offset;
                     tsn.setSapling(sc->saplings[i], t);
@@ -1012,7 +1012,7 @@ void Snapshot::saveSaplings()
         for (int x=0;x<lif_grid.sizeX(); ++x) {
             SaplingCell *sc=saplings->cell(QPoint(x,y), true, &RU);
             if (sc){
-                for (int i=0;i<NSAPCELLS;++i) {
+                for (int i=0;i<SaplingCell::NSapCells;++i) {
                     if (sc->saplings[i].is_occupied()) {
                         q.addBindValue(RU->index());
                         q.addBindValue(x);

@@ -19,7 +19,6 @@
 
 #include "global.h"
 #include "modelsettings.h"
-#include "expression.h"
 
 ModelSettings::ModelSettings()
 {
@@ -44,6 +43,7 @@ void ModelSettings::loadModelSettings()
     useDynamicAvailableNitrogen = GlobalSettings::instance()->settings().valueBool("model.settings.soil.useDynamicAvailableNitrogen", false);
     torusMode = GlobalSettings::instance()->settings().paramValueBool("torus", false);
     microclimateEnabled = GlobalSettings::instance()->settings().valueBool("model.climate.microclimate.enabled", false);
+    understoreyEnabled = xml.valueBool(".understorey.enabled", false);
 }
 
 void ModelSettings::print()

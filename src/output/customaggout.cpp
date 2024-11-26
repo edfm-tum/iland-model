@@ -407,7 +407,7 @@ void CustomAggOutLevel::processSaplingCell(const SaplingCell *sc, const Resource
     bool do_filter = !mEntityFilter.isEmpty();
 
     SaplingWrapper sw;
-    for (int i=0;i<NSAPCELLS;++i) {
+    for (int i=0;i<SaplingCell::NSapCells;++i) {
         if (sc->saplings[i].is_occupied()) {
 
             if (do_filter) {
@@ -537,7 +537,7 @@ void CustomAggOutLevel::populateSaplingData(QMap<QString, QVector<QPair<SaplingT
 
     if (sapcell){
         SaplingWrapper sw;
-        for (int i=0;i<NSAPCELLS;++i) {
+        for (int i=0;i<SaplingCell::NSapCells;++i) {
             if (sapcell->saplings[i].is_occupied()) {
 
                 if (!filter.isEmpty()) {

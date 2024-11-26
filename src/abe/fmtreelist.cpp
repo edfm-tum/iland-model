@@ -532,7 +532,7 @@ double FMTreeList::aggregate_function_sapling(QString expression, QString filter
     try{
     while (SaplingCell *sc = scr.next()) {
         if (sc){
-            for (int i=0;i<NSAPCELLS;++i) {
+            for (int i=0;i<SaplingCell::NSapCells;++i) {
                 if (sc->saplings[i].is_occupied()) {
                     sw.setSaplingTree(&sc->saplings[i], sc->ru);
                     if (filter_expr.execute()) {
@@ -778,7 +778,7 @@ int FMTreeList::killSaplings(QString expression)
     SaplingCellRunner scr(mStandId, GlobalSettings::instance()->model()->ABEngine()->standGrid());
     while (SaplingCell *sc = scr.next()) {
         if (sc){
-            for (int i=0;i<NSAPCELLS;++i) {
+            for (int i=0;i<SaplingCell::NSapCells;++i) {
                 if (sc->saplings[i].is_occupied()) {
                     sw.setSaplingTree(&sc->saplings[i], sc->ru);
                     if (expr.execute()) {
