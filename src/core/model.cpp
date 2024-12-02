@@ -465,8 +465,6 @@ void Model::clear()
         delete mHeightGrid;
     if (mSaplings)
         delete mSaplings;
-    if (mUnderstorey)
-        delete mUnderstorey;
     if (mManagement)
         delete mManagement;
     if (mEnvironment)

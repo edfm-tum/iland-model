@@ -27,10 +27,33 @@ private:
 class UnderstoreyPFT
 {
 public:
-    UnderstoreyPFT();
+    UnderstoreyPFT() {};
+    void setup(UnderstoreySetting s, int index);
+    void setFirstState(UStateId first_state) { mFirstState = first_state; }
+
     const QString &name() const { return mName; }
+    int index() const {return mIndex; }
+    UStateId firstState() const { return mFirstState; }
+
+    /// determine if the state updates
+    /// based on environmental conditions
+    UStateId stateTransition(const UnderstoreyPlant &plant,
+                             UnderstoreyCellParams &ucp,
+                             UnderstoreyRUStats &rustats) const;
+
+    bool establishment(UnderstoreyCellParams &ucp,
+                       UnderstoreyRUStats &rustats) const;
+
 private:
     QString mName;
+    UStateId mFirstState { std::numeric_limits<UStateId>::max()}; ///< id of the initial state of the PFT (for establishment)
+    int mIndex {-1}; ///< the index of the PFT in the Understorey's PFT container
+
+    // response functions for the PFT
+    Expression mExprLight; ///< light response (param: corrected lif_value on the ground)
+    Expression mExprNutrients; ///< nutrient response (param: available nitrogen kg/ha*yr)
+    Expression mExprWater; ///< water response (param: average soil water content in veg. period)
+
 };
 
 /**
@@ -42,9 +65,22 @@ class UnderstoreyState
 {
 public:
     UnderstoreyState() {};
-    void setup(UnderstoreySetting s);
-    UStateId id() const { return mId; }
+    void setup(UnderstoreySetting s, int index);
+    void setFirstState() { mFirstState = true; }
+    void setFinalState() { mFinalState = true; }
+
+    /// the ID of a state which is at the same time the id of the state in the Understorey-container
+    int id() const { return mId; }
+    /// the sizeClass of the state within its PFT
+    int sizeClass() const { return mSizeClass; }
     const QString &name() const { return mName; }
+
+    bool isFirstState() const { return mFirstState; }
+    bool isFinalState() const { return mFinalState; }
+
+
+    int pftIndex() const { Q_ASSERT(mPFT!=nullptr); return mPFT->index(); }
+    const UnderstoreyPFT *pft() const { return mPFT; }
     /// number of slots that are occupied by
     /// this state
     short int NSlots() const { return mNSlots; }
@@ -56,19 +92,22 @@ public:
     double height() const { return mHeight; }
     /// proportion of cover on the cell (0..1)
     double cover() const { return mCover; }
+
+
 private:
-    UnderstoreyPFT *mPFT {nullptr};
-    UStateId mId {0};
+    const UnderstoreyPFT *mPFT {nullptr};
+    int mId {-1};
+    int mSizeClass;
     QString mName;
+    bool mFirstState {false};
+    bool mFinalState {false};
+
     short int mNSlots {1};
     double mLAI {0.};
     double mBiomass {0.};
     double mHeight {0.};
     double mCover {0.};
 
-    Expression mExprLight;
-    Expression mExprNutrients;
-    Expression mExprWater;
 
 };
 

@@ -1,7 +1,6 @@
 #ifndef UNDERSTOREY_H
 #define UNDERSTOREY_H
 
-#include "globalsettings.h"
 #include "grid.h"
 
 #include "understoreypft.h"
@@ -26,7 +25,21 @@ public:
     // access
     const QVector<UnderstoreyPFT*> &PFTs() { return mPFTs; }
     const QVector<UnderstoreyState*> &states() { return mStates; }
+
+    /// get a state by its index
+    const UnderstoreyState *state(int index) const { Q_ASSERT(index>=0 && index <mStates.size()); return mStates[index]; }
+    /// get a PFT by its index
+    const UnderstoreyPFT *pft(int index) const { Q_ASSERT(index>=0 && index <mPFTs.size()); return mPFTs[index]; }
+
+    /// get PFT by its name, or a nullptr if not found (slow!)
+    const UnderstoreyPFT* pftByName(const QString &name) const;
+    /// get a state by its id, or a nullptr if not found (slow!)
     const UnderstoreyState *stateById(UStateId id) const;
+
+    /// get the state representing the next size class of a state (or nullptr if it is the last)
+    const UnderstoreyState *nextState(const UStateId current_state) const { return state(current_state)->isFinalState() ? nullptr : state(current_state + 1); }
+    /// get the state representing the previous size class of a state (or nullptr if it is already the first)
+    const UnderstoreyState *previousState(UStateId current_state) const { return state(current_state)->isFirstState() ? nullptr : state(current_state - 1);}
 
     // access to cells
     /// return the understory cell based on the metric coordinates
@@ -42,6 +55,8 @@ public:
 
 
 private:
+    void checkStateSequence();
+
     static Understorey *mInstance;
     /// container of all PFTs in the system
     QVector<UnderstoreyPFT*> mPFTs;
@@ -55,33 +70,6 @@ private:
     QVector<UnderstoreyRU> mUnderstoreyRU;
 };
 
-/**
- * @brief The UnderstoreyRU class
- * holds the actual understorey per resource unit.
- */
-class UnderstoreyRU
-{
-public:
-    // setup
-    void setup();
-    void setRU(ResourceUnit* ru) {mRU = ru; }
-
-    // actions
-    void calculate();
-
-    // access
-    /// get metric coordinates (landscape) of a cell with given index
-    QPointF cellCoord(int index);
-    /// get metric coordinates (landscape) of a cell
-    QPointF cellCoord(const UnderstoreyCell& cell) { return cellCoord( &cell - mCells.begin());}
-    /// get cell at given coordinates (metric)
-    /// Note that selecting the right RU is
-    /// done by Understorey::cell()!
-    const UnderstoreyCell *cell(QPointF metric_coord) const;
-private:
-    ResourceUnit *mRU {0};
-    std::array<UnderstoreyCell, cPxPerHectare> mCells;
-};
 
 /// Helper class to visualize microclimate data
 class UnderstoreyVisualizer: public QObject {
@@ -96,11 +84,11 @@ public slots:
 
     static Grid<double> *grid(QString what);
 private:
+    static QStringList mVarList;
     Grid<double> mGrid;
     static UnderstoreyVisualizer *mVisualizer;
 
 
 };
-
 
 #endif // UNDERSTOREY_H

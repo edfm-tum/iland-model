@@ -5,6 +5,7 @@
 #include "resourceunit.h"
 #include "modelcontroller.h"
 #include "csvfile.h"
+#include "debugtimer.h"
 
 #include "understoreyplant.h"
 #include "understoreypft.h"
@@ -21,6 +22,15 @@ Understorey::~Understorey()
     qDeleteAll(mStates);
     mStates.clear();
     mInstance = nullptr;
+}
+
+const UnderstoreyPFT *Understorey::pftByName(const QString &name) const
+{
+    for (int i=0;i<mPFTs.size();++i)
+        if (mPFTs[i]->name() == name)
+            return mPFTs[i];
+    return nullptr;
+
 }
 
 const UnderstoreyState *Understorey::stateById(UStateId id) const
@@ -52,6 +62,8 @@ const UnderstoreyCell *Understorey::understoreyCell(QPointF metric_coord) const
 
 void Understorey::setup()
 {
+    DebugTimer t("Understorey - setup");
+    qDebug() << "Understorey module - setup";
     // load PFTs from external file
     QString path = Globals->path(Globals->settings().value("model.settings.understorey.pftFile"));
     CSVFile pft_file = CSVFile(path);
@@ -60,11 +72,26 @@ void Understorey::setup()
         throw IException(QString("Understorey: pftFile '%1' does not exist or is empty!").arg(path));
 
     for (int i = 0; i< pft_file.rowCount(); ++i) {
-        mStates.push_back(new UnderstoreyState());
-        mStates.back()->setup(UnderstoreySetting(&pft_file, i));
+        mPFTs.push_back(new UnderstoreyPFT());
+        mPFTs.back()->setup(UnderstoreySetting(&pft_file, i), mPFTs.size()-1);
     }
+    qDebug() << mPFTs.size() << "PFTs loaded from" << path;
 
-    // setup state transition probabilites, expressions
+    // load PFTs from external file
+    path = Globals->path(Globals->settings().value("model.settings.understorey.statesFile"));
+    CSVFile states_file = CSVFile(path);
+
+    if (states_file.isEmpty())
+        throw IException(QString("Understorey: statesFile '%1' does not exist or is empty!").arg(path));
+    for (int i = 0; i< states_file.rowCount(); ++i) {
+        mStates.push_back(new UnderstoreyState());
+        mStates.back()->setup(UnderstoreySetting(&states_file,i), mStates.size()-1);
+    }
+    qDebug() << mStates.size() << "understorey states loaded from" << path;
+
+    // check for consistency
+    checkStateSequence();
+
 
     // spatial setup per resource unit
     // create the data for understorey as a single chunk of memory
@@ -76,67 +103,71 @@ void Understorey::setup()
 
     Globals->model()->threadExec().run(&UnderstoreyRU::setup, mUnderstoreyRU, false);
 
+    qDebug() << "Understorey module setup complete.";
 
 }
 
 
 void Understorey::run()
 {
-    Globals->model()->threadExec().run(&UnderstoreyRU::calculate, mUnderstoreyRU, false);
+    // run the growth for all resource units
+    DebugTimer t1("Understory - grow");
+    Globals->model()->threadExec().run(&UnderstoreyRU::growth, mUnderstoreyRU, true);
+
+    // run the establishment routine for understorey for all resource units
+    DebugTimer t2("Understory - establishment");
+    Globals->model()->threadExec().run(&UnderstoreyRU::establishment, mUnderstoreyRU, true);
+
+
 }
 
-
-// ****************** UnderstoreyRU **************************
-
-void UnderstoreyRU::setup()
+void Understorey::checkStateSequence()
 {
-    Q_ASSERT(mRU != nullptr);
+    for (auto &pft : mPFTs) {
+        int min_index = -1;
+        int max_index = -1;
+        int size_class  = -1;
+        bool in = false; bool out = false;
+        for (auto &state : mStates) {
+            if (out && state->pftIndex() == pft->index())
+                throw IException(QString("Understorey: Invalid state sequence! found '%1' is outside its group!").arg(state->name()));
 
-    HeightGrid *hg = GlobalSettings::instance()->model()->heightGrid();
-    for (auto& cell : mCells) {
-        QPointF p = cellCoord(cell);
-        // set state of cell to Empty for all valid 10m cells
-        if (hg->constValueAt(p).isValid())
-            cell.update();
-    }
-}
+            if (in && state->pftIndex() != pft->index()) {
+                out = true; // switched to a different pft
+                in = false;
+            }
+            if (state->pftIndex() != pft->index())
+                continue;
 
-void UnderstoreyRU::calculate()
-{
-    int valid = 0;
-    for (auto& cell : mCells) {
-        if (cell.isValid()) {
-            ++valid;
-            cell.mod_plants()[0].setState(valid*(mRU->index()+1));
+            if (!in) {
+                // first state of the pft
+                min_index = state->id();
+                in = true;
+                size_class = state->sizeClass();
+            }
+
+            max_index = state->id();
+            if (state->sizeClass() < size_class)
+                throw IException("Understorey: 'size' attribute of PFT '%1' are not strictly increasing in 'statesFile'!");
+            size_class = state->sizeClass();
+
         }
+        if (min_index <0 || max_index < 0)
+            throw IException(QString("Understorey: PFT '%1' has no states in statesFile! *Every* PFT needs them.").arg(pft->name()));
+        mStates[min_index]->setFirstState();
+        pft->setFirstState(mStates[min_index]->id());
+        mStates[max_index]->setFinalState();
+
+        qDebug() << "PFT: " << pft->name() << "First/Last:" << mStates[min_index]->name() << ".." << mStates[max_index]->name();
     }
-    qDebug() << "Understorey: valid" << valid;
 }
 
-QPointF UnderstoreyRU::cellCoord(int index)
-{
-    QPointF local( ( (index % cPxPerRU) + 0.5) * cPxSize, ((index/cPxPerRU) + 0.5) * cPxSize );
-    return local + mRU->boundingBox().topLeft();
-}
-
-const UnderstoreyCell *UnderstoreyRU::cell(QPointF metric_coord) const
-{
-    // get index_x and index_y relative to the RU corner in 2m resolution
-    QPoint p= QPoint(
-        (( (int) metric_coord.x()) % cRUSize) / cPxSize,
-        (( (int) metric_coord.y()) % cRUSize) / cPxSize
-        );
-    // get the cell from the RU level container
-
-    int index =  p.y() * cPxPerRU +  p.x() ;
-    Q_ASSERT(index>=0 && index<2500);
-    return &mCells[index];
-}
 
 
 
 // ******************************************************************************
 UnderstoreyVisualizer *UnderstoreyVisualizer::mVisualizer = nullptr;
+QStringList UnderstoreyVisualizer::mVarList = {};
 
 UnderstoreyVisualizer::UnderstoreyVisualizer(QObject *parent)
     :QObject(parent)
@@ -158,18 +189,16 @@ void UnderstoreyVisualizer::setupVisualization()
 
     mVisualizer = new UnderstoreyVisualizer();
 
-    QStringList varlist = {"Understorey - State(1)" };
-//    , "Understorey - ShadeTol", // 0,1
-//                           "Understorey - TPI", "Understorey - Northness",  // 2,3
-//                           "Understorey - Min.Buffer(June)", "Understorey - Min.Buffer(Dec)", // 4,5
-//                           "Understorey - Max.Buffer(June)", "Understorey - Max.Buffer(Dec)"};  // 6,7
+    mVarList = {"Understorey - State", // 0
+                "Understorey - SlotsOccupied", // 1
+                "Understorey - Biomass", "Understorey - LAI", "Understorey - maxHeight" // 2,3,4
+    };
 
-    QVector<GridViewType> paint_types = {GridViewTurbo};
-    //, GridViewTurbo, GridViewTurbo,
-    //                                     GridViewTurbo, GridViewTurbo,
-    //                                     GridViewTurbo, GridViewTurbo,
-    //                                     GridViewTurbo, GridViewTurbo};
-    GlobalSettings::instance()->controller()->addPaintLayers(mVisualizer, varlist, paint_types);
+    QVector<GridViewType> paint_types = {GridViewTurbo,
+                                         GridViewTurbo,
+                                         GridViewTurbo,GridViewTurbo,GridViewTurbo};
+
+    GlobalSettings::instance()->controller()->addPaintLayers(mVisualizer, mVarList, paint_types);
 
 }
 
@@ -184,15 +213,7 @@ Grid<double> *UnderstoreyVisualizer::paintGrid(QString what, QStringList &names,
                     GlobalSettings::instance()->model()->grid()->cellsize());
         mGrid.wipe(0.);
     }
-    int index = 0;
-    if (what == "Understorey - State(1)") index = 0;
-    if (what == "Understorey - ShadeTol") index = 1;
-    if (what == "Understorey - TPI") index = 2;
-    if (what == "Understorey - Northness") index = 3;
-    if (what == "Understorey - Min.Buffer(June)") index=4;
-    if (what == "Understorey - Min.Buffer(Dec)") index=5;
-    if (what == "Understorey - Max.Buffer(June)") index=6;
-    if (what == "Understorey - Max.Buffer(Dec)") index=7;
+    int index = mVarList.indexOf(what);
 
     // fill the grid with the expected variable
     const auto &us = Globals->model()->understorey();
@@ -201,8 +222,13 @@ Grid<double> *UnderstoreyVisualizer::paintGrid(QString what, QStringList &names,
         QPointF cpp = mGrid.cellCenterPoint(p);
         auto *cell = us->understoreyCell(cpp);
         if (!cell) { *p = 0.; continue; }
+        auto cell_stats = cell->stats();
         switch (index) {
-        case 0: value = cell->plants()[0].state(); break;
+        case 0: value = cell->plants()[0].stateId() == std::numeric_limits<UStateId>::max() ? -1 : cell->plants()[0].stateId(); break;
+        case 1: value = cell_stats.slotsOccupied; break;
+        case 2: value = cell_stats.biomass; break;
+        case 3: value = cell_stats.LAI; break;
+        case 4: value = cell_stats.height; break;
         default: value = 0.;
         }
 
