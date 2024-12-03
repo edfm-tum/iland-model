@@ -143,6 +143,7 @@ GlobalSettings::GlobalSettings()
 
 GlobalSettings::~GlobalSettings()
 {
+    qInstallMessageHandler(nullptr); // avoid messages in that stage
     delete mSystemStatistics;
     delete mOutputManager;
     // clear all databases

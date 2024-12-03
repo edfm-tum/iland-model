@@ -46,6 +46,9 @@ public:
     /// nullptr if not valid.
     const UnderstoreyCell *understoreyCell(QPointF metric_coord) const;
 
+    /// get the RU container for given coordinates (or nullptr if not valid)
+    const UnderstoreyRU *understoreyRU(QPointF metric_coord) const;
+
     // actions
     /// setup the understorey module
     void setup();
@@ -85,7 +88,8 @@ public slots:
     static Grid<double> *grid(QString what);
 private:
     static QStringList mVarList;
-    Grid<double> mGrid;
+    Grid<double> mGrid; // detailed 2m grid
+    Grid<double> mRUGrid; // RU level grid (100m)
     static UnderstoreyVisualizer *mVisualizer;
 
 

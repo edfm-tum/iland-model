@@ -685,11 +685,14 @@ void ModelController::removeLayers(const LayeredGridBase *layers)
 #endif
 }
 
-void ModelController::addPaintLayers(QObject *handler, const QStringList names, const QVector<GridViewType> view_types)
+void ModelController::addPaintLayers(QObject *handler,
+                                     const QStringList names,
+                                     const QVector<GridViewType> view_types,
+                                     const QStringList description)
 {
 #ifdef ILAND_GUI
     if (mViewerWindow)
-        mViewerWindow->addPaintLayers(handler, names, view_types);
+        mViewerWindow->addPaintLayers(handler, names, view_types, description);
 
 #else
     Q_UNUSED(handler) Q_UNUSED(names) Q_UNUSED(view_types)

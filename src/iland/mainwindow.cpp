@@ -646,7 +646,10 @@ void MainWindow::addLayers(const LayeredGridBase *layer, const QString &name)
     updatePaintGridList();
 }
 
-void MainWindow::addPaintLayers(QObject *handler, const QStringList names, const QVector<GridViewType> view_types)
+void MainWindow::addPaintLayers(QObject *handler,
+                                const QStringList names,
+                                const QVector<GridViewType> view_types,
+                                const QStringList description)
 {
     for (int i=0;i<names.count();++i) {
         if (mPaintList.contains(names[i]))
@@ -659,6 +662,8 @@ void MainWindow::addPaintLayers(QObject *handler, const QStringList names, const
         po.value().view_type = view_types.size()>i ? view_types[i] : GridViewRainbow;
         po.value().layer_id = i;
         po.value().name = names[i];
+        if (description.size()>i)
+            po.value().description = description[i];
     }
     updatePaintGridList();
 }
@@ -909,7 +914,8 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                 paintGrid(painter, mPaintNext);
 
             if (mPaintNext.what == PaintObject::PaintHandledObject) {
-                mRulerColors->setCaption(mPaintNext.name);
+                mRulerColors->setCaption(mPaintNext.name, mPaintNext.description);
+
                 // prepare grid via the handler
                 std::pair<QStringList, QStringList> names_colors = std::pair<QStringList, QStringList>(QStringList(), QStringList());
                 mPaintNext.dbl_grid = mRemoteControl.preparePaintGrid(mPaintNext.handler, mPaintNext.expression, &names_colors);

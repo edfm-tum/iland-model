@@ -145,6 +145,7 @@ public:
     /// Note that selecting the right RU is
     /// done by Understorey::cell()!
     const UnderstoreyCell *cell(QPointF metric_coord) const;
+    const UnderstoreyRUStats &stats() const { return mStats; }
 private:
     UnderstoreyRUStats mStats;
     ResourceUnit *mRU {0};

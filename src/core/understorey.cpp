@@ -45,6 +45,15 @@ const UnderstoreyState *Understorey::stateById(UStateId id) const
 
 const UnderstoreyCell *Understorey::understoreyCell(QPointF metric_coord) const
 {
+    auto us_ru = understoreyRU(metric_coord);
+    if (!us_ru)
+        return nullptr;
+
+    return us_ru->cell(metric_coord);
+}
+
+const UnderstoreyRU *Understorey::understoreyRU(QPointF metric_coord) const
+{
     // get first the correct RU
     const auto &rugrid = Globals->model()->RUgrid();
     if (!rugrid.coordValid(metric_coord))
@@ -56,8 +65,7 @@ const UnderstoreyCell *Understorey::understoreyCell(QPointF metric_coord) const
 
     // the mUnderstoreyRU container is a 1:1 copy of the RU container, the index therefore works
     auto &us_ru = mUnderstoreyRU[ru->index()];
-
-    return us_ru.cell(metric_coord);
+    return &us_ru;
 }
 
 void Understorey::setup()
@@ -191,14 +199,31 @@ void UnderstoreyVisualizer::setupVisualization()
 
     mVarList = {"Understorey - State", // 0
                 "Understorey - SlotsOccupied", // 1
-                "Understorey - Biomass", "Understorey - LAI", "Understorey - maxHeight" // 2,3,4
+                "Understorey - Biomass", "Understorey - LAI", "Understorey - maxHeight", // 2,3,4
+                // RU-LEVEL
+                "Understorey - RU Covered", // 0
+                "Understorey - RU SlotsOccupied", // 1
+                "Understorey - RU LAI", // 2
+                "Understorey - RU Biomass" // 3
+    };
+    QStringList var_desc = {
+                "state",
+                "Number of 'slots' occupied per cell",
+                "Total biomass (kg/m2??)",
+                "LAI (m2/m2) of understorey",
+                "Maximum height (m) on cell",
+                // RU - LEVEL
+                "Percent of RU area with >0 plants (%)",
+                "Percent of total #slots of RU occupied (%)",
+                "Total LAI on RU (m2/m2)",
+                "Total biomass on RU (kg/ha??)"
     };
 
     QVector<GridViewType> paint_types = {GridViewTurbo,
                                          GridViewTurbo,
                                          GridViewTurbo,GridViewTurbo,GridViewTurbo};
 
-    GlobalSettings::instance()->controller()->addPaintLayers(mVisualizer, mVarList, paint_types);
+    GlobalSettings::instance()->controller()->addPaintLayers(mVisualizer, mVarList, paint_types, var_desc);
 
 }
 
@@ -212,68 +237,53 @@ Grid<double> *UnderstoreyVisualizer::paintGrid(QString what, QStringList &names,
         mGrid.setup(GlobalSettings::instance()->model()->grid()->metricRect(),
                     GlobalSettings::instance()->model()->grid()->cellsize());
         mGrid.wipe(0.);
+
+        mRUGrid.setup(GlobalSettings::instance()->model()->RUgrid().metricRect(),
+                      GlobalSettings::instance()->model()->grid()->cellsize());
+        mRUGrid.wipe(0.);
     }
     int index = mVarList.indexOf(what);
 
     // fill the grid with the expected variable
     const auto &us = Globals->model()->understorey();
     double value=0.;
-    for (double *p = mGrid.begin(); p!= mGrid.end(); ++p) {
-        QPointF cpp = mGrid.cellCenterPoint(p);
-        auto *cell = us->understoreyCell(cpp);
-        if (!cell) { *p = 0.; continue; }
-        auto cell_stats = cell->stats();
-        switch (index) {
-        case 0: value = cell->plants()[0].stateId() == std::numeric_limits<UStateId>::max() ? -1 : cell->plants()[0].stateId(); break;
-        case 1: value = cell_stats.slotsOccupied; break;
-        case 2: value = cell_stats.biomass; break;
-        case 3: value = cell_stats.LAI; break;
-        case 4: value = cell_stats.height; break;
-        default: value = 0.;
-        }
-
-        *p = value;
-
-    }
-    /*
-    for (auto &ru : GlobalSettings::instance()->model()->ruList()) {
-        GridRunner<double> runner(mGrid, ru->boundingBox());
-        int cell_index = 0;
-        double value;
-        while (double *gridptr = runner.next()) {
-            us.
-            *gridptr = value;
-            ++cell_index;
-        }
-    } */
-
-/*
-    foreach (ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
-        const Understorey *clim = ru->Understorey();
-        GridRunner<double> runner(mGrid, ru->boundingBox());
-        int cell_index = 0;
-        double value;
-        while (double *gridptr = runner.next()) {
+    constexpr int min_idx_ru = 5;
+    if (index < min_idx_ru) {
+        // 2m grid
+        for (double *p = mGrid.begin(); p!= mGrid.end(); ++p) {
+            QPointF cpp = mGrid.cellCenterPoint(p);
+            auto *cell = us->understoreyCell(cpp);
+            if (!cell) { *p = 0.; continue; }
+            auto cell_stats = cell->stats();
             switch (index) {
-            case 0: value = clim->constCell(cell_index).LAI(); break;
-            case 1: value = clim->constCell(cell_index).shadeToleranceMean(); break;
-            case 2: value = clim->constCell(cell_index).topographicPositionIndex(); break;
-            case 3: value = clim->constCell(cell_index).northness(); break;
-                // buffering capacity: minimum summer
-            case 4:  value = clim->constCell(cell_index).minimumUnderstoreyBuffering(ru, 5); break;
-                // minimum winter
-            case 5:  value = clim->constCell(cell_index).minimumUnderstoreyBuffering(ru, 0); break;
-                // buffering capacity: max summer
-            case 6:  value = clim->constCell(cell_index).maximumUnderstoreyBuffering(ru, 5); break;
-                // max winter
-            case 7:  value = clim->constCell(cell_index).maximumUnderstoreyBuffering(ru, 0); break;
+            case 0: value = cell->plants()[0].stateId() == std::numeric_limits<UStateId>::max() ? -1 : cell->plants()[0].stateId(); break;
+            case 1: value = cell_stats.slotsOccupied; break;
+            case 2: value = cell_stats.biomass; break;
+            case 3: value = cell_stats.LAI; break;
+            case 4: value = cell_stats.height; break;
+            default: value = 0.;
             }
 
-            *gridptr = value;
-            ++cell_index;
+            *p = value;
+
         }
-    }*/
-    return &mGrid;
+        return &mGrid;
+    } else {
+        // 100m grid
+        for (double *p = mRUGrid.begin(); p!= mRUGrid.end(); ++p) {
+            const auto us_ru = us->understoreyRU(mRUGrid.cellCenterPoint(p));
+            if (us_ru) {
+                auto &stats = us_ru->stats();
+                switch (index - min_idx_ru) {
+                case 0: *p = stats.ru_stats.NStates; break;
+                case 1: *p = stats.ru_stats.slotsOccupied; break;
+                case 2: *p = stats.ru_stats.LAI; break;
+                case 3: *p = stats.ru_stats.biomass; break;
+                }
+            }
+        }
+        return &mRUGrid;
+    }
 }
 
 Grid<double> *UnderstoreyVisualizer::grid(QString what)
