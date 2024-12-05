@@ -155,14 +155,14 @@ void UnderstoreyRU::establishment()
                               .arg(mRU->index())
                           .arg(mStats.established).arg(mStats.transitionUp)
                           .arg(mStats.transitionDown).arg(mStats.died);
-    qDebug() << stat_string;
+    //qDebug() << stat_string;
     stat_string = QString("(area/slots): %1 %, %2 %, LAI: %3, biomass: %4, height: %5")
                       .arg(mStats.ru_stats.NStates)
                       .arg(mStats.ru_stats.slotsOccupied)
                       .arg(mStats.ru_stats.LAI)
                       .arg(mStats.ru_stats.biomass)
                       .arg(mStats.ru_stats.height);
-    qDebug() << stat_string;
+    //qDebug() << stat_string;
 
 
 }

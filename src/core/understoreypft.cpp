@@ -92,8 +92,8 @@ UStateId UnderstoreyPFT::stateTransition(const UnderstoreyPlant &plant,
     double total_response = light_response * nitrogen_response  * water_response;
 
     // probability of going to next/previous state (fake!)
-    double p_previous = total_response < 0.3 ? 0.2 : 0.1;
-    double p_next = total_response > 0.6 ? 0.3 : 0.1;
+    double p_previous = total_response < 0.3 ? 0.1 : 0.05;
+    double p_next = total_response > 0.6 ? 0.4 : 0.25;
     double p_mort = p_previous; // prob of mortality of PFT
 
     // draw a random number and determine the next state probabilistically
