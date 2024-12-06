@@ -205,7 +205,9 @@ void ActThinning::setupSingleCustom(QJSValue value, SCustomThinning &custom)
     if (!values.isArray())
         throw IException("setup of custom activity: the 'classes' is not an array.");
     custom.classValues.clear();
-    custom.classPercentiles.clear();
+    custom.cumClassPercentiles.clear();
+    custom.cumSelectPercentiles.clear();
+
     QJSValueIterator it(values);
     while (it.hasNext()) {
         it.next();
@@ -225,12 +227,19 @@ void ActThinning::setupSingleCustom(QJSValue value, SCustomThinning &custom)
             throw IException("setup of custom thinnings: 'classes' do not add up to 100 (relative=true).");
     }
 
-    // span the range between 0..100: from e.g. 10,20,30,20,20 -> 0,10,30,60,80,100
+    // percentiles are calculated cumulatively, both the buckets (cumClassPercentiles)
+    // and the probabilities (cumSelectPercentiles)
+    double p_pct = 0.;
+    double p_select = 0.;
     double f = 100. / custom.classValues.size();
-    double p = 0.;
-    for (int i=0;i<custom.classValues.size();++i, p+=f)
-        custom.classPercentiles.push_back(qRound(p));
-    custom.classPercentiles.push_back(100);
+    for (int i=0;i<custom.classValues.size();++i) {
+        custom.cumClassPercentiles.push_back(qRound(p_pct));
+        custom.cumSelectPercentiles.push_back(qRound(p_select));
+        p_select +=custom.classValues[i];
+        p_pct += f;
+    }
+    custom.cumClassPercentiles.push_back(100);
+    custom.cumSelectPercentiles.push_back(100);
 }
 
 bool ActThinning::evaluateCustom(FMStand *stand, SCustomThinning &custom)
@@ -266,6 +275,7 @@ bool ActThinning::evaluateCustom(FMStand *stand, SCustomThinning &custom)
     if (target_value < 0. || remaining_stems < 0. || min_dbh < 0.)
         throw IException(QString("Thinning activity, error: target_value or min_dbh or remaining_stems < 0."));
 
+    // load trees (considering the filter)
     FMTreeList trees(stand);
     QString filter = custom.filter;
     if (min_dbh>0.) {
@@ -279,7 +289,8 @@ bool ActThinning::evaluateCustom(FMStand *stand, SCustomThinning &custom)
     else
         trees.loadAll();
 
-    if (remaining_stems>0 && remaining_stems>=trees.trees().size())
+    // if not enough trees are on the stand, do nothing
+    if (remaining_stems>0 && remaining_stems*stand->area()>=trees.trees().size())
         return false;
 
     if (trees.trees().size()==0)
@@ -290,36 +301,25 @@ bool ActThinning::evaluateCustom(FMStand *stand, SCustomThinning &custom)
 
     // sort always by target variable (if it is stems, then simply by dbh)
     bool target_dbh = custom.targetVariable=="stems";
-    if (target_dbh)
+    double total_value;
+    if (target_dbh) {
         trees.sort("dbh");
-    else
+        total_value = trees.count();
+    } else {
         trees.sort(custom.targetVariable);
-
-    // count trees and values (e.g. volume) in the defined classes
-    QVector<double> values = custom.classValues; // make a copy
-    QVector<double> tree_counts = custom.classValues; // make a copy
-    QVector<int> percentiles = custom.classPercentiles; // make a copy
-
-    QVector<QPair<Tree*, double> >::const_iterator it;
-    for (int i=0;i<values.count();++i) {
-        tree_counts[i]=0.;
+        total_value = trees.sum(custom.targetVariable);
     }
-    int class_index = 0;
-    int n=0;
 
-    percentiles.first()=0;
-    double tree_count=trees.trees().count();
-    double total_value = 0.;
-    for (it = trees.trees().constBegin(); it!=trees.trees().constEnd(); ++it, ++n) {
-        if (n/tree_count*100. > custom.classPercentiles[class_index+1]) {
-            ++class_index;
-            percentiles[class_index] = n; // then n'th tree
-        }
-        tree_counts[class_index]++;
-        total_value += target_dbh?1.:it->second; // e.g., sum of volume in the class, or simply count
+
+    QVector<double> values = QVector<double>(custom.classValues.size(), 0.);
+    QVector<double> tree_counts = QVector<double>(custom.classValues.size(), 0.);
+    QVector<int> percentiles = QVector<int>(custom.cumClassPercentiles.size(), 0);
+
+    // set percentiles to actual tree-indices
+    // (e.g., if there are 200 trees, the 10th percentiles is tree #20)
+    for (int i=0;i<percentiles.size();++i) {
+        percentiles[i] = custom.cumClassPercentiles[i] * trees.trees().size() / 100;
     }
-    while (++class_index<percentiles.size())
-        percentiles[class_index]=n+1;
 
     double calc_target_value=0.;
     if (custom.targetRelative)
@@ -328,12 +328,13 @@ bool ActThinning::evaluateCustom(FMStand *stand, SCustomThinning &custom)
         calc_target_value = target_value * stand->area();
 
     if (!custom.relative) {
+        throw IException("custom thinning: relative=false currently not supported.");
         // TODO: does not work now!!! redo!!
         // class values are given in absolute terms, e.g. 40m3/ha.
         // this needs to be translated to relative classes.
         // if the demand in a class cannot be met (e.g. planned removal of 40m3/ha, but there are only 20m3/ha in the class),
         // then the "miss" is distributed to the other classes (via the scaling below).
-        for (int i=0;i<values.size();++i) {
+/*        for (int i=0;i<values.size();++i) {
             if (values[i]>0){
                 if (values[i]<=custom.classValues[i]*stand->area()) {
                     values[i] = 1.; // take all from the class
@@ -349,27 +350,26 @@ bool ActThinning::evaluateCustom(FMStand *stand, SCustomThinning &custom)
         if (sum>0.){
             for (int i=0;i<values.size();++i)
                 values[i] *= 100./sum;
-        }
+        }*/
     }
 
     // *****************************************************************
     // ***************    Main loop
     // *****************************************************************
-    for (int i=0;i<values.size();++i)
-        values[i] = 0;
 
     bool finished = false;
-    int cls;
-    double p;
     int removed_trees = 0;
     double removed_value = 0.;
     int no_tree_found = 0;
     bool target_value_reached=false;
     do {
-        // look up a random number: it decides in which class to select a tree:
-        p = nrandom(0,100);
+        // look up a random number: it decides in which class to select a tree
+        // the trick is that in cumSelectPercentiles the probability mass is not evenly
+        // distributed
+        int cls; // selected class
+        double p = nrandom(0,100);
         for (cls=0;cls<values.size();++cls) {
-            if (p < custom.classPercentiles[cls+1])
+            if (p < custom.cumSelectPercentiles[cls+1])
                 break;
         }
         // select a tree:
