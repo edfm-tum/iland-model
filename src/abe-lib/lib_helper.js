@@ -287,7 +287,13 @@ lib.activityLog = function(actName, extraValues) {
 *
 * @method lib.formattedLog
 */
-lib.formattedLog = function() {
+lib.formattedLog = function(StandId) {
+    // set the focus of ABE to the input StandID if provided
+    if (StandId !== undefined) {
+        fmengine.standId = StandId;
+      }
+    // also add that only existing standIDs can be provided
+
   if (typeof stand.obj !== 'object' || !Array.isArray(stand.obj.history)) {
     return "No activity log available.";
   }
@@ -325,8 +331,12 @@ lib.formattedLog = function() {
 *
 * @method lib.formattedLog
 */
-lib.formattedSTP = function() {
-
+lib.formattedSTP = function(StandId) {
+    // set the focus of ABE to the input StandID if provided
+    if (StandId !== undefined) {
+        fmengine.standId = StandId;
+      }
+    // also add that only existing standIDs can be provided
 
   let htmlLog = `<h1>Planned Activities</h1><h2>Stand: ${stand.id} STP: ${stand.stp.name}</h2>`;
   for (name of stand.stp.activityNames) {
