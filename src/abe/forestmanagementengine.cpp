@@ -239,13 +239,18 @@ void ForestManagementEngine::runRepeatedItems(int stand_id)
             ++it;
     }
 
-    // process items that were added during the execution
-    // run immediately and add non-single-shot items to the repeat store
-    if (!buffer_store.empty()) {
-        for (auto &p : buffer_store) {
-            bool do_erase = runSingleRepeatedItem(stand_id, p.second);
-            if (!do_erase)
-                mRepeatStore.insert(p.first, p.second);
+    // handle signals that were triggered *while* the items were executed (see above)
+    // the signals were buffered and now the are processed until no new items are added
+    int iteration_depth = 0;
+    while (!buffer_store.empty()) {
+        auto &p = buffer_store.front();
+        bool do_erase = runSingleRepeatedItem(stand_id, p.second);
+        if (!do_erase) {
+            mRepeatStore.insert(p.first, p.second);
+        }
+        buffer_store.removeFirst();
+        if (++iteration_depth > 99) {
+            throw IException("ABE: Signal handling: infinite loop detected!");
         }
     }
     mRepeatStoreBuffer = nullptr; // remove again
@@ -270,8 +275,14 @@ bool ForestManagementEngine::runSingleRepeatedItem(int stand_id, SRepeatItem &it
             stnd->setSignalParameter(item.parameter);
             stnd->setActivityIndex( item.activity->index() );
             bool res = item.activity->execute(stnd);
-            item.activity->runEvent(QStringLiteral("onExecuted"),stnd);
-            stnd->setActivityIndex( old_index );
+            // special case final harvest: if the activcity is a final harvest, we
+            // need to reset the rotation (onExecuted is called as well)
+            if (stnd->currentFlags().isFinalHarvest()) {
+                stnd->afterExecution(!res);
+            } else {
+                item.activity->runEvent(QStringLiteral("onExecuted"),stnd);
+                stnd->setActivityIndex( old_index );
+            }
             stnd->setSignalParameter(QJSValue());
             qCDebug(abe) << "executed activity (repeated): " << item.activity->name() << ". Result: " << res;
         } else {
