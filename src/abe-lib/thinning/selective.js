@@ -69,7 +69,7 @@ lib.thinning.selectiveThinning = function(options) {
     const select_trees = {
         type: 'thinning',
         id: opts.id,
-        schedule: opts.schedule,			//absolute: true, opt: 3},	//repeat: true, repeatInterval: 10
+        schedule: opts.schedule,	
         thinning: 'selection',
         N: opts.NTrees,
         NCompetitors: opts.NCompetitors, // total competitors! not per thinning event
@@ -82,7 +82,7 @@ lib.thinning.selectiveThinning = function(options) {
 
         onExit: function() {
             stand.stp.signal('selective_start_repeat');
-            lib.activityLog('thinning_selection'); // details? target species?
+            lib.activityLog('thinning_selection'); 
         },
         description: `Selective thinning. Repeated ${opts.repeatTimes} times every ${opts.repeatInterval} years.`
     };
@@ -108,6 +108,7 @@ lib.thinning.selectiveThinning = function(options) {
             stand.trees.load('markcompetitor=true');
             stand.trees.filterRandomExclude(n);
             const harvested = stand.trees.harvest();
+            lib.activityLog('thinning remove competitors'); // details? target species?
             //stand.trees.removeMarkedTrees(); // ? necessary ??
             lib.dbg(`selectiveThinning: repeat ${stand.obj.lib.selective_thinning_counter}, removed ${harvested} trees.`);
         },

@@ -59,10 +59,11 @@ lib.initStandObj = function() {
 */
 lib.initAllStands = function() {
     for (const id of fmengine.standIds) {
+
       // set the focus of ABE to this stand:
       fmengine.standId = id;
       // access data for the stand
-      initStandObj();
+      lib.initStandObj();
     }
 }
 

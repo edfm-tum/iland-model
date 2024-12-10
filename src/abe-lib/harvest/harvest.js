@@ -72,11 +72,13 @@ lib.harvest.HarvestAllBigTrees = function(options) {
 		schedule: opts.schedule,
 		action: function() {
 			stand.trees.load(opts.ranking);
+			lib.activityLog('HarvestAllBigTrees'); 
 			stand.trees.harvest();
-		}
+		},
+		onCreate: function() { /*this.finalHarvest = true; */},
 	};
 
-	act.description = `Harvest all trees with a ${opts.ranking} after every ${opts.schedule.opt} years.`;
+	act.description = `Harvest all trees with a ${opts.ranking} after ${opts.schedule.opt} years of simulation.`;
 	return act;
 };
 
@@ -84,28 +86,28 @@ lib.harvest.HarvestAllBigTrees = function(options) {
 lib.harvest.clearcut = function(options) {
     // 1. Default Options
     const defaultOptions = { 
-        schedule: { optRel: 1, force: true }, // use standard rotation period
-        id: 'clearcut',
+        schedule: { minRel: 0.8, optRel: 1, maxRel: 1.2, force: true }, 
+        id: 'Clearcut',
 		dbhThreshold: 0,
 		constraint: undefined
     };
     const opts = lib.mergeOptions(defaultOptions, options || {});
 
-	const act = { // available function remain(x) kill all but x random trees
+	const act = { 
 			type: "scheduled", 
             id: opts.id,
-            schedule: opts.schedule, //JM: does it work/make a difference to include repeat=T here aswell?
+            schedule: opts.schedule, 
 			onSetup: function() { 
                 lib.initStandObj(); // create an empty object as stand property
 			},
-			onEvaluate: function(){
+			onEvaluate: function() {
                 stand.trees.loadAll(`dbh>${opts.dbhThreshold}`);
 				stand.trees.harvest();
+                lib.activityLog(`Clearcut executed`);
 				return true; 
 			},
 			onExecute: function() {
 				stand.trees.removeMarkedTrees();
-                lib.activityLog('clearcut');
             },
             onCreate: function() { this.finalHarvest = true; }
 	};
@@ -113,6 +115,133 @@ lib.harvest.clearcut = function(options) {
 	
     act.description = `A clearcut operation, that removes all trees above a minimum diameter of ( ${opts.dbhThreshold} cm)).`;
   return act;  
+};
+
+
+lib.harvest.shelterwood = function(options) {
+    // 1. Default Options
+    const defaultOptions = { 
+        id: 'Shelterwood',
+		schedule: { minRel: 0.7, optRel: 0.8, maxRel: 0.9, force: true }, // activity should start before the optimal rotation length is reached.
+        NTrees: 40,
+		NCompetitors: 1000,
+		speciesSelectivity: {},
+		ranking: 'height',
+		repeatInterval: 5,
+		repeatTimes: 3,
+		constraint: undefined
+    };
+    const opts = lib.mergeOptions(defaultOptions, options || {});
+
+	// program consists of first a selection treatment, where the seed trees are set to crop trees and all other trees to competitors
+	// secondly it consists of a harvest treatment, within every tree gets harvest in multiple harvest activities
+	const program = {};
+
+	// select the remaining trees, that should be harvested last
+	// those should be the trees, that are i) dominant and ii) the target species of the regeneration
+    const select_trees = {
+        type: 'thinning',
+        id: opts.id +  "_select_trees",
+        schedule: opts.schedule,
+        thinning: 'selection',
+        N: opts.NTrees,
+        NCompetitors: opts.NCompetitors,
+        speciesSelectivity: opts.speciesSelectivity,
+        ranking: opts.ranking,
+
+		onSetup: function() { 
+			lib.initStandObj();
+		},
+
+        onEnter: function() {
+            stand.obj.lib.Shelterwood_harvest_counter = 0;
+        },
+
+        onExit: function() {
+            stand.stp.signal('Shelterwood_start_repeat');
+        },
+        description: `Select ${opts.NTrees} seed trees of the stand.`
+    };
+	
+	program["selector"] = select_trees;
+
+	// harvest competitor trees in the first year and seed trees in the last harvest activity
+	const remove_trees = {
+        type: 'general',
+        id: opts.id + "_remove_trees",
+        schedule: { signal: 'Shelterwood_remove'},
+        action: function() {
+
+            // first year. Save # of marked competitors
+			if (stand.obj.lib.Shelterwood_harvest_counter == 0) {
+				const marked = stand.trees.load('markcompetitor=true');
+                stand.setFlag('compN', marked);
+                lib.dbg(`selectiveThinning: start removal phase. ${marked} trees marked for removal.`);
+            };
+
+            // remove equal amount of non seed trees in each harvest
+			var n = stand.flag('compN') / (opts.repeatTimes - 1);
+            
+            stand.trees.load('markcompetitor=true');
+            stand.trees.filterRandomExclude(n);
+            const harvested = stand.trees.harvest();
+
+            lib.log("Year: " + Globals.year + ", shelterwood harvest");
+			lib.activityLog(`shelterwood harvest No. ${stand.obj.lib.Shelterwood_harvest_counter}`);
+            lib.dbg(`shelterwood harvest: No. ${stand.obj.lib.Shelterwood_harvest_counter}, removed ${harvested} trees.`);
+
+			// last year. remove all crop trees
+			if (stand.obj.lib.Shelterwood_harvest_counter == opts.repeatTimes) {
+				//console.log(`repeater: emit signal Shelterwood_final_harvest`);
+				//stand.stp.signal('Shelterwood_final_harvest');
+				stand.trees.load('markcrop=true');
+				const harvested = stand.trees.harvest();
+				
+				lib.activityLog('Shelter wood final harvest');
+				console.log('shelterwood_test');
+				printObj(this);
+				this.finalHarvest = true; 	
+				stand.absoluteAge = 0;		
+			};
+
+			stand.obj.lib.Shelterwood_harvest_counter = stand.obj.lib.Shelterwood_harvest_counter + 1;   
+        },
+
+        description: `Shelterwood harvest (during ${opts.repeatTimes * opts.repeatInterval} years), that removes all trees in ${opts.repeatTimes} harvests.`
+    }
+
+    program["remover"] = remove_trees;
+
+	program['repeater'] = lib.repeater({ schedule: { signal: 'Shelterwood_start_repeat'},
+											signal: 'Shelterwood_remove',
+											interval: opts.repeatInterval,
+											count: (opts.repeatTimes+1)}); // in final year all crop trees get removed
+	
+	// program['finalHarvest'] = { 
+	// 	type: "scheduled", 
+	// 	id: opts.id + "_final_harvest",
+	// 	schedule: { signal: 'Shelterwood_final_harvest'}, 
+
+	// 	onEvaluate: function() { 
+	// 		Globals.alert("Hello World, Is it? ", stand.id);
+	// 		return true
+	// 	},
+
+	// 	onExecute: function() {
+	// 		Globals.alert("Hello World, It's Harvest time ", stand.id)
+	// 		stand.trees.load('markcrop=true');
+	// 		const harvested = stand.trees.harvest();
+			
+	// 		lib.activityLog('Shelter wood final harvest'); 
+	// 	},
+	// 	onCreate: function() { this.finalHarvest = true; }
+	// };
+
+
+	if (opts.constraint !== undefined) program.constraint = opts.constraint;
+	
+	program.description = `A shelterwood operation, that removes all trees in ${opts.repeatTimes} harvests.`;
+  return program;  
 };
 
 
@@ -173,6 +302,7 @@ lib.harvest.stripCut = function(options) {
 						stand.trees.filterRandomExclude(treesToHarvest);
 						//stand.trees.filter('incsum(1) <= ' + treesToHarvest);
 						stand.trees.harvest();	
+						lib.activityLog(`Stripcut executed`);
 						harvestTookPlace = 1;
 					};
 								
@@ -245,6 +375,7 @@ lib.harvest.stripCut2 = function(options) {
 					stand.trees.filterRandomExclude(treesToHarvest);
 					//stand.trees.filter('incsum(1) <= ' + treesToHarvest);
 					stand.trees.harvest();	
+					lib.activityLog(`Stripcut executed`);
 					harvestTookPlace = 1;
 								
 				} else {
@@ -295,6 +426,7 @@ lib.harvest.CoppiceWithStandard = function(options) {
 			stand.trees.harvest();
 			
 			stand.trees.removeMarkedTrees();
+			lib.activityLog(`CoppiceWithStandard executed`);
 			//stand.activity.finalHarvest=true;
 		}
 	};
@@ -346,6 +478,7 @@ lib.harvest.targetDBH = function(options) {
 				};
 				console.log("Species: " + species + ", target DBH: " + dbh + ", Trees: " + stand.trees.count)
 				stand.trees.harvest();
+				lib.activityLog(`Harvest targetDBH executed`);
 			};
 		}
 	};
@@ -400,10 +533,12 @@ lib.harvest.targetDBHforNo3 = function(options) {
 				console.log("Species: " + species + ", target DBH: " + dbh + ", Trees: " + stand.trees.count)
 				stand.obj.act["NHarvests"] = stand.obj.act["NHarvests"] + stand.trees.count;
 				stand.trees.harvest();
+				lib.activityLog(`Harvest targetDBHforNo3 executed`);
 			};
 			if (stand.obj.act["NHarvests"] > 20) {
 				fmengine.runPlanting(stand.id, {species: 'psme', height: 0.4, fraction:1, pattern:'rect2', spacing:10});
-				Globals.alert("Planting!");				
+				Globals.alert("Planting!");	
+				lib.activityLog(`Planting of targetDBHforNo3 executed`);			
 			};
 			stand.obj.act["NHarvests"] = 0;
 		},
