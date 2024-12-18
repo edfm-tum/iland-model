@@ -452,33 +452,39 @@ void MainWindow::processMetaData(metadata &meta) {
 
 void MainWindow::on_actionSettingsDialog_triggered()
 {
-    mLinkxqt->loadXmlFile();
-    mLinkxqt->setTempHomePath();
-    mLinkxqt->readXmlProjectDescription();
+    bool xmlFileLoaded = mLinkxqt->loadXmlFile();
 
-    if (!ui_settingsDialog) {
-        QStringList dialogList = QStringList() << "Project" << "System"  << "Model" << "Output" << "Modules";
-        QStringList modelList = QStringList() << "World" << "Climate" << "Initialization" << "Site" << "Global Settings"  << "Seed Dispersal" << "Soil" << "Submodules" << "Management"  ;
-        QStringList modulesList = QStringList() << "Fire" << "Wind" << "Barkbeetle" << "BITE";
-        QStringList outputList = QStringList() << "Vegetation state" << "Dynamic" << "Flows" << "Processes" << "Disturbance modules" << "Forest management"  << "SVD";
-        QStringList systemList = QStringList() << "Path" << "Database" << "Logging" << "System Settings" << "Javascript";
-        QList<QStringList> tabList;
-        tabList.append(QStringList());
-        tabList.append(systemList);
-        tabList.append(modelList);
-        tabList.append(outputList);
-        tabList.append(modulesList);
+    if (xmlFileLoaded) {
+        mLinkxqt->setTempHomePath();
+        mLinkxqt->readXmlProjectDescription();
+        if (!ui_settingsDialog) {
+            QStringList dialogList = QStringList() << "Project" << "System"  << "Model" << "Output" << "Modules";
+            QStringList modelList = QStringList() << "World" << "Climate" << "Initialization" << "Site" << "Global Settings"  << "Seed Dispersal" << "Soil" << "Submodules" << "Management"  ;
+            QStringList modulesList = QStringList() << "Fire" << "Wind" << "Barkbeetle" << "BITE";
+            QStringList outputList = QStringList() << "Vegetation state" << "Dynamic" << "Flows" << "Processes" << "Disturbance modules" << "Forest management"  << "SVD";
+            QStringList systemList = QStringList() << "Path" << "Database" << "Logging" << "System Settings" << "Javascript";
+            QList<QStringList> tabList;
+            tabList.append(QStringList());
+            tabList.append(systemList);
+            tabList.append(modelList);
+            tabList.append(outputList);
+            tabList.append(modulesList);
 
-        ui_settingsDialog = new SettingsDialog(mLinkxqt, dialogList, tabList, mMetaKeys, mMetaValues, this);
+            ui_settingsDialog = new SettingsDialog(mLinkxqt, dialogList, tabList, mMetaKeys, mMetaValues, this);
 
+        }
+
+        //QFileInfo xmlFileInfo(mLinkxqt->getXmlFile());
+        //mLinkxqt->setTempHomePath(xmlFileInfo.absolutePath());
+
+        ui_settingsDialog->updateData();
+        ui_settingsDialog->saveButton->setEnabled(false);
+        ui_settingsDialog->adjustSize();
+        ui_settingsDialog->show();
+    } else {
+        qDebug() << "xml project file couldn't be loaded.";
     }
-    //QFileInfo xmlFileInfo(mLinkxqt->getXmlFile());
-    //mLinkxqt->setTempHomePath(xmlFileInfo.absolutePath());
 
-    ui_settingsDialog->updateData();
-    ui_settingsDialog->saveButton->setEnabled(false);
-    ui_settingsDialog->adjustSize();
-    ui_settingsDialog->show();
 
 }
 
