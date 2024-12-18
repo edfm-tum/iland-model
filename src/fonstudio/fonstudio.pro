@@ -2,10 +2,11 @@
 # Project created by QtCreator 2009-02-10T13:47:01
 # -------------------------------------------------
 QT += xml
-QT += script
+
 QT += sql
 QT += widgets
 QT += concurrent
+QT += qml
 TARGET = fonstudio
 TEMPLATE = app
 
@@ -17,7 +18,7 @@ INCLUDEPATH += ../core \
 CONFIG += exceptions
 
 # Use Precompiled headers (PCH)
-PRECOMPILED_HEADER = stable.h
+#PRECOMPILED_HEADER = stable.h
 SOURCES += main.cpp \
     mainwindow.cpp \
     ../core/grid.cpp \

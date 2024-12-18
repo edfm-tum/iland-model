@@ -55,14 +55,14 @@ void PaintArea::mouseMoveEvent( QMouseEvent * event )
 
 void PaintArea::wheelEvent ( QWheelEvent * event )
 {
-    emit mouseWheel(event->pos(), event->delta() / 120);
+    emit mouseWheel(event->position().toPoint(), event->angleDelta().y() / 120);
 }
 
 void PaintArea::mouseReleaseEvent ( QMouseEvent * event )
 {
     setCursor(Qt::CrossCursor);
 
-    if ( (event->pos()-m_lastDown).manhattanLength() > 3) {
+    if ( (event->position()-m_lastDown).manhattanLength() > 3) {
         emit mouseDrag(m_lastDown, event->pos(), event->button());
     }
     //emit mouseClick(event->pos());

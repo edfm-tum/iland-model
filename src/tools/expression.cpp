@@ -278,7 +278,9 @@ void  Expression::parse(ExpressionWrapper *wrapper)
     } catch (const IException& e) {
         m_errorMsg =QString("Expression::parse: Error in: %1 : %2").arg(m_expression, e.message());
         if (mThrowExceptionsInJS){
+#ifndef FONSTUDIO
              ScriptGlobal::throwError(m_errorMsg);
+#endif
         } else if (m_catchExceptions) {
              Helper::msg(m_errorMsg);
         } else {
