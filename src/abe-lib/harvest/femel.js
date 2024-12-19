@@ -1,4 +1,20 @@
-
+/**
+ * Femel management system
+ * @method femel
+ * @param {object} options
+ *    @param {number} options.steps number of consecutive enlargement steps after start (default: 2).
+ *    @param {number} options.interval number of years between each step (default: 10).
+ *    @param {number} options.growBy number of "rings" of 10m cells to grow each step (default: 1).
+ *    @param {object|undefined} options.schedule schedule object (default: undefined).
+ * @return {object} act - An object describing the harvest activity
+ * @example
+ *     lib.harvest.femel({
+ *         steps: 3,
+ *         interval: 5,
+ *         growBy: 2,
+ *         schedule: { start: 10 }
+ *     });
+ */
 
 lib.harvest.femel = function(options) {
 

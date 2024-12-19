@@ -1,26 +1,54 @@
 /**
-  The planting module include activities for artificial regeneration.
+ * The top-level library module.
+ * @module abe-lib
+ */
 
-
-
-  @module abe-lib
-  @submodule lib.planting
-  */
+/**
+ * The planting library includes management operations related to artificial and natural regeneration.
+ *
+ * Commonalities....
+ * @class planting
+ * @memberof abe-lib
+ */
 
 lib.planting = {};
 
 
-lib.planting.general = function(options) {
+
+/**
+ * Schedules a general planting activity.
+ *
+ * @method general
+ * @param {Object} options Options for configuring the general planting.
+ *     @param {Number} options.schedule The planting schedule (default: 1).
+ *     @param {String} options.species The species to plant. **Mandatory**.
+ *     @param {Number} options.spacing The spacing between plants (default: 10).
+ *     @param {Number} options.fraction The fraction of the area to be planted (default: 1).
+ *     @param {Number} options.treeHeight Initial tree height (default: 0.3).
+ *     @param {String|undefined} options.pattern Planting pattern (e.g., "rect2"). (default: undefined).
+ *     @param {Boolean} options.clear Whether to clear existing vegetation before planting (default: false).
+ * @example
+ *     // NOTE: lib.planting is an object, not a class. No need to use 'new'
+ *     lib.planting.general({
+ *         schedule: 2,
+ *         species: 'Pine',
+ *         spacing: 12,
+ *         pattern: 'rect'
+ *     });
+ */
+ lib.planting.general = function(options) {
 	const defaultOptions = {
 		schedule: 1, 
-		species: 'abal',
+        species: undefined,
 		spacing: 10,
 		fraction: 1,
-		treeHeight: 2,
+        treeHeight: 0.3,
 		pattern: undefined, //"rect2"
 		clear: false
 	};
     const opts = lib.mergeOptions(defaultOptions, options || {});
+    if (opts.species === undefined)
+        throw Error("Planting: species is mandatory");
 	
 	const plant = {
 		type: 'planting', 
@@ -104,32 +132,21 @@ lib.planting = function(options) {
     return plantingActivities;
 }*/
 
-/**
-Description
------------
-
-<bla bla bla>
 
 
-
-
-
-
-@class lib.planting.dynamic
-*/
 
 
 /**
-@type {Options}
-@param schedule {Schedule} object
-@param id {string} (unique) name of the activity
-@param speciesSelectivity {object} define the target species (and their relative weights). This
-information is used to build the actual planting items. Can be an object with key-value pairs,
-or a JS function that returns such an object
-@param speciesDefaults {object}
-@property defaultOptions
-  */
-
+ * Dynamically schedules planting activities based on provided options.
+ *
+ * @method dynamic
+ * @param {Object} options Options for configuring the dynamic planting.
+ *     @param {Schedule} options.schedule The planting schedule.
+ *     @param {String} options.id A unique identifier for the planting activity (default: 'planting').
+ *     @param {Object|Function} options.speciesSelectivity Defines the target species and their relative weights.
+ *         This can be an object with species as keys and weights as values, or a function that returns such an object.
+ *     @param {Object} options.speciesDefaults Default settings for species (default: lib.planting.speciesDefaults).
+ */
 lib.planting.dynamic = function(options) {
 
     const defaultOptions = {
@@ -205,8 +222,22 @@ lib.planting.dynamic = function(options) {
     }
 }
 
-// defaults per species
 
+
+
+// defaults per species
+/**
+ * Default planting settings for various species.
+ *
+ * @property speciesDefaults
+ *
+ * @type {Object}
+ * @example
+ *     // Accessing default settings for 'piab' (spruce)
+ *     const spruceDefaults = lib.planting.speciesDefaults.piab;
+ *     console.log(spruceDefaults);
+ *     // Output: { species: 'piab', h: 0.3, age: 1, fraction: [Function] }
+ */
 lib.planting.speciesDefaults = {
     // spruce, .... use wall-to-wall planting
     'piab': { species: 'piab', h: 0.3, age: 1, fraction: function(proportion) {return proportion * 1 }},
@@ -225,3 +256,6 @@ lib.planting.speciesDefaults = {
         n: function(proportion) {return proportion*10000/272; /* 272: area circle10 */} },
 
 };
+
+
+

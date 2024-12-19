@@ -1,7 +1,28 @@
-/* Selective thinning
-
-*/
-
+/**
+ * Selective thinning operation
+ * @method selectiveThinning
+ * @param {object} options
+ *    @param {object|undefined} options.schedule schedule for the thinning (default: undefined).
+ *    @param {string} options.id A unique identifier for the thinning activity (default: 'selective_select_trees').
+ *    @param {string} options.mode mode of thinning, either 'simple' or 'dynamic' (default: 'simple').
+ *    @param {string} options.SpeciesMode mode of species selection, either 'simple' or 'dynamic' (default: 'simple').
+ *    @param {number|function} options.NTrees number of trees to select, can be a number or a function returning a number (default: 80).
+ *    @param {number|function} options.NCompetitors number of competitor trees to select, can be a number or a function returning a number (default: 4).
+ *    @param {object|function} options.speciesSelectivity object defining species selectivity, can be an object or a function returning an object (default: {}).
+ *    @param {string|function} options.ranking ranking string for selecting trees, can be a string or a function returning a string (default: 'height').
+ *    @param {number} options.repeatInterval interval between repeated thinnings (default: 5).
+ *    @param {number} options.repeatTimes number of times to repeat the thinning (default: 5).
+ *    @param {string|undefined} options.constraint constraint (default: undefined).
+ * @return {object} program - An object describing the thinning program
+ * @example
+ *     lib.thinning.selectiveThinning({
+ *         schedule: { start: 30, end: 100 },
+ *         mode: 'dynamic',
+ *         SpeciesMode: 'dynamic',
+ *         NTrees: function() { return stand.flag('NTrees') || 100; },
+ *         NCompetitors: function() { return stand.flag('NCompetitors') || 5; }
+ *     });
+ */
 lib.thinning.selectiveThinning = function(options) {
     // 1. Default Options
     const defaultOptions = {

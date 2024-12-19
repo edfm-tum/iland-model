@@ -1,3 +1,8 @@
+/**
+ * The top-level library module.
+ * @module abe-lib
+ */
+
 /** Helper functions
 * ABE Library
 
@@ -33,14 +38,14 @@ Useful activites
 + `repeater`: simple activity to repeatedly run a single JS function / activity
 
 
-@class lib.helper
+@class helper
 */
 
 
 /**
 *  Initializes the `stand.obj` Javascript object for the current stand (`stand.id`).
 *
-*  @method lib.initStandObj
+*  @method initStandObj
 */
 lib.initStandObj = function() {
     if (typeof stand.obj === 'object' && typeof stand.obj.lib === 'object') return;
@@ -55,7 +60,7 @@ lib.initStandObj = function() {
 /**
 *  Initializes all stands of the current simulation (`initStandObj()`).
 *
-*  @method lib.initAllStands
+*  @method initAllStands
 */
 lib.initAllStands = function() {
     for (const id of fmengine.standIds) {
@@ -88,7 +93,7 @@ lib.loglevel = 0; // 0: none, 1: normal, 2: debug
 *
 *
 *  @param str {String} string to log
-*  @method lib.log
+*  @method log
 */
 lib.log = function(str) {
     if (lib.loglevel > 0)
@@ -104,7 +109,7 @@ lib.log = function(str) {
 *  See also: lib.dbg()
 *
 *  @param str {String} string to log
-*  @method lib.dbg
+*  @method dbg
 */
 lib.dbg = function(str) {
     if (lib.loglevel > 1)
@@ -139,7 +144,7 @@ lib.mergeOptions2 = function(defaults, options) {
 *    @param defaults object containing default values
 *    @param options object user-defined options
 *    @return object that contains default values updated with user-provided options
-*    @method lib.mergeOptions
+*    @method mergeOptions
 */
 lib.mergeOptions = function(defaults, options) {
   const merged = {};
@@ -187,7 +192,7 @@ lib.mergeOptions = function(defaults, options) {
 *
 *    @param concepts one or multiple concepts, typically the result of calls to library function
 *    @return object a definitions of multiple activities combined in a single object
-*    @method lib.buildProgram
+*    @method buildProgram
 */
 
 lib.buildProgram = function (...concepts) {
@@ -227,7 +232,7 @@ lib.buildProgram = function (...concepts) {
 *
 *    @param stp_name {string} name of the stand treatment program
 *    @param concepts one or multiple concepts, typically the result of calls to library function
-*    @method lib.createSTP
+*    @method createSTP
 */
 lib.createSTP = function(stp_name, ...concepts) {
     const program = {};
@@ -286,7 +291,7 @@ lib.activityLog = function(actName, extraValues) {
 *      fmengine.standId = 13;
 *      Globals.alert( lib.formattedLog() );
 *
-* @method lib.formattedLog
+* @method formattedLog
 */
 lib.formattedLog = function(StandId) {
     // set the focus of ABE to the input StandID if provided
@@ -330,7 +335,7 @@ lib.formattedLog = function(StandId) {
 *      fmengine.standId = 13;
 *      Globals.alert( lib.formattedSTP() );
 *
-* @method lib.formattedLog
+* @method formattedSTP
 */
 lib.formattedSTP = function(StandId) {
     // set the focus of ABE to the input StandID if provided
@@ -357,8 +362,44 @@ lib.formattedSTP = function(StandId) {
 
 }
 
-/** Create Patch activity
-*/
+/**
+ * Selects optimal patches based on a given criterion.
+ *
+ * This function helps with selecting the best patches in a stand based on a specified criterion
+ * (e.g., light availability, basal area) or a custom function. It's useful for setting up
+ * spatially explicit management activities like creating gaps or targeting specific areas
+ * within a stand for treatments.
+ *
+ * @method selectOptimalPatches
+ * @param {object} options Options for configuring the patch selection.
+ *   @param {number} options.N Number of patches to select per hectare (default: 4).
+ *   @param {number} options.patchsize Size of the patches (in cells, assuming a square shape, e.g., 2 for 2x2 cells, which is 20x20m or 400m2) (default: 2).
+ *   @param {number} options.spacing Space (in 10m cells) between candidate patches (default: 0).
+ *   @param {string} options.criterium Criterion for selecting patches ('max_light', 'min_light', or 'min_basalarea') (default: 'max_light').
+ *   @param {function|undefined} options.customFun Custom function for evaluating patches. This function should take a patch object as input and return a score (default: undefined).
+ *   @param {number} options.patchId ID to assign to the selected patches (default: 1).
+ *   @param {object} options.schedule Schedule object for triggering the patch selection (default: { signal: 'start' }).
+ * @return {object} act - An object describing the patch selection activity.
+ * @example
+ *     // Select 5 patches per hectare based on maximum light availability, using 3x3 patches.
+ *     lib.selectOptimalPatches({
+ *         N: 5,
+ *         patchsize: 3,
+ *         criterium: 'max_light'
+ *     });
+ *
+ *     // Select 2 patches per hectare based on a custom evaluation function.
+ *     lib.selectOptimalPatches({
+ *         N: 2,
+ *         customFun: function(patch) {
+ *             // Example: Score based on proximity to a specific location
+ *             const targetX = 50;
+ *             const targetY = 50;
+ *             const distance = Math.sqrt(Math.pow(patch.x - targetX, 2) + Math.pow(patch.y - targetY, 2));
+ *             return 1 / distance; // Higher score for closer patches
+ *         }
+ *     });
+ */
 lib.selectOptimalPatches = function(options) {
     // 1. Default Options
     const defaultOptions = {
@@ -449,7 +490,32 @@ lib.selectOptimalPatches = function(options) {
     }
 }
 
-/* STP switcher */
+/**
+ * Switches the active Stand Treatment Program (STP) for a stand.
+ *
+ * This function allows you to dynamically change the STP that is being applied to a stand during a simulation.
+ * It's particularly useful for implementing adaptive management strategies or scenarios where different
+ * management regimes should be applied based on specific conditions or triggers.
+ *
+ * @method changeSTP
+ * @param {object} options Options for configuring the STP change.
+ *   @param {string} options.STP The name of the STP to switch to. This STP must already be defined in the iLand project.
+ *   @param {object} options.schedule Schedule object for triggering the STP change (default: { signal: 'end' }).
+ *   @param {string} options.id A unique identifier for the activity (default: 'change_stp').
+ * @return {object} act - An object describing the STP change activity.
+ * @example
+ *   // Switch to the 'harvest_STP' when the 'start' signal is received.
+ *   lib.changeSTP({
+ *       STP: 'harvest_STP',
+ *       schedule: { signal: 'start' }
+ *   });
+ *
+ *   // Switch to 'passive_STP' after 100 years.
+ *    lib.changeSTP({
+ *       STP: 'passive_STP',
+ *       schedule: { absolute: true, opt: 100}
+ *   });
+ */
 lib.changeSTP = function(options) {
     // 1. Default Options
     const defaultOptions = {
@@ -476,8 +542,46 @@ lib.changeSTP = function(options) {
 
 }
 
-/** repeater activity
-*/
+/**
+ * Creates a repeater activity that repeatedly triggers a specified signal.
+ *
+ * This function is useful for creating activities that need to be executed multiple times
+ * at regular intervals, such as repeated thinnings or harvests. The repeater can be
+ * configured to trigger based on a schedule or a signal, and it can optionally block
+ * other activities until it has finished.
+ *
+ * @method repeater
+ * @param {object} options Options for configuring the repeater.
+ *   @param {object} options.schedule Schedule object for starting the repeater.
+ *   @param {string} options.id A unique identifier for the repeater activity (default: 'repeater').
+ *   @param {number} options.count Number of times to repeat the signal (default: undefined).
+ *   @param {number} options.interval Interval (in years) between repetitions (default: 1).
+ *   @param {string} options.signal Name of the signal to emit at each repetition.
+ *   @param {boolean} options.block Whether the repeater should block other activities until it finishes (default: true).
+ *   @param {function|undefined} options.parameter Function to provide the signal parameter when the signal is emitted (default: undefined).
+ * @return {object} act - An object describing the repeater activity.
+ * @example
+ *   // Repeat the 'thinning' signal 5 times every 10 years, starting in year 50.
+ *   lib.repeater({
+ *       schedule: { start: 50 },
+ *       count: 5,
+ *       interval: 10,
+ *       signal: 'thinning'
+ *   });
+ *
+ *   // Repeat the 'harvest' signal 3 times every 2 years, triggered by the 'ready_for_harvest' signal,
+ *   // and provide a custom parameter to the signal.
+ *   lib.repeater({
+ *       schedule: { signal: 'ready_for_harvest' },
+ *       count: 3,
+ *       interval: 2,
+ *       signal: 'harvest',
+ *       parameter: function() {
+ *           // Example: Return the current stand's basal area as the parameter.
+ *           return stand.basalArea();
+ *       }
+ *   });
+ */
 lib.repeater = function(options) {
     // 1. Default Options
     const defaultOptions = {

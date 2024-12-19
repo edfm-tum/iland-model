@@ -1,17 +1,48 @@
 /**
-  The planting module include activities thinning operations.
+ * The top-level library module.
+ * @module abe-lib
+ */
 
+/**
+ * The thinning module include activities thinning operations.
+ *
+ * @class thinning
+ * @memberof abe-lib
+ */
 
-
-  @module abe-lib
-  @submodule thinning
-  */
 
 lib.thinning = {};
 
 Globals.include(lib.path.dir + '/thinning/selective.js');
 
 
+lib.thinning = {};
+
+Globals.include(lib.path.dir + '/thinning/selective.js');
+
+/**
+ * Thinning from below
+ * @method fromBelow
+ * @param {object} options
+ *    @param {string} options.id A unique identifier for the thinning activity (default: 'ThinningFromBelow').
+ *    @param {object} options.repeaterSchedule schedule for the repeater (default: {min: 30, opt: 40, max: 50}).
+ *    @param {string} options.signal signal for triggering the thinning (default: 'thinning_execute').
+ *    @param {number} options.repeatInterval interval between repeated thinnings (default: 5).
+ *    @param {number} options.repeatTimes number of times to repeat the thinning (default: 5).
+ *    @param {boolean} options.block block other activities in repeater (default: true).
+ *    @param {string} options.mode mode of thinning, either 'simple' or 'dynamic' (default: 'simple').
+ *    @param {number|function} options.thinningShare share of trees to be thinned, can be a number or a function returning a number (default: 0.2).
+ *    @param {number[]} options.thinningClasses array defining how much of each thinning class should be removed (default: [60, 25, 15, 0, 0]).
+ *    @param {string} options.ranking ranking string for filtering trees, e.g. 'volume' (default: 'volume').
+ *    @param {string|undefined} options.constraint constraint (default: undefined).
+ * @return {object} program - An object describing the thinning program
+ * @example
+ *     lib.thinning.fromBelow({
+ *         repeaterSchedule: { min: 25, opt: 35, max: 45 },
+ *         repeatInterval: 10,
+ *         thinningShare: 0.3
+ *     });
+ */
 lib.thinning.fromBelow = function(options) {
 	// Problem TODO: thinning from below doesn't take as much volume as intended but!
     // 1. Default Options
@@ -88,7 +119,27 @@ lib.thinning.fromBelow = function(options) {
 }
 
 
-
+/**
+ * Tending operation
+ * @method tending
+ * @param {object} options
+ *    @param {string} options.id A unique identifier for the tending activity (default: 'Tending').
+ *    @param {string} options.signal signal for triggering the tending (default: 'tending_execute').
+ *    @param {object|undefined} options.schedule schedule for the tending (default: undefined).
+ *    @param {number} options.nTendingActions number of tending actions (default: 3).
+ *    @param {number} options.tendingInterval interval between tending actions (default: 2).
+ *    @param {object} options.speciesSelectivity object defining species selectivity, e.g. { 'fasy': 0.9, 'abal': 0.8 } (default: { 'fasy': 0.9, 'abal': 0.8 }).
+ *    @param {number} options.intensity intensity of tending (default: 10).
+ *    @param {boolean} options.block block other activities in repeater (default: true).
+ *    @param {string|undefined} options.constraint constraint (default: undefined).
+ * @return {object} program - An object describing the tending program
+ * @example
+ *     lib.thinning.tending({
+ *         nTendingActions: 5,
+ *         tendingInterval: 3,
+ *         speciesSelectivity: { 'piab': 0.7, 'lade': 0.6 }
+ *     });
+ */
 lib.thinning.tending = function(options) {
     // 1. Default Options
     const defaultOptions = {

@@ -1,12 +1,14 @@
 /**
-  The planting module include activities harvesting operations.
+ * The top-level library module.
+ * @module abe-lib
+ */
 
-
-
-  @module abe-lib
-  @submodule harvest
-  */
-
+/**
+ * The harvest library includes management operations related to harvesting.
+ *
+ * @class harvest
+ * @memberof abe-lib
+ */
 lib.harvest = {};
 
 
@@ -42,6 +44,13 @@ lib.harvest = function(options) {
 };
 */
 
+/**
+ * No harvest management
+ * @method noHarvest
+ * @return {object} act - An object describing the harvest activity
+ * @example
+ *     lib.harvest.noHarvest();
+ */
 lib.harvest.noHarvest = function() {
 	var act = {
 		type: 'general', 
@@ -55,6 +64,21 @@ lib.harvest.noHarvest = function() {
 	return act;
 };
 
+/**
+ * Harvest all trees above a certain height threshold
+ * @method HarvestAllBigTrees
+ * @param {object} options
+ *    @param {string} options.id A unique identifier for the harvest activity (default: 'HarvestAllBigTrees').
+ *    @param {object} options.schedule schedule of the harvest (default: {absolute: true, opt: 3}).
+ *    @param {string} options.ranking ranking string for filtering trees, e.g. 'height > 10' (default: 'height > 10').
+ *    @param {string|undefined} options.constraint constraint (default: undefined).
+ * @return {object} act - An object describing the harvest activity
+ * @example
+ *     lib.harvest.HarvestAllBigTrees({
+ *         schedule: {absolute: true, opt: 5},
+ *         ranking: 'height > 15'
+ *     });
+ */
 lib.harvest.HarvestAllBigTrees = function(options) {
 	// 1. Default Options
     const defaultOptions = { 
@@ -82,7 +106,21 @@ lib.harvest.HarvestAllBigTrees = function(options) {
 	return act;
 };
 
-
+/**
+ * Clearcut operation, that removes all trees above a minimum diameter
+ * @method clearcut
+ * @param {object} options
+ *    @param {object} options.schedule schedule of the harvest (default: { minRel: 0.8, optRel: 1, maxRel: 1.2, force: true }).
+ *    @param {string} options.id A unique identifier for the harvest activity (default: 'Clearcut').
+ *    @param {number} options.dbhThreshold Minimum DBH threshold for harvesting (default: 0).
+ *    @param {string|undefined} options.constraint constraint (default: undefined).
+ * @return {object} act - An object describing the harvest activity
+ * @example
+ *     lib.harvest.clearcut({
+ *         schedule: { minRel: 0.7, optRel: 0.9, maxRel: 1.1, force: true },
+ *         dbhThreshold: 5
+ *     });
+ */
 lib.harvest.clearcut = function(options) {
     // 1. Default Options
     const defaultOptions = { 
@@ -117,7 +155,27 @@ lib.harvest.clearcut = function(options) {
   return act;  
 };
 
-
+/**
+ * Shelterwood harvest system
+ * @method shelterwood
+ * @param {object} options
+ *    @param {string} options.id A unique identifier for the harvest activity (default: 'Shelterwood').
+ *    @param {object} options.schedule schedule of the harvest (default: { minRel: 0.7, optRel: 0.8, maxRel: 0.9, force: true }).
+ *    @param {number} options.NTrees Number of seed trees to select (default: 40).
+ *    @param {number} options.NCompetitors Number of competitor trees to select (default: 1000).
+ *    @param {object} options.speciesSelectivity species selectivity object (default: {}).
+ *    @param {string} options.ranking ranking string for selecting seed trees, e.g. 'height' (default: 'height').
+ *    @param {number} options.repeatInterval interval between repeated harvests (default: 5).
+ *    @param {number} options.repeatTimes number of repeated harvests (default: 3).
+ *    @param {string|undefined} options.constraint constraint (default: undefined).
+ * @return {object} program - An object describing the harvest program
+ * @example
+ *     lib.harvest.shelterwood({
+ *         schedule: { minRel: 0.6, optRel: 0.7, maxRel: 0.8, force: true },
+ *         NTrees: 50,
+ *         speciesSelectivity: { 'pisy': 1, 'abal': 0.5 }
+ *     });
+ */
 lib.harvest.shelterwood = function(options) {
     // 1. Default Options
     const defaultOptions = { 
@@ -244,7 +302,25 @@ lib.harvest.shelterwood = function(options) {
   return program;  
 };
 
-
+/**
+ * Strip cut system
+ * @method stripCut
+ * @param {object} options
+ *    @param {number} options.harvestDirection direction of the strips in degrees (default: 120).
+ *    @param {number} options.stripWidth width of each strip in meters (default: 30).
+ *    @param {number} options.stripRepetitions number of strips before the next strip is a "first" strip again (default: 5).
+ *    @param {number[]} options.harvestIntensities array of harvest intensities for each harvest on the strip (default: [0.7, 0.5, 1]).
+ *    @param {number} options.harvestHeightThreshold height threshold for harvesting (default: 30).
+ *    @param {number} options.harvestInterval number of years between each harvest activity (default: 5).
+ *    @param {string|undefined} options.constraint constraint (default: undefined).
+ * @return {object} act - An object describing the harvest activity
+ * @example
+ *     lib.harvest.stripCut({
+ *         harvestDirection: 90,
+ *         stripWidth: 40,
+ *         harvestIntensities: [0.6, 0.8, 1]
+ *     });
+ */
 lib.harvest.stripCut = function(options) {
 	// 1. Default Options
     const defaultOptions = { 
@@ -317,7 +393,26 @@ lib.harvest.stripCut = function(options) {
   return act;  
 };
 
-
+/**
+ * Another strip cut system
+ * @method stripCut2
+ * @param {object} options
+ *    @param {number} options.harvestDirection direction of the strips in degrees (default: 120).
+ *    @param {number} options.stripWidth width of each strip in meters (default: 30).
+ *    @param {number} options.stripRepetitions number of strips before the next strip is a "first" strip again (default: 5).
+ *    @param {number[]} options.harvestIntensities array of harvest intensities for each harvest on the strip (default: [0.7, 0.5, 1]).
+ *    @param {number} options.harvestThreshold threshold as a gatekeeper for which strips should be harvested (default: 30).
+ *    @param {number} options.harvestInterval number of years between each harvest activity (default: 5).
+ *    @param {string} options.constraint constraint, e.g. "topHeight" (default: "topHeight").
+ * @return {object} act - An object describing the harvest activity
+ * @example
+ *     lib.harvest.stripCut2({
+ *         harvestDirection: 180,
+ *         stripWidth: 25,
+ *         harvestIntensities: [0.5, 0.7, 1],
+ *         constraint: "basalArea"
+ *     });
+ */
 lib.harvest.stripCut2 = function(options) {
 	// 1. Default Options
     const defaultOptions = { 
@@ -392,6 +487,117 @@ lib.harvest.stripCut2 = function(options) {
   return act;  
 };
 
+/**
+ * Another strip cut system
+ * @method stripCut2
+ * @memberof abe-lib.harvest
+ * @param {object} options
+ *    @param {number} options.harvestDirection direction of the strips in degrees (default: 120).
+ *    @param {number} options.stripWidth width of each strip in meters (default: 30).
+ *    @param {number} options.stripRepetitions number of strips before the next strip is a "first" strip again (default: 5).
+ *    @param {number[]} options.harvestIntensities array of harvest intensities for each harvest on the strip (default: [0.7, 0.5, 1]).
+ *    @param {number} options.harvestThreshold threshold as a gatekeeper for which strips should be harvested (default: 30).
+ *    @param {number} options.harvestInterval number of years between each harvest activity (default: 5).
+ *    @param {string} options.constraint constraint, e.g. "topHeight" (default: "topHeight").
+ * @return {object} act - An object describing the harvest activity
+ * @example
+ *     lib.harvest.stripCut2({
+ *         harvestDirection: 180,
+ *         stripWidth: 25,
+ *         harvestIntensities: [0.5, 0.7, 1],
+ *         constraint: "basalArea"
+ *     });
+ */
+lib.harvest.stripCut2 = function(options) {
+    // 1. Default Options
+    const defaultOptions = {
+        harvestDirection: 120, // harvest direction of the strips in degrees; strip orientation is +90°
+        stripWidth: 30, // width of each strip
+        stripRepetitions: 5, // number of strips before the next strip is a "first" strip again
+
+        harvestIntensities: [0.7, 0.5, 1], // harvest intensities of the harvests on the strip (e.g. first removing 70% of all trees in the strip, after 5 years remaining 50% of the rest, after 5 years remaining the rest)
+        harvestThreshold: 30, // or another threshold as a gate keeper which strips should be harvested
+        harvestInterval: 5, // number of years between each harvest activity
+        constraint: "topHeight",
+
+        // ... add other default thinning parameters
+    };
+    const opts = lib.mergeOptions(defaultOptions, options || {});
+
+    opts.constraint = "stand." + opts.constraint + ">" + opts.harvestThreshold;
+
+    const act = {
+        // MAYBE ITS BETTER TO HAVE ON EVALUATION WHERE I CHECK IF THE WHOLE STAND IS READY FOR HARVEST INSTEAD OF EVERY PATCH!
+        type: "general",
+        schedule: { repeat: true, repeatInterval: opts.harvestInterval },
+        //schedule: { repeat: true, repeatInterval: opts.RepeatTime}, // maybe not the right thing here...
+        onSetup: function() {
+            // initialise the patches
+            // opts.harvestDirection, opts.stripWidth and opts.stripRepetitions needed.
+            stand.patches.list = stand.patches.createStrips(opts.stripWidth, /*horiziontal=*/ true);   //needs to be cooler
+
+            initStandObj();
+            stand.obj.act["NumberOfHarvests"] = 0;
+            stand.obj.act["NumberOfStrips"] = Math.min(stand.patches.list.length, opts.stripRepetitions);
+
+        },
+        action: function() {
+            var harvestTookPlace = 0;
+
+            for (p of stand.patches.list) {
+                //Globals.alert("Check patch " + p.id);
+                // Step 1: check if harvest should take place... maybe with sth. like the following
+                let stripType = ((p.id - 1) % opts.stripRepetitions) + 1 // check the type of harvest (first, second, ..., last or no)
+
+                // old let harvestType = Math.max(stand.obj.act["NumberOfHarvests"] + 2 - stripType, 0) * (stripType - 1 <= stand.obj.act["NumberOfHarvests"]) * ((stand.obj.act["NumberOfHarvests"] + 2 - stripType) <= opts.harvestIntensities.length);
+                let harvestType = Math.max(stand.obj.act["NumberOfHarvests"] - stripType + 2, 0) * (stand.obj.act["NumberOfHarvests"] - stripType + 1 < opts.harvestIntensities.length);
+                //Globals.alert("harvestType " + harvestType);
+
+                if (harvestType !== 0) {
+                    //Globals.alert("Harvest!" + " harvestIntensitie: " + opts.harvestIntensities[harvestType - 1])
+                    // still to do: only harvest if mean height of trees in stand are above harvestHeightThreshold
+
+                    stand.trees.load('patch=' + p.id);
+                    //var treesToRemain = Math.round(stand.trees.count*(1-opts.harvestIntensities[harvestType - 1]));
+                    var treesToHarvest = Math.round(stand.trees.count * (opts.harvestIntensities[harvestType - 1]));
+
+                    stand.trees.filterRandomExclude(treesToHarvest);
+                    //stand.trees.filter('incsum(1) <= ' + treesToHarvest);
+                    stand.trees.harvest();
+                    lib.activityLog(`Stripcut executed`);
+                    harvestTookPlace = 1;
+
+                } else {
+                    //Globals.alert("No Harvest")
+                };
+            }
+            stand.obj.act["NumberOfHarvests"] = stand.obj.act["NumberOfHarvests"] + harvestTookPlace;
+            //stand.obj.act["NumberOfHarvests"] = stand.obj.act["NumberOfHarvests"] % stand.obj.act["NumberOfStrips"];
+        }
+    };
+    if (opts.constraint !== undefined) act.constraint = opts.constraint;
+
+    act.description = `Stripcut system which first devides the stand into ${opts.stripWidth} meter wide stripes and harvests on these stripes every ${opts.harvestInterval} years.`;
+    return act;
+};
+
+/**
+ * Coppice with standards management system
+ * @method CoppiceWithStandard
+ * @param {object} options
+ *    @param {number} options.TargetDBH target DBH for harvesting (default: 80).
+ *    @param {number} options.NStandards number of remaining trees per hectare (default: 30).
+ *    @param {number} options.RepeatTime time interval between harvests (default: 20).
+ *    @param {string|undefined} options.species species to consider (default: undefined).
+ *    @param {string|undefined} options.constraint constraint (default: undefined).
+ * @return {object} act - An object describing the harvest activity
+ * @example
+ *     lib.harvest.CoppiceWithStandard({
+ *         TargetDBH: 70,
+ *         NStandards: 40,
+ *         species: 'fasy'
+ *     });
+ */
 lib.harvest.CoppiceWithStandard = function(options) {
 	// 1. Default Options
     const defaultOptions = { 
@@ -437,6 +643,22 @@ lib.harvest.CoppiceWithStandard = function(options) {
 };
 
 
+/**
+ * Target diameter harvesting system
+ * @method targetDBH
+ * @param {object} options
+ *    @param {number} options.TargetDBH target DBH for harvesting (default: 50).
+ *    @param {number} options.RepeatTime time interval between harvests (default: 5).
+ *    @param {object} options.dbhList object with DBH thresholds per species (default: {}).
+ *    @param {string|undefined} options.constraint constraint (default: undefined).
+ * @return {object} act - An object describing the harvest activity
+ * @example
+ *     lib.harvest.targetDBH({
+ *         TargetDBH: 60,
+ *         RepeatTime: 10,
+ *         dbhList: { 'fasy': 50, 'abal': 55 }
+ *     });
+ */
 lib.harvest.targetDBH = function(options) {
 	// 1. Default Options
     const defaultOptions = { 
@@ -490,7 +712,22 @@ lib.harvest.targetDBH = function(options) {
 	return act;
 };
 
-
+/**
+ * Target diameter harvesting system for Norway Spruce (No)
+ * @method targetDBHforNo3
+ * @param {object} options
+ *    @param {number} options.TargetDBH target DBH for harvesting (default: 50).
+ *    @param {number} options.RepeatTime time interval between harvests (default: 5).
+ *    @param {object} options.dbhList object with DBH thresholds per species (default: {}).
+ *    @param {string|undefined} options.constraint constraint (default: undefined).
+ * @return {object} act - An object describing the harvest activity
+ * @example
+ *     lib.harvest.targetDBHforNo3({
+ *         TargetDBH: 55,
+ *         RepeatTime: 8,
+ *         dbhList: { 'fasy': 45, 'abal': 60 }
+ *     });
+ */
 lib.harvest.targetDBHforNo3 = function(options) {
 	// 1. Default Options
     const defaultOptions = { 
