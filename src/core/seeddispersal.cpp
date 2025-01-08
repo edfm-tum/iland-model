@@ -143,11 +143,11 @@ void SeedDispersal::setup()
             // current species in list??
             mHasExternalSeedInput = GlobalSettings::instance()->settings().value("model.settings.seedDispersal.externalSeedSpecies").contains(mSpecies->id());
             QString dir = GlobalSettings::instance()->settings().value("model.settings.seedDispersal.externalSeedSource").toLower();
-            // encode cardinal positions as bits: e.g: "e,w" -> 6
-            mExternalSeedDirection += dir.contains("n")?1:0;
-            mExternalSeedDirection += dir.contains("e")?2:0;
-            mExternalSeedDirection += dir.contains("s")?4:0;
-            mExternalSeedDirection += dir.contains("w")?8:0;
+            // encode cardinal positions as bits: e.g: "e,w" -> 10 (bit 0 not used)
+            setBit(mExternalSeedDirection, 1, dir.contains("n"));
+            setBit(mExternalSeedDirection, 2, dir.contains("e"));
+            setBit(mExternalSeedDirection, 3, dir.contains("s"));
+            setBit(mExternalSeedDirection, 4, dir.contains("w"));
             QStringList buffer_list = GlobalSettings::instance()->settings().value("model.settings.seedDispersal.externalSeedBuffer").split(QRegularExpression("([^\\.\\w]+)"));
             int index = buffer_list.indexOf(mSpecies->id());
             if (index>=0) {
@@ -593,10 +593,10 @@ void SeedDispersal::newYear()
                         } else {
                             // seeds only from specific directions
                             float value = 0.f;
-                            if (isBitSet(mExternalSeedDirection,1) && ix>=seed_map->sizeX()-buf_size) value = 1; // north
-                            if (isBitSet(mExternalSeedDirection,2) && iy<buf_size) value = 1; // east
-                            if (isBitSet(mExternalSeedDirection,3) && ix<buf_size) value = 1; // south
-                            if (isBitSet(mExternalSeedDirection,4) && iy>=seed_map->sizeY()-buf_size) value = 1; // west
+                            if (isBitSet(mExternalSeedDirection,1) && iy>=seed_map->sizeY()-buf_size) value = 1; // north
+                            if (isBitSet(mExternalSeedDirection,2) && ix<buf_size) value = 1; // east
+                            if (isBitSet(mExternalSeedDirection,3) && iy<buf_size) value = 1; // south
+                            if (isBitSet(mExternalSeedDirection,4) && ix>=seed_map->sizeX()-buf_size) value = 1; // west
                             seed_map->valueAtIndex(ix,iy)=value;
                         }
                     }
