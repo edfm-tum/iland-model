@@ -186,7 +186,8 @@ lib.harvest.shelterwood = function(options) {
 		speciesSelectivity: {},
 		ranking: 'height',
 		repeatInterval: 5,
-		repeatTimes: 3,
+		repeatTimes: 2, // number of harvests before the final harvest, so with e.g. repeatTimes 2 it would be 2 pre-Harvests and lastly one final
+		OptionalSignal: undefined,
 		constraint: undefined
     };
     const opts = lib.mergeOptions(defaultOptions, options || {});
@@ -217,6 +218,11 @@ lib.harvest.shelterwood = function(options) {
 
         onExit: function() {
             stand.stp.signal('Shelterwood_start_repeat');
+  
+			if (opts.OptionalSignal !== undefined) {
+			  	lib.dbg(`Signal: ${opts.OptionalSignal} emitted.`);
+			  	stand.stp.signal(opts.OptionalSignal);
+			};
         },
         description: `Select ${opts.NTrees} seed trees of the stand.`
     };
@@ -232,37 +238,26 @@ lib.harvest.shelterwood = function(options) {
 
             // first year. Save # of marked competitors
 			if (stand.obj.lib.Shelterwood_harvest_counter == 0) {
-				const marked = stand.trees.load('markcompetitor=true');
+				var marked = stand.trees.load('markcompetitor=true');
                 stand.setFlag('compN', marked);
                 lib.dbg(`selectiveThinning: start removal phase. ${marked} trees marked for removal.`);
             };
 
             // remove equal amount of non seed trees in each harvest
 			var n = stand.flag('compN') / (opts.repeatTimes - 1);
-            
-            stand.trees.load('markcompetitor=true');
-            stand.trees.filterRandomExclude(n);
-            const harvested = stand.trees.harvest();
+            var N_Competitors = stand.trees.load('markcompetitor=true');
+			
+			if ((N_Competitors - n) > 0) {
+				stand.trees.filterRandomExclude(N_Competitors - n);
+			}
+			
+            var harvested = stand.trees.harvest();
 
             lib.log("Year: " + Globals.year + ", shelterwood harvest");
-			lib.activityLog(`shelterwood harvest No. ${stand.obj.lib.Shelterwood_harvest_counter}`);
-            lib.dbg(`shelterwood harvest: No. ${stand.obj.lib.Shelterwood_harvest_counter}, removed ${harvested} trees.`);
+			lib.activityLog(`shelterwood harvest No. ${stand.obj.lib.Shelterwood_harvest_counter+1}`);
+			lib.dbg(`shelterwood harvest: No. ${stand.obj.lib.Shelterwood_harvest_counter+1}, removed ${harvested} trees.`);
 
-			// last year. remove all crop trees
-			if (stand.obj.lib.Shelterwood_harvest_counter == opts.repeatTimes) {
-				//console.log(`repeater: emit signal Shelterwood_final_harvest`);
-				//stand.stp.signal('Shelterwood_final_harvest');
-				stand.trees.load('markcrop=true');
-				const harvested = stand.trees.harvest();
-				
-				lib.activityLog('Shelter wood final harvest');
-				console.log('shelterwood_test');
-				printObj(this);
-				this.finalHarvest = true; 	
-				stand.absoluteAge = 0;		
-			};
-
-			stand.obj.lib.Shelterwood_harvest_counter = stand.obj.lib.Shelterwood_harvest_counter + 1;   
+			stand.obj.lib.Shelterwood_harvest_counter = stand.obj.lib.Shelterwood_harvest_counter + 1;
         },
 
         description: `Shelterwood harvest (during ${opts.repeatTimes * opts.repeatInterval} years), that removes all trees in ${opts.repeatTimes} harvests.`
@@ -273,33 +268,34 @@ lib.harvest.shelterwood = function(options) {
 	program['repeater'] = lib.repeater({ schedule: { signal: 'Shelterwood_start_repeat'},
 											signal: 'Shelterwood_remove',
 											interval: opts.repeatInterval,
-											count: (opts.repeatTimes+1)}); // in final year all crop trees get removed
+											count: (opts.repeatTimes)}); // in final year all crop trees get removed
 	
-	// program['finalHarvest'] = { 
-	// 	type: "scheduled", 
-	// 	id: opts.id + "_final_harvest",
-	// 	schedule: { signal: 'Shelterwood_final_harvest'}, 
+	program['finalHarvest'] = { 
+		type: "scheduled", 
+		id: opts.id + "_final_harvest",
+		schedule: { signal: 'Shelterwood_start_repeat', wait: (opts.repeatInterval * (opts.repeatTimes+1)) }, 
 
-	// 	onEvaluate: function() { 
-	// 		Globals.alert("Hello World, Is it? ", stand.id);
-	// 		return true
-	// 	},
+		onEvaluate: function() { 
+			return true
+		},
 
-	// 	onExecute: function() {
-	// 		Globals.alert("Hello World, It's Harvest time ", stand.id)
-	// 		stand.trees.load('markcrop=true');
-	// 		const harvested = stand.trees.harvest();
+		onExecute: function() {
+			stand.trees.load('markcompetitor=true or markcrop=true');
+			var harvested = stand.trees.harvest();
+			stand.trees.removeMarkedTrees();
 			
-	// 		lib.activityLog('Shelter wood final harvest'); 
-	// 	},
-	// 	onCreate: function() { this.finalHarvest = true; }
-	// };
+			lib.dbg(`shelterwood final harvest: ${harvested} trees removed.`);
+    		lib.activityLog('Shelter wood final harvest'); 
+		},
+		onCreate: function() { this.finalHarvest = true; }
+	};
 
 
 	if (opts.constraint !== undefined) program.constraint = opts.constraint;
 	
 	program.description = `A shelterwood operation, that removes all trees in ${opts.repeatTimes} harvests.`;
-  return program;  
+	
+	return program;  
 };
 
 /**
@@ -664,7 +660,7 @@ lib.harvest.targetDBH = function(options) {
     const defaultOptions = { 
 		TargetDBH: 50, // JM: here it would be nice to define target dbhs per species!
 		RepeatTime: 5, 
-		dbhList: {},
+		dbhList: {"fasy":65, "frex":60, "piab":45, "quro":75, "pisy":45, "lade":65, "qupe":75, "psme":65, "abal":45, "acps":60, "pini":45}, //source: 'Waldbau auf Ã¶kologischer Grundlage', p.452
 		constraint: undefined,
     };
     let opts = lib.mergeOptions(defaultOptions, options || {});
@@ -690,22 +686,25 @@ lib.harvest.targetDBH = function(options) {
 		type: 'general', 
 		schedule: { repeat: true, repeatInterval: opts.RepeatTime},
 		action: function() {
-			console.log("Year: " + Globals.year + ", TargetDBH harvest");
+			console.log(`Stand: ${stand.id}, Year: ${Globals.year}, TargetDBH harvest`);
 			for (var species in opts.dbhList) {
 				var dbh = opts.dbhList[species]
 				if (species === 'rest') {
-					stand.trees.load(excludeString + ' and dbh > '+ dbh);
+					var N_Trees = stand.trees.load(excludeString + ' and dbh > '+ dbh);
 				} else {
-					stand.trees.load('species = ' + species + ' and dbh > ' + dbh);
+					var N_Trees = stand.trees.load('species = ' + species + ' and dbh > ' + dbh);
 				};
-				console.log("Species: " + species + ", target DBH: " + dbh + ", Trees: " + stand.trees.count)
-				stand.trees.harvest();
-				lib.activityLog(`Harvest targetDBH executed`);
+				
+				if (N_Trees > 0) {
+					console.log("Species: " + species + ", target DBH: " + dbh + ", Trees: " + N_Trees + " harvested.");
+					stand.trees.harvest();
+				};
 			};
+			lib.activityLog(`Harvest targetDBH executed`);
 		}
 	};
 	
-	if (opts.constraint !== undefined) act.constraint = opts.constraint;// JM: What does this do?
+	if (opts.constraint !== undefined) act.constraint = opts.constraint;
 	
 	act.description = `A simple repeating harvest operation (every ${opts.RepeatTime} years), that removes all trees above a target diameter ( ${opts.TargetDBH} cm)).`;
 						
@@ -779,13 +778,13 @@ lib.harvest.targetDBHforNo3 = function(options) {
 			};
 			stand.obj.act["NHarvests"] = 0;
 		},
-		onSetup: function() { // JM: do we nee this aswell?
+		onSetup: function() { 
             lib.initStandObj();
 			stand.obj.act["NHarvests"] = 0;
 		},
 	};
 	
-	if (opts.constraint !== undefined) act.constraint = opts.constraint;// JM: What does this do?
+	if (opts.constraint !== undefined) act.constraint = opts.constraint;
 	
 	act.description = `A simple repeating harvest operation (every ${opts.RepeatTime} years), that removes all trees above a target diameter ( ${opts.TargetDBH} cm)).`;
 						

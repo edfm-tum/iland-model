@@ -195,3 +195,152 @@ lib.thinning.selectiveThinning = function(options) {
     return program;
 }
 
+lib.thinning.selectiveThinningZ1Z2 = function(options) {
+    // 1. Default Options
+    const defaultOptions = {
+        schedule: undefined,
+        id: 'selective_select_trees',
+        mode: 'simple',
+        SpeciesMode: 'simple',
+        returnPeriode: 30, // years until the next generation of crop trees should be selected
+        signal: 'next_selection_periode', // signal, that the selection_repeater should emit
+        NTrees: 80, // number of crop trees to mark in each selection periode
+        NCompetitors: 4, // total number of competitors to mark in each selection periode (not per thinning activity!)
+        speciesSelectivity: {},
+        ranking: 'height',
+        repeatTimes: 3, // number of thinning activities for each marked crop tree
+        repeatInterval: 5, // years between each thinning activity
+        constraint: undefined,
+        // ... add other default thinning parameters
+    };
+    const opts = lib.mergeOptions(defaultOptions, options || {});
+    
+    
+    // dynamic parameters of selective thinning
+    function dynamic_NTrees() {
+      // retrieve N from stand flag during runtime
+      var value = stand.flag('NTrees');
+      if (value === undefined) value = opts.NTrees;
+      return value;
+    };
+    function dynamic_NCompetitors() {
+      // retrieve N from stand flag during runtime
+      //var value = stand.flag('NCompetitors');
+      const Agefactor = Math.max(Math.min(1.0, -0.01*stand.age+1.2), 0.0);
+      var value = Math.max(stand.flag('NCompetitors')*Agefactor, 1);
+      if (value === undefined) value = opts.NCompetitors;
+      return value;
+    };
+    function dynamic_ranking() {
+      // retrieve ranking from stand flag during runtime
+      var value = stand.flag('ranking');
+      if (value === undefined) value = opts.ranking;
+      return value;
+    };
+    function dynamic_speciesSelectivity() {
+      // retrieve species Selectivity from stand flag during runtime
+      var value = stand.flag('speciesSelectivity');
+      if (value === undefined) value = opts.speciesSelectivity;
+      return value;
+    };
+    // changing parameters if mode is dynamic
+    if (opts.mode == 'dynamic') {
+      opts.NTrees = dynamic_NTrees;
+      opts.NCompetitors = dynamic_NCompetitors;
+      opts.ranking = dynamic_ranking;
+    };
+    // changing parameters if SpeciesMode is dynamic
+    if (opts.SpeciesMode == 'dynamic') {
+      opts.speciesSelectivity = dynamic_speciesSelectivity;
+      //opts.ranking = dynamic_ranking;
+    };
+    
+    const program = {};
+    
+    program["selection_repeater"] = lib.repeater({
+        schedule: opts.schedule,
+        id: opts.id + "_selectiveThinning_repeater",
+        signal: opts.signal,
+        count: 1, // high number as it should go "forever" ;-)
+        interval: opts.returnPeriode,
+        block: opts.block
+    }); 
+  
+    const select_trees = {
+        type: 'thinning',
+        id: opts.id,
+        schedule: { signal: opts.signal },	
+        thinning: 'selection',
+        N: opts.NTrees,
+        NCompetitors: opts.NCompetitors, 
+        speciesSelectivity: opts.speciesSelectivity,
+        ranking: opts.ranking,
+    
+        onSetup: function() { 
+            lib.initStandObj(); // create an empty object as stand property
+        },
+    
+        onCreate: function(act) { 
+            act.scheduled=false; /* this makes sure that evaluate is also called when invoked by a signal */ 
+            console.log(`onCreate: ${opts.id}: `);
+            printObj(this);
+            console.log('---end---');							  
+        },
+    
+        onEnter: function() {
+            Globals.alert("Hello world");
+        stand.obj.lib.selective_thinning_counter = 0;
+        },
+    
+        onExecuted: function() {
+            stand.stp.signal('selective_start_repeat');
+            lib.activityLog('thinning_selection'); 
+        },
+        description: `Selective thinning. Repeated ${opts.repeatTimes} times every ${opts.repeatInterval} years.`
+    };
+
+    program["selector"] = select_trees;
+  
+    program['thinning_repeater'] = lib.repeater({ 
+        schedule: { signal: 'selective_start_repeat'},
+        signal: 'selective_thinning_remove',
+        interval: opts.repeatInterval,
+        count: opts.repeatTimes 
+    });
+  
+    const remove_trees = {
+        type: 'general',
+        id: 'selective_remove_trees',
+        schedule: { signal: 'selective_thinning_remove'},
+        action: function() {
+            if (stand.obj.lib.selective_thinning_counter == 0) {
+                // first year. Save # of marked competitors
+                const marked = stand.trees.load('markcompetitor=true');
+                stand.setFlag('compN', marked);
+                lib.dbg(`selectiveThinning: start removal phase. ${marked} trees marked for removal.`);
+            }
+            
+            lib.log("Year: " + Globals.year + ", selective thinning harvest");
+      
+            stand.obj.lib.selective_thinning_counter = stand.obj.lib.selective_thinning_counter + 1;
+            var n = stand.flag('compN') / opts.repeatTimes;
+            var N_Competitors = stand.trees.load('markcompetitor=true');
+      
+            if ((N_Competitors - n) > 0) {
+                stand.trees.filterRandomExclude(N_Competitors - n);
+            };
+      
+            const harvested = stand.trees.harvest();
+            lib.activityLog('thinning remove competitors'); // details? target species?
+            // stand.trees.removeMarkedTrees(); // ? necessary ??
+            lib.dbg(`selectiveThinning: repeat ${stand.obj.lib.selective_thinning_counter}, removed ${harvested} trees.`);
+        },
+        description: `Selective thinning (every ${opts.repeatTimes} years), that removes all trees above a target diameter ( ${opts.TargetDBH} cm)).`
+    }
+    program["remover"] = remove_trees;
+  
+    if (opts.constraint !== undefined) program.constraint = opts.constraint;
+  
+    return program;
+}
+  
