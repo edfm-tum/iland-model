@@ -226,35 +226,41 @@ void ForestManagementEngine::runRepeatedItems(int stand_id)
     if (it == mRepeatStore.end())
         return;
 
-    // set a temporary buffer to allow new repeats while processing repeats
-    QList<QPair< int, SRepeatItem> > buffer_store; // used to add new items while iterating
-    mRepeatStoreBuffer = &buffer_store; // "install" buffer
 
+    // Use two buffers to avoid concurrent modification issues
+    QList<QPair< int, SRepeatItem> > buffer1;
+    QList<QPair< int, SRepeatItem> > buffer2;
+    QList<QPair< int, SRepeatItem> >* currentBuffer = &buffer1;
+    QList<QPair< int, SRepeatItem> >* nextBuffer = &buffer2;
+
+    // Move initial items from mRepeatStore to buffer1
     while (it != mRepeatStore.end() && it.key() == stand_id) {
-        // execute (and update!) the current item:
-        bool do_erase = runSingleRepeatedItem(stand_id, *it);
-        if (do_erase)
-            it = mRepeatStore.erase(it);
-        else
-            ++it;
+        buffer1.push_back(QPair< int, SRepeatItem>(stand_id, it.value()));
+        it = mRepeatStore.erase(it);
     }
 
-    // handle signals that were triggered *while* the items were executed (see above)
-    // the signals were buffered and now the are processed until no new items are added
+    // process elements
     int iteration_depth = 0;
-    while (!buffer_store.empty()) {
-        auto &p = buffer_store.front();
-        bool do_erase = runSingleRepeatedItem(stand_id, p.second);
-        if (!do_erase) {
-            mRepeatStore.insert(p.first, p.second);
+    while (!currentBuffer->empty()) {
+        mRepeatStoreBuffer = nextBuffer; // Allow adding new items to the next buffer
+
+        // Iterate through the items in the current buffer
+        for (auto &p : *currentBuffer) {
+            bool do_erase = runSingleRepeatedItem(stand_id, p.second);
+            if (!do_erase) {
+                mRepeatStore.insert(p.first, p.second);
+            }
         }
-        buffer_store.removeFirst();
+
+        currentBuffer->clear(); // Clear the buffer (all elements are processed)
+
+        std::swap(currentBuffer, nextBuffer); // Swap the buffers
+        mRepeatStoreBuffer = nullptr; // Disable adding while swapping the buffers
+
         if (++iteration_depth > 99) {
             throw IException("ABE: Signal handling: infinite loop detected!");
         }
     }
-    mRepeatStoreBuffer = nullptr; // remove again
-
 }
 
 bool ForestManagementEngine::runSingleRepeatedItem(int stand_id, SRepeatItem &item) {
@@ -354,7 +360,8 @@ FMUnit *nc_execute_unit(FMUnit *unit)
         int total = 0;
         while (it!=stand_map.constEnd() && it.key()==unit) {
             // execute repeating activities for the stand
-            it.value()->stp()->executeRepeatingActivities(it.value());
+            if (it.value()->stp())
+                it.value()->stp()->executeRepeatingActivities(it.value());
             ForestManagementEngine::instance()->runRepeatedItems(it.value()->id());
 
             // run the "normal" management for the stand
