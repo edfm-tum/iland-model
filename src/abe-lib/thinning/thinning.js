@@ -145,15 +145,13 @@ lib.thinning.tending = function(options) {
     const defaultOptions = {
 		id: 'Tending',
 		signal: 'tending_execute',
-		//startAge: 40,
 		schedule: undefined,
 		nTendingActions: 3,
 		tendingInterval: 2,
-        speciesSelectivity: { 'fasy': 0.9, 'abal': 0.8 },
+        speciesSelectivity: { 'rest': 0.9 },
         intensity: 10,
 		block: true,
-		constraint: undefined,
-		
+		constraint: undefined,		
         // ... add other default thinning parameters
     };
     const opts = lib.mergeOptions(defaultOptions, options || {});
@@ -192,43 +190,6 @@ lib.thinning.tending = function(options) {
 	}
 	program["tending"] = tending;
 
-	// var stp = {
-	// 	id: opts.id,
-	// 	type: 'thinning',
-	// 	thinning: 'tending',
-	// 	tending_repeat: lib.repeater({ schedule: opts.startAge, signal: opts.signal, count: opts.nTendingActions, interval: opts.tendingInterval}),
-	// 	//test: { type: 'general', schedule: { min: 45, max: 90  }, action: function() { fmengine.log('nextNEXT tending'); }},
-	// 	tending: {
-	// 		type: 'thinning',
-	// 		schedule: { signal: opts.signal},
-	// 		thinning: 'tending',
-	// 		speciesSelectivity: opts.speciesSelectivity,
-	// 		intensity: opts.intensity,
-	// 		onCreate: function(act) { 
-	// 							  act.scheduled=false; /* this makes sure that evaluate is also called when invoked by a signal */ 
-	// 							  console.log('onCreate: this-object: ');
-	// 							  printObj(this);
-	// 							  console.log('---end---');
-								  
-	// 							  },
-	// 		onExecuted: function() {lib.activityLog('thinning_tending'); },
-	// 	}
-		
-	// }
-
-	 
-	// const tending = {
-	// 	id: opts.id,
-	// 	type: 'thinning',
-    //     schedule: opts.schedule,
-    //     thinning: 'tending',
-    //     speciesSelectivity: opts.speciesSelectivity, 
-    //     intensity: opts.intensity,
-    //     onSetup: function() { /*stand.trace = true; */ },
-    //     onExecuted: function() {lib.activityLog('thinning_tending'); }
-	// };	 
-		
-	
 	if (opts.constraint !== undefined) program.constraint = opts.constraint;
 	
 	program.description = `A tending activity, that starts at age ${opts.schedule.optRel} and does ${opts.nTendingActions} tending operations every ${opts.tendingInterval} years.`;
