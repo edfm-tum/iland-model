@@ -198,8 +198,8 @@ lib.thinning.selectiveThinning = function(options) {
 lib.thinning.selectiveThinningZ1Z2 = function(options) {
     // 1. Default Options
     const defaultOptions = {
+        id: 'selectiveThinningZ1Z2',
         schedule: undefined,
-        id: 'selective_select_trees',
         mode: 'simple',
         SpeciesMode: 'simple',
         returnPeriode: 30, // years until the next generation of crop trees should be selected
@@ -211,6 +211,7 @@ lib.thinning.selectiveThinningZ1Z2 = function(options) {
         repeatTimes: 3, // number of thinning activities for each marked crop tree
         repeatInterval: 5, // years between each thinning activity
         constraint: undefined,
+        block: true,
         // ... add other default thinning parameters
     };
     const opts = lib.mergeOptions(defaultOptions, options || {});
@@ -256,21 +257,13 @@ lib.thinning.selectiveThinningZ1Z2 = function(options) {
     };
     
     const program = {};
-    
-    program["selection_repeater"] = lib.repeater({
-        schedule: opts.schedule,
-        id: opts.id + "_selectiveThinning_repeater",
-        signal: opts.signal,
-        count: 1, // high number as it should go "forever" ;-)
-        interval: opts.returnPeriode,
-        block: opts.block
-    }); 
-  
-    const select_trees = {
+
+    const initial_selection = {
         type: 'thinning',
-        id: opts.id,
-        schedule: { signal: opts.signal },	
         thinning: 'selection',
+        id: opts.id + '_initial',
+        schedule: opts.schedule,	
+        constraint: ["stand.age>30"],
         N: opts.NTrees,
         NCompetitors: opts.NCompetitors, 
         speciesSelectivity: opts.speciesSelectivity,
@@ -280,6 +273,40 @@ lib.thinning.selectiveThinningZ1Z2 = function(options) {
             lib.initStandObj(); // create an empty object as stand property
         },
     
+        onEnter: function() {
+            stand.obj.lib.selective_thinning_counter = 0;
+        },
+    
+        onExecuted: function() {
+            lib.dbg("Initial selection in stand " + stand.id + " executed.");
+            stand.stp.signal('start_selection_repeater');            
+            stand.stp.signal('selective_start_thinning');
+            lib.activityLog('Initial crop tree selection'); 
+        },
+        description: `Selective thinning. Repeated ${opts.repeatTimes} times every ${opts.repeatInterval} years.`
+    };
+    program["initial_selection"] = initial_selection;
+    
+    program["selection_repeater"] = lib.repeater({
+        schedule: { signal: 'start_selection_repeater' },
+        id: opts.id + "_repeater",
+        signal: opts.signal,
+        count: 1000, // high number as it should go "forever" ;-)
+        interval: opts.returnPeriode,
+        block: opts.block,
+    }); 
+  
+    const select_trees = {
+        type: 'thinning',
+        thinning: 'selection',
+        id: opts.id + '_repeating',
+        schedule: { signal: opts.signal },	
+        constraint: ["stand.age>30"],
+        N: opts.NTrees,
+        NCompetitors: opts.NCompetitors, 
+        speciesSelectivity: opts.speciesSelectivity,
+        ranking: opts.ranking + ' * (height < 25)',
+    
         onCreate: function(act) { 
             act.scheduled=false; /* this makes sure that evaluate is also called when invoked by a signal */ 
             console.log(`onCreate: ${opts.id}: `);
@@ -288,12 +315,13 @@ lib.thinning.selectiveThinningZ1Z2 = function(options) {
         },
     
         onEnter: function() {
-            Globals.alert("Hello world");
-        stand.obj.lib.selective_thinning_counter = 0;
+            lib.dbg("Hello world");
+            stand.obj.lib.selective_thinning_counter = 0;
         },
     
         onExecuted: function() {
-            stand.stp.signal('selective_start_repeat');
+            lib.dbg("Select trees in stand " + stand.id + " executed.");
+			stand.stp.signal('selective_start_thinning');
             lib.activityLog('thinning_selection'); 
         },
         description: `Selective thinning. Repeated ${opts.repeatTimes} times every ${opts.repeatInterval} years.`
@@ -302,15 +330,16 @@ lib.thinning.selectiveThinningZ1Z2 = function(options) {
     program["selector"] = select_trees;
   
     program['thinning_repeater'] = lib.repeater({ 
-        schedule: { signal: 'selective_start_repeat'},
+        schedule: { signal: 'selective_start_thinning'},
         signal: 'selective_thinning_remove',
         interval: opts.repeatInterval,
-        count: opts.repeatTimes 
+        count: opts.repeatTimes,
+        block: opts.block,
     });
   
     const remove_trees = {
         type: 'general',
-        id: 'selective_remove_trees',
+        id: opts.id + '_remove_trees',
         schedule: { signal: 'selective_thinning_remove'},
         action: function() {
             if (stand.obj.lib.selective_thinning_counter == 0) {
