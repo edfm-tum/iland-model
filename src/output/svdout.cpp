@@ -363,8 +363,10 @@ double SVDIndicatorOut::calcTotalCarbon(const ResourceUnit *ru)
 {
     double total_carbon = ru->statistics().totalCarbon() / 1000.; // aboveground, kg C/ha -> tC/ha
     double area_factor = ru->stockableArea() / cRUArea; // conversion factor from real area to per ha values
-    total_carbon +=  ru->snag()->totalCarbon() / 1000. / area_factor; // kgC/RU -> tC/ha
-    total_carbon += ru->soil()->totalCarbon(); // t/ha
+    if (ru->snag())
+        total_carbon +=  ru->snag()->totalCarbon() / 1000. / area_factor; // kgC/RU -> tC/ha
+    if (ru->soil())
+        total_carbon += ru->soil()->totalCarbon(); // t/ha
     return total_carbon;
 }
 
