@@ -79,7 +79,8 @@ lib.thinning.fromBelow = function(options) {
 
 	var program = {};
 
-	var thinning_repeat = lib.repeater({ schedule: opts.repeaterSchedule, 
+	var thinning_repeat = lib.repeater({ 
+		schedule: opts.repeaterSchedule, 
 		id: opts.id + "_repeater",
 		signal: opts.signal, 
 		count: opts.repeatTimes, 
