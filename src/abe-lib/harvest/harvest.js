@@ -1,7 +1,3 @@
-/**
- * The top-level library module.
- * @module abe-lib
- */
 
 /**
  * The harvest library includes management operations related to harvesting.

@@ -1,38 +1,31 @@
-/**
- * The top-level library module.
- * @module abe-lib
- */
 
 /** Helper functions
 * ABE Library
 
-Building STPs
--------------
+The library provides a number of helper functions.
+
+#### Building STPs
 
 The library provides functions to simplify the construction of Stand treatment programs.
 
 + `lib.createSTP`: takes one or several activites and creates a STP with a given name
 
-Introspection
--------------
+#### Introspection
 
 + use `formattedLog()` and `formattedSTP()` for a detailed look into past and plant activitites
 
-Miscallaneous
--------------
+#### Miscallaneous
 
 + Logging: use `log()` and `dbg()` functions and `lib.logevel` to control the amount of log information
 + Activity log: use `activityLog()` (internally) to add to the stand-level log data
 
 
-Internals
--------------
+#### Internals
 
 + `lib.mergeOptions`: help with global / local settings
 + `lib.selectOptimalPatches`: compare patches and select the best based on a criterion
 
-Useful activites
-----------------
+#### Useful activites
 
 + `changeSTP`: set follow-up STP when the current STP ends
 + `repeater`: simple activity to repeatedly run a single JS function / activity

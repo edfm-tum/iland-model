@@ -1,4 +1,9 @@
 /**
+ * @class harvest
+ * @memberof abe-lib
+ */
+
+/**
  * Disturbance response and salvaging
  * @method salvage
  * @param {object} options
