@@ -1,4 +1,9 @@
 
+/**
+ * The top-level library module.
+ * @module abe-lib
+ */
+
 /** Helper functions
 * ABE Library
 
@@ -371,6 +376,7 @@ lib.formattedSTP = function(StandId) {
  *   @param {string} options.criterium Criterion for selecting patches ('max_light', 'min_light', or 'min_basalarea') (default: 'max_light').
  *   @param {function|undefined} options.customFun Custom function for evaluating patches. This function should take a patch object as input and return a score (default: undefined).
  *   @param {number} options.patchId ID to assign to the selected patches (default: 1).
+ *   @param {string} options.sendSignal Optional: Signal that should be send after selecting patches (default: undefined).
  *   @param {object} options.schedule Schedule object for triggering the patch selection (default: { signal: 'start' }).
  * @return {object} act - An object describing the patch selection activity.
  * @example
@@ -400,8 +406,9 @@ lib.selectOptimalPatches = function(options) {
         patchsize: 2, // 2x2 = 20x20 = 400m2
         spacing: 0, // space (in 10m cells) between candidate patches
         criterium: 'max_light', // fixed options
-        customFun: undefined, // custom function
+        customPrefFunc: undefined, // custom preference function
         patchId: 1, // id of selected patches
+        sendSignal: undefined, // optional: emit signal after patches have been selected
         schedule: { signal: 'start' }, // default behavior: trigger on 'start'
 
         // ... add other default  parameters
@@ -432,26 +439,36 @@ lib.selectOptimalPatches = function(options) {
     function patchEvaluation(patch, opts) {
         var score = 0;
 
-        if (opts.customFun !== undefined) {
-            score = opts.customFun(patch);
-        } else {
-
-            // pre-defined variables
-            switch (opts.criterium) {
+        // pre-defined variables
+        switch (opts.criterium) {
             case 'max_light':
-                score = stand.patches.lif(patch); break; // get LIF on the cells
+                score = stand.patches.lif(patch); 
+                break; // get LIF on the cells
             case 'min_light':
-                score = - stand.patches.lif(patch); break;
+                score = - stand.patches.lif(patch); 
+                break;
             case 'min_basalarea':
                 // evaluate the basal area
                 stand.trees.load('patch = ' + patch.id);
-                let basal_area = stand.trees.sum('basalarea') / patch.area; // basal area / ha
+                var basal_area = stand.trees.sum('basalarea') / patch.area; // basal area / ha
                 score = -basal_area; // top down
+                break;
+            case 'max_basalarea':
+                // evaluate the basal area
+                stand.trees.load('patch = ' + patch.id);
+                var basal_area = stand.trees.sum('basalarea') / patch.area; // basal area / ha
+                score = basal_area; 
+                break;
+            case 'custom':
+                if (opts.customPrefFunc === undefined) {
+                    throw new Error(`selectOptimalPatches: the custom preference function 'customPrefFunc' is not defined!`);
+                }
+                // evaluate the custom function
+                stand.trees.load('patch = ' + patch.id);
+                var score = stand.trees.sum(opts.customPrefFunc) / patch.area; // calculate score based on custom function / ha
                 break;
             default:
                 throw new Error(`selectOptimalPatches: invalid criterion "${opts.criterium}"!`);
-            }
-
         }
         patch.score = score;
     }
@@ -459,7 +476,8 @@ lib.selectOptimalPatches = function(options) {
 
 
     return {
-        type: 'general', schedule: opts.schedule,
+        type: 'general', 
+        schedule: opts.schedule,
         action: function() {
             // (1) init
             stand.patches.clear();
@@ -479,7 +497,13 @@ lib.selectOptimalPatches = function(options) {
             stand.patches.list.forEach((p) => p.id = opts.patchId);
             stand.patches.updateGrid(); // to make changes visible
 
-        }
+        },
+        onExit: function() {
+            if (opts.sendSignal !== undefined) {
+                lib.dbg(`Signal: ${opts.sendSignal} emitted.`);
+			  	stand.stp.signal(opts.sendSignal);
+            }
+        },
     }
 }
 
