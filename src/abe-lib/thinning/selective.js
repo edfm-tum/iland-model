@@ -12,7 +12,7 @@
  *    @param {string|function} options.preferenceFunction ranking string for selecting trees, can be a string or a function returning a string (default: 'height').
  *    @param {number} options.interval interval between repeated thinnings (default: 5).
  *    @param {number} options.times number of times to repeat the thinning (default: 5).
- *    @param {string|undefined} options.sendSignal signal send out after each activity (default: undefined).
+ *    @param {string} options.sendSignal signal send out in each thinning activity (default: 'selective_thinning_remove').
  *    @param {string|undefined} options.constraint constraint (default: undefined).
  * @return {object} program - An object describing the thinning program
  * @example
@@ -36,7 +36,7 @@ lib.thinning.selectiveThinning = function(options) {
         preferenceFunction: 'height',
         interval: 5,
         times: 5,
-        sendSignal: undefined,
+        sendSignal: 'selective_thinning_remove',
         constraint: undefined,
 
         // ... add other default thinning parameters
