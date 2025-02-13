@@ -1,7 +1,3 @@
-/**
- * The top-level library module.
- * @module abe-lib
- */
 
 /**
  * The thinning module include activities thinning operations.

@@ -1,8 +1,4 @@
 
-/**
- * The top-level library module.
- * @module abe-lib
- */
 
 /** Helper functions
 * ABE Library
@@ -641,3 +637,69 @@ lib.repeater = function(options) {
             },
         }
 }
+
+
+/**
+ * Constructs a iLand expression for filtering trees based on the proportion of target species in the stand.
+ * When the relative basal area of all target species combined is below `threshold`, then
+ * trees of these species are filtered out. The chance of being filtered out declines linearly up to
+ * 2x threshold, above no trees are filtered.
+ * The species list can be provided in multiple formats.
+ *
+ * @param {string | string[] | object} speciesList  The list of species. Can be:
+ *                                                  - A single species ID string (e.g., "quro").
+ *                                                  - An array of species ID strings (e.g., ["quro", "qupe"]).
+ *                                                  - An object where keys are species IDs (e.g., 'quro') and values are ignored.
+ * @param {number} threshold The relative basal area threshold  (0..1) for filtering.
+ * @returns {string} The filter string.
+ * @method buildRareSpeciesFilter
+ */
+lib.buildRareSpeciesFilter = function(speciesList, threshold) {
+    let speciesIds;
+
+    // 1. Normalize the speciesList input to an array of species IDs.
+    if (typeof speciesList === 'string') {
+        speciesIds = [speciesList]; // Single species ID
+    } else if (Array.isArray(speciesList)) {
+        speciesIds = speciesList; // Array of species IDs
+    } else if (typeof speciesList === 'object' && speciesList !== null) {
+        speciesIds = Object.keys(speciesList); // Object: extract keys
+    } else {
+        // Handle invalid input (optional, but good practice)
+        throw new Error("Invalid speciesList format!");
+    }
+
+
+    // 2. Calculate the total relative basal area.
+    let totalBasalArea = 0;
+    for (const speciesId of speciesIds) {
+        totalBasalArea += stand.relSpeciesBasalAreaOf(speciesId);
+    }
+
+
+    // 3. Determine the filtering probability (pfilter).
+    const threshold2x = 2 * threshold;
+    let pfilter = 0;
+
+    if (totalBasalArea <= threshold) {
+        pfilter = 0; // filter out all trees
+    } else if (totalBasalArea >= threshold2x) {
+        pfilter = 1; // keep the trees
+    } else {
+        // a linear function between threshold and 2xthreshold
+        pfilter = 1 - (threshold2x - totalBasalArea) / threshold;
+        pfilter = Math.max(0, Math.min(1, pfilter));
+    }
+    lib.dbg(`buildRareSpeciesFilter: rel basal area of targets: ${totalBasalArea}. pFilter: ${pfilter}`);
+
+    // 4. Construct the filter string.
+    if (pfilter == 1) {
+        return 'true'; // the filter is inactive
+    } else {
+        const speciesCodes = speciesIds.join(', ');  // Use the normalized speciesIds array
+        const filterString = `if( in(species, ${speciesCodes}), rnd(0,1)<${pfilter.toFixed(3)}, true)`;
+        return filterString;
+    }
+
+}
+

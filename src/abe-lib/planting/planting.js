@@ -1,7 +1,3 @@
-/**
- * The top-level library module.
- * @module abe-lib
- */
 
 /**
  * The planting library includes management operations related to artificial and natural regeneration.
