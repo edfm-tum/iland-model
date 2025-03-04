@@ -100,6 +100,10 @@ public:
     const CNPair &fluxToExtern() const { return mTotalToExtern; } ///< total kg/RU harvests
     const CNPair &fluxToDisturbance() const { return mTotalToDisturbance; } ///< total kg/RU due to disturbance (e.g. fire)
 
+    /// (calculated) number of snags in diameter class
+    const double *numberOfSnags() const { return mNumberOfSnags; }
+    static void snagThresholds(double &rMinDbh, double &rMaxDbh) { rMinDbh = mDBHLower; rMaxDbh = mDBHHigher; }
+
     /// deciduous foliage litter (kg/ha) from the previous year
     double freshDeciduousFoliage() const { return mDeciduousFoliageLitter; }
     /// set deciduous foliage litter to 0 - this is not ideal, but timing is complicated

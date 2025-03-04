@@ -153,6 +153,7 @@ SOURCES += main.cpp \
     ../core/permafrost.cpp \
     ../output/devstageout.cpp \
     ../output/ecovizout.cpp \
+    ../output/svdindicatorout.cpp \
     ../tools/geotiff.cpp \
     mainwindow.cpp \
     paintarea.cpp \
@@ -285,6 +286,7 @@ HEADERS += mainwindow.h \
     ../core/permafrost.h \
     ../output/devstageout.h \
     ../output/ecovizout.h \
+    ../output/svdindicatorout.h \
     ../tools/geotiff.h \
     stable.h \
     paintarea.h \

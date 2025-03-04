@@ -238,6 +238,7 @@ SOURCES += main.cpp \
     ../output/waterout.cpp \
     ../core/dbhdistribution.cpp \
     ../output/svdout.cpp \
+    ../output/svdindicatorout.cpp \
     ../core/svdstate.cpp \
     ../output/soilinputout.cpp \
     ../output/devstageout.cpp \
@@ -370,6 +371,7 @@ HEADERS += \
     ../output/waterout.h \
     ../core/dbhdistribution.h \
     ../output/svdout.h \
+    ../output/svdindicatorout.h \
     ../core/svdstate.h \
     ../output/soilinputout.h \
     ../tools/scripttree.h \
