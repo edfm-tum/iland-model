@@ -1,7 +1,3 @@
-/**
- * The top-level library module.
- * @module abe-lib
- */
 
 /**
  * The planting library includes management operations related to artificial and natural regeneration.
@@ -20,6 +16,7 @@ lib.planting = {};
  *
  * @method general
  * @param {Object} options Options for configuring the general planting.
+ *     @param {String} options.id A unique identifier for the activity (default: 'planting').
  *     @param {Number} options.schedule The planting schedule (default: 1).
  *     @param {String} options.species The species to plant. **Mandatory**.
  *     @param {Number} options.spacing The spacing between plants (default: 10).
@@ -27,6 +24,8 @@ lib.planting = {};
  *     @param {Number} options.treeHeight Initial tree height (default: 0.3).
  *     @param {String|undefined} options.pattern Planting pattern (e.g., "rect2"). (default: undefined).
  *     @param {Boolean} options.clear Whether to clear existing vegetation before planting (default: false).
+ *     @param {string|undefined} options.sendSignal signal send after planting activity (default: undefined).
+ *     @param {string|undefined} options.constraint constraint (default: undefined).
  * @example
  *     // NOTE: lib.planting is an object, not a class. No need to use 'new'
  *     lib.planting.general({
@@ -38,13 +37,16 @@ lib.planting = {};
  */
  lib.planting.general = function(options) {
 	const defaultOptions = {
+		id: 'planting',
 		schedule: 1, 
         species: undefined,
 		spacing: 10,
 		fraction: 1,
         treeHeight: 0.3,
 		pattern: undefined, //"rect2"
-		clear: false
+		clear: false,
+        sendSignal: undefined,
+        constraint: undefined
 	};
     const opts = lib.mergeOptions(defaultOptions, options || {});
     if (opts.species === undefined)
@@ -52,6 +54,7 @@ lib.planting = {};
 	
 	const plant = {
 		type: 'planting', 
+        id: opts.id,
 		schedule: opts.schedule,
 		random: false,
 		items: [ { 
@@ -60,12 +63,22 @@ lib.planting = {};
 			height: opts.treeHeight,
 			pattern: opts.pattern,
 			spacing: opts.spacing,
-			clear: opts.clear}],
+			clear: opts.clear
+        }],
 		onEvaluate: function() { // Space for quitting planting if condition is met
 			Globals.alert("Planting whoooohoooo");
             return true;
-		}
+		},
+        onExit: function() {
+            if (opts.sendSignal !== undefined) {
+                lib.dbg(`Signal: ${opts.sendSignal} emitted.`);
+			  	stand.stp.signal(opts.sendSignal);
+            }
+        }
 	}	
+
+    if (opts.constraint !== undefined) plant.constraint = opts.constraint;
+	
 	return plant;
 }
 
@@ -141,19 +154,23 @@ lib.planting = function(options) {
  *
  * @method dynamic
  * @param {Object} options Options for configuring the dynamic planting.
- *     @param {Schedule} options.schedule The planting schedule.
  *     @param {String} options.id A unique identifier for the planting activity (default: 'planting').
+ *     @param {Schedule} options.schedule The planting schedule.
  *     @param {Object|Function} options.speciesSelectivity Defines the target species and their relative weights.
  *         This can be an object with species as keys and weights as values, or a function that returns such an object.
  *     @param {Object} options.speciesDefaults Default settings for species (default: lib.planting.speciesDefaults).
+ *     @param {string|undefined} options.sendSignal signal send out after final femel harvest activity (default: undefined).
+ *     @param {string|undefined} options.constraint constraint (default: undefined).
  */
 lib.planting.dynamic = function(options) {
 
     const defaultOptions = {
-        schedule: undefined,
         id: 'planting',
-        speciesSelectivity: undefined, ///< species to plant
-        speciesDefaults: lib.planting.speciesDefaults
+        schedule: undefined,
+        speciesSelectivity: undefined, ///< species to plant        SHOULD WE NAME IT SPECIES LIKE ABOVE?
+        speciesDefaults: lib.planting.speciesDefaults,
+        sendSignal: undefined,
+        constraint: undefined
     };
     const opts = lib.mergeOptions(defaultOptions, options || {});
 
@@ -198,7 +215,7 @@ lib.planting.dynamic = function(options) {
     }
 
     // build the ABE activity
-    return {
+    const plant = {
         type: 'planting',
         id: opts.id,
         schedule: opts.schedule,
@@ -217,9 +234,19 @@ lib.planting.dynamic = function(options) {
             let items = buildDynamicItems();
             return items;
         },
+        onExit: function() {
+            if (opts.sendSignal !== undefined) {
+                lib.dbg(`Signal: ${opts.sendSignal} emitted.`);
+			  	stand.stp.signal(opts.sendSignal);
+            }
+        },
         description : `Planting; species and properties are determined dynamically`
 
-    }
+    }    	
+
+    if (opts.constraint !== undefined) plant.constraint = opts.constraint;
+	
+	return plant;
 }
 
 
@@ -241,6 +268,7 @@ lib.planting.dynamic = function(options) {
 lib.planting.speciesDefaults = {
     // spruce, .... use wall-to-wall planting
     'piab': { species: 'piab', h: 0.3, age: 1, fraction: function(proportion) {return proportion * 1 }},
+    'psme': { species: 'psme', h: 0.3, age: 1, fraction: function(proportion) {return proportion * 1 }},
     'abal': { species: 'abal', h: 0.3, age: 1, fraction: function(proportion) {return proportion * 0.8 }},
     'fasy': { species: 'fasy', h: 0.3, age: 1, fraction: function(proportion) {return proportion * 0.8 }},
     // for larix, ... use groups
@@ -250,6 +278,7 @@ lib.planting.speciesDefaults = {
         n: function(proportion) {return proportion*10000/272; /* 272: area circle10 */} },
     'qupe': { species: 'qupe', h: 0.3, age: 1, pattern: 'circle10', random: true,
         n: function(proportion) {return proportion*10000/272; /* 272: area circle10 */} },
+    'cabe': { species: 'cabe', h: 0.3, age: 1, fraction: function(proportion) {return proportion * 0.8 }},
     'acps': { species: 'acps', h: 0.3, age: 1, pattern: 'circle10', random: true,
         n: function(proportion) {return proportion*10000/272; /* 272: area circle10 */} },
     'pisy': { species: 'pisy', h: 0.3, age: 1, pattern: 'circle10', random: true,
