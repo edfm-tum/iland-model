@@ -584,8 +584,8 @@ model.site.youngRefractoryN = numeric|100|Nitrogen content|(Initial) nitrogen co
 model.site.youngRefractoryDecompRate = numeric|string|Decomposition rate|(Initial) decomposition rate of yr pool|simple
 model.site.youngRefractoryAbovegroundFraction = numeric|0.7|Aboveground fraction|Fraction (0..1) of C in the yR pool from aboveground sources (branches, stems)|simple
 gui.layout = group|Soil organic matter
-model.site.somC = numeric|100000|Nitrogen content|(Initial) carbon content of oC (soil organic matter) soil pool (kg/ha)|simple
-model.site.somN = numeric|100|Carbon content|(Initial) nitrogen content of oN (soil organic matter) soil pool (kg/ha)|simple
+model.site.somC = numeric|100000|Carbon content|(Initial) carbon content of oC (soil organic matter) soil pool (kg/ha)|simple
+model.site.somN = numeric|100|Nitrogen content|(Initial) nitrogen content of oN (soil organic matter) soil pool (kg/ha)|simple
 model.site.somDecompRate = numeric|0.1|Decomposition rate|Decomposition rate for soil organic matter (i.e. the "old" pool sensu ICBM)|simple
 model.site.soilHumificationRate = numeric|0.3|Soil humification rate|humification rate|simple
 
