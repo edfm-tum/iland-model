@@ -400,7 +400,7 @@ model.settings.soil.useDynamicAvailableNitrogen = boolean|false|Use Dynamic Avai
 model.settings.soil.nitrogenDeposition = numeric|0|Nitrogen Deposition|To account for external nitrogen input, a nitrogen deposition (kgN/ha*yr) is added to the available nitrogen which is derived by the dynamic soil module calculations. Default: 0. Note that nitrogen deposition is *not* added if the static world.site.availableNitrogen value is used.|simple
 model.settings.soil.qb = numeric|0.2|C/N Ratio Soil Microbes|C/N ratio of soil microbes|simple
 model.settings.soil.qh = numeric|0.2|C/N Ratio SOM|C/N ratio of SOM|simple
-model.settings.soil.leaching = numeric|0.5|string|How many percent of the mineralized nitrogen in O is not available for plants but is leached (0..1)?|simple
+model.settings.soil.leaching = numeric|0.5|Soil Leaching|How many percent of the mineralized nitrogen in O is not available for plants but is leached (0..1)?|simple
 model.settings.soil.el = numeric|0.1|Microbal Eff. Labile Pool|microbal efficiency in the labile pool, auxiliary parameter (see parameterization example)|simple
 model.settings.soil.er = numeric|0.1|Microbal Eff. Refractory Pool|microbal efficiency in the refractory pool, auxiliary parameter (see parameterization example)|simple
 
