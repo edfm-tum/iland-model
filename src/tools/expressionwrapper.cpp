@@ -86,7 +86,7 @@ static QStringList treeVarList=QStringList() << baseVarList << "id" << "dbh" << 
                         << "basalarea" << "crownarea" // 20, 21
                         << "markharvest" << "markcut" << "markcrop" << "markcompetitor"
                         << "branchmass" << "is_conifer" // 22-27
-                        << "patch"; // 28
+                        << "patch" << "marknoharvest"; // 28-29
 
 const QStringList TreeWrapper::getVariablesList()
 {
@@ -130,6 +130,7 @@ double TreeWrapper::value(const int variableIndex)
     case 26: return static_cast<double>(mTree->mBranchMass);
     case 27: return mTree->species()->isConiferous();
     case 28: return ABE::Patches::getPatch(mTree->positionIndex()); // patch
+    case 29: return mTree->isMarkedNoHarvest(); // marknoharvest
     }
     return ExpressionWrapper::value(variableIndex);
 }

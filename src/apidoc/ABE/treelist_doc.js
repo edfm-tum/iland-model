@@ -385,3 +385,20 @@ See also: {{#crossLink "TreeList/tree:method"}}{{/crossLink}}
        console.log(x.dbh);
 
 **/
+
+/**
+Set a given `flag` for all trees in the list to `value`. Note that not all possible flags are allowed to be changed.
+Trying to alter such a flag yields an exception.
+
+See also: {{#crossLink "Tree/setFlag:method"}}{{/crossLink}}
+
+@method setFlag
+@param {Tree.Flags} flag A flag as defined by the Tree object
+@param {bool} value value to set the flag, defaults to true.
+@Example
+    stand.trees.loadAll();
+    stand.trees.filter('dbh>10'); // only trees with dbh>10 remain in the list
+    stand.trees.filter('incsum(volume)<100'); // keep trees with a total of 100m3 in the list
+
+
+**/
