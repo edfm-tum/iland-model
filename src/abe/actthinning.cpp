@@ -835,7 +835,8 @@ bool ActThinning::runTending(FMStand* stand)
     SaplingCellRunner scr(stand->id(), GlobalSettings::instance()->model()->standGrid());
     while (SaplingCell *sc = scr.next()) {
         while (p!=grid.end() && *p < 0) ++p; // skip pixels outside of the stand
-        if (p == grid.end()) throw IException("activity tending: grid reached end");
+        if (p == grid.end())
+            throw IException("activity tending: grid reached end");
         // look only at pixels that have not yet a favorable tree
         if (sc && *p == 0.f){
             if (scr.currentCoord() != grid.cellCenterPoint(p)) {
@@ -938,7 +939,8 @@ bool ActThinning::runTending(FMStand* stand)
     SaplingCellRunner scr_impact(stand->id(), GlobalSettings::instance()->model()->standGrid());
     while (SaplingCell *sc = scr_impact.next()) {
         while (p!=grid.end() && *p < 0) ++p; // skip pixels outside of the stand
-        if (p == grid.end()) throw IException("activity tending: grid reached end");
+        if (p == grid.end())
+            throw IException("activity tending: grid reached end");
 
 
         STendingIndex *ti = reinterpret_cast<STendingIndex *>(p);

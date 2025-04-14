@@ -649,6 +649,8 @@ void FMTreeList::prepareGrids()
     while (runner.next()) {
         if (*runner.current()!=mStand->id())
             *p=-1.f;
+        else
+            *p=0.f;
         ++p;
     }
     // copy stand limits to the grid
