@@ -403,7 +403,7 @@ model.settings.soil.useDynamicAvailableNitrogen = boolean|false|Use Dynamic Avai
 model.settings.soil.nitrogenDeposition = numeric|0|Nitrogen Deposition|To account for external nitrogen input, a nitrogen deposition (kgN/ha*yr) is added to the available nitrogen which is derived by the dynamic soil module calculations. Default: 0. Note that nitrogen deposition is *not* added if the static world.site.availableNitrogen value is used.|simple
 model.settings.soil.qb = numeric|0.2|C/N Ratio Soil Microbes|C/N ratio of soil microbes|simple
 model.settings.soil.qh = numeric|0.2|C/N Ratio SOM|C/N ratio of SOM|simple
-model.settings.soil.leaching = numeric|0.5|string|How many percent of the mineralized nitrogen in O is not available for plants but is leached (0..1)?|simple
+model.settings.soil.leaching = numeric|0.5|Soil Leaching|How many percent of the mineralized nitrogen in O is not available for plants but is leached (0..1)?|simple
 model.settings.soil.el = numeric|0.1|Microbal Eff. Labile Pool|microbal efficiency in the labile pool, auxiliary parameter (see parameterization example)|simple
 model.settings.soil.er = numeric|0.1|Microbal Eff. Refractory Pool|microbal efficiency in the refractory pool, auxiliary parameter (see parameterization example)|simple
 
@@ -587,8 +587,8 @@ model.site.youngRefractoryN = numeric|100|Nitrogen content|(Initial) nitrogen co
 model.site.youngRefractoryDecompRate = numeric|string|Decomposition rate|(Initial) decomposition rate of yr pool|simple
 model.site.youngRefractoryAbovegroundFraction = numeric|0.7|Aboveground fraction|Fraction (0..1) of C in the yR pool from aboveground sources (branches, stems)|simple
 gui.layout = group|Soil organic matter
-model.site.somC = numeric|100000|Nitrogen content|(Initial) carbon content of oC (soil organic matter) soil pool (kg/ha)|simple
-model.site.somN = numeric|100|Carbon content|(Initial) nitrogen content of oN (soil organic matter) soil pool (kg/ha)|simple
+model.site.somC = numeric|100000|Carbon content|(Initial) carbon content of oC (soil organic matter) soil pool (kg/ha)|simple
+model.site.somN = numeric|100|Nitrogen content|(Initial) nitrogen content of oN (soil organic matter) soil pool (kg/ha)|simple
 model.site.somDecompRate = numeric|0.1|Decomposition rate|Decomposition rate for soil organic matter (i.e. the "old" pool sensu ICBM)|simple
 model.site.soilHumificationRate = numeric|0.3|Soil humification rate|humification rate|simple
 
