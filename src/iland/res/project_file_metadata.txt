@@ -231,7 +231,10 @@ gui.layout = group|SVD GPP
 output.svdgpp.enabled = boolean|false|Enable GPP|GPP potential (as conditioned by climate/site) per species and m2.|simple
 
 gui.layout = group|<h2>Ecoviz</h2>|Ecoviz is a forest landscape visualization tool, and this output produces tree data in required format for Ecoviz.
-output.ecoviz.enabled = boolean|true|ecoviz|Output of dynamic|simple
+output.ecoviz.enabled = boolean|true|ecoviz|Output of vegetatition data for Ecoviz tool|simple
+output.ecoviz.condition = function||condition|filter for execution of output|simple
+output.ecoviz.binary = boolean|false|binary|if true, a binary file (version 3) is written (*.pdbb), a text file otherwise (*.pdb)|simple
+output.ecoviz.fileName = string|output/pdb_$.pdb|fileName|file name pattern for output files. "$" is replaced with simulation year|simple
 
 
 

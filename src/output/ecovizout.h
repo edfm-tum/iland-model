@@ -15,8 +15,10 @@ public:
 private:
     // pdb creation
     bool writePDBFile(QString fileName, int n_trees, int n_cohorts, int year);
+    bool writePDBBinaryFile(QString fileName, int n_trees, int n_cohorts, int year);
     Expression mCondition;
     QString mFilePattern;
+    bool mBinaryMode {false};
 
 };
 
