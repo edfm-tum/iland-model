@@ -1080,6 +1080,10 @@ void Snapshot::loadSaplings()
         posy = offsety + q.value(ci++).toInt() % cPxPerRU;
 
         int species_index = q.value(ci++).toInt();
+        if (species_index >= ru->speciesSet()->count()) {
+            throw IException(QString("load Snapshot/saplings: the species index '%1' is not valid (there are %2 species active). Have you deactivated species that are in the snapshot?").arg(species_index).arg(ru->speciesSet()->count()));
+        }
+
 
         SaplingCell *sc = saplings->cell(QPoint(posx, posy));
         if (!sc)
