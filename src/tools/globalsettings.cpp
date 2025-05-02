@@ -450,8 +450,7 @@ void GlobalSettings::printDirectories() const
     for (i=mFilePath.constBegin(); i!=mFilePath.constEnd(); ++i)
         qDebug() << i.key() << ": " << i.value();
 }
-
-void GlobalSettings::setupDirectories(QDomElement pathNode, const QString &projectFilePath)
+ void GlobalSettings::setupDirectories(QDomElement pathNode, const QString &projectFilePath)
 {
     mFilePath.clear();
     mFilePath.insert("exe", QCoreApplication::applicationDirPath());

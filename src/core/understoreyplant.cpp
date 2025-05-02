@@ -10,7 +10,7 @@ UnderstoreyPlant::UnderstoreyPlant() {}
 
 
 
-void UnderstoreyCell::update()
+void UnderstoreyCell::update(UnderstoreyRUStats &stats)
 {
     const auto &states = Understorey::instance().states();
     mOccupied = 0;
@@ -19,8 +19,27 @@ void UnderstoreyCell::update()
             mOccupied += states[plant.stateId()]->NSlots();
         }
     }
-    if (mOccupied >= MaxOccupied)
+    if (mOccupied >= MaxOccupied) {
         mState = ECellState::CellFull;
+        while (mOccupied > MaxOccupied) {
+            // mortality due to competition. Remove pfts until space constraint is satisfied.
+            UnderstoreyPlant *sml = nullptr;
+            int sml_slots = MaxOccupied;
+            for (auto& plant : mPlants) {
+                if (plant.isLiving()) {
+                    if (!sml) sml = &plant;
+                    if (states[sml->stateId()]->NSlots() < sml_slots) {
+                        sml_slots = states[sml->stateId()]->NSlots();
+                        sml = &plant;
+                    }
+                }
+            }
+            if (!sml) break;
+            mOccupied = std::max(0, mOccupied - sml_slots);
+            sml->kill();
+            ++stats.died;
+        }
+    }
     if (mOccupied == 0)
         mState = ECellState::CellEmpty;
     else
@@ -48,7 +67,7 @@ void UnderstoreyCell::growth(UnderstoreyCellParams &ucp, UnderstoreyRUStats &sta
         }
     }
     if (states_changed) {
-        update();
+        update(stats);
     }
 }
 
@@ -59,7 +78,6 @@ void UnderstoreyCell::establishment(UStateId id)
             plant.setState(id); break;
         }
     }
-    update();
 }
 
 
@@ -69,10 +87,11 @@ UnderstoreyStatsCell UnderstoreyCell::stats() const
     UnderstoreyStatsCell stats;
     for (const auto& plant : mPlants) {
         if (plant.isLiving()) {
-            stats.LAI += states[ plant.stateId() ]->LAI();
-            stats.biomass += states[ plant.stateId()]->biomass();
-            stats.height = std::max(stats.height, states[plant.stateId()]->height());
-            stats.slotsOccupied += states[plant.stateId()]->NSlots();
+            const auto state = states[ plant.stateId() ];
+            stats.LAI += state->LAI();
+            stats.biomass += state->biomass();
+            stats.height = std::max(stats.height, state->height());
+            stats.slotsOccupied += state->NSlots();
             stats.NStates ++;
         }
     }
@@ -85,13 +104,13 @@ UnderstoreyStatsCell UnderstoreyCell::stats() const
 void UnderstoreyRU::setup()
 {
     Q_ASSERT(mRU != nullptr);
-
+    UnderstoreyRUStats dummy;
     HeightGrid *hg = GlobalSettings::instance()->model()->heightGrid();
     for (auto& cell : mCells) {
         QPointF p = cellCoord(cell);
         // set state of cell to Empty for all valid 10m cells
         if (hg->constValueAt(p).isValid())
-            cell.update();
+            cell.update(dummy);
     }
 }
 
@@ -103,8 +122,8 @@ void UnderstoreyRU::establishment()
     SaplingCell *sap_cells = mRU->saplingCellArray();
     const auto &speciesSet = Globals->model()->speciesSet();
 
-    const double p_include_pft = 0.5;
-    const double p_cell = 0.1;
+    const double p_cell = 0.2;
+    const double n_cells_represented = 1. / p_cell;
 
     UnderstoreyCellParams ucp;
     ucp.RU = mRU;
@@ -113,7 +132,8 @@ void UnderstoreyRU::establishment()
 
 
     for (const auto &pft : Understorey::instance().PFTs()) {
-        if (drandom() < p_include_pft) {
+
+        if (drandom() < pft->baseEstablishmentProbability()) {
             // analyze the pft
             ucp.PFTcalc = false;
             int isc = 0; // index on 2m cell on LIF grid
@@ -129,9 +149,11 @@ void UnderstoreyRU::establishment()
                         // corrected LIF value for a height of 0 (=forest floor)
                         ucp.lif_corr = speciesSet->LRIcorrection(lif_value, 0.);
 
-                        if (pft->establishment(ucp, mStats)) {
+                        if (pft->establishment(ucp, n_cells_represented)) {
                             // the PFT establishes on the cell
+                            ++mStats.established;
                             ucell->establishment(pft->firstState());
+                            ucell->update(mStats);
                         }
 
                     }

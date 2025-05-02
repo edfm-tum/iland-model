@@ -33,6 +33,7 @@ public:
     UnderstoreyPlant();
 
     bool isLiving() const { return mId < std::numeric_limits<UStateId>::max(); }
+    void kill() { mId = std::numeric_limits<UStateId>::max(); }
 
     /// the stateId is a unique number for a state, and also the index
     /// within the list of possible states. Growing to the next state is therefore just stateId() + 1
@@ -100,7 +101,7 @@ public:
     bool isValid() const { return mState != ECellState::CellInvalid; }
     bool isFull() const { return mState == ECellState::CellFull; }
     /// updates internal data, call after content of cell changed
-    void update();
+    void update(UnderstoreyRUStats &stats);
 
 
     void growth(UnderstoreyCellParams &ucp, UnderstoreyRUStats &stats);

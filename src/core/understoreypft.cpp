@@ -59,6 +59,7 @@ void UnderstoreyPFT::setup(UnderstoreySetting s, int index)
 {
     mIndex = index;
     mName = s.value("pftId").toString();
+    mBaseEstablishmentProb = s.value("estBaseProb").toDouble();
 
     // environmental responses
     QString resp = "lightResponse";
@@ -119,7 +120,7 @@ UStateId UnderstoreyPFT::stateTransition(const UnderstoreyPlant &plant,
 }
 
 bool UnderstoreyPFT::establishment(UnderstoreyCellParams &ucp,
-                                   UnderstoreyRUStats &rustats) const
+                                   double n_represented) const
 {
     if (!ucp.PFTcalc) {
         ucp.nitrogenResponse = mExprNutrients.calculate(ucp.availableNitrogen);
@@ -132,9 +133,12 @@ bool UnderstoreyPFT::establishment(UnderstoreyCellParams &ucp,
     // fake - should be some fancy function :=)
     double total_response = light_response * ucp.nitrogenResponse  * ucp.waterResponse;
 
-    if (drandom() < total_response) {
+    total_response = std::max(0., std::min( total_response, 1. ));
+
+    // the test for establishment represented more than once cell, update the prob accordingly
+    double p_adjusted = 1. - std::pow(1. - total_response, n_represented);
+    if (drandom() < p_adjusted) {
         // establish PFT on the cell
-        rustats.established++;
         return true;
     }
 

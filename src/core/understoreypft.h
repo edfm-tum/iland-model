@@ -34,6 +34,9 @@ public:
     const QString &name() const { return mName; }
     int index() const {return mIndex; }
     UStateId firstState() const { return mFirstState; }
+    /// base establishment probability should be relative small (e.g. 0.01 to 0.05).
+    /// the prob scales the number resource units that are tested for establish ment each year
+    double baseEstablishmentProbability() const { return mBaseEstablishmentProb; }
 
     /// determine if the state updates
     /// based on environmental conditions
@@ -42,12 +45,13 @@ public:
                              UnderstoreyRUStats &rustats) const;
 
     bool establishment(UnderstoreyCellParams &ucp,
-                       UnderstoreyRUStats &rustats) const;
+                       double n_represented) const;
 
 private:
     QString mName;
     UStateId mFirstState { std::numeric_limits<UStateId>::max()}; ///< id of the initial state of the PFT (for establishment)
     int mIndex {-1}; ///< the index of the PFT in the Understorey's PFT container
+    double mBaseEstablishmentProb {0.}; ///< base establishment probability
 
     // response functions for the PFT
     Expression mExprLight; ///< light response (param: corrected lif_value on the ground)
