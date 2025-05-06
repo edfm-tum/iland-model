@@ -8,6 +8,7 @@
 #include <QScrollArea>
 #include <QMessageBox>
 #include <QAction>
+#include <QFileDialog>
 
 #include "qactiongroup.h"
 #include "qdir.h"
@@ -109,7 +110,8 @@ void SettingsDialog::setFilterMode(int mode)
 
 void SettingsDialog::registerChangedComment()
 {
-    if (!saveButton->isEnabled()) { saveButton->setEnabled(true); }
+    if (!saveButton->isEnabled()) { saveButton->setEnabled(true);
+                                    saveAsButton->setEnabled(true);    }
 
 }
 
@@ -120,6 +122,7 @@ void SettingsDialog::registerChangedValue(SettingsItem* item, QVariant newValue)
 
 //    if (!saveButton->isEnabled()) { saveButton->setEnabled(true);
 //                                    a_changedValuesDialog->setEnabled(true);}
+    saveAsButton->setEnabled(true);
     saveButton->setEnabled(true);
     a_changedValuesDialog->setEnabled(true);
 }
@@ -518,12 +521,18 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* mS
     contentLayout->setStretch(0, 1);
     contentLayout->setStretch(1, 3);
 
-    QDialogButtonBox *dialogButtons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+    QDialogButtonBox *dialogButtons = new QDialogButtonBox(QDialogButtonBox::Ok |
+                                                           QDialogButtonBox::Cancel);
+    saveAsButton = dialogButtons->addButton("Save as...", QDialogButtonBox::ActionRole);
     saveButton = dialogButtons->button(QDialogButtonBox::Ok);
     cancelButton = dialogButtons->button(QDialogButtonBox::Cancel);
 
     saveButton->setText("Save Changes");
     saveButton->setToolTip("Saving changes will overwrite current project file");
+
+    saveAsButton->setToolTip("Opens file dialog, changes will be saved to a new project file."
+                             "The new file will be set as the current project file");
+
     cancelButton->setText("Cancel");
 
     QVBoxLayout* overallLayout = new QVBoxLayout(this);
@@ -540,11 +549,27 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* mS
         mStackedWidget->setCurrentIndex(itemIndex);
     });
 
-
     setLayout(overallLayout);
 
     // Set values in gui defined in xml file
     //mLinkxqt->readValuesXml(stackedWidget);
+
+
+    connect(saveAsButton, &QPushButton::clicked,
+            this, [=]() {QString newProjectFile;
+                         newProjectFile = QFileDialog::getSaveFileName( this,
+                                                                        "Save new project file as",
+                                                                        mLinkxqt->getTempHomePath(),
+                                                                        "*.xml");
+                        if (!newProjectFile.isEmpty() && !newProjectFile.isNull()) {
+                            mLinkxqt->writeValuesXml(mStackedWidget);
+                            mLinkxqt->writeToFile(newProjectFile);
+                            mLinkxqt->setXmlPath(newProjectFile);
+                            this->parentWidget()->findChild<QLineEdit *>("initFileName")->setText(newProjectFile);
+                            ui_dialogChangedValues->mValueTable->setRowCount(0);
+                            ui_dialogChangedValues->mKeys = {};
+                            a_changedValuesDialog->setDisabled(true);
+                            this->close();}});
 
 
     connect(dialogButtons, &QDialogButtonBox::accepted, this, [=]() {mLinkxqt->writeValuesXml(mStackedWidget);
