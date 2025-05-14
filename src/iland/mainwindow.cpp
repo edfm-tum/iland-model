@@ -62,7 +62,6 @@
 #include "tests.h"
 #include "mapgrid.h"
 #include "layeredgrid.h"
-#include "dem.h"
 #include "svdstate.h"
 
 #include "forestmanagementengine.h" // ABE
@@ -614,8 +613,27 @@ void MainWindow::updatePaintGridList()
             stack.push(items.back());
             group = elem[0];
         }
+        if (elem.size() < 3) {
+            // default case: add text item
+            items.append( new QTreeWidgetItem(stack.last(),  QStringList() << (elem.size()>1 ? elem[1] : elem[0])) );
+        } else {
+            // special case: add combo box
+            QWidget *container = new QWidget(ui->otherGridTree);
+            QHBoxLayout *layout = new QHBoxLayout(container);
+            QLabel *label = new QLabel(elem[1], container);
+            QComboBox *filter_box = new QComboBox(container);
+            QStringList filter_elem = elem[2].split(",");
+            filter_box->addItems(filter_elem);
+            connect(filter_box, SIGNAL(currentIndexChanged(int)),
+                    i->handler, SLOT(filterChanged(int)));
+            // create a dummy and place combo box as widget
+            layout->addWidget(label);
+            layout->addWidget(filter_box);
+            layout->setContentsMargins(2, 2, 2, 2);
+            items.append( new QTreeWidgetItem(stack.last(),  QStringList() << "000") ); // make sure to be first in list
+            ui->otherGridTree->setItemWidget(items.last(), 0, container);
+        }
 
-        items.append( new QTreeWidgetItem(stack.last(),  QStringList() << (elem.size()>1 ? elem[1] : elem[0])) );
         items.back()->setToolTip(0, i.value().description);
         items.back()->setData(0, Qt::UserRole+0, i.key());
         ++i;

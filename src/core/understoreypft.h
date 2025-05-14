@@ -44,8 +44,13 @@ public:
                              UnderstoreyCellParams &ucp,
                              UnderstoreyRUStats &rustats) const;
 
+    /// test for establishment for this PFT at a
+    /// location with given environment factors
     bool establishment(UnderstoreyCellParams &ucp,
                        double n_represented) const;
+
+    /// return a string with useful info
+    QString dump();
 
 private:
     QString mName;
@@ -57,6 +62,7 @@ private:
     Expression mExprLight; ///< light response (param: corrected lif_value on the ground)
     Expression mExprNutrients; ///< nutrient response (param: available nitrogen kg/ha*yr)
     Expression mExprWater; ///< water response (param: average soil water content in veg. period)
+    Expression mExprTemp; ///< temperature response (param: MAT macro or microclimate)
 
 };
 

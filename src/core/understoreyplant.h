@@ -16,9 +16,11 @@ struct UnderstoreyCellParams {
     float lif_corr; ///< corrected LIF value at the 2m cell
     double availableNitrogen; ///< kg/ha*yr nitrogen
     double SWCgrowingSeason; ///< relative soil water content
+    double meanTemperature; ///< mean annual temp (micro or macro)
     bool PFTcalc { false };
     double nitrogenResponse;
     double waterResponse;
+    double tempResponse;
 };
 
 

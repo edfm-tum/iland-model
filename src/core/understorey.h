@@ -85,7 +85,10 @@ public slots:
     //QJSValue grid(); ///< return a copy of the underlying grid
     Grid<double> *paintGrid(QString what, QStringList &names, QStringList &colors); ///< function called from iLand visualization
 
+    void filterChanged(int filter_index);
+
     static Grid<double> *grid(QString what);
+
 private:
     static QStringList mVarList;
     Grid<double> mGrid; // detailed 2m grid

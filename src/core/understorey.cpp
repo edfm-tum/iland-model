@@ -204,7 +204,8 @@ void UnderstoreyVisualizer::setupVisualization()
                 "Understorey - RU Covered", // 0
                 "Understorey - RU SlotsOccupied", // 1
                 "Understorey - RU LAI", // 2
-                "Understorey - RU Biomass" // 3
+                "Understorey - RU Biomass", // 3
+                 "Understorey - Filter - (none),fish,flesh,trombone" // 4 filter....
     };
     QStringList var_desc = {
                 "state",
@@ -284,6 +285,11 @@ Grid<double> *UnderstoreyVisualizer::paintGrid(QString what, QStringList &names,
         }
         return &mRUGrid;
     }
+}
+
+void UnderstoreyVisualizer::filterChanged(int filter_index)
+{
+    qDebug() << "filter changed" << filter_index;
 }
 
 Grid<double> *UnderstoreyVisualizer::grid(QString what)

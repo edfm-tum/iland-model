@@ -5,6 +5,7 @@
 #include "resourceunit.h"
 #include "watercycle.h"
 #include "microclimate.h"
+#include "climate.h"
 
 UnderstoreyPlant::UnderstoreyPlant() {}
 
@@ -129,7 +130,8 @@ void UnderstoreyRU::establishment()
     ucp.RU = mRU;
     ucp.SWCgrowingSeason = mRU->waterCycle()->meanGrowingSeasonSWC();
     ucp.availableNitrogen = mRU->resouceUnitVariables().nitrogenAvailable;
-
+    // TODO: switch to microclimate?
+    ucp.meanTemperature = mRU->climate()->meanAnnualTemperature();
 
     for (const auto &pft : Understorey::instance().PFTs()) {
 

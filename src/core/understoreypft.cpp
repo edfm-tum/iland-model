@@ -37,7 +37,7 @@ void UnderstoreyState::setup(UnderstoreySetting s, int index)
 QString UnderstoreySetting::error(QString msg)
 {
         return QString("Setup PFTs: Error in '%1' (line %2): %3")
-            .arg(mFile->value(mRowNumber, "name").toString())
+            .arg(mFile->value(mRowNumber, "pftId").toString())
         .arg(mRowNumber)
         .arg(msg);
 }
@@ -62,23 +62,61 @@ void UnderstoreyPFT::setup(UnderstoreySetting s, int index)
     mBaseEstablishmentProb = s.value("estBaseProb").toDouble();
 
     // environmental responses
-    QString resp = "lightResponse";
+    QString resp;
+    QString expr;
+    bool ok;
     try {
-        mExprLight.setAndParse(s.value(resp).toString());
+        resp = "lightResponse";
+        expr = s.value(resp).toString();
+        if (expr.isEmpty()) {
+            expr = QString("min(0.05 + 1.5/(1 + ((lr - (0.15*LightEIV-0.4))/(0.8-0.05*LightEIV))^2),1)");
+            s.value("LightEIV").toDouble(&ok);
+            if (!ok) throw IException("LightEIV required, but not a number!");
+            expr.replace("LightEIV", s.value("LightEIV").toString());
+        }
+        mExprLight.setAndParse(expr);
         mExprLight.linearize(0., 1.);
         // water
         resp = "waterResponse";
-        mExprWater.setAndParse(s.value(resp).toString());
+        expr = s.value(resp).toString();
+        if (expr.isEmpty()) {
+            expr = QString("min(0.05 + 1.3/(1 + ((swpgs + 14 + (10-MoistureEIV)*0.5)/3)^2),1)");
+            s.value("MoistureEIV").toDouble(&ok);
+            if (!ok) throw IException("MoistureEIV required, but not a number!");
+            expr.replace("MoistureEIV", s.value("MoistureEIV").toString());
+        }
+        mExprWater.setAndParse(expr);
         mExprWater.linearize(0.,1.);
+
         // nutrients
         resp = "nutrientResponse";
-        mExprNutrients.setAndParse(s.value(resp).toString());
+        expr = s.value(resp).toString();
+        if (expr.isEmpty()) {
+            expr = QString("min(0.05 + 1.5/(1 + ((PlantAvailN - (5*NutrientEIV+40))/20)^2),1)");
+            s.value("NutrientEIV").toDouble(&ok);
+            if (!ok) throw IException("NutrientEIV required, but not a number!");
+            expr.replace("NutrientEIV", s.value("NutrientEIV").toString());
+        }
+        mExprNutrients.setAndParse(expr);
         mExprNutrients.linearize(0., 1.);
+
+        // temperature responose
+        resp = "tempResponse";
+        expr = s.value(resp).toString();
+        if (expr.isEmpty()) {
+            expr = QString("min(0.05 + 1.2/(1 + ((meanTemp - (TemperatureEIV*1.5))/3)^2),1)");
+            s.value("TemperatureEIV").toDouble(&ok);
+            if (!ok) throw IException("NutrientEIV required, but not a number!");
+            expr.replace("TemperatureEIV", s.value("TemperatureEIV").toString());
+        }
+        mExprTemp.setAndParse(expr);
+        mExprTemp.linearize(0., 1.);
 
     } catch (const IException &e) {
         throw IException( s.error(QString("'%1': Expression error: %2").arg(resp, e.message()))   );
     }
-
+    if (logLevelDebug())
+        qDebug().noquote() << dump(); // use noquote() to get newlines etc
 }
 
 UStateId UnderstoreyPFT::stateTransition(const UnderstoreyPlant &plant,
@@ -88,9 +126,10 @@ UStateId UnderstoreyPFT::stateTransition(const UnderstoreyPlant &plant,
     double light_response = mExprLight.calculate(ucp.lif_corr);
     double nitrogen_response = mExprNutrients.calculate(ucp.availableNitrogen);
     double water_response = mExprWater.calculate(ucp.SWCgrowingSeason);
+    double temp_response = mExprTemp.calculate(ucp.meanTemperature);
 
-    // fake - should be some fancy function :=)
-    double total_response = light_response * nitrogen_response  * water_response;
+    // calculate total response value as a multiplication of individual factors
+    double total_response = light_response * nitrogen_response  * water_response * temp_response;
 
     // probability of going to next/previous state (fake!)
     double p_previous = total_response < 0.3 ? 0.1 : 0.05;
@@ -125,15 +164,18 @@ bool UnderstoreyPFT::establishment(UnderstoreyCellParams &ucp,
     if (!ucp.PFTcalc) {
         ucp.nitrogenResponse = mExprNutrients.calculate(ucp.availableNitrogen);
         ucp.waterResponse = mExprWater.calculate(ucp.SWCgrowingSeason);
+        ucp.tempResponse = mExprTemp.calculate(ucp.meanTemperature);
         ucp.PFTcalc = true;
     }
 
     double light_response = mExprLight.calculate(ucp.lif_corr);
 
-    // fake - should be some fancy function :=)
-    double total_response = light_response * ucp.nitrogenResponse  * ucp.waterResponse;
+    // the total response combines all sub-responses multiplicatively
+    double total_response = light_response * ucp.nitrogenResponse  * ucp.waterResponse * ucp.tempResponse;
 
     total_response = std::max(0., std::min( total_response, 1. ));
+    if (total_response == 0.)
+        return false;
 
     // the test for establishment represented more than once cell, update the prob accordingly
     double p_adjusted = 1. - std::pow(1. - total_response, n_represented);
@@ -143,4 +185,18 @@ bool UnderstoreyPFT::establishment(UnderstoreyCellParams &ucp,
     }
 
     return false;
+}
+
+QString UnderstoreyPFT::dump()
+{
+    QString result;
+    QTextStream str(&result);
+    str << "PFT:" << name() << " index:" << index() << Qt::endl;
+    str << "base probability:" << mBaseEstablishmentProb << Qt::endl;
+    str << "Response Light:" << mExprLight.expression()<< Qt::endl;
+    str << "Response Nutrient:" << mExprNutrients.expression()<< Qt::endl;
+    str << "Response Water:" << mExprWater.expression()<< Qt::endl;
+    str << "Response Temperature:" << mExprTemp.expression()<< Qt::endl;
+
+    return result;
 }
