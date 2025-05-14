@@ -1,5 +1,5 @@
-#include "understoreypft.h"
-#include "understorey.h"
+#include "understorypft.h"
+#include "understory.h"
 #include "csvfile.h"
 #include "exception.h"
 

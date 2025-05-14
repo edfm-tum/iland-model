@@ -1,5 +1,5 @@
-#include "understoreyplant.h"
-#include "understorey.h"
+#include "understoryplant.h"
+#include "understory.h"
 #include "saplings.h"
 #include "speciesset.h"
 #include "resourceunit.h"

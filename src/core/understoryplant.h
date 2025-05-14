@@ -1,5 +1,5 @@
-#ifndef UNDERSTOREYPLANT_H
-#define UNDERSTOREYPLANT_H
+#ifndef UNDERSTORYPLANT_H
+#define UNDERSTORYPLANT_H
 
 #include <array>
 #include <QPointF>
@@ -162,4 +162,4 @@ private:
 
 
 
-#endif // UNDERSTOREYPLANT_H
+#endif // UNDERSTORYPLANT_H

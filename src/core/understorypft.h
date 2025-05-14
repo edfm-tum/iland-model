@@ -1,8 +1,8 @@
-#ifndef UNDERSTOREYPFT_H
-#define UNDERSTOREYPFT_H
+#ifndef UNDERSTORYPFT_H
+#define UNDERSTORYPFT_H
 
 #include <QString>
-#include "understoreyplant.h"
+#include "understoryplant.h"
 
 #include "expression.h"
 
@@ -127,4 +127,4 @@ private:
 };
 
 
-#endif // UNDERSTOREYPFT_H
+#endif // UNDERSTORYPFT_H

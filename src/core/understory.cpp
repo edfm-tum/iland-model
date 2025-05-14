@@ -1,4 +1,4 @@
-#include "understorey.h"
+#include "understory.h"
 
 #include "globalsettings.h"
 #include "model.h"
@@ -7,8 +7,8 @@
 #include "csvfile.h"
 #include "debugtimer.h"
 
-#include "understoreyplant.h"
-#include "understoreypft.h"
+#include "understoryplant.h"
+#include "understorypft.h"
 
 Understorey *Understorey::mInstance = nullptr;
 

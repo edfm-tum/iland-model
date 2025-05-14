@@ -1,9 +1,9 @@
-#ifndef UNDERSTOREY_H
-#define UNDERSTOREY_H
+#ifndef UNDERSTORY_H
+#define UNDERSTORY_H
 
 #include "grid.h"
 
-#include "understoreypft.h"
+#include "understorypft.h"
 
 /**
  * @brief The Understorey class
@@ -99,4 +99,4 @@ private:
 
 };
 
-#endif // UNDERSTOREY_H
+#endif // UNDERSTORY_H

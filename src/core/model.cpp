@@ -53,7 +53,7 @@
 #include "dem.h"
 #include "grasscover.h"
 #include "svdstate.h"
-#include "understorey.h"
+#include "understory.h"
 
 #include "outputmanager.h"
 
