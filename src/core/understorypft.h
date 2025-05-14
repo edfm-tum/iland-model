@@ -7,10 +7,10 @@
 #include "expression.h"
 
 class CSVFile; // forward
-class UnderstoreySetting
+class UnderstorySetting
 {
 public:
-    UnderstoreySetting(const CSVFile *file, int current_row): mFile(file), mRowNumber(current_row) {}
+    UnderstorySetting(const CSVFile *file, int current_row): mFile(file), mRowNumber(current_row) {}
     // access
     QString error(QString msg);
     QVariant value(const QString &column_name);
@@ -21,14 +21,14 @@ private:
 };
 
 /**
- * @brief The UnderstoreyPFT class
+ * @brief The UnderstoryPFT class
  * stores data and logic for a single PFT
  */
-class UnderstoreyPFT
+class UnderstoryPFT
 {
 public:
-    UnderstoreyPFT() {};
-    void setup(UnderstoreySetting s, int index);
+    UnderstoryPFT() {};
+    void setup(UnderstorySetting s, int index);
     void setFirstState(UStateId first_state) { mFirstState = first_state; }
 
     const QString &name() const { return mName; }
@@ -40,13 +40,13 @@ public:
 
     /// determine if the state updates
     /// based on environmental conditions
-    UStateId stateTransition(const UnderstoreyPlant &plant,
-                             UnderstoreyCellParams &ucp,
-                             UnderstoreyRUStats &rustats) const;
+    UStateId stateTransition(const UnderstoryPlant &plant,
+                             UnderstoryCellParams &ucp,
+                             UnderstoryRUStats &rustats) const;
 
     /// test for establishment for this PFT at a
     /// location with given environment factors
-    bool establishment(UnderstoreyCellParams &ucp,
+    bool establishment(UnderstoryCellParams &ucp,
                        double n_represented) const;
 
     /// return a string with useful info
@@ -57,7 +57,7 @@ private:
     void responseToTransitionProb(const double response, double &rPrevious, double &rNext, double &rMort) const;
     QString mName;
     UStateId mFirstState { std::numeric_limits<UStateId>::max()}; ///< id of the initial state of the PFT (for establishment)
-    int mIndex {-1}; ///< the index of the PFT in the Understorey's PFT container
+    int mIndex {-1}; ///< the index of the PFT in the Understory's PFT container
     double mBaseEstablishmentProb {0.}; ///< base establishment probability
 
     double mAgeMax; ///< maximum age (yrs)
@@ -72,19 +72,19 @@ private:
 };
 
 /**
- * @brief The UnderstoreyState class
+ * @brief The UnderstoryState class
  * represents a PFT of a single size class; this is the
- * "state" that can occupy a understorey cell
+ * "state" that can occupy a understory cell
  */
-class UnderstoreyState
+class UnderstoryState
 {
 public:
-    UnderstoreyState() {};
-    void setup(UnderstoreySetting s, int index);
+    UnderstoryState() {};
+    void setup(UnderstorySetting s, int index);
     void setFirstState() { mFirstState = true; }
     void setFinalState() { mFinalState = true; }
 
-    /// the ID of a state which is at the same time the id of the state in the Understorey-container
+    /// the ID of a state which is at the same time the id of the state in the Understory-container
     int id() const { return mId; }
     /// the sizeClass of the state within its PFT
     int sizeClass() const { return mSizeClass; }
@@ -95,7 +95,7 @@ public:
 
 
     int pftIndex() const { Q_ASSERT(mPFT!=nullptr); return mPFT->index(); }
-    const UnderstoreyPFT *pft() const { return mPFT; }
+    const UnderstoryPFT *pft() const { return mPFT; }
     /// number of slots that are occupied by
     /// this state
     short int NSlots() const { return mNSlots; }
@@ -110,7 +110,7 @@ public:
 
 
 private:
-    const UnderstoreyPFT *mPFT {nullptr};
+    const UnderstoryPFT *mPFT {nullptr};
     int mId {-1};
     int mSizeClass;
     QString mName;

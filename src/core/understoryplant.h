@@ -10,8 +10,8 @@ using UStateId = short int;
 
 class ResourceUnit; // forward
 struct SaplingCell; // forward
-class UnderstoreyPFT; // forward
-struct UnderstoreyCellParams {
+class UnderstoryPFT; // forward
+struct UnderstoryCellParams {
     ResourceUnit *RU; ///< pointer to resource unit
     SaplingCell *saplingCell; ///< corresponding sapling cell
     float lif_corr; ///< corrected LIF value at the 2m cell
@@ -26,14 +26,14 @@ struct UnderstoreyCellParams {
 
 
 /**
- * @brief The UnderstoreyPlant class represents
+ * @brief The UnderstoryPlant class represents
  * a single UnderstoryState on a cell.
  * The class is optimized for memory consumption.
  */
-class UnderstoreyPlant
+class UnderstoryPlant
 {
 public:
-    UnderstoreyPlant();
+    UnderstoryPlant();
 
     bool isLiving() const { return mId < std::numeric_limits<UStateId>::max(); }
     void kill() { mId = std::numeric_limits<UStateId>::max(); }
@@ -46,8 +46,8 @@ private:
     UStateId mId { std::numeric_limits<UStateId>::max() };
 };
 
-struct UnderstoreyStatsCell {
-    void operator+=(const UnderstoreyStatsCell &rSide) {
+struct UnderstoryStatsCell {
+    void operator+=(const UnderstoryStatsCell &rSide) {
         LAI += rSide.LAI; // total LAI
         biomass += rSide.biomass; // total biomass
         height = std::max(height, rSide.height); // maximum height
@@ -71,7 +71,7 @@ struct UnderstoreyStatsCell {
 };
 
 
-struct UnderstoreyRUStats {
+struct UnderstoryRUStats {
     void clear() { established = died = transitionDown = transitionUp = 0; ru_stats.clear(); }
     // changes
     int established { 0 }; // # of plants / cells established
@@ -79,15 +79,15 @@ struct UnderstoreyRUStats {
     int transitionUp {0}; // # of plants with state transition to next / taller state
     int transitionDown {0}; // # of plants with state transition to previous / smaller state
     // state
-    UnderstoreyStatsCell ru_stats;
+    UnderstoryStatsCell ru_stats;
 };
 
 /**
- * @brief The UnderstoreyCell class
- * is container for all UnderstoreyPlant on a cell.
- * It manages occupation and stores the individual UnderstoreyPlant objects
+ * @brief The UnderstoryCell class
+ * is container for all UnderstoryPlant on a cell.
+ * It manages occupation and stores the individual UnderstoryPlant objects
  */
-class UnderstoreyCell
+class UnderstoryCell
 {
 public:
     /// number of slots per cell
@@ -99,40 +99,40 @@ public:
                       CellFree=3,    ///< plants may establish on the cell (at least one slot occupied)
                       CellFull=4};   ///< cell is full )
 
-    UnderstoreyCell() {};
+    UnderstoryCell() {};
     // acess properties
     bool isValid() const { return mState != ECellState::CellInvalid; }
     bool isFull() const { return mState == ECellState::CellFull; }
     /// updates internal data, call after content of cell changed
-    void update(UnderstoreyRUStats &stats);
+    void update(UnderstoryRUStats &stats);
 
 
-    void growth(UnderstoreyCellParams &ucp, UnderstoreyRUStats &stats);
+    void growth(UnderstoryCellParams &ucp, UnderstoryRUStats &stats);
     void establishment(UStateId id);
 
     /// the plants container
-    const std::array<UnderstoreyPlant, NSlots> &plants() const { return mPlants; }
-    std::array<UnderstoreyPlant, NSlots> &mod_plants() { return mPlants; }
+    const std::array<UnderstoryPlant, NSlots> &plants() const { return mPlants; }
+    std::array<UnderstoryPlant, NSlots> &mod_plants() { return mPlants; }
 
 
     /// summary stats for the cell
-    UnderstoreyStatsCell stats() const;
+    UnderstoryStatsCell stats() const;
     /// get stats only for a given PFT
-    UnderstoreyStatsCell stats(const UnderstoreyPFT *pft) const;
+    UnderstoryStatsCell stats(const UnderstoryPFT *pft) const;
 private:
     /// sum of occupation points on cell
     uint8_t mOccupied {0};
     /// current state of the cell
     ECellState mState { ECellState::CellInvalid };
-    std::array<UnderstoreyPlant, NSlots> mPlants;
+    std::array<UnderstoryPlant, NSlots> mPlants;
 };
 
 /**
- * @brief The UnderstoreyRU class
- * holds the actual understorey per resource unit (an array of UnderstoreyCell).
+ * @brief The UnderstoryRU class
+ * holds the actual understory per resource unit (an array of UnderstoryCell).
  *
  */
-class UnderstoreyRU
+class UnderstoryRU
 {
 public:
     // setup
@@ -147,17 +147,17 @@ public:
     /// get metric coordinates (landscape) of a cell with given index
     QPointF cellCoord(int index);
     /// get metric coordinates (landscape) of a cell
-    QPointF cellCoord(const UnderstoreyCell& cell) { return cellCoord( &cell - mCells.begin());}
+    QPointF cellCoord(const UnderstoryCell& cell) { return cellCoord( &cell - mCells.begin());}
     /// get cell at given coordinates (metric)
     /// Note that selecting the right RU is
-    /// done by Understorey::cell()!
-    const UnderstoreyCell *cell(QPointF metric_coord) const;
-    const UnderstoreyRUStats &stats() const { return mStats; }
-    UnderstoreyRUStats stats(const UnderstoreyPFT *pft) const;
+    /// done by Understory::cell()!
+    const UnderstoryCell *cell(QPointF metric_coord) const;
+    const UnderstoryRUStats &stats() const { return mStats; }
+    UnderstoryRUStats stats(const UnderstoryPFT *pft) const;
 private:
-    UnderstoreyRUStats mStats;
+    UnderstoryRUStats mStats;
     ResourceUnit *mRU {0};
-    std::array<UnderstoreyCell, cPxPerHectare> mCells;
+    std::array<UnderstoryCell, cPxPerHectare> mCells;
 };
 
 

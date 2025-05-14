@@ -7,13 +7,13 @@
 #include "microclimate.h"
 #include "climate.h"
 
-UnderstoreyPlant::UnderstoreyPlant() {}
+UnderstoryPlant::UnderstoryPlant() {}
 
 
 
-void UnderstoreyCell::update(UnderstoreyRUStats &stats)
+void UnderstoryCell::update(UnderstoryRUStats &stats)
 {
-    const auto &states = Understorey::instance().states();
+    const auto &states = Understory::instance().states();
     mOccupied = 0;
     for (const auto& plant : mPlants) {
         if (plant.isLiving()) {
@@ -24,7 +24,7 @@ void UnderstoreyCell::update(UnderstoreyRUStats &stats)
         mState = ECellState::CellFull;
         while (mOccupied > MaxOccupied) {
             // mortality due to competition. Remove pfts until space constraint is satisfied.
-            UnderstoreyPlant *sml = nullptr;
+            UnderstoryPlant *sml = nullptr;
             int sml_slots = MaxOccupied;
             for (auto& plant : mPlants) {
                 if (plant.isLiving()) {
@@ -47,10 +47,10 @@ void UnderstoreyCell::update(UnderstoreyRUStats &stats)
         mState = ECellState::CellFree;
 }
 
-void UnderstoreyCell::growth(UnderstoreyCellParams &ucp, UnderstoreyRUStats &stats)
+void UnderstoryCell::growth(UnderstoryCellParams &ucp, UnderstoryRUStats &stats)
 {
 
-    const auto &us = Understorey::instance();
+    const auto &us = Understory::instance();
     bool states_changed = false;
     for (auto &p : mPlants) {
         if (p.isLiving()) {
@@ -72,7 +72,7 @@ void UnderstoreyCell::growth(UnderstoreyCellParams &ucp, UnderstoreyRUStats &sta
     }
 }
 
-void UnderstoreyCell::establishment(UStateId id)
+void UnderstoryCell::establishment(UStateId id)
 {
     for (auto& plant : mPlants) {
         if (!plant.isLiving()) {
@@ -82,10 +82,10 @@ void UnderstoreyCell::establishment(UStateId id)
 }
 
 
-UnderstoreyStatsCell UnderstoreyCell::stats() const
+UnderstoryStatsCell UnderstoryCell::stats() const
 {
-    const auto &states = Understorey::instance().states();
-    UnderstoreyStatsCell stats;
+    const auto &states = Understory::instance().states();
+    UnderstoryStatsCell stats;
     for (const auto& plant : mPlants) {
         if (plant.isLiving()) {
             const auto state = states[ plant.stateId() ];
@@ -99,13 +99,13 @@ UnderstoreyStatsCell UnderstoreyCell::stats() const
     return stats;
 }
 
-UnderstoreyStatsCell UnderstoreyCell::stats(const UnderstoreyPFT *pft) const
+UnderstoryStatsCell UnderstoryCell::stats(const UnderstoryPFT *pft) const
 {
     if (!pft)
         return stats();
 
-    const auto &states = Understorey::instance().states();
-    UnderstoreyStatsCell stats;
+    const auto &states = Understory::instance().states();
+    UnderstoryStatsCell stats;
     for (const auto& plant : mPlants) {
         if (plant.isLiving()) {
             const auto state = states[ plant.stateId() ];
@@ -124,12 +124,12 @@ UnderstoreyStatsCell UnderstoreyCell::stats(const UnderstoreyPFT *pft) const
 }
 
 
-// ****************** UnderstoreyRU **************************
+// ****************** UnderstoryRU **************************
 
-void UnderstoreyRU::setup()
+void UnderstoryRU::setup()
 {
     Q_ASSERT(mRU != nullptr);
-    UnderstoreyRUStats dummy;
+    UnderstoryRUStats dummy;
     HeightGrid *hg = GlobalSettings::instance()->model()->heightGrid();
     for (auto& cell : mCells) {
         QPointF p = cellCoord(cell);
@@ -139,7 +139,7 @@ void UnderstoreyRU::setup()
     }
 }
 
-void UnderstoreyRU::establishment()
+void UnderstoryRU::establishment()
 {
     FloatGrid *lif_grid = GlobalSettings::instance()->model()->grid();
     QPoint imap = mRU->cornerPointOffset(); // offset on LIF/saplings grid
@@ -150,14 +150,14 @@ void UnderstoreyRU::establishment()
     const double p_cell = 0.2;
     const double n_cells_represented = 1. / p_cell;
 
-    UnderstoreyCellParams ucp;
+    UnderstoryCellParams ucp;
     ucp.RU = mRU;
     ucp.SWCgrowingSeason = mRU->waterCycle()->meanGrowingSeasonSWC();
     ucp.availableNitrogen = mRU->resouceUnitVariables().nitrogenAvailable;
     // TODO: switch to microclimate?
     ucp.meanTemperature = mRU->climate()->meanAnnualTemperature();
 
-    for (const auto &pft : Understorey::instance().PFTs()) {
+    for (const auto &pft : Understory::instance().PFTs()) {
 
         if (drandom() < pft->baseEstablishmentProbability()) {
             // analyze the pft
@@ -166,7 +166,7 @@ void UnderstoreyRU::establishment()
             for (int iy=0; iy<cPxPerRU; ++iy) {
                 ucp.saplingCell = &sap_cells[iy*cPxPerRU]; // pointer to a row of saplings
 
-                auto *ucell =&mCells[iy*cPxPerRU]; // pointer to a row of understorey cells
+                auto *ucell =&mCells[iy*cPxPerRU]; // pointer to a row of understory cells
                 isc = lif_grid->index(imap.x(), imap.y()+iy);
 
                 for (int ix=0;ix<cPxPerRU; ++ix, ++ucp.saplingCell, ++isc, ++ucell) {
@@ -199,7 +199,7 @@ void UnderstoreyRU::establishment()
     }
     mStats.ru_stats.calcPerRU(n_valid);
 
-    QString stat_string=QString("Understorey: RU: %1: ++: %2, up: %3, down: %4, --: %5")
+    QString stat_string=QString("Understory: RU: %1: ++: %2, up: %3, down: %4, --: %5")
                               .arg(mRU->index())
                           .arg(mStats.established).arg(mStats.transitionUp)
                           .arg(mStats.transitionDown).arg(mStats.died);
@@ -215,7 +215,7 @@ void UnderstoreyRU::establishment()
 
 }
 
-void UnderstoreyRU::growth()
+void UnderstoryRU::growth()
 {
     mStats.clear();
 
@@ -226,7 +226,7 @@ void UnderstoreyRU::growth()
     const auto &speciesSet = Globals->model()->speciesSet();
 
 
-    UnderstoreyCellParams ucp;
+    UnderstoryCellParams ucp;
     ucp.RU = mRU;
 
     ucp.SWCgrowingSeason = mRU->waterCycle()->meanGrowingSeasonSWC();
@@ -236,7 +236,7 @@ void UnderstoreyRU::growth()
     for (int iy=0; iy<cPxPerRU; ++iy) {
         ucp.saplingCell = &sap_cells[iy*cPxPerRU]; // pointer to a row of saplings
 
-        auto *ucell =&mCells[iy*cPxPerRU]; // pointer to a row of understorey cells
+        auto *ucell =&mCells[iy*cPxPerRU]; // pointer to a row of understory cells
         isc = lif_grid->index(imap.x(), imap.y()+iy);
 
         for (int ix=0;ix<cPxPerRU; ++ix, ++ucp.saplingCell, ++isc, ++ucell) {
@@ -256,13 +256,13 @@ void UnderstoreyRU::growth()
 
 }
 
-QPointF UnderstoreyRU::cellCoord(int index)
+QPointF UnderstoryRU::cellCoord(int index)
 {
     QPointF local( ( (index % cPxPerRU) + 0.5) * cPxSize, ((index/cPxPerRU) + 0.5) * cPxSize );
     return local + mRU->boundingBox().topLeft();
 }
 
-const UnderstoreyCell *UnderstoreyRU::cell(QPointF metric_coord) const
+const UnderstoryCell *UnderstoryRU::cell(QPointF metric_coord) const
 {
     // get index_x and index_y relative to the RU corner in 2m resolution
     QPoint p= QPoint(
@@ -276,9 +276,9 @@ const UnderstoreyCell *UnderstoreyRU::cell(QPointF metric_coord) const
     return &mCells[index];
 }
 
-UnderstoreyRUStats UnderstoreyRU::stats(const UnderstoreyPFT *pft) const
+UnderstoryRUStats UnderstoryRU::stats(const UnderstoryPFT *pft) const
 {
-    UnderstoreyRUStats stats;
+    UnderstoryRUStats stats;
     int n_valid = 0;
     for (auto &cell : mCells) {
         if (cell.isValid()) {

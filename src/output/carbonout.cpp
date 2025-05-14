@@ -63,7 +63,7 @@ CarbonOut::CarbonOut()
               << OutputColumn("litter_c_ag", "soil litter aboveground (yl, foliage, part of litter_c) carbon kg/ha", OutDouble)
               << OutputColumn("soil_c", "soil organic matter (som), carbon kg/ha", OutDouble)
               << OutputColumn("soil_n", "soil organic matter (som), nitrogen kg/ha", OutDouble)
-              << OutputColumn("understorey_c", "living understorey vegetation (e.g. moss) kg C/ha", OutDouble);
+              << OutputColumn("understory_c", "living understory vegetation (e.g. moss) kg C/ha", OutDouble);
 
 
 
@@ -135,12 +135,12 @@ void CarbonOut::exec()
                     << ru->soil()->oldOrganicMatter().C*1000.
                     << ru->soil()->oldOrganicMatter().N*1000.;   // soil
 
-            // biomass for understorey (currently only moss)
-            double understorey_c = 0.;
+            // biomass for understory (currently only moss)
+            double understory_c = 0.;
             if (ru->waterCycle()->permafrost())
-                understorey_c = ru->waterCycle()->permafrost()->mossBiomass() * biomassCFraction * 10000.; // convert from kg/m2 -> kg C / ha
+                understory_c = ru->waterCycle()->permafrost()->mossBiomass() * biomassCFraction * 10000.; // convert from kg/m2 -> kg C / ha
 
-            *this << understorey_c;
+            *this << understory_c;
 
             writeRow();
         }

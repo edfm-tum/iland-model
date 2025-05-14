@@ -167,7 +167,7 @@ void Model::initialize()
    mDEM = nullptr;
    mGrassCover = nullptr;
    mSaplings=nullptr;
-   mUnderstorey=nullptr;
+   mUnderstory=nullptr;
    mSVDStates=nullptr;
 }
 
@@ -487,8 +487,8 @@ void Model::clear()
         delete mSVDStates;
     if (mBiteEngine)
         delete  mBiteEngine;
-    if (mUnderstorey)
-        delete mUnderstorey;
+    if (mUnderstory)
+        delete mUnderstory;
 
     mGrid = nullptr;
     mHeightGrid = nullptr;
@@ -501,7 +501,7 @@ void Model::clear()
     mGrassCover = nullptr;
     mABEManagement = nullptr;
     mBiteEngine = nullptr;
-    mUnderstorey = nullptr;
+    mUnderstory = nullptr;
     mSVDStates = nullptr;
 
     GlobalSettings::instance()->outputManager()->close();
@@ -590,9 +590,9 @@ void Model::loadProject()
     }
     Saplings::setRecruitmentVariation(xml.valueDouble("model.settings.seedDispersal.recruitmentDimensionVariation",0.1));
 
-    // (3.2) Understorey
-    if (settings().understoreyEnabled) {
-        mUnderstorey = new Understorey();
+    // (3.2) Understory
+    if (settings().understoryEnabled) {
+        mUnderstory = new Understory();
     }
 
     // (3.3) management
@@ -773,11 +773,11 @@ void Model::beforeRun()
         executePerResourceUnit(nc_microclimate, false /* true to force single threaded execution */);
     }
 
-    // understorey
-    if (Model::settings().understoreyEnabled) {
+    // understory
+    if (Model::settings().understoryEnabled) {
         DebugTimer t("Understory setup");
-        mUnderstorey->setup();
-        UnderstoreyVisualizer::setupVisualization();
+        mUnderstory->setup();
+        UnderstoryVisualizer::setupVisualization();
 
     }
 
@@ -937,10 +937,10 @@ void Model::runYear()
 
     }
 
-    // understorey
-    if (settings().understoreyEnabled) {
-        DebugTimer t("understorey");
-        mUnderstorey->run();
+    // understory
+    if (settings().understoryEnabled) {
+        DebugTimer t("understory");
+        mUnderstory->run();
     }
 
     // external modules/disturbances

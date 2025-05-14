@@ -33,7 +33,7 @@ class ResourceUnit;
 class SpeciesSet;
 class Management;
 class Saplings;
-class Understorey;
+class Understory;
 
 namespace ABE {
 class ForestManagementEngine;
@@ -113,7 +113,7 @@ public:
 
     Environment *environment() const {return mEnvironment; }
     Saplings *saplings() const {return mSaplings; }
-    Understorey *understorey() const { return mUnderstorey; }
+    Understory *understory() const { return mUnderstory; }
     TimeEvents *timeEvents() const { return mTimeEvents; }
     Modules *modules() const { return mModules; }
     const DEM *dem() const { return mDEM; }
@@ -189,7 +189,7 @@ private:
     FloatGrid *mGrid; ///< the main LIF grid of the model (2x2m resolution)
     HeightGrid *mHeightGrid; ///< grid with 10m resolution that stores maximum-heights, tree counts and some flags
     Saplings *mSaplings; ///< sub module for sapling trees
-    Understorey *mUnderstorey; ///< sub module for ground generation
+    Understory *mUnderstory; ///< sub module for ground generation
     Management *mManagement; ///< management sub-module (simple mode)
     ABE::ForestManagementEngine *mABEManagement; ///< management sub-module (agent based management engine)
     BITE::BiteEngine *mBiteEngine; ///< biotic disturbance module BITE

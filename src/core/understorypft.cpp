@@ -4,13 +4,13 @@
 #include "exception.h"
 
 
-void UnderstoreyState::setup(UnderstoreySetting s, int index)
+void UnderstoryState::setup(UnderstorySetting s, int index)
 {
     mId = index;
 
 
     QString pft_id = s.value("pftId").toString();
-    mPFT = Understorey::instance().pftByName(pft_id);
+    mPFT = Understory::instance().pftByName(pft_id);
     if (!mPFT)
         throw IException(s.error(QString("the pftID is '%1', but that is not an available PFT.").arg(pft_id)));
 
@@ -34,7 +34,7 @@ void UnderstoreyState::setup(UnderstoreySetting s, int index)
 
 }
 
-QString UnderstoreySetting::error(QString msg)
+QString UnderstorySetting::error(QString msg)
 {
         return QString("Setup PFTs: Error in '%1' (line %2): %3")
             .arg(mFile->value(mRowNumber, "pftId").toString())
@@ -42,7 +42,7 @@ QString UnderstoreySetting::error(QString msg)
         .arg(msg);
 }
 
-QVariant UnderstoreySetting::value(const QString &column_name)
+QVariant UnderstorySetting::value(const QString &column_name)
 {
     int i = mFile->columnIndex(column_name);
     if (i < 0)
@@ -50,12 +50,12 @@ QVariant UnderstoreySetting::value(const QString &column_name)
     return mFile->value(mRowNumber, i);
 }
 
-bool UnderstoreySetting::hasColumn(const QString &column_name)
+bool UnderstorySetting::hasColumn(const QString &column_name)
 {
     return mFile->columnIndex(column_name) >= 0;
 }
 
-void UnderstoreyPFT::setup(UnderstoreySetting s, int index)
+void UnderstoryPFT::setup(UnderstorySetting s, int index)
 {
     mIndex = index;
 
@@ -126,9 +126,9 @@ void UnderstoreyPFT::setup(UnderstoreySetting s, int index)
         qDebug().noquote() << dump(); // use noquote() to get newlines etc
 }
 
-UStateId UnderstoreyPFT::stateTransition(const UnderstoreyPlant &plant,
-                                         UnderstoreyCellParams &ucp,
-                                         UnderstoreyRUStats &rustats) const
+UStateId UnderstoryPFT::stateTransition(const UnderstoryPlant &plant,
+                                         UnderstoryCellParams &ucp,
+                                         UnderstoryRUStats &rustats) const
 {
     double light_response = mExprLight.calculate(ucp.lif_corr);
     double nitrogen_response = mExprNutrients.calculate(ucp.availableNitrogen);
@@ -144,7 +144,7 @@ UStateId UnderstoreyPFT::stateTransition(const UnderstoreyPlant &plant,
     responseToTransitionProb(total_response, p_previous, p_next, p_mort);
 
     // draw a random number and determine the next state probabilistically
-    const auto *state = Understorey::instance().state(plant.stateId());
+    const auto *state = Understory::instance().state(plant.stateId());
     double r = drandom();
     if (r < p_mort) {
         // mortality
@@ -165,7 +165,7 @@ UStateId UnderstoreyPFT::stateTransition(const UnderstoreyPlant &plant,
     return plant.stateId();
 }
 
-bool UnderstoreyPFT::establishment(UnderstoreyCellParams &ucp,
+bool UnderstoryPFT::establishment(UnderstoryCellParams &ucp,
                                    double n_represented) const
 {
     if (!ucp.PFTcalc) {
@@ -194,7 +194,7 @@ bool UnderstoreyPFT::establishment(UnderstoreyCellParams &ucp,
     return false;
 }
 
-QString UnderstoreyPFT::dump()
+QString UnderstoryPFT::dump()
 {
     QString result;
     QTextStream str(&result);
@@ -208,7 +208,7 @@ QString UnderstoreyPFT::dump()
     return result;
 }
 
-void UnderstoreyPFT::responseToTransitionProb(const double response, double &rPrevious, double &rNext, double &rMort) const
+void UnderstoryPFT::responseToTransitionProb(const double response, double &rPrevious, double &rNext, double &rMort) const
 {
     // linear functions approach (KB)
     rNext = 1. / mOptimalGrowth * response;

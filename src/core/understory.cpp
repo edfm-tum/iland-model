@@ -10,21 +10,21 @@
 #include "understoryplant.h"
 #include "understorypft.h"
 
-Understorey *Understorey::mInstance = nullptr;
+Understory *Understory::mInstance = nullptr;
 
-Understorey::Understorey()
+Understory::Understory()
 {
     mInstance = this;
 }
 
-Understorey::~Understorey()
+Understory::~Understory()
 {
     qDeleteAll(mStates);
     mStates.clear();
     mInstance = nullptr;
 }
 
-const UnderstoreyPFT *Understorey::pftByName(const QString &name) const
+const UnderstoryPFT *Understory::pftByName(const QString &name) const
 {
     for (int i=0;i<mPFTs.size();++i)
         if (mPFTs[i]->name() == name)
@@ -33,7 +33,7 @@ const UnderstoreyPFT *Understorey::pftByName(const QString &name) const
 
 }
 
-const UnderstoreyState *Understorey::stateById(UStateId id) const
+const UnderstoryState *Understory::stateById(UStateId id) const
 {
     for (int i=0;i<mStates.size();++i)
         if (mStates[i]->id() == id)
@@ -43,16 +43,16 @@ const UnderstoreyState *Understorey::stateById(UStateId id) const
 
 
 
-const UnderstoreyCell *Understorey::understoreyCell(QPointF metric_coord) const
+const UnderstoryCell *Understory::understoryCell(QPointF metric_coord) const
 {
-    auto us_ru = understoreyRU(metric_coord);
+    auto us_ru = understoryRU(metric_coord);
     if (!us_ru)
         return nullptr;
 
     return us_ru->cell(metric_coord);
 }
 
-const UnderstoreyRU *Understorey::understoreyRU(QPointF metric_coord) const
+const UnderstoryRU *Understory::understoryRU(QPointF metric_coord) const
 {
     // get first the correct RU
     const auto &rugrid = Globals->model()->RUgrid();
@@ -61,75 +61,75 @@ const UnderstoreyRU *Understorey::understoreyRU(QPointF metric_coord) const
     const auto ru = rugrid(metric_coord);
 
     if (!ru) return nullptr;
-    Q_ASSERT(ru->index()>=0 && ru->index()<mUnderstoreyRU.size());
+    Q_ASSERT(ru->index()>=0 && ru->index()<mUnderstoryRU.size());
 
-    // the mUnderstoreyRU container is a 1:1 copy of the RU container, the index therefore works
-    auto &us_ru = mUnderstoreyRU[ru->index()];
+    // the mUnderstoryRU container is a 1:1 copy of the RU container, the index therefore works
+    auto &us_ru = mUnderstoryRU[ru->index()];
     return &us_ru;
 }
 
-void Understorey::setup()
+void Understory::setup()
 {
-    DebugTimer t("Understorey - setup");
-    qDebug() << "Understorey module - setup";
+    DebugTimer t("Understory - setup");
+    qDebug() << "Understory module - setup";
     // load PFTs from external file
-    QString path = Globals->path(Globals->settings().value("model.settings.understorey.pftFile"));
+    QString path = Globals->path(Globals->settings().value("model.settings.understory.pftFile"));
     CSVFile pft_file = CSVFile(path);
 
     if (pft_file.isEmpty())
-        throw IException(QString("Understorey: pftFile '%1' does not exist or is empty!").arg(path));
+        throw IException(QString("Understory: pftFile '%1' does not exist or is empty!").arg(path));
 
     for (int i = 0; i< pft_file.rowCount(); ++i) {
-        mPFTs.push_back(new UnderstoreyPFT());
-        mPFTs.back()->setup(UnderstoreySetting(&pft_file, i), mPFTs.size()-1);
+        mPFTs.push_back(new UnderstoryPFT());
+        mPFTs.back()->setup(UnderstorySetting(&pft_file, i), mPFTs.size()-1);
     }
     qDebug() << mPFTs.size() << "PFTs loaded from" << path;
 
     // load PFTs from external file
-    path = Globals->path(Globals->settings().value("model.settings.understorey.statesFile"));
+    path = Globals->path(Globals->settings().value("model.settings.understory.statesFile"));
     CSVFile states_file = CSVFile(path);
 
     if (states_file.isEmpty())
-        throw IException(QString("Understorey: statesFile '%1' does not exist or is empty!").arg(path));
+        throw IException(QString("Understory: statesFile '%1' does not exist or is empty!").arg(path));
     for (int i = 0; i< states_file.rowCount(); ++i) {
-        mStates.push_back(new UnderstoreyState());
-        mStates.back()->setup(UnderstoreySetting(&states_file,i), mStates.size()-1);
+        mStates.push_back(new UnderstoryState());
+        mStates.back()->setup(UnderstorySetting(&states_file,i), mStates.size()-1);
     }
-    qDebug() << mStates.size() << "understorey states loaded from" << path;
+    qDebug() << mStates.size() << "understory states loaded from" << path;
 
     // check for consistency
     checkStateSequence();
 
 
     // spatial setup per resource unit
-    // create the data for understorey as a single chunk of memory
+    // create the data for understory as a single chunk of memory
     // by resizing the container
-    mUnderstoreyRU.resize(Globals->model()->ruList().size());
-    for (int i=0;i<mUnderstoreyRU.size();++i) {
-        mUnderstoreyRU[i].setRU(Globals->model()->ruList()[i]);
+    mUnderstoryRU.resize(Globals->model()->ruList().size());
+    for (int i=0;i<mUnderstoryRU.size();++i) {
+        mUnderstoryRU[i].setRU(Globals->model()->ruList()[i]);
     }
 
-    Globals->model()->threadExec().run(&UnderstoreyRU::setup, mUnderstoreyRU, false);
+    Globals->model()->threadExec().run(&UnderstoryRU::setup, mUnderstoryRU, false);
 
-    qDebug() << "Understorey module setup complete.";
+    qDebug() << "Understory module setup complete.";
 
 }
 
 
-void Understorey::run()
+void Understory::run()
 {
     // run the growth for all resource units
     DebugTimer t1("Understory - grow");
-    Globals->model()->threadExec().run(&UnderstoreyRU::growth, mUnderstoreyRU, true);
+    Globals->model()->threadExec().run(&UnderstoryRU::growth, mUnderstoryRU, true);
 
-    // run the establishment routine for understorey for all resource units
+    // run the establishment routine for understory for all resource units
     DebugTimer t2("Understory - establishment");
-    Globals->model()->threadExec().run(&UnderstoreyRU::establishment, mUnderstoreyRU, true);
+    Globals->model()->threadExec().run(&UnderstoryRU::establishment, mUnderstoryRU, true);
 
 
 }
 
-void Understorey::checkStateSequence()
+void Understory::checkStateSequence()
 {
     for (auto &pft : mPFTs) {
         int min_index = -1;
@@ -138,7 +138,7 @@ void Understorey::checkStateSequence()
         bool in = false; bool out = false;
         for (auto &state : mStates) {
             if (out && state->pftIndex() == pft->index())
-                throw IException(QString("Understorey: Invalid state sequence! found '%1' is outside its group!").arg(state->name()));
+                throw IException(QString("Understory: Invalid state sequence! found '%1' is outside its group!").arg(state->name()));
 
             if (in && state->pftIndex() != pft->index()) {
                 out = true; // switched to a different pft
@@ -156,12 +156,12 @@ void Understorey::checkStateSequence()
 
             max_index = state->id();
             if (state->sizeClass() < size_class)
-                throw IException("Understorey: 'size' attribute of PFT '%1' are not strictly increasing in 'statesFile'!");
+                throw IException("Understory: 'size' attribute of PFT '%1' are not strictly increasing in 'statesFile'!");
             size_class = state->sizeClass();
 
         }
         if (min_index <0 || max_index < 0)
-            throw IException(QString("Understorey: PFT '%1' has no states in statesFile! *Every* PFT needs them.").arg(pft->name()));
+            throw IException(QString("Understory: PFT '%1' has no states in statesFile! *Every* PFT needs them.").arg(pft->name()));
         mStates[min_index]->setFirstState();
         pft->setFirstState(mStates[min_index]->id());
         mStates[max_index]->setFinalState();
@@ -174,43 +174,43 @@ void Understorey::checkStateSequence()
 
 
 // ******************************************************************************
-UnderstoreyVisualizer *UnderstoreyVisualizer::mVisualizer = nullptr;
-QStringList UnderstoreyVisualizer::mVarList = {};
+UnderstoryVisualizer *UnderstoryVisualizer::mVisualizer = nullptr;
+QStringList UnderstoryVisualizer::mVarList = {};
 
-UnderstoreyVisualizer::UnderstoreyVisualizer(QObject *parent)
+UnderstoryVisualizer::UnderstoryVisualizer(QObject *parent)
     :QObject(parent)
 {
     Q_UNUSED(parent);
 }
 
-UnderstoreyVisualizer::~UnderstoreyVisualizer()
+UnderstoryVisualizer::~UnderstoryVisualizer()
 {
     GlobalSettings::instance()->controller()->removePaintLayers(mVisualizer);
     mVisualizer = nullptr;
 }
 
-void UnderstoreyVisualizer::setupVisualization()
+void UnderstoryVisualizer::setupVisualization()
 {
     // add agent to UI
     if (mVisualizer)
         delete mVisualizer;
 
-    mVisualizer = new UnderstoreyVisualizer();
+    mVisualizer = new UnderstoryVisualizer();
 
-    mVarList = {"Understorey - State", // 0
-                "Understorey - SlotsOccupied", // 1
-                "Understorey - Biomass", "Understorey - LAI", "Understorey - maxHeight", // 2,3,4
+    mVarList = {"Understory - State", // 0
+                "Understory - SlotsOccupied", // 1
+                "Understory - Biomass", "Understory - LAI", "Understory - maxHeight", // 2,3,4
                 // RU-LEVEL
-                "Understorey - RU Covered", // 0
-                "Understorey - RU SlotsOccupied", // 1
-                "Understorey - RU LAI", // 2
-                "Understorey - RU Biomass", // 3
+                "Understory - RU Covered", // 0
+                "Understory - RU SlotsOccupied", // 1
+                "Understory - RU LAI", // 2
+                "Understory - RU Biomass", // 3
     };
     QStringList var_desc = {
                 "state",
                 "Number of 'slots' occupied per cell",
                 "Total biomass (kg/m2??)",
-                "LAI (m2/m2) of understorey",
+                "LAI (m2/m2) of understory",
                 "Maximum height (m) on cell",
                 // RU - LEVEL
                 "Percent of RU area with >0 plants (%)",
@@ -219,12 +219,12 @@ void UnderstoreyVisualizer::setupVisualization()
                 "Total biomass on RU (kg/ha??)"
     };
 
-    const auto &us = Globals->model()->understorey();
+    const auto &us = Globals->model()->understory();
     QStringList pft_filter = { "(none)"};
     for (auto *p : us->PFTs())
         pft_filter.push_back(p->name());
 
-    QString filter_str = QString("Understorey - Filter - %1").arg(pft_filter.join(","));
+    QString filter_str = QString("Understory - Filter - %1").arg(pft_filter.join(","));
     mVarList.push_back(filter_str);
     var_desc.push_back(" (filter) ");
 
@@ -237,7 +237,7 @@ void UnderstoreyVisualizer::setupVisualization()
 
 }
 
-Grid<double> *UnderstoreyVisualizer::paintGrid(QString what, QStringList &names, QStringList &colors)
+Grid<double> *UnderstoryVisualizer::paintGrid(QString what, QStringList &names, QStringList &colors)
 {
     Q_UNUSED(names)
     Q_UNUSED(colors)
@@ -255,14 +255,14 @@ Grid<double> *UnderstoreyVisualizer::paintGrid(QString what, QStringList &names,
     int index = mVarList.indexOf(what);
 
     // fill the grid with the expected variable
-    const auto &us = Globals->model()->understorey();
+    const auto &us = Globals->model()->understory();
     double value=0.;
     constexpr int min_idx_ru = 5;
     if (index < min_idx_ru) {
         // 2m grid
         for (double *p = mGrid.begin(); p!= mGrid.end(); ++p) {
             QPointF cpp = mGrid.cellCenterPoint(p);
-            auto *cell = us->understoreyCell(cpp);
+            auto *cell = us->understoryCell(cpp);
             if (!cell) { *p = 0.; continue; }
             auto cell_stats = cell->stats(mPFTFilter);
             switch (index) {
@@ -280,12 +280,12 @@ Grid<double> *UnderstoreyVisualizer::paintGrid(QString what, QStringList &names,
         return &mGrid;
     } else {
         // 100m grid
-        UnderstoreyRUStats ru_stat;
+        UnderstoryRUStats ru_stat;
         for (double *p = mRUGrid.begin(); p!= mRUGrid.end(); ++p) {
-            const auto us_ru = us->understoreyRU(mRUGrid.cellCenterPoint(p));
+            const auto us_ru = us->understoryRU(mRUGrid.cellCenterPoint(p));
             if (us_ru) {
                 auto &stats = us_ru->stats();
-                const UnderstoreyStatsCell *s = &stats.ru_stats;
+                const UnderstoryStatsCell *s = &stats.ru_stats;
                 if (mPFTFilter) {
                     ru_stat = us_ru->stats(mPFTFilter);
                     s = &ru_stat.ru_stats;
@@ -304,10 +304,10 @@ Grid<double> *UnderstoreyVisualizer::paintGrid(QString what, QStringList &names,
     }
 }
 
-void UnderstoreyVisualizer::filterChanged(int filter_index)
+void UnderstoryVisualizer::filterChanged(int filter_index)
 {
     mPFTFilter = nullptr;
-    const auto &us = Globals->model()->understorey();
+    const auto &us = Globals->model()->understory();
     int index = 1; // skip the first element (the "(none)" in the filter)
     for (auto *p : us->PFTs()) {
         if (index == filter_index) {
@@ -320,7 +320,7 @@ void UnderstoreyVisualizer::filterChanged(int filter_index)
 
 }
 
-Grid<double> *UnderstoreyVisualizer::grid(QString what)
+Grid<double> *UnderstoryVisualizer::grid(QString what)
 {
     Grid<double> *grid = new Grid<double>(GlobalSettings::instance()->model()->grid()->metricRect(),
                                           GlobalSettings::instance()->model()->grid()->cellsize());
@@ -335,29 +335,8 @@ Grid<double> *UnderstoreyVisualizer::grid(QString what)
     if (what == "MaxTBuffer") index=5;
 
     if (index < 0)
-        throw IException("Understorey: invalid grid name");
+        throw IException("Understory: invalid grid name");
 
-    /*
-    // fill the grid with the expected variable
 
-    foreach (ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
-        const Understorey *clim = ru->Understorey();
-        GridRunner<double> runner(grid, ru->boundingBox());
-        int cell_index = 0;
-        double value;
-        while (double *gridptr = runner.next()) {
-            switch (index) {
-            case 0: value = clim->constCell(cell_index).LAI(); break;
-            case 1: value = clim->constCell(cell_index).shadeToleranceMean(); break;
-            case 2: value = clim->constCell(cell_index).topographicPositionIndex(); break;
-            case 3: value = clim->constCell(cell_index).northness(); break;
-            case 4:  value = clim->constCell(cell_index).minimumUnderstoreyBuffering(ru, month); break;
-            case 5:  value = clim->constCell(cell_index).maximumUnderstoreyBuffering(ru, month); break;
-            }
-
-            *gridptr = value;
-            ++cell_index;
-        }
-    }*/
     return grid;
 }
