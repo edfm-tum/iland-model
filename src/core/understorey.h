@@ -93,6 +93,7 @@ private:
     static QStringList mVarList;
     Grid<double> mGrid; // detailed 2m grid
     Grid<double> mRUGrid; // RU level grid (100m)
+    UnderstoreyPFT *mPFTFilter { nullptr }; // PFT ptr for filtered display
     static UnderstoreyVisualizer *mVisualizer;
 
 

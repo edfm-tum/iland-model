@@ -10,6 +10,7 @@ using UStateId = short int;
 
 class ResourceUnit; // forward
 struct SaplingCell; // forward
+class UnderstoreyPFT; // forward
 struct UnderstoreyCellParams {
     ResourceUnit *RU; ///< pointer to resource unit
     SaplingCell *saplingCell; ///< corresponding sapling cell
@@ -114,7 +115,10 @@ public:
     std::array<UnderstoreyPlant, NSlots> &mod_plants() { return mPlants; }
 
 
+    /// summary stats for the cell
     UnderstoreyStatsCell stats() const;
+    /// get stats only for a given PFT
+    UnderstoreyStatsCell stats(const UnderstoreyPFT *pft) const;
 private:
     /// sum of occupation points on cell
     uint8_t mOccupied {0};
@@ -149,6 +153,7 @@ public:
     /// done by Understorey::cell()!
     const UnderstoreyCell *cell(QPointF metric_coord) const;
     const UnderstoreyRUStats &stats() const { return mStats; }
+    UnderstoreyRUStats stats(const UnderstoreyPFT *pft) const;
 private:
     UnderstoreyRUStats mStats;
     ResourceUnit *mRU {0};

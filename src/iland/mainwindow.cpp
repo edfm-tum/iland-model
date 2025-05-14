@@ -624,8 +624,19 @@ void MainWindow::updatePaintGridList()
             QComboBox *filter_box = new QComboBox(container);
             QStringList filter_elem = elem[2].split(",");
             filter_box->addItems(filter_elem);
-            connect(filter_box, SIGNAL(currentIndexChanged(int)),
-                    i->handler, SLOT(filterChanged(int)));
+
+            connect(filter_box, &QComboBox::currentIndexChanged, i->handler,
+                    [handler=i->handler, wnd = this, tree = ui->otherGridTree](int new_index) {
+                // call the slot
+                QMetaObject::invokeMethod(handler,
+                                          "filterChanged", // Slot name as a string
+                                          Qt::AutoConnection,
+                                          Q_ARG(int, new_index));
+
+                // update the view, simulate a click
+                wnd->on_otherGridTree_currentItemChanged(tree->currentItem(), nullptr);
+            });
+            // on_otherGridTree_currentItemChanged
             // create a dummy and place combo box as widget
             layout->addWidget(label);
             layout->addWidget(filter_box);

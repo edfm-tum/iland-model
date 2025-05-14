@@ -53,10 +53,15 @@ public:
     QString dump();
 
 private:
+    /// Function to translate an environmental response to pathway probabilities
+    void responseToTransitionProb(const double response, double &rPrevious, double &rNext, double &rMort) const;
     QString mName;
     UStateId mFirstState { std::numeric_limits<UStateId>::max()}; ///< id of the initial state of the PFT (for establishment)
     int mIndex {-1}; ///< the index of the PFT in the Understorey's PFT container
     double mBaseEstablishmentProb {0.}; ///< base establishment probability
+
+    double mAgeMax; ///< maximum age (yrs)
+    double mOptimalGrowth; ///< growth rate under optimal env. conditions
 
     // response functions for the PFT
     Expression mExprLight; ///< light response (param: corrected lif_value on the ground)

@@ -38,7 +38,7 @@ QString UnderstoreySetting::error(QString msg)
 {
         return QString("Setup PFTs: Error in '%1' (line %2): %3")
             .arg(mFile->value(mRowNumber, "pftId").toString())
-        .arg(mRowNumber)
+        .arg(mRowNumber+1) // count also header
         .arg(msg);
 }
 
@@ -58,14 +58,21 @@ bool UnderstoreySetting::hasColumn(const QString &column_name)
 void UnderstoreyPFT::setup(UnderstoreySetting s, int index)
 {
     mIndex = index;
-    mName = s.value("pftId").toString();
-    mBaseEstablishmentProb = s.value("estBaseProb").toDouble();
 
     // environmental responses
     QString resp;
     QString expr;
     bool ok;
     try {
+        // load properties
+        mName = s.value("pftId").toString();
+        mBaseEstablishmentProb = s.value("estBaseProb").toDouble();
+        mAgeMax = s.value("ageMax").toDouble(&ok);
+        if (!ok || mAgeMax<=0) throw IException("invalid value for 'ageMax'!");
+        mOptimalGrowth = s.value("optimalGrowth").toDouble(&ok);
+        if (!ok || mOptimalGrowth<=0) throw IException("invalid value for 'optimalGrowth'!");
+
+        // response functions
         resp = "lightResponse";
         expr = s.value(resp).toString();
         if (expr.isEmpty()) {
@@ -131,10 +138,10 @@ UStateId UnderstoreyPFT::stateTransition(const UnderstoreyPlant &plant,
     // calculate total response value as a multiplication of individual factors
     double total_response = light_response * nitrogen_response  * water_response * temp_response;
 
-    // probability of going to next/previous state (fake!)
-    double p_previous = total_response < 0.3 ? 0.1 : 0.05;
-    double p_next = total_response > 0.6 ? 0.4 : 0.25;
-    double p_mort = p_previous; // prob of mortality of PFT
+    // translate environmental response to
+    // transition probabilites
+    double p_previous, p_next, p_mort;
+    responseToTransitionProb(total_response, p_previous, p_next, p_mort);
 
     // draw a random number and determine the next state probabilistically
     const auto *state = Understorey::instance().state(plant.stateId());
@@ -199,4 +206,12 @@ QString UnderstoreyPFT::dump()
     str << "Response Temperature:" << mExprTemp.expression()<< Qt::endl;
 
     return result;
+}
+
+void UnderstoreyPFT::responseToTransitionProb(const double response, double &rPrevious, double &rNext, double &rMort) const
+{
+    // linear functions approach (KB)
+    rNext = 1. / mOptimalGrowth * response;
+    rMort = 1. / mAgeMax * (1. - 0.5 * response);
+    rPrevious = 0.05;
 }

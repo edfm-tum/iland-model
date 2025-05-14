@@ -775,9 +775,9 @@ void Model::beforeRun()
 
     // understorey
     if (Model::settings().understoreyEnabled) {
-        UnderstoreyVisualizer::setupVisualization();
         DebugTimer t("Understory setup");
         mUnderstorey->setup();
+        UnderstoreyVisualizer::setupVisualization();
 
     }
 

@@ -99,6 +99,30 @@ UnderstoreyStatsCell UnderstoreyCell::stats() const
     return stats;
 }
 
+UnderstoreyStatsCell UnderstoreyCell::stats(const UnderstoreyPFT *pft) const
+{
+    if (!pft)
+        return stats();
+
+    const auto &states = Understorey::instance().states();
+    UnderstoreyStatsCell stats;
+    for (const auto& plant : mPlants) {
+        if (plant.isLiving()) {
+            const auto state = states[ plant.stateId() ];
+            if (state->pft() == pft) {
+                stats.LAI = state->LAI();
+                stats.biomass = state->biomass();
+                stats.height = state->height();
+                stats.slotsOccupied = state->NSlots();
+                stats.NStates = 1;
+                return stats;
+            }
+
+        }
+    }
+    return stats;
+}
+
 
 // ****************** UnderstoreyRU **************************
 
@@ -250,5 +274,19 @@ const UnderstoreyCell *UnderstoreyRU::cell(QPointF metric_coord) const
     int index =  p.y() * cPxPerRU +  p.x() ;
     Q_ASSERT(index>=0 && index<2500);
     return &mCells[index];
+}
+
+UnderstoreyRUStats UnderstoreyRU::stats(const UnderstoreyPFT *pft) const
+{
+    UnderstoreyRUStats stats;
+    int n_valid = 0;
+    for (auto &cell : mCells) {
+        if (cell.isValid()) {
+            stats.ru_stats += cell.stats(pft);
+            ++n_valid;
+        }
+    }
+    stats.ru_stats.calcPerRU(n_valid);
+    return stats;
 }
 

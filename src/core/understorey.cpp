@@ -205,7 +205,6 @@ void UnderstoreyVisualizer::setupVisualization()
                 "Understorey - RU SlotsOccupied", // 1
                 "Understorey - RU LAI", // 2
                 "Understorey - RU Biomass", // 3
-                 "Understorey - Filter - (none),fish,flesh,trombone" // 4 filter....
     };
     QStringList var_desc = {
                 "state",
@@ -220,9 +219,19 @@ void UnderstoreyVisualizer::setupVisualization()
                 "Total biomass on RU (kg/ha??)"
     };
 
+    const auto &us = Globals->model()->understorey();
+    QStringList pft_filter = { "(none)"};
+    for (auto *p : us->PFTs())
+        pft_filter.push_back(p->name());
+
+    QString filter_str = QString("Understorey - Filter - %1").arg(pft_filter.join(","));
+    mVarList.push_back(filter_str);
+    var_desc.push_back(" (filter) ");
+
     QVector<GridViewType> paint_types = {GridViewTurbo,
                                          GridViewTurbo,
-                                         GridViewTurbo,GridViewTurbo,GridViewTurbo};
+                                         GridViewTurbo,GridViewTurbo,GridViewTurbo,
+                                         GridViewTurbo}; // last one for filter
 
     GlobalSettings::instance()->controller()->addPaintLayers(mVisualizer, mVarList, paint_types, var_desc);
 
@@ -240,7 +249,7 @@ Grid<double> *UnderstoreyVisualizer::paintGrid(QString what, QStringList &names,
         mGrid.wipe(0.);
 
         mRUGrid.setup(GlobalSettings::instance()->model()->RUgrid().metricRect(),
-                      GlobalSettings::instance()->model()->grid()->cellsize());
+                      GlobalSettings::instance()->model()->RUgrid().cellsize());
         mRUGrid.wipe(0.);
     }
     int index = mVarList.indexOf(what);
@@ -255,7 +264,7 @@ Grid<double> *UnderstoreyVisualizer::paintGrid(QString what, QStringList &names,
             QPointF cpp = mGrid.cellCenterPoint(p);
             auto *cell = us->understoreyCell(cpp);
             if (!cell) { *p = 0.; continue; }
-            auto cell_stats = cell->stats();
+            auto cell_stats = cell->stats(mPFTFilter);
             switch (index) {
             case 0: value = cell->plants()[0].stateId() == std::numeric_limits<UStateId>::max() ? -1 : cell->plants()[0].stateId(); break;
             case 1: value = cell_stats.slotsOccupied; break;
@@ -271,15 +280,23 @@ Grid<double> *UnderstoreyVisualizer::paintGrid(QString what, QStringList &names,
         return &mGrid;
     } else {
         // 100m grid
+        UnderstoreyRUStats ru_stat;
         for (double *p = mRUGrid.begin(); p!= mRUGrid.end(); ++p) {
             const auto us_ru = us->understoreyRU(mRUGrid.cellCenterPoint(p));
             if (us_ru) {
                 auto &stats = us_ru->stats();
+                const UnderstoreyStatsCell *s = &stats.ru_stats;
+                if (mPFTFilter) {
+                    ru_stat = us_ru->stats(mPFTFilter);
+                    s = &ru_stat.ru_stats;
+
+                }
+
                 switch (index - min_idx_ru) {
-                case 0: *p = stats.ru_stats.NStates; break;
-                case 1: *p = stats.ru_stats.slotsOccupied; break;
-                case 2: *p = stats.ru_stats.LAI; break;
-                case 3: *p = stats.ru_stats.biomass; break;
+                case 0: *p = s->NStates; break;
+                case 1: *p = s->slotsOccupied; break;
+                case 2: *p = s->LAI; break;
+                case 3: *p = s->biomass; break;
                 }
             }
         }
@@ -289,7 +306,18 @@ Grid<double> *UnderstoreyVisualizer::paintGrid(QString what, QStringList &names,
 
 void UnderstoreyVisualizer::filterChanged(int filter_index)
 {
-    qDebug() << "filter changed" << filter_index;
+    mPFTFilter = nullptr;
+    const auto &us = Globals->model()->understorey();
+    int index = 1; // skip the first element (the "(none)" in the filter)
+    for (auto *p : us->PFTs()) {
+        if (index == filter_index) {
+            mPFTFilter = p;
+        }
+        ++index;
+    }
+    qDebug() << "filter changed" << filter_index << "pft:" << (mPFTFilter ? mPFTFilter->name() : "null");
+
+
 }
 
 Grid<double> *UnderstoreyVisualizer::grid(QString what)
