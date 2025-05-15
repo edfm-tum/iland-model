@@ -684,10 +684,11 @@ void Tree::grow()
     altMortality(d);
 
 #else
+    mStressIndex = static_cast<float>(d.stress_index);
+
     if (Model::settings().mortalityEnabled)
         mortality(d);
 
-    mStressIndex = static_cast<float>(d.stress_index);
 #endif
 
     if (!isDead()) {
