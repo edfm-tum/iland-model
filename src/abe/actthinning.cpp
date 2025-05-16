@@ -394,8 +394,8 @@ bool ActThinning::evaluateCustom(FMStand *stand, SCustomThinning &custom)
 
         } else {
             // tree_idx = -1: no tree found in list, -2: tree found but is not selected
-            no_tree_found += tree_idx == -1 ? 100 : 1; // empty list counts much more
-            if (no_tree_found > 1000)
+            no_tree_found += tree_idx == -1 ? 20 : 1; // empty list counts much more
+            if (no_tree_found > 2000)
                 finished=true;
         }
         // stop harvesting, when the minimum remaining number of stems is reached
