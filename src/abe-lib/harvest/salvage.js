@@ -59,7 +59,7 @@
 				   stand.trees.harvest();
 				   stand.stp.signal(opts.sendSignal);
 				   lib.log(`clearcut after disturbance. Harvested ${n_trees} trees. Sent signal ${opts.sendSignal}`);
-				   lib.activityLog('clearcut and signal after disturbance'); 
+				   //lib.activityLog('clearcut and signal after disturbance'); 
 			   };
 		   } else {
 			   // only clearcut
@@ -68,7 +68,7 @@
 				   const n_trees = stand.trees.loadAll();
 				   stand.trees.harvest();
 				   lib.log(`clearcut after disturbance. Harvested ${n_trees} trees.`);
-				   lib.activityLog('clearcut after disturbance'); 
+				   //lib.activityLog('clearcut after disturbance'); 
 			   };			
 		   }
 	   } else if (opts.sendSignal !== undefined) {
@@ -78,7 +78,7 @@
 			   // send a specific signal instead of specifying code to reset the stand
 			   lib.log(`Sent signal ${opts.sendSignal} after disturbance.`);
 			   stand.stp.signal(opts.sendSignal);
-			   lib.activityLog('signal after disturbance'); 
+			   //lib.activityLog('signal after disturbance'); 
 			   
 		   }
 	   }

@@ -366,6 +366,7 @@ lib.formattedSTP = function(StandId) {
  *
  * @method selectOptimalPatches
  * @param {object} options Options for configuring the patch selection.
+ *   @param {string} options.id A unique identifier for the activity (default: 'selectOptimalPatches').
  *   @param {number} options.N Number of patches to select per hectare (default: 4).
  *   @param {number} options.patchsize Size of the patches (in cells, assuming a square shape, e.g., 2 for 2x2 cells, which is 20x20m or 400m2) (default: 2).
  *   @param {number} options.spacing Space (in 10m cells) between candidate patches (default: 0).
@@ -398,6 +399,7 @@ lib.formattedSTP = function(StandId) {
 lib.selectOptimalPatches = function(options) {
     // 1. Default Options
     const defaultOptions = {
+        id: 'selectOptimalPatches',
         N: 4, // select N patches per ha
         patchsize: 2, // 2x2 = 20x20 = 400m2
         spacing: 0, // space (in 10m cells) between candidate patches
@@ -472,6 +474,7 @@ lib.selectOptimalPatches = function(options) {
 
 
     return {
+        id: opts.id,
         type: 'general', 
         schedule: opts.schedule,
         action: function() {
@@ -666,7 +669,7 @@ lib.buildRareSpeciesFilter = function(speciesList, threshold) {
         speciesIds = Object.keys(speciesList); // Object: extract keys
     } else {
         // Handle invalid input (optional, but good practice)
-        throw new Error("Invalid speciesList format!");
+        throw new Error(`Invalid speciesList format! ${speciesList}`);
     }
 
 

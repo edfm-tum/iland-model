@@ -67,7 +67,7 @@ lib.harvest.HarvestAllBigTrees = function(options) {
 		action: function() {
 			stand.trees.load(opts.preferenceFunction);
 			stand.trees.harvest();
-			lib.activityLog('HarvestAllBigTrees'); 
+			//lib.activityLog('HarvestAllBigTrees'); 
 		},
 		onExit: function() {
             if (opts.sendSignal !== undefined) {
@@ -129,7 +129,7 @@ lib.harvest.clearcut = function(options) {
 			stand.trees.harvest();
 			stand.trees.simulate = was_simulate;
 
-			lib.activityLog(`Clearcut executed`);
+			//lib.activityLog(`Clearcut executed`);
 		},
 		onExit: function() {
 			if (opts.sendSignal !== undefined) {
@@ -157,7 +157,7 @@ lib.harvest.clearcut = function(options) {
  *    @param {string} options.preferenceFunction ranking string for selecting seed trees, e.g. 'height' (default: 'height').
  *    @param {number} options.interval interval between repeated harvests (default: 5).
  *    @param {number} options.times number of repeated harvests (default: 3).
- *    @param {string|undefined} options.internalSignal internal signal to start each each shelterwood activity (default: 'Shelterwood_remove').
+ *    @param {string|undefined} options.internalSignal internal signal to start each shelterwood activity (default: 'Shelterwood_remove').
  *    @param {string|undefined} options.sendSignal signal send out after last shelterwood activity (default: undefined).
  *    @param {string|undefined} options.constraint constraint (default: undefined).
  * @return {object} program - An object describing the harvest program
@@ -247,7 +247,7 @@ lib.harvest.shelterwood = function(options) {
             lib.dbg("Year: " + Globals.year + ", shelterwood harvest");
 			lib.dbg(`shelterwood harvest: No. ${stand.obj.lib.shelterwoodHarvestCounter}, removed ${harvested} trees.`);
 
-			lib.activityLog(`shelterwood harvest No. ${stand.obj.lib.shelterwoodHarvestCounter}`);
+			//lib.activityLog(`shelterwood harvest No. ${stand.obj.lib.shelterwoodHarvestCounter}`);
         },
 
         description: `Shelterwood harvest (during ${opts.times * opts.interval} years), that removes all trees in ${opts.times} harvests.`
@@ -273,7 +273,7 @@ lib.harvest.shelterwood = function(options) {
 			stand.trees.simulate = was_simulate;
 			
 			lib.dbg(`shelterwood final harvest: ${harvested} trees removed.`);
-    		lib.activityLog('Shelter wood final harvest'); 
+    		//lib.activityLog('Shelter wood final harvest'); 
 		},
 		onExit: function() {
             if (opts.sendSignal !== undefined) {
@@ -368,7 +368,7 @@ lib.harvest.stripCut = function(options) {
                     stand.trees.filterRandomExclude(treesToHarvest);
                     //stand.trees.filter('incsum(1) <= ' + treesToHarvest);
                     stand.trees.harvest();
-                    lib.activityLog(`Stripcut executed`);
+                    //lib.activityLog(`Stripcut executed`);
                     harvestTookPlace = 1;
 
                 } else {
@@ -441,7 +441,7 @@ lib.harvest.CoppiceWithStandard = function(options) {
 			stand.trees.harvest();
 			stand.trees.simulate = was_simulate;
 			
-			lib.activityLog(`CoppiceWithStandard executed`);
+			//lib.activityLog(`CoppiceWithStandard executed`);
 		},
 		onExit: function() {
             if (opts.sendSignal !== undefined) {
@@ -461,6 +461,7 @@ lib.harvest.CoppiceWithStandard = function(options) {
  * Target diameter harvesting system
  * @method targetDBH
  * @param {object} options
+ *    @param {object|undefined} options.schedule schedule for the harvest (default: undefined).
  *    @param {number} options.targetDBH target DBH for harvesting (default: 50).
  *    @param {number} options.times time interval between harvests (default: 5).
  *    @param {object} options.dbhList object with DBH thresholds per species (default: {}).
@@ -478,6 +479,7 @@ lib.harvest.targetDBH = function(options) {
 	// 1. Default Options
     const defaultOptions = { 
 		id: 'targetDBH',
+		schedule: undefined,
 		targetDBH: 50, 
 		times: 5, 
 		dbhList: {"fasy":65, "frex":60, "piab":45, "quro":75, "pisy":45, "lade":65, "qupe":75, "psme":65, "abal":45, "acps":60, "pini":45}, //source: 'Waldbau auf Ã¶kologischer Grundlage', p.452
@@ -506,7 +508,7 @@ lib.harvest.targetDBH = function(options) {
 	var act = {
 		id: opts.id,
 		type: 'general', 
-		schedule: { repeat: true, repeatInterval: opts.times},
+		schedule: opts.schedule,
 		action: function() {
 			lib.dbg(`Stand: ${stand.id}, Year: ${Globals.year}, targetDBH harvest`);
 			for (var species in opts.dbhList) {
@@ -522,7 +524,7 @@ lib.harvest.targetDBH = function(options) {
 					stand.trees.harvest();
 				};
 			};
-			lib.activityLog(`Harvest targetDBH executed`);
+			//lib.activityLog(`Harvest targetDBH executed`);
 		},
 		onExit: function() {
             if (opts.sendSignal !== undefined) {
@@ -605,12 +607,12 @@ lib.harvest.targetDBHforNo3 = function(options) {
 				lib.dbg("Species: " + species + ", target DBH: " + dbh + ", Trees: " + stand.trees.count)
 				stand.obj.act["NHarvests"] = stand.obj.act["NHarvests"] + stand.trees.count;
 				stand.trees.harvest();
-				lib.activityLog(`Harvest targetDBHforNo3 executed`);
+				//lib.activityLog(`Harvest targetDBHforNo3 executed`);
 			};
 			if (stand.obj.act["NHarvests"] > 20) {
 				fmengine.runPlanting(stand.id, {species: 'psme', height: 0.4, fraction:1, pattern:'rect2', spacing:10});
 				Globals.alert("Planting!");	
-				lib.activityLog(`Planting of targetDBHforNo3 executed`);			
+				//lib.activityLog(`Planting of targetDBHforNo3 executed`);			
 			};
 			stand.obj.act["NHarvests"] = 0;
 		},

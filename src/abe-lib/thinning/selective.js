@@ -85,13 +85,10 @@ lib.thinning.selectiveThinning = function(options) {
     
         onEnter: function() {
             stand.obj.lib.selective_thinning_counter = 0;
-            const marked = stand.trees.load('markcompetitor=true');
-            stand.setFlag('compN', marked);
-            lib.dbg(opts.id + ` - start removal phase. ${marked} trees marked for removal.`);
         },
 
         onExit: function() {
-            lib.activityLog(opts.id + ' - thinning_selection done'); 
+            //lib.activityLog(opts.id + ' - thinning_selection done'); 
         },
         description: `Part of selective thinning - mark ${opts.nTrees} crop trees and ${opts.nCompetitors} competitors.`
     };
@@ -109,13 +106,19 @@ lib.thinning.selectiveThinning = function(options) {
         type: 'general',
         schedule: { signal: opts.sendSignal },
         action: function() {
+            if (stand.obj.lib.selective_thinning_counter == 0) {
+                // first year. Save # of marked competitors
+                const marked = stand.trees.load('markcompetitor=true');
+                stand.setFlag('compN', marked);
+                lib.dbg(`selectiveThinning: start removal phase. ${marked} trees marked for removal.`);
+            }
             stand.obj.lib.selective_thinning_counter = stand.obj.lib.selective_thinning_counter + 1;
             var n = stand.flag('compN') / opts.times;
 
             stand.trees.load('markcompetitor=true');
             stand.trees.filterRandomExclude(n);
             const harvested = stand.trees.harvest();
-            lib.activityLog('thinning remove competitors'); 
+            //lib.activityLog('thinning remove competitors'); 
             lib.dbg(`selectiveThinning: repeat ${stand.obj.lib.selective_thinning_counter}, removed ${harvested} trees.`);
         },
         description: `Part of selective thinning - remove selected competitors in ${opts.times} activies every ${opts.interval} years.`
@@ -214,7 +217,7 @@ lib.thinning.selectiveThinningZ1Z2 = function(options) {
             lib.dbg("Initial selection in stand " + stand.id + " executed.");
             stand.stp.signal(opts.sendSignalPeriode);            
             stand.stp.signal(opts.sendSignalThinning);
-            lib.activityLog('Initial crop tree selection'); 
+            //lib.activityLog('Initial crop tree selection'); 
         },
         description: `${opts.id} - initial selection of crop trees and competitors.`
     };
@@ -255,7 +258,7 @@ lib.thinning.selectiveThinningZ1Z2 = function(options) {
         onExecuted: function() {
             lib.dbg("Select trees in stand " + stand.id + " executed.");
 			stand.stp.signal('selective_start_thinning');
-            lib.activityLog('thinning_selection'); 
+            //lib.activityLog('thinning_selection'); 
         },
         description: `Selective thinning. Repeated ${opts.times} times every ${opts.interval} years.`
     };
@@ -294,7 +297,7 @@ lib.thinning.selectiveThinningZ1Z2 = function(options) {
             };
       
             const harvested = stand.trees.harvest();
-            lib.activityLog('thinning remove competitors'); // details? target species?
+            //lib.activityLog('thinning remove competitors'); // details? target species?
             // stand.trees.removeMarkedTrees(); // ? necessary ??
             lib.dbg(`selectiveThinning: repeat ${stand.obj.lib.selective_thinning_counter}, removed ${harvested} trees.`);
         },
@@ -394,7 +397,7 @@ lib.thinning.selectiveThinningBackup = function(options) {
 
         onExit: function() {
             stand.stp.signal('selective_start_repeat');
-            lib.activityLog('thinning_selection'); 
+            //lib.activityLog('thinning_selection'); 
         },
         description: `Selective thinning. Repeated ${opts.times} times every ${opts.interval} years.`
     };
@@ -427,7 +430,7 @@ lib.thinning.selectiveThinningBackup = function(options) {
             stand.trees.load('markcompetitor=true');
             stand.trees.filterRandomExclude(n);
             const harvested = stand.trees.harvest();
-            lib.activityLog('thinning remove competitors'); // details? target species?
+            //lib.activityLog('thinning remove competitors'); // details? target species?
             //stand.trees.removeMarkedTrees(); // ? necessary ??
             lib.dbg(`selectiveThinning: repeat ${stand.obj.lib.selective_thinning_counter}, removed ${harvested} trees.`);
         },
@@ -570,7 +573,7 @@ lib.thinning.selectiveThinningZ1Z2Backup = function(options) {
             lib.dbg("Initial selection in stand " + stand.id + " executed.");
             stand.stp.signal('start_selection_repeater');            
             stand.stp.signal('selective_start_thinning');
-            lib.activityLog('Initial crop tree selection'); 
+            //lib.activityLog('Initial crop tree selection'); 
         },
         description: `Selective thinning. Repeated ${opts.times} times every ${opts.interval} years.`
     };
@@ -611,7 +614,7 @@ lib.thinning.selectiveThinningZ1Z2Backup = function(options) {
         onExecuted: function() {
             lib.dbg("Select trees in stand " + stand.id + " executed.");
 			stand.stp.signal('selective_start_thinning');
-            lib.activityLog('thinning_selection'); 
+            //lib.activityLog('thinning_selection'); 
         },
         description: `Selective thinning. Repeated ${opts.times} times every ${opts.interval} years.`
     };
@@ -650,7 +653,7 @@ lib.thinning.selectiveThinningZ1Z2Backup = function(options) {
             };
       
             const harvested = stand.trees.harvest();
-            lib.activityLog('thinning remove competitors'); // details? target species?
+            //lib.activityLog('thinning remove competitors'); // details? target species?
             // stand.trees.removeMarkedTrees(); // ? necessary ??
             lib.dbg(`selectiveThinning: repeat ${stand.obj.lib.selective_thinning_counter}, removed ${harvested} trees.`);
         },

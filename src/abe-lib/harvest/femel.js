@@ -5,6 +5,7 @@
  *    @param {number} options.steps number of consecutive enlargement steps after start (default: 2).
  *    @param {number} options.interval number of years between each step (default: 10).
  *    @param {number} options.growBy number of "rings" of 10m cells to grow each step (default: 1).
+ *    @param {string|undefined} options.harvestAll indicate if all trees outside the femel should be removed after final harvest (default: true).
  *    @param {string|undefined} options.internalSignal internal signal to start each femel harvest step (default: 'harvest_femel').
  *    @param {string|undefined} options.sendSignal signal send out after final femel harvest activity (default: undefined).
  *    @param {object|undefined} options.schedule schedule object (default: undefined).
@@ -28,6 +29,7 @@ lib.harvest.femel = function(options) {
         steps: 2, // number of consecutive enlargement steps after start
         interval: 10, // years between each step
         growBy: 1, // number of "rings" of 10m cells to grow each step
+        harvestAll: false, // remove all trees after final harvest
         internalSignal: 'harvest_femel', 
         sendSignal: undefined,
         schedule: undefined,
@@ -68,7 +70,8 @@ lib.harvest.femel = function(options) {
         schedule: opts.schedule,
         signal: opts.internalSignal,
         interval: opts.interval,
-        count: opts.steps
+        count: opts.steps - 1, // one harvest already done
+        block: false
     });
 
     // activity that increases the extent of the femel
@@ -80,6 +83,7 @@ lib.harvest.femel = function(options) {
             lib.dbg(`femel activity - enlarge femel`);
 
             // enlarge the patches
+            // maybe enlarging by 2 or more rings can be done by looping this action
             stand.patches.createExtendedPatch(stand.obj.lib.FemelID, // which patch id
                 stand.obj.lib.FemelID+1, // id for new patch
                 stand.obj.lib.femel.opts.growBy // number of "rings" (not used)
@@ -100,14 +104,14 @@ lib.harvest.femel = function(options) {
 			var harvested = stand.trees.harvest();
 
 			lib.dbg(`femel activity - harvest: ${harvested} trees removed.`);
-    		lib.activityLog('femel harvest');             
+    		//lib.activityLog('femel harvest');             
         },
     };
 
     program['Femel_final'] = { 
         id: opts.id + '_final',
 		type: "scheduled", 
-		schedule: { signal: opts.internalSignal, wait: (opts.interval * opts.steps) },
+		schedule: { signal: opts.internalSignal, wait: opts.interval * (opts.steps-1) },
 		onCreate: function() { 
             this.finalHarvest = true; 
         }, 
@@ -115,11 +119,15 @@ lib.harvest.femel = function(options) {
 			return true
 		},
 		onExecute: function() {
-			//stand.trees.load('patch=0'); // + (stand.obj.lib.FemelID)); 
-			//var harvested = stand.trees.harvest();
+			if (opts.harvestAll === true) {
+                stand.trees.load('patch=0'); // + (stand.obj.lib.FemelID)); 
+			    var harvested = stand.trees.harvest();
+                stand.trees.removeMarkedTrees();
+            };
+			
 			
 			//lib.dbg(`femel activity - final harvest: ${harvested} trees removed.`);
-    		lib.activityLog('femel activity - femel done'); 
+    		//lib.activityLog('femel activity - femel done'); 
 
             // remove patches from stand
             stand.patches.clear();

@@ -159,6 +159,7 @@ lib.planting = function(options) {
  *     @param {Object|Function} options.speciesSelectivity Defines the target species and their relative weights.
  *         This can be an object with species as keys and weights as values, or a function that returns such an object.
  *     @param {Object} options.speciesDefaults Default settings for species (default: lib.planting.speciesDefaults).
+ *     @param {string} options.patches should planting should happen only on some selected patches (default: undefined).
  *     @param {string|undefined} options.sendSignal signal send out after final femel harvest activity (default: undefined).
  *     @param {string|undefined} options.constraint constraint (default: undefined).
  */
@@ -169,6 +170,7 @@ lib.planting.dynamic = function(options) {
         schedule: undefined,
         speciesSelectivity: undefined, ///< species to plant        SHOULD WE NAME IT SPECIES LIKE ABOVE?
         speciesDefaults: lib.planting.speciesDefaults,
+        patches: undefined,
         sendSignal: undefined,
         constraint: undefined
     };
@@ -209,6 +211,10 @@ lib.planting.dynamic = function(options) {
                 }
             }
 
+            if (opts.patches !== undefined) {
+                evaluatedItem['patches'] = opts.patches;
+            };
+
             items.push( evaluatedItem  );
         }
         return items;
@@ -227,7 +233,7 @@ lib.planting.dynamic = function(options) {
             items.forEach(item => {
                 fmengine.runPlanting(stand.id, item);
             });
-            lib.activityLog('planting');
+            //lib.activityLog('planting');
         },
         buildItems: function() {
             // this is a test function to view resulting planting items
@@ -235,6 +241,7 @@ lib.planting.dynamic = function(options) {
             return items;
         },
         onExit: function() {
+            lib.dbg(`planting activity done.`)
             if (opts.sendSignal !== undefined) {
                 lib.dbg(`Signal: ${opts.sendSignal} emitted.`);
 			  	stand.stp.signal(opts.sendSignal);
@@ -271,6 +278,9 @@ lib.planting.speciesDefaults = {
     'psme': { species: 'psme', h: 0.3, age: 1, fraction: function(proportion) {return proportion * 1 }},
     'abal': { species: 'abal', h: 0.3, age: 1, fraction: function(proportion) {return proportion * 0.8 }},
     'fasy': { species: 'fasy', h: 0.3, age: 1, fraction: function(proportion) {return proportion * 0.8 }},
+    'cabe': { species: 'cabe', h: 0.3, age: 1, fraction: function(proportion) {return proportion * 0.8 }},
+    'tico': { species: 'tico', h: 0.3, age: 1, fraction: function(proportion) {return proportion * 0.8 }},
+    'bepe': { species: 'bepe', h: 0.3, age: 1, fraction: function(proportion) {return proportion * 0.8 }},
     // for larix, ... use groups
     'lade': { species: 'lade', h: 0.3, age: 1, pattern: 'circle10', random: true,
         n: function(proportion) {return proportion*10000/272; /* 272: area circle10 */} },
@@ -278,8 +288,17 @@ lib.planting.speciesDefaults = {
         n: function(proportion) {return proportion*10000/272; /* 272: area circle10 */} },
     'qupe': { species: 'qupe', h: 0.3, age: 1, pattern: 'circle10', random: true,
         n: function(proportion) {return proportion*10000/272; /* 272: area circle10 */} },
-    'cabe': { species: 'cabe', h: 0.3, age: 1, fraction: function(proportion) {return proportion * 0.8 }},
     'acps': { species: 'acps', h: 0.3, age: 1, pattern: 'circle10', random: true,
+        n: function(proportion) {return proportion*10000/272; /* 272: area circle10 */} },
+    'soau': { species: 'soau', h: 0.3, age: 1, pattern: 'circle10', random: true,
+        n: function(proportion) {return proportion*10000/272; /* 272: area circle10 */} },
+    'saca': { species: 'saca', h: 0.3, age: 1, pattern: 'circle10', random: true,
+        n: function(proportion) {return proportion*10000/272; /* 272: area circle10 */} },
+    'rops': { species: 'rops', h: 0.3, age: 1, pattern: 'circle10', random: true,
+        n: function(proportion) {return proportion*10000/272; /* 272: area circle10 */} },
+    'frex': { species: 'frex', h: 0.3, age: 1, pattern: 'circle10', random: true,
+        n: function(proportion) {return proportion*10000/272; /* 272: area circle10 */} },
+    'casa': { species: 'casa', h: 0.3, age: 1, pattern: 'circle10', random: true,
         n: function(proportion) {return proportion*10000/272; /* 272: area circle10 */} },
     'pisy': { species: 'pisy', h: 0.3, age: 1, pattern: 'circle10', random: true,
         n: function(proportion) {return proportion*10000/272; /* 272: area circle10 */} },
