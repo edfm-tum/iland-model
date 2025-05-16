@@ -78,11 +78,11 @@ lib.path = get_js_file_path(); //
 
 console.log("Loading forest management library from '" + lib.path.dir + "' ... ");
 
-Globals.include(lib.path.dir + '/thinning/thinning.js');
-Globals.include(lib.path.dir + '/planting/planting.js');
-Globals.include(lib.path.dir + '/harvest/harvest.js');
+Globals.include('/' + lib.path.dir + '/thinning/thinning.js'); //'/' + 
+Globals.include('/' + lib.path.dir + '/planting/planting.js');
+Globals.include('/' + lib.path.dir + '/harvest/harvest.js');
 
-Globals.include(lib.path.dir + '/lib_helper.js');
+Globals.include('/' + lib.path.dir + '/lib_helper.js');
 
 console.log('Forest management library loaded!');
 
