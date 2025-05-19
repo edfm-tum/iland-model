@@ -2,6 +2,7 @@
 #include "understory.h"
 #include "csvfile.h"
 #include "exception.h"
+#include "resourceunit.h"
 
 
 void UnderstoryState::setup(UnderstorySetting s, int index)
@@ -127,12 +128,12 @@ void UnderstoryPFT::setup(UnderstorySetting s, int index)
 }
 
 UStateId UnderstoryPFT::stateTransition(const UnderstoryPlant &plant,
-                                         UnderstoryCellParams &ucp,
-                                         UnderstoryRUStats &rustats) const
+                                        UnderstoryCellParams &ucp,
+                                        UnderstoryRU &us_ru) const
 {
     double light_response = mExprLight.calculate(ucp.lif_corr);
     double nitrogen_response = mExprNutrients.calculate(ucp.availableNitrogen);
-    double water_response = mExprWater.calculate(ucp.SWCgrowingSeason);
+    double water_response = mExprWater.calculate(ucp.psiGrowingSeason);
     double temp_response = mExprTemp.calculate(ucp.meanTemperature);
 
     // calculate total response value as a multiplication of individual factors
@@ -146,23 +147,34 @@ UStateId UnderstoryPFT::stateTransition(const UnderstoryPlant &plant,
     // draw a random number and determine the next state probabilistically
     const auto *state = Understory::instance().state(plant.stateId());
     double r = drandom();
+    UStateId next_state = plant.stateId(); // default: no change
     if (r < p_mort) {
         // mortality
-        rustats.died++;
-        return std::numeric_limits<UStateId>::max();
-    }
-    if (r < p_previous + p_mort && !state->isFirstState()) {
+        us_ru.statsPlantDied(&plant);
+        next_state = std::numeric_limits<UStateId>::max();
+    } else if (r < p_previous + p_mort && !state->isFirstState()) {
         // decline to previous state
-        rustats.transitionDown++;
-        return plant.stateId() - 1;
-    }
-    if (r > 1. - p_next && !state->isFinalState()) {
+        us_ru.statsPlantTransition(&plant, false);
+        next_state = plant.stateId() - 1;
+    } else if (r > 1. - p_next && !state->isFinalState()) {
         // growth to next state
-        rustats.transitionUp++;
-        return plant.stateId() + 1;
+        us_ru.statsPlantTransition(&plant, true);
+        next_state =  plant.stateId() + 1;
     }
-    // no change
-    return plant.stateId();
+
+    if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dUnderstory)) {
+        DebugList &out = GlobalSettings::instance()->debugList(us_ru.ru()->index(), GlobalSettings::dUnderstory );
+        out << us_ru.ru()->index() << 0 <<
+            state->pft()->name() << state->id() << light_response << nitrogen_response << water_response << temp_response << total_response <<
+            p_mort << p_previous << p_next << next_state;
+        //"ruindex", "cellindex",
+        //    "pft", "stateId", "lightResponse", "nitrogenResponse", "waterResponse", "tempResponse", "totalResponse",
+        //    "pMortality", "pDecline", "pGrowth", "nextStateId"};
+
+    }
+
+
+    return next_state;
 }
 
 bool UnderstoryPFT::establishment(UnderstoryCellParams &ucp,
@@ -170,7 +182,7 @@ bool UnderstoryPFT::establishment(UnderstoryCellParams &ucp,
 {
     if (!ucp.PFTcalc) {
         ucp.nitrogenResponse = mExprNutrients.calculate(ucp.availableNitrogen);
-        ucp.waterResponse = mExprWater.calculate(ucp.SWCgrowingSeason);
+        ucp.waterResponse = mExprWater.calculate(ucp.psiGrowingSeason);
         ucp.tempResponse = mExprTemp.calculate(ucp.meanTemperature);
         ucp.PFTcalc = true;
     }

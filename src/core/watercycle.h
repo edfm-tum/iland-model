@@ -124,6 +124,7 @@ public:
     double effectiveLAI() const { return mEffectiveLAI; } ///< effective LAI (including saplings and ground vegetation)
     double meanSoilWaterContent() const {return mMeanSoilWaterContent; } ///< mean of annual soil water content (mm)
     double meanGrowingSeasonSWC() const { return mMeanGrowingSeasonSWC; } ///< mean soil water content (mm) during the growing season (fixed: april - september)
+    double meanPsiGrowingSeason() const { return mMeanPsiGrowingSeason; } ///< mean Psi (kPa) over growing season (fixed: april - september)
     /// monthly values for PET (mm sum)
     const double *referenceEvapotranspiration() const { return mCanopy.referenceEvapotranspiration(); }
     /// psi min values for establishment for a phenology type
@@ -177,6 +178,7 @@ private:
     int mSnowDays; ///< # of days with snowcover >0
     double mMeanSoilWaterContent; ///< mean of annual soil water content (mm)
     double mMeanGrowingSeasonSWC; ///< mean soil water content (mm) during the growing season (fixed: april - september)
+    double mMeanPsiGrowingSeason; ///< mean psi (kPa) in *fixed* growing season
 
     /// container for storing min-psi values per resource unit + phenology class
     /// key: RU + phenoGroup, value: psiMin (2week minimum) MPa

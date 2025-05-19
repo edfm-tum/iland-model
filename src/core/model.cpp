@@ -1005,6 +1005,7 @@ void Model::runYear()
     om->execute("devstage"); // spatial analysis of developement stages
     om->execute("ecoviz"); // tree output for visualization
     om->execute("customagg"); // custom aggregation, much like dynamic stand
+    om->execute("understory"); // understory cover per PFT
 
     GlobalSettings::instance()->systemStatistics()->tWriteOutput+=toutput.elapsed();
     GlobalSettings::instance()->systemStatistics()->tTotalYear+=t_all.elapsed();

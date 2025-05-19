@@ -572,6 +572,7 @@ void ModelController::saveDebugOutputsCore(QString p, bool do_append)
     GlobalSettings::instance()->debugDataTable(GlobalSettings::dSaplingGrowth, ";", p + "saplinggrowth.csv", do_append);
     GlobalSettings::instance()->debugDataTable(GlobalSettings::dCarbonCycle, ";", p + "carboncycle.csv", do_append);
     GlobalSettings::instance()->debugDataTable(GlobalSettings::dPerformance, ";", p + "performance.csv", do_append);
+    GlobalSettings::instance()->debugDataTable(GlobalSettings::dUnderstory, ";", p + "understory.csv", do_append);
 
 }
 

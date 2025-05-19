@@ -316,6 +316,10 @@ QStringList GlobalSettings::debugListCaptions(const DebugOutputs dbg)
     case dPerformance: return QStringList() << "id" << "type" << "year" << "treeCount" << "saplingCount" << "newSaplings" << "management"
                                             << "applyPattern" << "readPattern" << "treeGrowth" << "seedDistribution" <<  "establishment"<< "saplingGrowth" << "carbonCycle"
                                             << "writeOutput" << "totalYear";
+    case dUnderstory: return {"id", "type", "year",
+                              "ruindex", "cellindex",
+                              "pft", "stateId", "lightResponse", "nitrogenResponse", "waterResponse", "tempResponse", "totalResponse",
+                              "pMortality", "pDecline", "pGrowth", "nextStateId"};
 
     }
     return QStringList() << "invalid debug output!";

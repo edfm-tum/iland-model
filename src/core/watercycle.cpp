@@ -133,6 +133,7 @@ void WaterCycle::setup(const ResourceUnit *ru)
     mTotalET = mTotalExcess = mSnowRad = 0.;
     mSnowDays = 0;
     mMeanGrowingSeasonSWC = mMeanSoilWaterContent = 0.;
+    mMeanPsiGrowingSeason = 0.;
 
     // permafrost
     if (xml.valueBool("model.settings.permafrost.enabled", false)) {
@@ -316,6 +317,7 @@ void WaterCycle::run()
     mSnowDays = 0;
     int growing_season_days = 0;
     mMeanGrowingSeasonSWC = mMeanSoilWaterContent = 0.;
+    mMeanPsiGrowingSeason = 0.;
     for (; day<end; ++day, ++doy) {
         // (1) precipitation of the day
         prec_mm = day->preciptitation;
@@ -377,6 +379,7 @@ void WaterCycle::run()
         mTotalET += et;
         if (day->month>3 && day->month<10) {
             mMeanGrowingSeasonSWC += mContent;
+            mMeanPsiGrowingSeason += current_psi;
             growing_season_days++;
         }
         mMeanSoilWaterContent += mContent;
@@ -410,6 +413,7 @@ void WaterCycle::run()
     }
     mMeanSoilWaterContent /= static_cast<double>(climate->daysOfYear());
     mMeanGrowingSeasonSWC /= static_cast<double>(growing_season_days);
+    mMeanPsiGrowingSeason /= static_cast<double>(growing_season_days);
 
     // call external modules
     GlobalSettings::instance()->model()->modules()->calculateWater(mRU, &add_data);

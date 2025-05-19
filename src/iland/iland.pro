@@ -156,6 +156,7 @@ SOURCES += main.cpp \
     ../core/understoryplant.cpp \
     ../output/devstageout.cpp \
     ../output/ecovizout.cpp \
+    ../output/understoryout.cpp \
     ../tools/geotiff.cpp \
     mainwindow.cpp \
     paintarea.cpp \
@@ -291,6 +292,7 @@ HEADERS += mainwindow.h \
     ../core/understoryplant.h \
     ../output/devstageout.h \
     ../output/ecovizout.h \
+    ../output/understoryout.h \
     ../tools/geotiff.h \
     stable.h \
     paintarea.h \

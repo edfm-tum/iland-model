@@ -44,6 +44,7 @@
 #include "devstageout.h"
 #include "ecovizout.h"
 #include "customaggout.h"
+#include "understoryout.h"
 
 
 // on creation of the output manager
@@ -75,6 +76,7 @@ OutputManager::OutputManager()
     mOutputs.append(new SVDUniqueStateOut);
     mOutputs.append(new DevStageOut);
     mOutputs.append(new EcoVizOut);
+    mOutputs.append(new UnderstoryOut);
 }
 
 void OutputManager::addOutput(Output *output)

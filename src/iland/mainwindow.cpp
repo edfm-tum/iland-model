@@ -2330,12 +2330,13 @@ void MainWindow::on_actionSelect_Data_Types_triggered()
                                         "2 ... Tree partition\n" \
                                         "4 ... Tree growth (dbh,h)\n" \
                                         "8 ... Standlevel GPP\n" \
-                                        "16...Water Cycle\n" \
-                                        "32...Daily responses\n" \
-                                        "64...Establishment\n" \
+                                        "16... Water Cycle\n" \
+                                        "32... Daily responses\n" \
+                                        "64... Establishment\n" \
                                         "128...Sapling growth\n" \
                                         "256...Carbon cycle\n" \
-                                        "512...Performance\n"
+                                        "512...Performance\n" \
+                                        "1024..Understory\n" \
                                         "(e.g.: 5 = NPP + tree growth) or 0 for no debug outputs.", value);
     GlobalSettings::instance()->setDebugOutput(newvalue);
 }

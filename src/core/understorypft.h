@@ -42,7 +42,7 @@ public:
     /// based on environmental conditions
     UStateId stateTransition(const UnderstoryPlant &plant,
                              UnderstoryCellParams &ucp,
-                             UnderstoryRUStats &rustats) const;
+                             UnderstoryRU &us_ru) const;
 
     /// test for establishment for this PFT at a
     /// location with given environment factors

@@ -197,7 +197,7 @@ void UnderstoryVisualizer::setupVisualization()
 
     mVisualizer = new UnderstoryVisualizer();
 
-    mVarList = {"Understory - State", // 0
+    mVarList = {"Understory - CellsOccupied", // 0
                 "Understory - SlotsOccupied", // 1
                 "Understory - Biomass", "Understory - LAI", "Understory - maxHeight", // 2,3,4
                 // RU-LEVEL
@@ -207,16 +207,16 @@ void UnderstoryVisualizer::setupVisualization()
                 "Understory - RU Biomass", // 3
     };
     QStringList var_desc = {
-                "state",
+                "Number of 'plants' on cell",
                 "Number of 'slots' occupied per cell",
-                "Total biomass (kg/m2??)",
+                "Total biomass (kg/m2?)",
                 "LAI (m2/m2) of understory",
                 "Maximum height (m) on cell",
                 // RU - LEVEL
                 "Percent of RU area with >0 plants (%)",
                 "Percent of total #slots of RU occupied (%)",
                 "Total LAI on RU (m2/m2)",
-                "Total biomass on RU (kg/ha??)"
+                "Total biomass on RU (kg/ha?)"
     };
 
     const auto &us = Globals->model()->understory();
@@ -266,7 +266,7 @@ Grid<double> *UnderstoryVisualizer::paintGrid(QString what, QStringList &names, 
             if (!cell) { *p = 0.; continue; }
             auto cell_stats = cell->stats(mPFTFilter);
             switch (index) {
-            case 0: value = cell->plants()[0].stateId() == std::numeric_limits<UStateId>::max() ? -1 : cell->plants()[0].stateId(); break;
+            case 0: value = cell_stats.cellsOccupied; break;
             case 1: value = cell_stats.slotsOccupied; break;
             case 2: value = cell_stats.biomass; break;
             case 3: value = cell_stats.LAI; break;
@@ -280,20 +280,17 @@ Grid<double> *UnderstoryVisualizer::paintGrid(QString what, QStringList &names, 
         return &mGrid;
     } else {
         // 100m grid
-        UnderstoryRUStats ru_stat;
         for (double *p = mRUGrid.begin(); p!= mRUGrid.end(); ++p) {
             const auto us_ru = us->understoryRU(mRUGrid.cellCenterPoint(p));
             if (us_ru) {
                 auto &stats = us_ru->stats();
                 const UnderstoryStatsCell *s = &stats.ru_stats;
                 if (mPFTFilter) {
-                    ru_stat = us_ru->stats(mPFTFilter);
-                    s = &ru_stat.ru_stats;
-
+                    s = &us_ru->pftStats()[mPFTFilter->index()].ru_stats;
                 }
 
                 switch (index - min_idx_ru) {
-                case 0: *p = s->NStates; break;
+                case 0: *p = s->cellsOccupied; break;
                 case 1: *p = s->slotsOccupied; break;
                 case 2: *p = s->LAI; break;
                 case 3: *p = s->biomass; break;

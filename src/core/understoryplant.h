@@ -16,7 +16,8 @@ struct UnderstoryCellParams {
     SaplingCell *saplingCell; ///< corresponding sapling cell
     float lif_corr; ///< corrected LIF value at the 2m cell
     double availableNitrogen; ///< kg/ha*yr nitrogen
-    double SWCgrowingSeason; ///< relative soil water content
+    //double SWCgrowingSeason; ///< relative soil water content
+    double psiGrowingSeason; /// mean psi over the growing season
     double meanTemperature; ///< mean annual temp (micro or macro)
     bool PFTcalc { false };
     double nitrogenResponse;
@@ -51,37 +52,40 @@ struct UnderstoryStatsCell {
         LAI += rSide.LAI; // total LAI
         biomass += rSide.biomass; // total biomass
         height = std::max(height, rSide.height); // maximum height
+        cover += rSide.cover;
         slotsOccupied += rSide.slotsOccupied; // count total degree slots
-        NStates += rSide.NStates > 0 ? 1 : 0; // count occupied cells
+        cellsOccupied += rSide.cellsOccupied; // count occupied cells
     }
     void calcPerRU(int n_valid) {
         if (n_valid>0) {
-            LAI = LAI / (double)n_valid;
-            biomass = biomass / (double)n_valid;
-            NStates = NStates / (double)n_valid * 100; // % occupied
-            slotsOccupied = slotsOccupied/ (double)n_valid * 100; // % total of slots occupied
+            LAI = LAI / (float)n_valid;
+            biomass = biomass / (float)n_valid;
+            cellsOccupied = cellsOccupied / (float)n_valid * 100; // % occupied
+            slotsOccupied = slotsOccupied/ (float)n_valid * 100; // % total of slots occupied
         }
     }
-    void clear() {LAI=0.; biomass=0.; height=0.; NStates=0; slotsOccupied = 0; }
-    double LAI {0.};
-    double biomass  {0.};
-    double height {0.};
-    int NStates {0};
-    int slotsOccupied {0};
+    void clear() {LAI=0.; biomass=0.; height=0.; cellsOccupied=0; slotsOccupied = 0; }
+    float LAI {0.}; ///< cell: LAI (m2/m2) from state, RU: LAI (stockable area)
+    float biomass  {0.};
+    float height {0.};
+    float cover {0.}; ///< %cover (state-variable)
+    float cellsOccupied {0}; ///< Cell: 1/0, RU: % cells covered
+    float slotsOccupied {0}; ///< Cell: N Slots, RU: % slots covered
 };
 
 
 struct UnderstoryRUStats {
     void clear() { established = died = transitionDown = transitionUp = 0; ru_stats.clear(); }
     // changes
-    int established { 0 }; // # of plants / cells established
-    int died {0 }; // # of plants that died
-    int transitionUp {0}; // # of plants with state transition to next / taller state
-    int transitionDown {0}; // # of plants with state transition to previous / smaller state
+    float established { 0 }; // # of plants / cells established
+    float died {0 }; // # of plants that died
+    float transitionUp {0}; // # of plants with state transition to next / taller state
+    float transitionDown {0}; // # of plants with state transition to previous / smaller state
     // state
     UnderstoryStatsCell ru_stats;
 };
 
+class UnderstoryRU; // forward
 /**
  * @brief The UnderstoryCell class
  * is container for all UnderstoryPlant on a cell.
@@ -101,14 +105,20 @@ public:
 
     UnderstoryCell() {};
     // acess properties
+    /// is the cell stockable?
     bool isValid() const { return mState != ECellState::CellInvalid; }
+    /// are all slots used?
     bool isFull() const { return mState == ECellState::CellFull; }
+    /// is at least on slot occupied?
+    bool isOccupied() const {return mState == ECellState::CellFree || isFull(); }
+    /// checks if the given pft is already present on the cell (returns true in that case)
+    bool hasPft(const UnderstoryPFT *pft) const;
     /// updates internal data, call after content of cell changed
-    void update(UnderstoryRUStats &stats);
+    void update(UnderstoryRU &us_ru);
 
 
-    void growth(UnderstoryCellParams &ucp, UnderstoryRUStats &stats);
-    void establishment(UStateId id);
+    void growth(UnderstoryCellParams &ucp, UnderstoryRU &us_ru);
+    UnderstoryPlant *establishment(UStateId id);
 
     /// the plants container
     const std::array<UnderstoryPlant, NSlots> &plants() const { return mPlants; }
@@ -119,6 +129,8 @@ public:
     UnderstoryStatsCell stats() const;
     /// get stats only for a given PFT
     UnderstoryStatsCell stats(const UnderstoryPFT *pft) const;
+
+    void addStats(QVector<UnderstoryRUStats> &pfts);
 private:
     /// sum of occupation points on cell
     uint8_t mOccupied {0};
@@ -143,7 +155,15 @@ public:
     void establishment();
     void growth();
 
+    // functions for statistics
+    /// get pointers to the stats object for the PFT (on RU) and RU for a given plant-cell
+    void statsRef(const UnderstoryPlant *p, UnderstoryRUStats **rPFTStat, UnderstoryRUStats **rRUStat);
+    void statsPlantDied(const UnderstoryPlant *p);
+    void statsPlantEstablished(const UnderstoryPlant *p);
+    void statsPlantTransition(const UnderstoryPlant *p, bool growth);
+
     // access
+    const ResourceUnit *ru() const { return mRU; }
     /// get metric coordinates (landscape) of a cell with given index
     QPointF cellCoord(int index);
     /// get metric coordinates (landscape) of a cell
@@ -152,10 +172,16 @@ public:
     /// Note that selecting the right RU is
     /// done by Understory::cell()!
     const UnderstoryCell *cell(QPointF metric_coord) const;
+    /// RU totals across all PFTs
     const UnderstoryRUStats &stats() const { return mStats; }
+    /// stats for a single PFT
     UnderstoryRUStats stats(const UnderstoryPFT *pft) const;
+    /// vector of states for all PFTs
+    const QVector<UnderstoryRUStats> pftStats() const { return mPFTStats; }
 private:
+    void updateStats();
     UnderstoryRUStats mStats;
+    QVector<UnderstoryRUStats> mPFTStats; ///< stats per PFT
     ResourceUnit *mRU {0};
     std::array<UnderstoryCell, cPxPerHectare> mCells;
 };

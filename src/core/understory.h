@@ -71,6 +71,9 @@ private:
     /// itself is a vector of UnderstoryCell (which contain
     /// a vector of UnderstoryPlant)
     QVector<UnderstoryRU> mUnderstoryRU;
+
+    friend class UnderstoryOut;
+
 };
 
 

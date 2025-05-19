@@ -80,7 +80,7 @@ public:
     enum DebugOutputs { dTreeNPP=1, dTreePartition=2, dTreeGrowth=4,
                         dStandGPP=8, dWaterCycle=16, dDailyResponses=32,
                         dEstablishment=64, dSaplingGrowth=128, dCarbonCycle=256,
-                        dPerformance=512}; ///< defines available debug output types.
+                        dPerformance=512, dUnderstory=1024}; ///< defines available debug output types.
     void setDebugOutput(const int debug) { mDebugOutputs = GlobalSettings::DebugOutputs(debug); }
     void setDebugOutput(const DebugOutputs dbg, const bool enable=true); ///< enable/disable a specific output type.
     bool isDebugEnabled(const DebugOutputs dbg) {return int(dbg) & mDebugOutputs;} ///< returns true, if a specific debug outut type is enabled.
