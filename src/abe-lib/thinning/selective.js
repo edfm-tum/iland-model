@@ -64,7 +64,6 @@ lib.thinning.selectiveThinning = function(options) {
     if (opts.mode == 'dynamic') {
         opts.nTrees = dynamic_nTrees;
         opts.nCompetitors = dynamic_nCompetitors;
-        opts.preferenceFunction = dynamic_preferenceFunction;
     };
 
     const program = {};
