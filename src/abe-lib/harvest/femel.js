@@ -5,6 +5,7 @@
  *    @param {number} options.steps number of consecutive enlargement steps after start (default: 2).
  *    @param {number} options.interval number of years between each step (default: 10).
  *    @param {number} options.growBy number of "rings" of 10m cells to grow each step (default: 1).
+ *    @param {string|undefined} options.finalHarvest boolean variable to indeicate, if the activity should be interpreted as final harvest (default: true).
  *    @param {string|undefined} options.harvestAll indicate if all trees outside the femel should be removed after final harvest (default: true).
  *    @param {string|undefined} options.internalSignal internal signal to start each femel harvest step (default: 'harvest_femel').
  *    @param {string|undefined} options.sendSignal signal send out after final femel harvest activity (default: undefined).
@@ -29,6 +30,7 @@ lib.harvest.femel = function(options) {
         steps: 2, // number of consecutive enlargement steps after start
         interval: 10, // years between each step
         growBy: 1, // number of "rings" of 10m cells to grow each step
+        finalHarvest: true,
         harvestAll: false, // remove all trees after final harvest
         internalSignal: 'harvest_femel', 
         sendSignal: undefined,
@@ -113,7 +115,9 @@ lib.harvest.femel = function(options) {
 		type: "scheduled", 
 		schedule: { signal: opts.internalSignal, wait: opts.interval * (opts.steps-1) },
 		onCreate: function() { 
-            this.finalHarvest = true; 
+            if (opts.finalHarvest === true) {
+				this.finalHarvest = true; 
+			}
         }, 
 		onEvaluate: function() { 
 			return true

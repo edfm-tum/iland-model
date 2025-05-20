@@ -14,12 +14,12 @@ Globals.include(lib.path.dir + '/harvest/salvage.js');
 
 /**
  * No harvest management
- * @method noHarvest
+ * @method noManagement
  * @return {object} act - An object describing the harvest activity
  * @example
- *     lib.harvest.noHarvest();
+ *     lib.harvest.noManagement();
  */
-lib.harvest.noHarvest = function() {
+lib.harvest.noManagement = function() {
 	var act = {
 		type: 'general', 
 		schedule: { repeat: true, repeatInterval: 100},
@@ -88,6 +88,7 @@ lib.harvest.HarvestAllBigTrees = function(options) {
  *    @param {string} options.id A unique identifier for the harvest activity (default: 'Clearcut').
  *    @param {object} options.schedule schedule of the harvest (default: { minRel: 0.8, optRel: 1, maxRel: 1.2, force: true }).
  *    @param {string} options.preferenceFunction ranking string for filtering trees, e.g. 'dbh > 10' (default: 'dbh > 0').
+ *    @param {string|undefined} options.finalHarvest boolean variable to indeicate, if the activity should be interpreted as final harvest (default: true).
  *    @param {string|undefined} options.sendSignal signal send out after activity (default: undefined).
  *    @param {string|undefined} options.constraint constraint (default: undefined).
  * @return {object} act - An object describing the harvest activity
@@ -103,6 +104,7 @@ lib.harvest.clearcut = function(options) {
         id: 'Clearcut',
 		schedule: { minRel: 0.8, optRel: 1, maxRel: 1.2, force: true }, 
         preferenceFunction: `dbh > 0`,
+		finalHarvest: true,
 		sendSignal: undefined,
 		constraint: undefined
     };
@@ -113,7 +115,9 @@ lib.harvest.clearcut = function(options) {
 		type: "scheduled", 
 		schedule: opts.schedule, 
 		onCreate: function() { 
-			this.finalHarvest = true; 
+			if (opts.finalHarvest === true) {
+				this.finalHarvest = true; 
+			}
 		}, 
 		onSetup: function() { 
 			lib.initStandObj(); 
@@ -152,11 +156,12 @@ lib.harvest.clearcut = function(options) {
  *    @param {string} options.id A unique identifier for the harvest activity (default: 'Shelterwood').
  *    @param {object} options.schedule schedule of the harvest (default: { minRel: 0.7, optRel: 0.8, maxRel: 0.9, force: true }).
  *    @param {number} options.nTrees Number of seed trees to select (default: 40).
- *    @param {number} options.nCompetitors Number of competitor trees to select (default: 1000).
+ *    @param {number} options.nCompetitors Number of other trees to select - should be all remaining trees and thus really high (default: 1000).
  *    @param {object} options.speciesSelectivity species selectivity object (default: {}).
  *    @param {string} options.preferenceFunction ranking string for selecting seed trees, e.g. 'height' (default: 'height').
  *    @param {number} options.interval interval between repeated harvests (default: 5).
  *    @param {number} options.times number of repeated harvests (default: 3).
+ *    @param {string|undefined} options.finalHarvest boolean variable to indeicate, if the activity should be interpreted as final harvest (default: true).
  *    @param {string|undefined} options.internalSignal internal signal to start each shelterwood activity (default: 'Shelterwood_remove').
  *    @param {string|undefined} options.sendSignal signal send out after last shelterwood activity (default: undefined).
  *    @param {string|undefined} options.constraint constraint (default: undefined).
@@ -179,6 +184,7 @@ lib.harvest.shelterwood = function(options) {
 		preferenceFunction: 'height',
 		interval: 5,
 		times: 2, // number of harvests before the final harvest, so with e.g. times 2 it would be 2 pre-Harvests and lastly one final
+		finalHarvest: true,
 		internalSignal: 'Shelterwood_remove',
 		sendSignal: undefined,
 		constraint: undefined
@@ -259,7 +265,9 @@ lib.harvest.shelterwood = function(options) {
 		schedule: { signal: 'Shelterwood_start_repeat', wait: (opts.interval * opts.times) }, 
 
 		onCreate: function() { 
-			this.finalHarvest = true; 
+			if (opts.finalHarvest === true) {
+				this.finalHarvest = true; 
+			}
 		},
 		onEvaluate: function() { 
 			return true

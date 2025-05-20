@@ -88,8 +88,8 @@ lib.thinning.fromBelow = function(options) {
 			var treeFilter = undefined;
 			if (opts.speciesSelectivity !== undefined) {
 				lib.dbg(`Stand flag: ${stand.flag('targetSpecies')}`);
-				opts.speciesSelectivity = opts.speciesSelectivity.call(opts);
-				treeFilter = lib.buildRareSpeciesFilter(opts.speciesSelectivity, 0.2);
+				var speciesObject = opts.speciesSelectivity.call();
+				treeFilter = lib.buildRareSpeciesFilter(speciesObject, speciesObject);
 			};
 			lib.dbg(`Thinning from below initialized.`);
 		},
