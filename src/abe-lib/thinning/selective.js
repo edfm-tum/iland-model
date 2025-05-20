@@ -75,7 +75,7 @@ lib.thinning.selectiveThinning = function(options) {
         schedule: opts.schedule,	
         thinning: 'selection',
         N: opts.nTrees,
-        nCompetitors: opts.nCompetitors, // total competitors! not per thinning event
+        NCompetitors: opts.nCompetitors, // total competitors! not per thinning event
         speciesSelectivity: opts.speciesSelectivity,
         ranking: opts.preferenceFunction,
 
@@ -110,7 +110,7 @@ lib.thinning.selectiveThinning = function(options) {
                 // first year. Save # of marked competitors
                 const marked = stand.trees.load('markcompetitor=true');
                 stand.setFlag('compN', marked);
-                lib.dbg(`selectiveThinning: start removal phase. ${marked} trees marked for removal.`);
+                lib.dbg(`selectiveThinning: start removal phase. ${marked} trees marked for removal (Target was ${opts.nCompetitors*opts.nTrees}).`);
             }
             stand.obj.lib.selective_thinning_counter = stand.obj.lib.selective_thinning_counter + 1;
             var n = stand.flag('compN') / opts.times;
@@ -201,7 +201,7 @@ lib.thinning.selectiveThinningZ1Z2 = function(options) {
         schedule: opts.schedule,	
         constraint: opts.constraint,
         N: opts.nTrees,
-        nCompetitors: opts.nCompetitors, 
+        NCompetitors: opts.nCompetitors, 
         speciesSelectivity: opts.speciesSelectivity,
         ranking: opts.preferenceFunction,
     
@@ -239,7 +239,7 @@ lib.thinning.selectiveThinningZ1Z2 = function(options) {
         schedule: { signal: opts.sendSignalPeriode },	
         constraint: opts.constraint,
         N: opts.nTrees,
-        nCompetitors: opts.nCompetitors, 
+        NCompetitors: opts.nCompetitors, 
         speciesSelectivity: opts.speciesSelectivity,
         ranking: opts.preferenceFunction + ' * (height < 25)',
     
@@ -383,7 +383,7 @@ lib.thinning.selectiveThinningBackup = function(options) {
         schedule: opts.schedule,	
         thinning: 'selection',
         N: opts.nTrees,
-        nCompetitors: opts.nCompetitors, // total competitors! not per thinning event
+        NCompetitors: opts.nCompetitors, // total competitors! not per thinning event
         speciesSelectivity: opts.speciesSelectivity,
         ranking: opts.preferenceFunction,
 
@@ -557,7 +557,7 @@ lib.thinning.selectiveThinningZ1Z2Backup = function(options) {
         schedule: opts.schedule,	
         constraint: ["stand.age>30"],
         N: opts.nTrees,
-        nCompetitors: opts.nCompetitors, 
+        NCompetitors: opts.nCompetitors, 
         speciesSelectivity: opts.speciesSelectivity,
         ranking: opts.preferenceFunction,
     
@@ -595,7 +595,7 @@ lib.thinning.selectiveThinningZ1Z2Backup = function(options) {
         schedule: { signal: opts.signal },	
         constraint: ["stand.age>30"],
         N: opts.nTrees,
-        nCompetitors: opts.nCompetitors, 
+        NCompetitors: opts.nCompetitors, 
         speciesSelectivity: opts.speciesSelectivity,
         ranking: opts.preferenceFunction + ' * (height < 25)',
     
