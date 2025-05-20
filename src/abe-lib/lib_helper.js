@@ -68,6 +68,61 @@ lib.initAllStands = function() {
 
 
 
+/**
+*  Helper function to get a list of all unique stand ids from the standGrid.
+*
+*  @method getAllStandGridIds
+*/
+function getAllStandGridIds() {
+    // Get the stand grid ScriptGrid object
+    // Globals.grid("standgrid") provides access to the spatial stand grid definition [4].
+    let standGrid = Globals.grid("standgrid");
+
+    if (!standGrid) {
+        console.log("Error: Stand grid not available.");
+        return [];
+    }
+
+    // Get all unique stand ids from standGrid
+    const uniqueStandIds = Array.from(
+        new Set(
+            standGrid.values().filter(
+                v => Number.isInteger(v) && v > -1
+            )
+        )
+    );
+
+    return uniqueStandIds;
+}
+
+
+
+/**
+*  Sanity check for all stands, if they have a STP.
+*
+*  @method CheckManagementOfStands
+*/
+lib.CheckManagementOfStands = function() {
+    var allGood = true;
+    var standGridIDs = getAllStandGridIds();
+    
+    let nonExistingStands = [];
+
+    for (const id of standGridIDs) {
+        // check if stand id is a valid id within the FM engine
+        if (fmengine.isValidStand(id) === false) {
+            nonExistingStands.push(id);
+            allGood = false;
+            console.log(`CheckManagementOfStands: stand ${id} has no stp set.`)
+        }
+    };
+    console.log(`CheckManagementOfStands: All stands have stp set: ${allGood}`);
+
+    if (allGood === false) {
+        throw new Error(`CheckManagementOfStands: stands ${nonExistingStands} have no stp set.`);
+    }    
+}
+
 lib.loglevel = 0; // 0: none, 1: normal, 2: debug
 /**
 *  Internal function to log a string `str` to the iLand logfile.
@@ -481,7 +536,7 @@ lib.selectOptimalPatches = function(options) {
             // (1) init
             stand.patches.clear();
             const n_ha = opts.N * stand.area;
-            lib.dbg(`selectOptimalPatches: ${n_ha} / ha, based on ${opts.criterium}.`);
+            lib.log(`selectOptimalPatches: ${n_ha} / ha, based on ${opts.criterium}.`);
 
             // (2) create candidate patches
             createPatches(opts);
@@ -653,6 +708,7 @@ lib.repeater = function(options) {
  *                                                  - A single species ID string (e.g., "quro").
  *                                                  - An array of species ID strings (e.g., ["quro", "qupe"]).
  *                                                  - An object where keys are species IDs (e.g., 'quro') and values are ignored.
+ *                                                  - A function 
  * @param {number} threshold The relative basal area threshold  (0..1) for filtering.
  * @returns {string} The filter string.
  * @method buildRareSpeciesFilter
@@ -663,46 +719,107 @@ lib.buildRareSpeciesFilter = function(speciesList, threshold) {
     // 1. Normalize the speciesList input to an array of species IDs.
     if (typeof speciesList === 'string') {
         speciesIds = [speciesList]; // Single species ID
+        lib.dbg(`speciesIds: ${speciesIds}`)        
     } else if (Array.isArray(speciesList)) {
         speciesIds = speciesList; // Array of species IDs
+        lib.dbg(`speciesIds: ${speciesIds}`)        
     } else if (typeof speciesList === 'object' && speciesList !== null) {
         speciesIds = Object.keys(speciesList); // Object: extract keys
+        lib.dbg(`speciesIds: ${speciesIds}`)        
+    } else if (typeof speciesList === 'function' && speciesList !== null) {
+        speciesIds = Object.keys(speciesList.call()); // Object: extract keys
+        lib.dbg(`speciesIds: ${speciesIds}`)        
     } else {
         // Handle invalid input (optional, but good practice)
-        throw new Error(`Invalid speciesList format! ${speciesList}`);
+        throw new Error(`Invalid speciesList format! ${speciesList}, Type: ${typeof speciesList}`);
     }
 
+    // Loop over each species, if there is a list of unique thresholds for each species in speciesList
+    if (typeof threshold !== 'number') {
+        let thresholds;
 
-    // 2. Calculate the total relative basal area.
-    let totalBasalArea = 0;
-    for (const speciesId of speciesIds) {
-        totalBasalArea += stand.relSpeciesBasalAreaOf(speciesId);
-    }
+        if (typeof threshold === 'object' && threshold !== null) {
+            thresholds = Object.values(threshold) // Object: extract values
+            lib.dbg(`thresholds: ${thresholds}`)  
+        } else if (typeof threshold === 'function' && threshold !== null) {
+            thresholds = Object.values(threshold.call()); // Object: extract keys
+            lib.dbg(`thresholds: ${thresholds}`)
+        } else {
+            // Handle invalid input (optional, but good practice)
+            throw new Error(`Invalid threshold format! ${threshold}, Type: ${typeof threshold}`);
+        }
+        
+        // check if length of speciesIds and thresholds is equal
+        if (speciesIds.length !== thresholds.length) {
+            throw new Error(`buildRareSpeciesFilter: Length of speciesIds and thresholds not equal! speciesIds: ${speciesIds}, thresholds: ${thresholds}`);
+        }
+        
+        // save one filter string for each species
+        const filterParts = [];
 
+        // loop over speciesIds        
+        for (let i = 0; i < speciesIds.length; i++) {
+            // set speciesId and species specific threshold
+            var speciesId = speciesIds[i];
+            var threshold = thresholds[i];
 
-    // 3. Determine the filtering probability (pfilter).
-    const threshold2x = 2 * threshold;
-    let pfilter = 0;
+            const relBA = stand.relSpeciesBasalAreaOf(speciesId);
+            const threshold2x = 2 * threshold;
+        
+            let pfilter = 0;
+            if (relBA <= threshold) {
+                pfilter = 0;
+            } else if (relBA >= threshold2x) {
+                pfilter = 1;
+            } else {
+                pfilter = 1 - (threshold2x - relBA) / threshold;
+                pfilter = Math.max(0, Math.min(1, pfilter));
+            }
+        
+            lib.dbg(`buildRareSpeciesFilter: Species: ${speciesId}, rel basal area: ${relBA}, threshold: ${threshold}, pFilter: ${pfilter}`);
+        
+            // Build per-species condition
+            const condition = `if(species = ${speciesId}, rnd(0,1) < ${pfilter.toFixed(3)}, true)`;
+            filterParts.push(condition);
+        }
+    
+        // Combine all species conditions
+        const combinedFilter = filterParts.join(' and ');
+        console.log(combinedFilter);
+        return combinedFilter || 'true'; // if empty, return always true
 
-    if (totalBasalArea <= threshold) {
-        pfilter = 0; // filter out all trees
-    } else if (totalBasalArea >= threshold2x) {
-        pfilter = 1; // keep the trees
     } else {
-        // a linear function between threshold and 2xthreshold
-        pfilter = 1 - (threshold2x - totalBasalArea) / threshold;
-        pfilter = Math.max(0, Math.min(1, pfilter));
-    }
-    lib.dbg(`buildRareSpeciesFilter: rel basal area of targets: ${totalBasalArea}. pFilter: ${pfilter}`);
-
-    // 4. Construct the filter string.
-    if (pfilter == 1) {
-        return 'true'; // the filter is inactive
-    } else {
-        const speciesCodes = speciesIds.join(', ');  // Use the normalized speciesIds array
-        const filterString = `if( in(species, ${speciesCodes}), rnd(0,1)<${pfilter.toFixed(3)}, true)`;
-        return filterString;
-    }
+        // 2. Calculate the total relative basal area.
+        let totalBasalArea = 0;
+        for (const speciesId of speciesIds) {
+            totalBasalArea += stand.relSpeciesBasalAreaOf(speciesId);
+        }
+    
+        // 3. Determine the filtering probability (pfilter).
+        const threshold2x = 2 * threshold;
+        let pfilter = 0;
+    
+        if (totalBasalArea <= threshold) {
+            pfilter = 0; // filter out all trees
+        } else if (totalBasalArea >= threshold2x) {
+            pfilter = 1; // keep the trees
+        } else {
+            // a linear function between threshold and 2xthreshold
+            pfilter = 1 - (threshold2x - totalBasalArea) / threshold;
+            pfilter = Math.max(0, Math.min(1, pfilter));
+        }
+        lib.dbg(`buildRareSpeciesFilter: rel basal area of targets: ${totalBasalArea}. pFilter: ${pfilter}`);
+    
+        // 4. Construct the filter string.
+        if (pfilter == 1) {
+            return 'true'; // the filter is inactive
+        } else {
+            const speciesCodes = speciesIds.join(', ');  // Use the normalized speciesIds array
+            const filterString = `if( in(species, ${speciesCodes}), rnd(0,1)<${pfilter.toFixed(3)}, true)`;
+            return filterString;
+        }
+    }   
 
 }
+
 
