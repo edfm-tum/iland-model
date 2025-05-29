@@ -149,8 +149,10 @@ for(var, $$list($$enumerate_vars())) {
 # Use Precompiled headers (PCH)
 #PRECOMPILED_HEADER = stable.h
 SOURCES += main.cpp \
+    ../abe/fmdeadtreelist.cpp \
     ../abe/patch.cpp \
     ../abe/patches.cpp \
+    ../core/deadtree.cpp \
     ../core/microclimate.cpp \
     ../core/permafrost.cpp \
     ../output/devstageout.cpp \
@@ -282,8 +284,10 @@ SOURCES += main.cpp \
 
 HEADERS += mainwindow.h \
     ../3rdparty/FreeImage/FreeImage.h \
+    ../abe/fmdeadtreelist.h \
     ../abe/patch.h \
     ../abe/patches.h \
+    ../core/deadtree.h \
     ../core/microclimate.h \
     ../core/permafrost.h \
     ../output/devstageout.h \

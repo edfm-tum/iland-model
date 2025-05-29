@@ -21,6 +21,9 @@
 #define SNAG_H
 #include <QList>
 #include <QVariant>
+
+#include "deadtree.h"
+
 class Tree; // forward
 class Species; // forward
 class ResourceUnit; // forward
@@ -79,7 +82,7 @@ class Snag
 {
 public:
     Snag();
-    static void setupThresholds(const double lower, const double upper); ///< setup class thresholds, needs to be called only once... (static)
+    static void setupThresholds(const double lower, const double upper, const double single_tree); ///< setup class thresholds, needs to be called only once... (static)
     void setup( const ResourceUnit *ru); ///< initial setup routine.
     void scaleInitialState(); ///< used to scale the input to the actual area of the resource unit
     void newYear(); ///< to be executed at the beginning of a simulation year. This cleans up the transfer pools.
@@ -106,6 +109,9 @@ public:
     /// as litter input comes from both trees and saplings, and the only "user" at the moment
     /// is permafrost, which is executed between both processes
     void resetDeciduousFoliage() { mDeciduousFoliageLitter = 0.; }
+
+    /// get list of snags / DWD on the resource unit
+    QVector<DeadTree> &deadTrees() { return mDeadTrees; }
     // actions
     /// add for a tree with diameter
     void addTurnoverLitter(const Species *species, const double litter_foliage, const double litter_fineroot);
@@ -142,6 +148,10 @@ public:
     void management(const double factor);
     QList<QVariant> debugList(); ///< return a debug output
 private:
+    /// storage for snags that are stored individually
+    QVector<DeadTree> mDeadTrees;
+    void packDeadTreeList();
+
     /// split the biomass of a tree into snag pools or move part of the tree directly to the soil
     void addBiomassPools(const Tree *tree, const double stem_to_snag, const double stem_to_soil, const double branch_to_snag, const double branch_to_soil, const double foliage_to_soil);
     double calculateClimateFactors(); ///< calculate climate factor 're' for the current year
@@ -176,6 +186,7 @@ private:
     CNPair mTotalToExtern; ///< total flux of masses removed from the site (i.e. harvesting) kg/ha
     CNPair mTotalToDisturbance; ///< fluxes due to disturbance
     static double mDBHLower, mDBHHigher; ///< thresholds used to classify to SWD-Pools
+    static double mDBHSingle; ///< threshold above which individul trees are tracked
     static double mCarbonThreshold[3]; ///< carbon content thresholds that are used to decide if the SWD-pool should be emptied
 
     friend class Snapshot;

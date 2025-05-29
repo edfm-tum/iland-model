@@ -40,6 +40,7 @@
 // static variables
 double Snag::mDBHLower = -1.;
 double Snag::mDBHHigher = 0.;
+double Snag::mDBHSingle = 1000.;
 double Snag::mCarbonThreshold[] = {0., 0., 0.};
 
 double CNPair::biomassCFraction = biomassCFraction; // get global from globalsettings.h
@@ -75,12 +76,13 @@ double CNPool::parameter(const CNPool &s) const
 }
 
 
-void Snag::setupThresholds(const double lower, const double upper)
+void Snag::setupThresholds(const double lower, const double upper, const double single_tree)
 {
     if (mDBHLower == lower)
         return;
     mDBHLower = lower;
     mDBHHigher = upper;
+    mDBHSingle = single_tree;
     mCarbonThreshold[0] = lower / 2.;
     mCarbonThreshold[1] = lower + (upper - lower)/2.;
     mCarbonThreshold[2] = upper + (upper - lower)/2.;
@@ -89,6 +91,8 @@ void Snag::setupThresholds(const double lower, const double upper)
     //# values in kg!
     for (int i=0;i<3;i++)
         mCarbonThreshold[i] = 0.10568*pow(mCarbonThreshold[i],2.4247)*0.5*0.01;
+
+
 }
 
 
@@ -179,6 +183,12 @@ QList<QVariant> Snag::debugList()
     return list;
 }
 
+void Snag::packDeadTreeList()
+{
+    // remove all trees that were marked as "to be removed" by settings species to null
+    mDeadTrees.removeIf([](const DeadTree &t) { return t.species() == nullptr; });
+}
+
 
 void Snag::newYear()
 {
@@ -251,8 +261,14 @@ void Snag::calculateYear()
     calculateClimateFactors();
     const double climate_factor_re = mClimateFactor;
 
-    if (isEmpty()) // nothing to do
+    if (isEmpty() && mDeadTrees.isEmpty()) // nothing to do
         return;
+
+    bool to_remove = false;
+    for (auto &dead_tree : mDeadTrees)
+        to_remove |= dead_tree.calculate();
+
+    if (to_remove) packDeadTreeList();
 
     // process branches and coarse roots: every year one of the five baskets is emptied and transfered to the refractory soil pool
     mRefractoryFlux+=mOtherWood[mBranchCounter];
@@ -483,48 +499,21 @@ void Snag::addBiomassPools(const Tree *tree,
 /// after the death of the tree the five biomass compartments are processed.
 void Snag::addMortality(const Tree *tree)
 {
-    addBiomassPools(tree, 1., 0.,  // all stem biomass goes to snag
-                    1., 0.,        // all branch biomass to snag
-                    1.);           // all foliage to soil
+    if (tree->dbh() < mDBHSingle) {
+        addBiomassPools(tree, 1., 0.,  // all stem biomass goes to snag
+                        1., 0.,        // all branch biomass to snag
+                        1.);           // all foliage to soil
+    } else {
+        // the dead tree is tracked individually and starts
+        // its life as a snag:
+        mDeadTrees.push_back(DeadTree(tree));
 
-//    const Species *species = tree->species();
+        addBiomassPools(tree, 0., 0.,  // *no* stem biomass goes to snag
+                        1., 0.,        // all branch biomass to snag
+                        1.);           // all foliage to soil
 
-//    // immediate flows: 100% of foliage, 100% of fine roots: they go to the labile pool
-//    mLabileFlux.addBiomass(tree->biomassFoliage(), species->cnFoliage(), tree->species()->snagKyl());
-//    mLabileFlux.addBiomass(tree->biomassFineRoot(), species->cnFineroot(), tree->species()->snagKyl());
+    }
 
-//    // branches and coarse roots are equally distributed over five years:
-//    double biomass_rest = (tree->biomassBranch()+tree->biomassCoarseRoot()) * 0.2;
-//    for (int i=0;i<5; i++)
-//        mOtherWood[i].addBiomass(biomass_rest, species->cnWood(), tree->species()->snagKyr());
-
-//    // just for book-keeping: keep track of all inputs into branches / roots / swd
-//    mTotalIn.addBiomass(tree->biomassBranch() + tree->biomassCoarseRoot() + tree->biomassStem(), species->cnWood());
-//    // stem biomass is transferred to the standing woody debris pool (SWD), increase stem number of pool
-//    int pi = poolIndex(tree->dbh()); // get right transfer pool
-
-//    // update statistics - stemnumber-weighted averages
-//    // note: here the calculations are repeated for every died trees (i.e. consecutive weighting ... but delivers the same results)
-//    double p_old = mNumberOfSnags[pi] / (mNumberOfSnags[pi] + 1); // weighting factor for state vars (based on stem numbers)
-//    double p_new = 1. / (mNumberOfSnags[pi] + 1); // weighting factor for added tree (p_old + p_new = 1).
-//    mAvgDbh[pi] = mAvgDbh[pi]*p_old + tree->dbh()*p_new;
-//    mAvgHeight[pi] = mAvgHeight[pi]*p_old + tree->height()*p_new;
-//    mAvgVolume[pi] = mAvgVolume[pi]*p_old + tree->volume()*p_new;
-//    mTimeSinceDeath[pi] = mTimeSinceDeath[pi]*p_old + 1.*p_new;
-//    mHalfLife[pi] = mHalfLife[pi]*p_old + species->snagHalflife()* p_new;
-
-//    // average the decay rate (ksw); this is done based on the carbon content
-//    // aggregate all trees that die in the current year (and save weighted decay rates to CurrentKSW)
-//    if (tree->biomassStem()==0)
-//        throw IException("Snag::addMortality: tree without stem biomass!!");
-//    p_old = mToSWD[pi].C / (mToSWD[pi].C + tree->biomassStem()* biomassCFraction);
-//    p_new =tree->biomassStem()* biomassCFraction / (mToSWD[pi].C + tree->biomassStem()* biomassCFraction);
-//    mCurrentKSW[pi] = mCurrentKSW[pi]*p_old + species->snagKsw() * p_new;
-//    mNumberOfSnags[pi]++;
-
-//    // finally add the biomass
-//    CNPool &to_swd = mToSWD[pi];
-//    to_swd.addBiomass(tree->biomassStem(), species->cnWood(), tree->species()->snagKyr());
 }
 
 /// add residual biomass of 'tree' after harvesting.
@@ -536,27 +525,6 @@ void Snag::addHarvest(const Tree* tree, const double remove_stem_fraction, const
                     0., 1.-remove_stem_fraction, // "remove_stem_fraction" is removed -> the rest goes to soil
                     0., 1.-remove_branch_fraction, // "remove_branch_fraction" is removed -> the rest goes directly to the soil
                     1.-remove_foliage_fraction); // the rest of foliage is routed to the soil
-//    const Species *species = tree->species();
-
-//    // immediate flows: 100% of residual foliage, 100% of fine roots: they go to the labile pool
-//    mLabileFlux.addBiomass(tree->biomassFoliage() * (1. - remove_foliage_fraction), species->cnFoliage(), tree->species()->snagKyl());
-//    mLabileFlux.addBiomass(tree->biomassFineRoot(), species->cnFineroot(), tree->species()->snagKyl());
-
-//    // for branches, add all biomass that remains in the forest to the soil
-//    mRefractoryFlux.addBiomass(tree->biomassBranch()*(1.-remove_branch_fraction), species->cnWood(), tree->species()->snagKyr());
-//    // the same treatment for stem residuals
-//    mRefractoryFlux.addBiomass(tree->biomassStem() * (1. - remove_stem_fraction), species->cnWood(), tree->species()->snagKyr());
-
-//    // split the corase wood biomass into parts (slower decay)
-//    double biomass_rest = (tree->biomassCoarseRoot()) * 0.2;
-//    for (int i=0;i<5; i++)
-//        mOtherWood[i].addBiomass(biomass_rest, species->cnWood(), tree->species()->snagKyr());
-
-
-//    // for book-keeping...
-//    mTotalToExtern.addBiomass(tree->biomassFoliage()*remove_foliage_fraction +
-//                              tree->biomassBranch()*remove_branch_fraction +
-//                              tree->biomassStem()*remove_stem_fraction, species->cnWood());
 }
 
 // add flow from regeneration layer (dead trees) to soil
