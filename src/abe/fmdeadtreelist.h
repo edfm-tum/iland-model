@@ -41,7 +41,8 @@ public slots:
     /// whether to load snags, downed dead wood, or both with 'loadWhat', and
     /// set append=true to append to the list of dead trees
     int loadFromRU(int ru_index, DeadTreeType loadWhat, bool append=false);
-    int loadFromStand(int stand_id, DeadTreeType loadWhat, bool append=false);
+    /// load all dead trees from a stand denoted by 'stand_id'
+    int loadFromStand(int stand_id, DeadTreeType loadWhat, QString filter=QString());
 
     // access
     /// filter list according th the expression provided as 'filter'

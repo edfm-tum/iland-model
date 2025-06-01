@@ -15,16 +15,26 @@ public:
     bool calculate();
 
     // properties
+    /// x-coordinate (metric, center of 2m cell)
+    double x() const { return mX; }
+    /// x-coordinate (metric, center of 2m cell)
+    double y() const { return mY; }
     /// true if standing, false if downed dead wood
     bool isStanding() const { return mIsStanding; }
     /// tree volume of the stem at the time of death
     double volume() const { return mVolume; }
     /// current biomass (kg)
     double biomass() const { return mBiomass; }
+    /// crown radius of the living tree
+    double crownRadius()const { return mCrownRadius; }
     /// proportion of remaining biomass (0..1)
     double proportionBiomass() const { return mBiomass / mInititalBiomass; }
     /// decayClass: 1..5
     int decayClass() const { return mDecayClass; }
+    /// years since death (standing as snag)
+    int yearsStanding() const  { return mYearsStandingDead; }
+    /// years since downed (on the ground)
+    int yearsDowned() const { return mYearsDowned; }
     /// species ptr
     const Species *species() const { return mSpecies; }
 private:
@@ -43,6 +53,7 @@ private:
     float mVolume {0};
     float mInititalBiomass {0}; // kg biomass at time of death
     float mBiomass {0}; // kg biomass currently
+    float mCrownRadius {0}; // crown radius (m)
 };
 
 #endif // DEADTREE_H

@@ -5,6 +5,7 @@
 #include "model.h"
 #include "expression.h"
 #include "expressionwrapper.h"
+#include "mapgrid.h"
 
 #include <QJSEngine>
 
@@ -34,9 +35,18 @@ int ABE::FMDeadTreeList::loadFromRU(int ru_index, DeadTreeType loadWhat, bool ap
     return loadFromRU(ru, loadWhat, append);
 }
 
-int ABE::FMDeadTreeList::loadFromStand(int stand_id, DeadTreeType loadWhat, bool append)
+int ABE::FMDeadTreeList::loadFromStand(int stand_id, DeadTreeType loadWhat, QString filter)
 {
+    auto *stand_grid = Globals->model()->standGrid();
+    stand_grid->loadDeadTrees(stand_id, mDeadTrees,  filter );
+    // now filter either snags or DWD:
+    switch (loadWhat) {
+    case DeadTreeType::DWD: mDeadTrees.removeIf([](DeadTree *dt) { return dt->isStanding(); } ); break;
+    case DeadTreeType::Snags: mDeadTrees.removeIf([](DeadTree *dt) {return !dt->isStanding(); }); break;
+    default: break;
+    }
 
+    return mDeadTrees.size();
 }
 
 int ABE::FMDeadTreeList::filter(QString filter)

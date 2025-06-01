@@ -248,7 +248,8 @@ double SaplingWrapper::value(const int variableIndex)
 const static QStringList deadTreeVarList = QStringList()<< baseVarList << "x" <<"y" << // 0,1
                                             "snag" << // 2
                                             "species" << "volume" << // 3,4
-                                            "decayClass" << "biomass" << "remaining" // 5,6,7
+                                            "decayClass" << "biomass" << "remaining" << // 5,6,7
+                                           "yearsStanding" << "yearsDowned" // 8,9
     ;
 const QStringList DeadTreeWrapper::getVariablesList()
 {
@@ -261,15 +262,17 @@ double DeadTreeWrapper::value(const int variableIndex)
     if (!mDeadTree)
         return 0.;
     switch (variableIndex - baseVarListCount) {
-    case 0: return 0; // x
-        case 1: return 0; // y
+        case 0: return mDeadTree->x(); // x
+        case 1: return mDeadTree->y(); // y
         case 2: return mDeadTree->isStanding(); // snag
         case 3: return mDeadTree->species()->index(); // species
         case 4: return mDeadTree->volume(); // volume
         case 5: return mDeadTree->decayClass(); // decayClass
         case 6: return mDeadTree->biomass(); // biomass
         case 7: return mDeadTree->proportionBiomass(); // "remaining"
+        case 8: return mDeadTree->yearsStanding(); // yearsStanding
+        case 9: return mDeadTree->yearsDowned(); // yearsDowned
 
     }
-
+    return 0;
 }

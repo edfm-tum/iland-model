@@ -11,6 +11,7 @@ DeadTree::DeadTree(const Tree *tree)
     mVolume = tree->volume();
     mInititalBiomass = tree->biomassStem();
     mBiomass = tree->biomassStem();
+    mCrownRadius = tree->crownRadius();
     if (mInititalBiomass <= 0.)
         throw IException("DeadTree: invalid stem biomass of <=0!");
 }
@@ -53,7 +54,7 @@ bool DeadTree::calculateDWD()
     updateDecayClass();
 
     // drop out?
-    if (proportionBiomass() < 0.01) {
+    if (proportionBiomass() < 0.05) {
         // stop tracking this stem.
         // TODO: move remaining biomass to snag pool!
         // mark to be cleared

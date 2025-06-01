@@ -575,7 +575,7 @@ void Model::loadProject()
 
     setupSpace();
     if (mRU.isEmpty())
-        throw IException("Setup of Model: no resource units present!");
+        throw IException("Setup of Model: no resource units present!\nThe reason is usually that GIS input data (e.g., environmentGrid, standGrid) does not overlap.");
 
     // (3) additional issues
 

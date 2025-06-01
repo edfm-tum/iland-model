@@ -861,6 +861,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     bool show_fon = ui->visFon->isChecked();
     bool show_dom = ui->visDomGrid->isChecked();
     bool show_trees = ui->visImpact->isChecked();
+    bool show_snags = ui->visSnags->isChecked();
     bool species_color = ui->visSpeciesColor->isChecked();
     bool show_ru = ui->visResourceUnits->isChecked();
     bool show_regeneration = ui->visRegeneration->isChecked();
@@ -1394,6 +1395,108 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         }
 
     } // if (show_trees)
+
+    if (show_snags) {
+        if (!model->settings().carbonCycleEnabled)
+            return;
+
+        QString single_tree_expr = ui->lTreeExpr->text();
+        if (single_tree_expr.isEmpty())
+            single_tree_expr = "1";
+        DeadTreeWrapper tw;
+
+        Expression tree_value(single_tree_expr, &tw);    // get maximum value
+        tree_value.setCatchExceptions(); // silent catching...
+
+        QString filter_expr = ui->expressionFilter->text();
+        bool do_filter = ui->cbDrawFiltered->isChecked();
+        if (filter_expr.isEmpty())
+            filter_expr = "1"; // a constant, always true
+
+        Expression tree_filter(filter_expr, &tw);
+        tree_filter.setCatchExceptions();
+
+        bool draw_transparent = ui->drawTransparent->isChecked();
+
+        painter.setPen(Qt::gray);
+        double max_val=1., min_val=0.;
+        if (!mRulerColors->autoScale()) {
+            max_val = mRulerColors->maxValue(); min_val = mRulerColors->minValue();
+        }
+        if (auto_scale_color && !ui->lTreeExpr->text().isEmpty()) {
+            // find min / max
+            for (const auto &ru : model->ruList()) {
+                for (const auto &dt : ru->snag()->deadTrees()) {
+                    tw.setDeadTree(&dt);
+                    double v = tree_value.execute();
+                    min_val = std::min(min_val, v);
+                    max_val = std::max(max_val, v);
+                }
+            }
+            if (min_val == max_val)
+                max_val = min_val + 1;
+        }
+        for (const auto &ru : model->ruList()) {
+            if (!vp.isVisible(ru->boundingBox()))
+                continue;
+            for (const auto &dt : ru->snag()->deadTrees()) {
+                if (!species.isEmpty())
+                    if (dt.species()->id() != species)
+                        continue;
+
+                QPointF pos(dt.x(), dt.y());
+                QPoint p = vp.toScreen(pos);
+                if (species_color) {
+                    // use species specific color....
+                    fill_color = dt.species()->displayColor();
+                } else {
+                    // calculate expression
+                    tw.setDeadTree(&dt);
+                    value = static_cast<float>(tree_value.execute());
+                    fill_color = Colors::colorFromValue(value, static_cast<float>(min_val), static_cast<float>(max_val), false);
+                }
+                if (draw_transparent)
+                    fill_color.setAlphaF(0.8*dt.proportionBiomass());
+
+                painter.setBrush(fill_color);
+                int diameter = qMax(1,vp.meterToPixel( dt.crownRadius()));
+                if (dt.isStanding()) {
+                    // draw a circle for standing snags
+                    painter.drawEllipse(p, diameter, diameter);
+                } else {
+                    // draw a square for DWD
+                    painter.drawRect(p.x()- diameter, p.y()-diameter, 2*diameter, 2*diameter);
+                }
+
+
+            }
+
+        }
+
+        if (!tree_value.lastError().isEmpty()) {
+            qDebug() << "Expression error while painting: " << tree_value.lastError();
+            if (!GlobalSettings::instance()->controller()->isRunning())
+                mLastPaintError = tree_value.lastError();
+
+        }
+        // ruler
+        if (species_color) {
+            mRulerColors->setCaption("Single snags", "species specific colors.");
+            QList<const Species*> specieslist=mRemoteControl.availableSpecies();
+            QStringList colors; QStringList speciesnames;
+            for (int i=0; i<specieslist.count();++i) {
+                colors.append(specieslist[i]->displayColor().name());
+                speciesnames.append(specieslist[i]->name());
+            }
+            mRulerColors->setFactorColors(colors);
+            mRulerColors->setFactorLabels(speciesnames);
+            mRulerColors->setPalette(GridViewCustom, 0., 1.);
+        } else {
+            mRulerColors->setCaption("Single snags", QString("result of expression: '%1'").arg(single_tree_expr));
+            mRulerColors->setPalette(GridViewRainbow, static_cast<float>(min_val), static_cast<float>(max_val)); // ruler
+        }
+
+    } // if (show_snags)
 
     // draw rectangle around the grid
     QRectF r = grid->metricRect();
@@ -2841,3 +2944,5 @@ void MainWindow::on_actionUpdate_XML_file_triggered()
     mSettingMetaData->updateXMLFile(fileName, missingKeys);
 
 }
+
+

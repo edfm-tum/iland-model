@@ -325,6 +325,38 @@ int MapGrid::loadTrees(const int id, QVector<QPair<Tree *, double> > &rList, con
 
 }
 
+int MapGrid::loadDeadTrees(const int id,
+                           QVector<DeadTree *> &rList,
+                           const QString filter,
+                           int n_estimate) const
+{
+    rList.clear();
+    if (n_estimate>0)
+        rList.reserve(n_estimate);
+    DeadTreeWrapper tw;
+    Expression expression(filter, &tw);
+    expression.enableIncSum();
+
+    auto i = mRUIndex.constFind(id);
+    while (i != mRUIndex.cend() && i.key() == id) {
+        auto &dt_list = i.value().first->snag()->deadTrees();
+        for (auto &dt : dt_list) {
+            if (mGrid.constValueAt(dt.x(), dt.y()) == id) {
+
+                tw.setDeadTree(&dt);
+                if (!expression.isEmpty()) {
+                    bool keep = expression.executeBool();
+                    if (!keep)
+                        continue;
+                }
+                rList.push_back(&dt);
+            }
+        }
+        ++i;
+    }
+    return rList.size();
+}
+
 
 /// return a list of grid-indices of a given stand-id (a grid-index
 /// is the index of 10m x 10m pixels within the internal storage)
