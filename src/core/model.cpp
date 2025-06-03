@@ -563,7 +563,8 @@ void Model::loadProject()
     // class size of snag classes
     Snag::setupThresholds(xml.valueDouble("model.settings.soil.swdDBHClass12"),
                           xml.valueDouble("model.settings.soil.swdDBHClass23"),
-                          xml.valueDouble("model.settings.soil.swdDBHSingle", 1000.));
+                          xml.valueDouble("model.settings.soil.swdDBHSingle", 1000.),
+                          xml.value("model.settings.soil.decayClassThresholds", "0.2, 0.4, 0.7, 0.9"));
 
     // setup of modules
     if (mModules)

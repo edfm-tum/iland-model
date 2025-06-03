@@ -460,6 +460,7 @@ DISTFILES += \
     ../abe-lib/planting/planting.js \
     ../abe-lib/thinning/thinning.js \
     ../apidoc/ABE/abe_patches.js \
+    ../apidoc/ABE/deadtreelist_doc.js \
     ../apidoc/ABE/saplinglist_doc.js \
     ../apidoc/iLand/grid_doc.js \
     ../apidoc/iLand/map_doc.js \

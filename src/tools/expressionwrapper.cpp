@@ -249,7 +249,7 @@ const static QStringList deadTreeVarList = QStringList()<< baseVarList << "x" <<
                                             "snag" << // 2
                                             "species" << "volume" << // 3,4
                                             "decayClass" << "biomass" << "remaining" << // 5,6,7
-                                           "yearsStanding" << "yearsDowned" // 8,9
+                                           "yearsStanding" << "yearsDowned" << "reason" // 8,9, 10
     ;
 const QStringList DeadTreeWrapper::getVariablesList()
 {
@@ -272,6 +272,7 @@ double DeadTreeWrapper::value(const int variableIndex)
         case 7: return mDeadTree->proportionBiomass(); // "remaining"
         case 8: return mDeadTree->yearsStanding(); // yearsStanding
         case 9: return mDeadTree->yearsDowned(); // yearsDowned
+        case 10: return mDeadTree->reason(); // reason of death
 
     }
     return 0;

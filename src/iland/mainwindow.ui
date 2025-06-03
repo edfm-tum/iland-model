@@ -1357,38 +1357,5 @@ QProgressBar::chunk {
  <resources>
   <include location="res/iland.qrc"/>
  </resources>
- <connections>
-  <connection>
-   <sender>visSpeciesColor</sender>
-   <signal>clicked()</signal>
-   <receiver>visImpact</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>979</x>
-     <y>265</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>864</x>
-     <y>242</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>drawTransparent</sender>
-   <signal>clicked()</signal>
-   <receiver>visImpact</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>864</x>
-     <y>265</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>864</x>
-     <y>242</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

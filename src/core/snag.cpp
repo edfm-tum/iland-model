@@ -42,6 +42,7 @@ double Snag::mDBHLower = -1.;
 double Snag::mDBHHigher = 0.;
 double Snag::mDBHSingle = 1000.;
 double Snag::mCarbonThreshold[] = {0., 0., 0.};
+double Snag::mDecayClassThresholds[] = { 0.2, 0.4, 0.7, 0.9 };
 
 double CNPair::biomassCFraction = biomassCFraction; // get global from globalsettings.h
 
@@ -76,7 +77,7 @@ double CNPool::parameter(const CNPool &s) const
 }
 
 
-void Snag::setupThresholds(const double lower, const double upper, const double single_tree)
+void Snag::setupThresholds(const double lower, const double upper, const double single_tree, QString decay_classes)
 {
     if (mDBHLower == lower)
         return;
@@ -91,6 +92,17 @@ void Snag::setupThresholds(const double lower, const double upper, const double 
     //# values in kg!
     for (int i=0;i<3;i++)
         mCarbonThreshold[i] = 0.10568*pow(mCarbonThreshold[i],2.4247)*0.5*0.01;
+
+    // decay-class thresholds:
+    QStringList dclasses = decay_classes.split(",");
+    if (dclasses.length() != 4) throw IException("model.settings.soil.decayClassThresholds: expected four ','-separated values! Got: " + decay_classes);
+    bool ok;
+    for (int i=0;i<4;++i) {
+        double val = dclasses[i].toDouble(&ok);
+        if (!ok) throw IException(QString("model.settings.soil.decayClassThresholds: error converting '%1' to a valid number!").arg(dclasses[i]));
+        mDecayClassThresholds[i] = val;
+        if (i>0 && val < mDecayClassThresholds[i-1]) throw IException("model.settings.soil.decayClassThresholds: values not monotonously increasing! ");
+    }
 
 
 }
@@ -265,10 +277,15 @@ void Snag::calculateYear()
         return;
 
     bool to_remove = false;
+    CNPair flux_to_refr;
     for (auto &dead_tree : mDeadTrees)
-        to_remove |= dead_tree.calculate();
+        to_remove |= dead_tree.calculate(climate_factor_re, mTotalToAtm, flux_to_refr);
 
-    if (to_remove) packDeadTreeList();
+    if (to_remove)
+        packDeadTreeList();
+
+    mRefractoryFlux.C += flux_to_refr.C;
+    mRefrFluxAbovegroundCarbon += flux_to_refr.C;
 
     // process branches and coarse roots: every year one of the five baskets is emptied and transfered to the refractory soil pool
     mRefractoryFlux+=mOtherWood[mBranchCounter];
@@ -372,12 +389,25 @@ void Snag::calculateYear()
     if (isnan(mRefractoryFlux.C))
         qDebug() << "Snag:calculateYear: refr.flux is NAN";
 
-    mTotalSWD = mSWD[0] + mSWD[1] + mSWD[2];
+    mTotalSWD = mSWD[0] + mSWD[1] + mSWD[2] + totalSingleSWD();
     mTotalOther = mOtherWood[0] + mOtherWood[1] + mOtherWood[2] + mOtherWood[3] + mOtherWood[4];
 
     if (mTotalOther.N < 0.)
         qDebug() << "Snag-Other N < 0 on RU (index):" << mRU->index();
 
+}
+
+const CNPair Snag::totalSingleSWD() const
+{
+    CNPair result;
+    for (const auto &dt : mDeadTrees)
+        if (dt.isStanding()) {
+            // Assumption: N does not change while snag carbon decays
+            result.C += dt.biomass() * biomassCFraction; // based on *remaining* biomass
+            result.N += dt.initialBiomass() * biomassCFraction / dt.species()->cnWood(); // based on *initial* biomass
+
+        }
+    return result;
 }
 
 /// foliage and fineroot litter is transferred during tree growth.
@@ -417,9 +447,9 @@ void Snag::addTurnoverWood(const Species *species, const double woody_biomass)
 
 */
 void Snag::addBiomassPools(const Tree *tree,
-                           const double stem_to_snag, const double stem_to_soil,
-                           const double branch_to_snag, const double branch_to_soil,
-                           const double foliage_to_soil)
+                           double stem_to_snag, double stem_to_soil,
+                           double branch_to_snag, double branch_to_soil,
+                           double foliage_to_soil)
 {
     const Species *species = tree->species();
 
@@ -458,34 +488,46 @@ void Snag::addBiomassPools(const Tree *tree,
     // stem biomass is transferred to the standing woody debris pool (SWD), increase stem number of pool
     int pi = poolIndex(tree->dbh()); // get right transfer pool
 
+    double effective_stem_to_snag = stem_to_snag;
     if (stem_to_snag>0.) {
-        // update statistics - stemnumber-weighted averages
-        // note: here the calculations are repeated for every died trees (i.e. consecutive weighting ... but delivers the same results)
-        double p_old = mNumberOfSnags[pi] / (mNumberOfSnags[pi] + 1); // weighting factor for state vars (based on stem numbers)
-        double p_new = 1. / (mNumberOfSnags[pi] + 1); // weighting factor for added tree (p_old + p_new = 1).
-        mAvgDbh[pi] = mAvgDbh[pi]*p_old + tree->dbh()*p_new;
-        mAvgHeight[pi] = mAvgHeight[pi]*p_old + tree->height()*p_new;
-        mAvgVolume[pi] = mAvgVolume[pi]*p_old + tree->volume()*p_new;
-        mTimeSinceDeath[pi] = mTimeSinceDeath[pi]*p_old + 1.*p_new;
-        mHalfLife[pi] = mHalfLife[pi]*p_old + species->snagHalflife()* p_new;
+        if (tree->dbh() > mDBHSingle) {
+            // the stem is tracked individually
+            mDeadTrees.push_back(DeadTree(tree));
+            effective_stem_to_snag = 0.; // snag biomass already processed, do not double-count
 
-        // average the decay rate (ksw); this is done based on the carbon content
-        // aggregate all trees that die in the current year (and save weighted decay rates to CurrentKSW)
-        if (tree->biomassStem()>0.) {
-            p_old = mToSWD[pi].C / (mToSWD[pi].C + tree->biomassStem()* biomassCFraction);
-            p_new =tree->biomassStem()* biomassCFraction / (mToSWD[pi].C + tree->biomassStem()* biomassCFraction);
-            mCurrentKSW[pi] = mCurrentKSW[pi]*p_old + species->snagKsw() * p_new;
+        } else {
+            // the stem goes to the snag pool(s)
+            //
+            // update statistics - stemnumber-weighted averages
+            // note: here the calculations are repeated for every died trees (i.e. consecutive weighting ... but delivers the same results)
+            double p_old = mNumberOfSnags[pi] / (mNumberOfSnags[pi] + 1); // weighting factor for state vars (based on stem numbers)
+            double p_new = 1. / (mNumberOfSnags[pi] + 1); // weighting factor for added tree (p_old + p_new = 1).
+            mAvgDbh[pi] = mAvgDbh[pi]*p_old + tree->dbh()*p_new;
+            mAvgHeight[pi] = mAvgHeight[pi]*p_old + tree->height()*p_new;
+            mAvgVolume[pi] = mAvgVolume[pi]*p_old + tree->volume()*p_new;
+            mTimeSinceDeath[pi] = mTimeSinceDeath[pi]*p_old + 1.*p_new;
+            mHalfLife[pi] = mHalfLife[pi]*p_old + species->snagHalflife()* p_new;
+
+            // average the decay rate (ksw); this is done based on the carbon content
+            // aggregate all trees that die in the current year (and save weighted decay rates to CurrentKSW)
+            if (tree->biomassStem()>0.) {
+                p_old = mToSWD[pi].C / (mToSWD[pi].C + tree->biomassStem()* biomassCFraction);
+                p_new =tree->biomassStem()* biomassCFraction / (mToSWD[pi].C + tree->biomassStem()* biomassCFraction);
+                mCurrentKSW[pi] = mCurrentKSW[pi]*p_old + species->snagKsw() * p_new;
+            }
+            mNumberOfSnags[pi]++;
         }
-        mNumberOfSnags[pi]++;
     }
 
     // finally add the biomass of the stem to the standing snag pool
-    CNPool &to_swd = mToSWD[pi];
-    if (to_swd.C < 0.)
-        qDebug() << "Snag:addBiomassPool: swd<0";
-    to_swd.addBiomass(tree->biomassStem()*stem_to_snag, species->cnWood(), species->snagKyr());
-    if (to_swd.C < 0.)
-        qDebug() << "Snag:addBiomassPool: swd<0";
+    if (effective_stem_to_snag > 0.) {
+        CNPool &to_swd = mToSWD[pi];
+        if (to_swd.C < 0.)
+            qDebug() << "Snag:addBiomassPool: swd<0";
+        to_swd.addBiomass(tree->biomassStem()*effective_stem_to_snag,
+                          species->cnWood(),
+                          species->snagKyr());
+    }
 
     // the biomass that is not routed to snags or directly to the soil
     // is removed from the system (to atmosphere or harvested)
@@ -499,21 +541,9 @@ void Snag::addBiomassPools(const Tree *tree,
 /// after the death of the tree the five biomass compartments are processed.
 void Snag::addMortality(const Tree *tree)
 {
-    if (tree->dbh() < mDBHSingle) {
         addBiomassPools(tree, 1., 0.,  // all stem biomass goes to snag
                         1., 0.,        // all branch biomass to snag
                         1.);           // all foliage to soil
-    } else {
-        // the dead tree is tracked individually and starts
-        // its life as a snag:
-        mDeadTrees.push_back(DeadTree(tree));
-
-        addBiomassPools(tree, 0., 0.,  // *no* stem biomass goes to snag
-                        1., 0.,        // all branch biomass to snag
-                        1.);           // all foliage to soil
-
-    }
-
 }
 
 /// add residual biomass of 'tree' after harvesting.
@@ -525,6 +555,7 @@ void Snag::addHarvest(const Tree* tree, const double remove_stem_fraction, const
                     0., 1.-remove_stem_fraction, // "remove_stem_fraction" is removed -> the rest goes to soil
                     0., 1.-remove_branch_fraction, // "remove_branch_fraction" is removed -> the rest goes directly to the soil
                     1.-remove_foliage_fraction); // the rest of foliage is routed to the soil
+
 }
 
 // add flow from regeneration layer (dead trees) to soil

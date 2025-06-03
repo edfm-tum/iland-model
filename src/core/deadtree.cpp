@@ -1,6 +1,8 @@
 #include "deadtree.h"
 
 #include "tree.h"
+#include "species.h"
+#include "snag.h"
 
 DeadTree::DeadTree(const Tree *tree)
 {
@@ -14,50 +16,79 @@ DeadTree::DeadTree(const Tree *tree)
     mCrownRadius = tree->crownRadius();
     if (mInititalBiomass <= 0.)
         throw IException("DeadTree: invalid stem biomass of <=0!");
+    // death reason:
+    if (tree->isDead()) mDeathReson = 1; // mortality
+    if (tree->isDeadBarkBeetle()) mDeathReson = 2;
+    if (tree->isDeadWind()) {
+        mDeathReson = 3;
+        mIsStanding = false; // wind disturbed trees go to the ground immediately
+    }
+    if (tree->isDeadFire()) mDeathReson = 4;
+    if (tree->isCutdown()) {
+        mDeathReson = 5;
+        mIsStanding = false; // drop down to the ground immediately
+    }
 }
 
-bool DeadTree::calculate()
+bool DeadTree::calculate(double climate_factor, CNPair &rFlux_to_atmosphere, CNPair &rFlux_to_refr)
 {
     if (isStanding()) {
         mYearsStandingDead++;
-        calculateSnag();
+        calculateSnag(climate_factor, rFlux_to_atmosphere, rFlux_to_refr);
     } else {
         // lying deadwood
         mYearsDowned++;
-        return calculateDWD();
+        return calculateDWD(climate_factor, rFlux_to_atmosphere, rFlux_to_refr);
     }
     return true;
 }
 
-bool DeadTree::calculateSnag()
+bool DeadTree::calculateSnag(double climate_factor_re, CNPair &rFlux_to_atmosphere, CNPair &rFlux_to_refr)
 {
-    // update biomass...
-    mBiomass *= 0.9;
+
+    // update biomass, use decomposition rate for snags
+    double decay_factor = exp(-species()->snagKsw() * climate_factor_re);
+    rFlux_to_atmosphere.C += mBiomass * (1. - decay_factor) * biomassCFraction;
+    mBiomass *= decay_factor;
+
     updateDecayClass();
 
     // calculate probability of falling down
-    double p_fall = 0.1;
+    double p_fall;
+    p_fall = log(2.) / ( species()->snagHalflife() / climate_factor_re );
 
     // transfer to DWD?
     if (drandom() < p_fall) {
         mIsStanding = false;
-        // implicit transfer of biomass to DWD
+        // explict transfer of biomass to DWD pool of the soil
+        // Important for tracking biomass and carbon balance:
+        // the "real" tracking of DWD biomass is in the soil pools (Yr). Upon falling, biomass
+        // is transffered to Yr (and also reported in carbon outputs).
+        // here we continue to track individual DWD pieces, but that does *not* affect
+        // carbon pools and is only for tracking decay classes!
+        rFlux_to_refr.C += mBiomass * biomassCFraction;
+        rFlux_to_refr.N += mInititalBiomass * biomassCFraction / species()->cnWood();
+
         return false; // changed to DWD
     }
     return true;
 }
 
-bool DeadTree::calculateDWD()
+bool DeadTree::calculateDWD(double climate_factor_re, CNPair &rFlux_to_atmosphere, CNPair &rFlux_to_refr)
 {
-    // update biomass...
-    mBiomass *= 0.9;
+    Q_UNUSED(rFlux_to_refr)
+    // update biomass... use the decomposition rate for woody biomass on the ground
+    // Note: carbon calculation for DWD is only "for fun" - the actual tracking of
+    // biomass/carbon is done in Soil-pools! (all BM is transferred when the stem is downed)
+    double decay_factor = exp(-species()->snagKyr() * climate_factor_re);
+    rFlux_to_atmosphere.C += mBiomass * (1. - decay_factor) * biomassCFraction;
+    mBiomass *= decay_factor;
+
     updateDecayClass();
 
     // drop out?
     if (proportionBiomass() < 0.05) {
-        // stop tracking this stem.
-        // TODO: move remaining biomass to snag pool!
-        // mark to be cleared
+        // set ptr to 0 -> mark to be cleared
         mSpecies = nullptr;
         return false;
     }
@@ -68,8 +99,11 @@ void DeadTree::updateDecayClass()
 {
     double remaining = proportionBiomass();
     mDecayClass = 5;
-    if (remaining > 0.15) mDecayClass = 4;
-    if (remaining > 0.5) mDecayClass = 3;
-    if (remaining > 0.75) mDecayClass = 2;
-    if (remaining > 0.9) mDecayClass = 1;
+    auto thresholds = Snag::decayClassThresholds();
+    if (remaining > thresholds[0]) mDecayClass = 4;
+    if (remaining > thresholds[1]) mDecayClass = 3;
+    if (remaining > thresholds[2]) mDecayClass = 2;
+    if (remaining > thresholds[3]) mDecayClass = 1;
+    if (mDecayClass == 5)
+        mVolume = 0.;
 }
