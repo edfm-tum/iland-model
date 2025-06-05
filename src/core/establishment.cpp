@@ -52,7 +52,6 @@ void Establishment::setup(const Climate *climate, const ResourceUnitSpecies *rus
     mClimate = climate;
     mRUS = rus;
     mPAbiotic = 0.;
-    mPxDensity = 0.;
     mNumberEstablished = 0;
     if (climate==0)
         throw IException(QString("Establishment::setup: no valid climate for a resource unit: RU-Index: %1, RU-ID: %2, coords: (%3/%4) ").arg(rus->ru()->index()).arg(rus->ru()->id()).
@@ -67,7 +66,6 @@ void Establishment::clear()
 {
     mPAbiotic = 0.;
     mNumberEstablished = 0;
-    mPxDensity = 0.;
     mTACA_min_temp=mTACA_chill=mTACA_gdd=mTACA_frostfree=false;
     mTACA_frostAfterBuds=0;
     mSumLIFvalue = 0.;
@@ -280,7 +278,6 @@ void Establishment::writeDebugOutputs()
         DebugList &out = GlobalSettings::instance()->debugList(mRUS->ru()->index(), GlobalSettings::dEstablishment);
         // establishment details
         out << mRUS->species()->id() << mRUS->ru()->index() << mRUS->ru()->id();
-        out << avgSeedDensity();
         out << TACAminTemp() << TACAchill() << TACAfrostFree() << TACgdd();
         out << TACAfrostDaysAfterBudBirst() << waterLimitation() << growingDegreeDays()  << abioticEnvironment();
         out << mRUS->prod3PG().fEnvYear() << mRUS->constSaplingStat().newSaplings();
