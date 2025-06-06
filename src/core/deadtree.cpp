@@ -17,21 +17,27 @@ DeadTree::DeadTree(const Tree *tree)
     if (mInititalBiomass <= 0.)
         throw IException("DeadTree: invalid stem biomass of <=0!");
     // death reason:
-    if (tree->isDead()) mDeathReson = 1; // mortality
-    if (tree->isDeadBarkBeetle()) mDeathReson = 2;
+    if (tree->isDead()) mDeathReason = 1; // mortality
+    if (tree->isDeadBarkBeetle()) mDeathReason = 2;
     if (tree->isDeadWind()) {
-        mDeathReson = 3;
+        mDeathReason = 3;
         mIsStanding = false; // wind disturbed trees go to the ground immediately
     }
-    if (tree->isDeadFire()) mDeathReson = 4;
+    if (tree->isDeadFire()) mDeathReason = 4;
     if (tree->isCutdown()) {
-        mDeathReson = 5;
+        mDeathReason = 5;
         mIsStanding = false; // drop down to the ground immediately
     }
 }
 
 bool DeadTree::calculate(double climate_factor, CNPair &rFlux_to_atmosphere, CNPair &rFlux_to_refr)
 {
+    if (mYearsStandingDead == 0 && !isStanding()) {
+        // special case: snags start as downed -> immediately transfer all biomass to DWD pools
+        rFlux_to_refr.C += mBiomass * biomassCFraction;
+        rFlux_to_refr.N += mInititalBiomass * biomassCFraction / species()->cnWood();
+    }
+
     if (isStanding()) {
         mYearsStandingDead++;
         calculateSnag(climate_factor, rFlux_to_atmosphere, rFlux_to_refr);
@@ -104,6 +110,6 @@ void DeadTree::updateDecayClass()
     if (remaining > thresholds[1]) mDecayClass = 3;
     if (remaining > thresholds[2]) mDecayClass = 2;
     if (remaining > thresholds[3]) mDecayClass = 1;
-    if (mDecayClass == 5)
-        mVolume = 0.;
+    //if (mDecayClass == 5)
+    //    mVolume = 0.;
 }

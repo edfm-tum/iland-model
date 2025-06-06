@@ -11,11 +11,14 @@ class CNPair; // forward
 class DeadTree
 {
 public:
+    DeadTree() {};
     DeadTree(const Tree *tree);
     /// main update function for both snags and DWD
     /// decomposition of C is tracked in rFlux_to_atmosphere, flow of matter to soil pool in rFlux_to_refr
     /// return false if tracking stops
     bool calculate(double climate_factor, CNPair &rFlux_to_atmosphere, CNPair &rFlux_to_refr);
+    /// mark a tree to be removed on next call to Snag::packDeadTrees
+    void setToBeRemoved() { mSpecies = nullptr; }
 
     // properties
     /// x-coordinate (metric, center of 2m cell)
@@ -43,7 +46,7 @@ public:
     /// species ptr
     const Species *species() const { return mSpecies; }
     /// reason of death: 1: "normal" mortality, 2: bb, 3: wind, 4: fire, 5: mgmt
-    int reason() const { return mDeathReson; }
+    int reason() const { return mDeathReason; }
 private:
     bool calculateSnag(double climate_factor_re, CNPair &rFlux_to_atmosphere, CNPair &rFlux_to_refr); // process standing snag
     bool calculateDWD(double climate_factor_re, CNPair &rFlux_to_atmosphere, CNPair &rFlux_to_refr); // process lying deadwood
@@ -54,7 +57,7 @@ private:
     float mY {0};
     const Species *mSpecies {nullptr };
     bool mIsStanding {true};
-    std::uint8_t mDeathReson {0};
+    std::uint8_t mDeathReason {0};
     short int mYearsStandingDead {0};
     short int mYearsDowned {0};
     short int mDecayClass {0};
@@ -62,6 +65,8 @@ private:
     float mInititalBiomass {0}; // kg biomass at time of death
     float mBiomass {0}; // kg biomass currently
     float mCrownRadius {0}; // crown radius (m)
+
+    friend class Snapshot;
 };
 
 #endif // DEADTREE_H

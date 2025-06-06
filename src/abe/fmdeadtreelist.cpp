@@ -49,6 +49,31 @@ int ABE::FMDeadTreeList::loadFromStand(int stand_id, DeadTreeType loadWhat, QStr
     return mDeadTrees.size();
 }
 
+int ABE::FMDeadTreeList::remove()
+{
+    int removed = 0;
+    QSet<ResourceUnit*> to_pack;
+    for (auto &dt : mDeadTrees) {
+        // find resource unit:
+        QPointF coord(QPointF(dt->x(), dt->y()));
+        ResourceUnit *ru = GlobalSettings::instance()->model()->ru(coord);
+        if (ru && ru->snag()) {
+            for (auto &d : ru->snag()->deadTrees())
+                if ( &d == dt) {
+                    d.setToBeRemoved();
+                    to_pack.insert(ru);
+                    ++removed;
+                }
+
+        }
+
+    }
+    for (auto ru : to_pack)
+        ru->snag()->packDeadTreeList();
+
+    return removed;
+}
+
 int ABE::FMDeadTreeList::filter(QString filter)
 {
     if (filter.isEmpty())

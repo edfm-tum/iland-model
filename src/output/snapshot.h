@@ -59,10 +59,12 @@ private:
     void saveSnagRU(QList<int> stand_ids, bool ridmode);
     void saveSnagCore(Snag *s, QSqlQuery &q);
     void saveSaplings();
+    void saveDeadTrees();
     void loadTrees();
     void loadSoil(QSqlDatabase db=QSqlDatabase());
     void loadSnags(QSqlDatabase db=QSqlDatabase());
     void loadSaplings();
+    void loadDeadTrees();
     void loadSaplingsOld();
     QHash<int, ResourceUnit* > mRUHash;
     struct sContent {

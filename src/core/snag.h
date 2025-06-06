@@ -148,12 +148,14 @@ public:
     /// cut down swd and move to soil pools
     void management(const double factor);
     QList<QVariant> debugList(); ///< return a debug output
+    /// clean up list of dead trees
+    void packDeadTreeList();
+
 
     static double* decayClassThresholds() {return mDecayClassThresholds; }
 private:
     /// storage for snags that are stored individually
     QVector<DeadTree> mDeadTrees;
-    void packDeadTreeList();
 
     /// split the biomass of a tree into snag pools or move part of the tree directly to the soil
     void addBiomassPools(const Tree *tree, const double stem_to_snag, const double stem_to_soil, const double branch_to_snag, double branch_to_soil, const double foliage_to_soil);

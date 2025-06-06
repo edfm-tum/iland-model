@@ -33,6 +33,7 @@
 #include "helper.h"
 #include "gisgrid.h"
 #include "mapgrid.h"
+#include "fmdeadtreelist.h"
 
 #include <QString>
 #include <QtSql>
@@ -70,6 +71,19 @@ public:
         sap_stress = sap.stress_years;
         sap_flags = sap.flags;
     }
+    void setDeadTree(const DeadTree &dt) {
+        x = dt.x();
+        y = dt.y();
+        species = dt.species()->id();
+        dt_IsStanding = dt.isStanding();
+        dt_DeathReason = dt.reason();
+        dt_YearsStandingDead = dt.yearsStanding();
+        dt_YearsDowned = dt.yearsDowned();
+        dt_CrownRadius = dt.crownRadius();
+        dt_InititalBiomass = dt.initialBiomass();
+        dt_Biomass = dt.biomass();
+        dt_Volume = dt.volume();
+    }
 
     void insertTreeToDataStream( QDataStream& dataStream ) const
     {
@@ -89,6 +103,18 @@ public:
     void extractSaplingFromDataStream( QDataStream& dataStream ) {
         dataStream >> x >> y >> species_index >> sap_age >> height >> sap_stress >> sap_flags;
     }
+    void insertDeadTreeToDataStream( QDataStream& dataStream ) const
+    {
+        dataStream << x << y << species << dt_IsStanding << dt_DeathReason;
+        dataStream << dt_YearsStandingDead << dt_YearsDowned << dt_CrownRadius;
+        dataStream << dt_InititalBiomass << dt_Biomass << dt_Volume;
+    }
+    void extractDeadTreeFromDataStream(  QDataStream& dataStream )
+    {
+        dataStream >> x >> y >> species >> dt_IsStanding >> dt_DeathReason;
+        dataStream >> dt_YearsStandingDead >> dt_YearsDowned >> dt_CrownRadius;
+        dataStream >> dt_InititalBiomass >> dt_Biomass >> dt_Volume;
+    }
 
 // variables
 int id;
@@ -104,6 +130,16 @@ float npp_reserve, stress_index;
 int species_index;
 unsigned short sap_age;
 unsigned char sap_stress, sap_flags;
+// for dead trees
+bool dt_IsStanding;
+std::uint8_t dt_DeathReason {0};
+short int dt_YearsStandingDead {0};
+short int dt_YearsDowned {0};
+float dt_Volume {0};
+float dt_InititalBiomass {0}; // kg biomass at time of death
+float dt_Biomass {0}; // kg biomass currently
+float dt_CrownRadius {0}; // crown radius (m)
+
 };
 
 
@@ -137,7 +173,12 @@ bool Snapshot::openDatabase(const QString &file_name, const bool read)
         // saplings/regeneration
         q.exec("drop table saplings");
         q.exec("create table saplings (RUindex integer, posx integer, posy integer, species_index integer, age integer, height float, stress_years integer, flags integer)");
+        // dead trees / DWD pieces
+        q.exec("drop table deadtrees");
+        q.exec("create table deadtrees (RUindex integer, posx integer, posy integer, species text, isStanding integer, deathReason integer,"  \
+               "yearsStandingDead integer, yearsDowned integer, volume float, initBiomass float, biomass float, crownRadius float)");
         qDebug() << "Snapshot - tables created. Database" << file_name;
+
     }
 
     checkContent("snapshot");
@@ -173,6 +214,8 @@ bool Snapshot::createSnapshot(const QString &file_name)
     saveSnags();
     // save saplings
     saveSaplings();
+    // save deadtrees
+    saveDeadTrees();
     QSqlDatabase::database("snapshot").close();
     // save a grid of the indices
     QFileInfo fi(file_name);
@@ -244,6 +287,7 @@ bool Snapshot::loadSnapshot(const QString &file_name)
     loadTrees();
     loadSoil();
     loadSnags();
+    loadDeadTrees();
     // load saplings only when regeneration is enabled (this can save a lot of time)
     if (GlobalSettings::instance()->model()->settings().regenerationEnabled) {
         loadSaplings();
@@ -288,6 +332,9 @@ bool Snapshot::saveStandSnapshot(const int stand_id, const MapGrid *stand_grid, 
             //q.exec("create table saplings_stand (standID integer, posx integer, posy integer, species_index integer, age integer, height float, stress_years integer, flags integer)");
             //q.exec("create index on saplings_stand (standID)");
             q.exec("create table saplings_stand (standID integer, saplings BLOB)");
+
+            q.exec("drop table deadtrees_stand");
+            q.exec("create table deadtrees_stand (standID integer, deadtrees BLOB)");
             // soil
             // * add a primary key for RUindex, and then use INSERT OR REPLACE statements
             // * to overwrite the rows on subsequent saves.
@@ -369,6 +416,33 @@ bool Snapshot::saveStandSnapshot(const int stand_id, const MapGrid *stand_grid, 
         if (!q.exec()) {
             throw IException(QString("Snapshot::saveStandSnapshot, saplings: execute:") + q.lastError().text());
         }
+    }
+
+    // save dead trees
+    if (GlobalSettings::instance()->model()->settings().carbonCycleEnabled) {
+        q.exec(QString("delete from deadtrees_stand where standID=%1").arg(stand_id));
+        if (!q.prepare("insert into deadtrees_stand (standID, deadtrees) values (:standId, :blob)"))
+            throw IException(QString("Snapshot::saveStandDeadtrees: prepare:") + q.lastError().text());
+
+        QByteArray dt_container;
+        QDataStream dt_writer(&dt_container, QIODevice::WriteOnly);
+        dt_writer << (quint32)0xFFEEEEDD; // good old feed... the magic phrase
+
+
+        // get and loop over dead trees:
+        QList<DeadTree*> dead_trees;
+        stand_grid->loadDeadTrees(stand_id, dead_trees);
+        for (auto &dt : dead_trees) {
+            tsn.setDeadTree(*dt);
+            tsn.insertDeadTreeToDataStream(dt_writer);
+        }
+
+        q.addBindValue(stand_id);
+        q.addBindValue(dt_container);
+        if (!q.exec()) {
+            throw IException(QString("Snapshot::saveStandSnapshot, deadtrees: execute:") + q.lastError().text());
+        }
+
     }
 
     db.commit();
@@ -482,10 +556,65 @@ bool Snapshot::loadStandSnapshot(const int stand_id, const MapGrid *stand_grid, 
         }
     }
 
+    // now dead trees
+    int dt_n = 0, n_dt_removed = 0;
+    if (GlobalSettings::instance()->model()->settings().carbonCycleEnabled) {
+        // remove all dead trees on the stand:
+        ABE::FMDeadTreeList dt_list;
+        dt_list.loadFromStand(stand_id, ABE::FMDeadTreeList::DeadTreeType::Both);
+        n_dt_removed = dt_list.remove();
+
+
+        // load from database
+        // (2) load saplings from database
+        q.exec(QString("select deadtrees "
+                       "from deadtrees_stand where standID=%1").arg(stand_id));
+        if (q.next()) {
+            QByteArray data = q.value(0).toByteArray();
+            QDataStream st(data);
+            quint32 magic;
+            st >> magic;
+            if (magic!=0xFFEEEEDD)
+                throw IException(QString("loadStandSnapshot: invalid data for deadtrees of stand").arg(stand_id));
+            SnapshotItem item;
+            while (!st.atEnd()) {
+                item.extractDeadTreeFromDataStream(st);
+                QPointF coord(item.x, item.y);
+                if (!extent.contains(coord))
+                    continue;
+                ResourceUnit *ru = GlobalSettings::instance()->model()->ru(coord);
+                if (!ru)
+                    continue;
+                auto &dt_list = ru->snag()->deadTrees();
+
+                auto &dt = dt_list.emplace_back();
+
+                dt.mX = coord.x();
+                dt.mY = coord.y();
+
+                dt.mSpecies = GlobalSettings::instance()->model()->speciesSet()->species(item.species);
+                if (!dt.mSpecies) throw IException("Snapshot: loadDeadTrees: invalid species");
+
+                dt.mIsStanding = item.dt_IsStanding;
+                dt.mDeathReason = item.dt_DeathReason;
+                dt.mYearsStandingDead = item.dt_YearsStandingDead;
+                dt.mYearsDowned = item.dt_YearsDowned;
+                dt.mVolume = item.dt_Volume;
+                dt.mInititalBiomass = item.dt_InititalBiomass;
+                dt.mBiomass = item.dt_Biomass;
+                dt.mCrownRadius = item.dt_CrownRadius;
+                dt.updateDecayClass();
+                ++dt_n;
+            }
+        }
+    }
+
     // clean up
     GlobalSettings::instance()->model()->cleanTreeLists(true);
 
-    qDebug() << "load stand snapshot for stand "<< stand_id << ": trees (removed/loaded): " <<n_removed<<"/" << n <<", saplings (removed/loaded):" << n_sap_removed << "/" << sap_n;
+    qDebug() << "load stand snapshot for stand "<< stand_id << ": trees (removed/loaded): " <<n_removed<<"/" << n
+             << ", saplings (removed/loaded):" << n_sap_removed << "/" << sap_n
+             << ", deadtrees (removed/loaded):" << n_dt_removed << "/" << dt_n;
 
     return true;
 }
@@ -821,8 +950,9 @@ void Snapshot::saveSnags()
             continue;
 
         saveSnagCore(s, q);
+        ++n;
     }
-    if (++n % 1000 == 0) {
+    if (n % 1000 == 0) {
         qDebug() << n << "snags saved...";
         QCoreApplication::processEvents();
 
@@ -1043,6 +1173,55 @@ void Snapshot::saveSaplings()
     qDebug() << "Snapshot: finished saplings. N=" << n;
 }
 
+void Snapshot::saveDeadTrees()
+{
+    if (!GlobalSettings::instance()->model()->settings().carbonCycleEnabled)
+        return;
+
+    QSqlDatabase db=QSqlDatabase::database("snapshot");
+    QSqlQuery q(db);
+    if (!q.prepare("insert into deadtrees (RUindex, posx, posy, species, isStanding, deathReason, "  \
+           "yearsStandingDead, yearsDowned, volume, initBiomass, biomass, crownRadius)" \
+                   " values (?,?,?,?, ?,?,?,?, ?,?,?,?)") )
+        throw IException(QString("Snapshot::saveDeadTrees: prepare:") + q.lastError().text());
+
+
+    int n = 0;
+    db.transaction();
+
+    for (const auto &ru : GlobalSettings::instance()->model()->ruList()) {
+        for (const auto &dt : ru->snag()->deadTrees()) {
+            q.addBindValue(ru->index());
+            q.addBindValue(dt.x());
+            q.addBindValue(dt.y());
+            q.addBindValue(dt.species()->id());
+            q.addBindValue(dt.isStanding() ? 1:0);
+            q.addBindValue(dt.reason());
+            q.addBindValue(dt.yearsStanding());
+            q.addBindValue(dt.yearsDowned());
+            q.addBindValue(dt.volume());
+            q.addBindValue(dt.initialBiomass());
+            q.addBindValue(dt.biomass());
+            q.addBindValue(dt.crownRadius());
+            if (!q.exec()) {
+                throw IException(QString("Snapshot::saveStandSnapshot, deadtrees: execute:") + q.lastError().text());
+            }
+            ++n;
+            if (n<10000000 && ++n % 10000 == 0) {
+                qDebug() << n << "deadtrees saved...";
+                QCoreApplication::processEvents();
+            }
+            if (n>=10000000 && ++n % 1000000 == 0) {
+                qDebug() << n << "deadtrees saved...";
+                QCoreApplication::processEvents();
+            }
+        }
+    }
+    db.commit();
+    qDebug() << "Snapshot: finished deadtrees. N=" << n;
+
+}
+
 void Snapshot::loadSaplings()
 {
     QSqlDatabase db=QSqlDatabase::database("snapshot");
@@ -1111,6 +1290,60 @@ void Snapshot::loadSaplings()
     qDebug() << "Snapshot: finished loading saplings. N=" << n << "from N in snapshot:" << ntotal;
 
 }
+
+void Snapshot::loadDeadTrees()
+{
+    QSqlDatabase db=QSqlDatabase::database("snapshot");
+    QSqlQuery q(db);
+    q.setForwardOnly(true); // avoid huge memory usage in query component
+    if (!q.exec("select RUindex, posx, posy, species, isStanding, deathReason, "  \
+                "yearsStandingDead, yearsDowned, volume, initBiomass, biomass, crownRadius from deadtrees")) {
+        qDebug() << "Error when loading from deadtrees table...." << q.lastError().text();
+        return;
+    }
+    int ru_index = -1;
+    int ci;
+    int n=0;
+    ResourceUnit *ru;
+    while (q.next()) {
+        ci = 0;
+        ru_index = q.value(ci++).toInt();
+        ru = mRUHash[ru_index];
+        if (!ru || !ru->snag())
+            continue;
+        auto &dt_list = ru->snag()->deadTrees();
+        auto &dt = dt_list.emplace_back();
+
+        dt.mX = q.value(ci++).toFloat();
+        dt.mY = q.value(ci++).toFloat();
+
+        dt.mSpecies = GlobalSettings::instance()->model()->speciesSet()->species(q.value(ci++).toString());
+        if (!dt.mSpecies) throw IException("Snapshot: loadDeadTrees: invalid species");
+
+        dt.mIsStanding = q.value(ci++).toInt() == 1;
+        dt.mDeathReason = q.value(ci++).toInt();
+        dt.mYearsStandingDead = q.value(ci++).toInt();
+        dt.mYearsDowned = q.value(ci++).toInt();
+        dt.mVolume = q.value(ci++).toDouble();
+        dt.mInititalBiomass = q.value(ci++).toDouble();
+        dt.mBiomass = q.value(ci++).toDouble();
+        dt.mCrownRadius = q.value(ci++).toDouble();
+        dt.updateDecayClass();
+
+        ++n;
+        if (n % 10000 == 0 )
+            if ( (n<100000 ) ||   // until 100,000 every 10k
+                (n<1000000 && n % 100000 == 0) ||   // until 1M every 100k
+                (n % 1000000 == 0) ) {             // then every M
+                qDebug() << n << "dead trees loaded...";
+                QCoreApplication::processEvents();
+            }
+    }
+    qDebug() << "Snapshot: finished loading dead trees. N=" << n ;
+
+
+}
+
 
 
 void Snapshot::loadSaplingsOld()

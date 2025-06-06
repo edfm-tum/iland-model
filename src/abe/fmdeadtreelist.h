@@ -44,6 +44,10 @@ public slots:
     /// load all dead trees from a stand denoted by 'stand_id'
     int loadFromStand(int stand_id, DeadTreeType loadWhat, QString filter=QString());
 
+    // actions
+    /// remove all snags / SWD list items from iLand
+    int remove();
+
     // access
     /// filter list according th the expression provided as 'filter'
     int filter(QString filter);
