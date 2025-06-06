@@ -420,7 +420,8 @@ void LinkXmlQt::writeToFile(const QString& xmlFilePath)
 
 }
 
-void LinkXmlQt::createXML(const QStringList& metaKeys, const QString &pathXmlFile)
+void LinkXmlQt::createXML(const QStringList& metaKeys,
+                          const QString &pathXmlFile)
 {
     QStringList initCommentList;
 
@@ -466,6 +467,7 @@ void LinkXmlQt::createXML(const QStringList& metaKeys, const QString &pathXmlFil
                     curNode = childBranch;
                 }
             }
+
             curNode.appendChild(newXml.createTextNode(""));
         }
     }

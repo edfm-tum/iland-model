@@ -51,6 +51,7 @@ public:
                             QWidget *parent = nullptr);
     //~SettingsDialog();
 
+    QAbstractButton* saveAsButton;
     QAbstractButton* saveButton;
     QAbstractButton* cancelButton;
     QAction* a_changedValuesDialog;
