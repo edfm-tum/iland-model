@@ -30,6 +30,9 @@ public:
     void execute(const ResourceUnitSpecies *rus);
     virtual void exec();
     virtual void setup();
+private:
+    Expression mCondition;
+
 };
 
 #endif // PRODUCTIONOUT_H
