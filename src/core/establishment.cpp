@@ -286,14 +286,5 @@ void Establishment::writeDebugOutputs()
         //out << mSaplingStat.newSaplings() << mSaplingStat.diedSaplings() << mSaplingStat.recruitedSaplings() << mSpecies->saplingGrowthParameters().referenceRatio;
     }
     //); // DBGMODE()
-
-
-    if ( logLevelDebug() )
-        qDebug() << "establishment of RU" << mRUS->ru()->index() << "species" << mRUS->species()->id()
-                 << "seeds density:" << avgSeedDensity()
-                 << "abiotic environment:" << abioticEnvironment()
-                 << "f_env,yr:" << mRUS->prod3PG().fEnvYear()
-                 << "N(established):" << numberEstablished();
-
 }
 
