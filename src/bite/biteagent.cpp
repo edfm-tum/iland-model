@@ -23,6 +23,7 @@
 #include "model.h"
 #include "fmtreelist.h"
 #include "fmsaplinglist.h"
+#include "fmdeadtreelist.h"
 #include "scriptgrid.h"
 #include "scripttree.h"
 #include "bitelifecycle.h"
@@ -33,6 +34,8 @@ namespace BITE {
 
 QHash<QThread*, ABE::FMTreeList* > BiteAgent::mTreeLists;
 QHash<QThread*, ABE::FMSaplingList* > BiteAgent::mSaplingLists;
+QHash<QThread*, ABE::FMDeadTreeList* > BiteAgent::mDeadTreeLists;
+
 
 BiteAgent::BiteAgent(QObject *parent): QObject(parent)
 {
@@ -461,6 +464,16 @@ ABE::FMSaplingList *BiteAgent::threadSaplingList()
     QMutexLocker lock(&_thread_treelist);
     mSaplingLists[QThread::currentThread()] = new ABE::FMSaplingList;
     return mSaplingLists[QThread::currentThread()];
+
+}
+
+ABE::FMDeadTreeList *BiteAgent::threadDeadTreeList()
+{
+    if (BiteAgent::mDeadTreeLists.contains(QThread::currentThread()))
+        return mDeadTreeLists[QThread::currentThread()];
+    QMutexLocker lock(&_thread_treelist);
+    mDeadTreeLists[QThread::currentThread()] = new ABE::FMDeadTreeList;
+    return mDeadTreeLists[QThread::currentThread()];
 
 }
 

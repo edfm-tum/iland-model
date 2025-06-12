@@ -27,11 +27,13 @@
 #include "scripttree.h"
 #include "fmtreelist.h"
 #include "fmsaplinglist.h"
+#include "fmdeadtreelist.h"
 //#include "biteagent.h"
 
 namespace ABE {
 class FMTreeList;
 class FMSaplingList;
+class FMDeadTreeList;
 }
 namespace BITE {
 class BiteAgent; // forward
@@ -53,6 +55,7 @@ class BiteCellScript : public QObject
     Q_PROPERTY(int outbreakYears READ outbreakYears)
     Q_PROPERTY(ABE::FMTreeList* trees READ trees)
     Q_PROPERTY(ABE::FMSaplingList* saplings READ saplings)
+    Q_PROPERTY(ABE::FMDeadTreeList* deadTrees READ deadTrees)
     Q_PROPERTY(BiteAgent* agent READ agent)
 public:
     explicit BiteCellScript(QObject *parent = nullptr);
@@ -74,6 +77,7 @@ public:
 
     ABE::FMTreeList *trees();
     ABE::FMSaplingList *saplings();
+    ABE::FMDeadTreeList *deadTrees();
 
 
     int x() const;
@@ -92,6 +96,7 @@ public slots:
 
     void reloadTrees();
     void reloadSaplings();
+    void reloadDeadTrees();
 
     QVector<double> dailyClimateTimeseries(QString type);
 private:

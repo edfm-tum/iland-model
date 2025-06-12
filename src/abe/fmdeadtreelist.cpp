@@ -49,6 +49,19 @@ int ABE::FMDeadTreeList::loadFromStand(int stand_id, DeadTreeType loadWhat, QStr
     return mDeadTrees.size();
 }
 
+int ABE::FMDeadTreeList::loadFromRect(ResourceUnit *ru, const QRectF &rect)
+{
+    auto &dt_list = ru->snag()->deadTrees();
+    mDeadTrees.clear();
+
+    for (auto &dt : dt_list) {
+        if ( rect.contains( QPointF(dt.x(), dt.y()) ) )
+            mDeadTrees.push_back(&dt);
+    }
+    return length();
+
+}
+
 int ABE::FMDeadTreeList::remove()
 {
     int removed = 0;

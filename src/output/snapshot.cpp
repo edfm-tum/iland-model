@@ -190,7 +190,11 @@ void Snapshot::checkContent(QString dbname)
     QSqlDatabase db=QSqlDatabase::database(dbname);
     QSqlRecord r = db.record("soil");
     dbcontent.permafrost = r.indexOf("MossBiomass")>=0; // permafrost columns included
-    qDebug() << "Snapshot content: permafrost: " << dbcontent.permafrost;
+    r = db.record("deadtrees");
+    dbcontent.deadtrees = !r.isEmpty();
+
+    qDebug() << "Snapshot content: permafrost: " << dbcontent.permafrost << "deadtrees:" << dbcontent.deadtrees;
+
 }
 
 bool Snapshot::openStandDatabase(const QString &file_name, bool read)
@@ -1293,6 +1297,9 @@ void Snapshot::loadSaplings()
 
 void Snapshot::loadDeadTrees()
 {
+    if (!dbcontent.deadtrees)
+        return;
+
     QSqlDatabase db=QSqlDatabase::database("snapshot");
     QSqlQuery q(db);
     q.setForwardOnly(true); // avoid huge memory usage in query component

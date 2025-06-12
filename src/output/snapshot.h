@@ -68,8 +68,9 @@ private:
     void loadSaplingsOld();
     QHash<int, ResourceUnit* > mRUHash;
     struct sContent {
-        sContent(): permafrost(false) {}
+        sContent(): permafrost(false),deadtrees(false) {}
         bool permafrost;
+        bool deadtrees;
     } dbcontent;
 };
 

@@ -44,6 +44,11 @@ public slots:
     /// load all dead trees from a stand denoted by 'stand_id'
     int loadFromStand(int stand_id, DeadTreeType loadWhat, QString filter=QString());
 
+    /// load dead trees from a portion of a RU
+    /// load both snags and DWD as default
+    int loadFromRect(ResourceUnit *ru, const QRectF &rect);
+
+
     // actions
     /// remove all snags / SWD list items from iLand
     int remove();
