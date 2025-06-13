@@ -269,58 +269,81 @@ const QList<const DebugList*> GlobalSettings::debugLists(const int ID, const Deb
 QStringList GlobalSettings::debugListCaptions(const DebugOutputs dbg)
 {
     QStringList treeCaps = QStringList() << "Id" << "Species" << "Dbh" << "Height" << "x" << "y" << "ru_index" << "LRI"
-                           << "mWoody" << "mRoot" << "mFoliage" << "LA";
+                                         << "mStemMass" << "mCoarseRootMass" << "mFoliageMass" << "mLeafArea";
+
     if ( int(dbg)==0)
         return treeCaps;
+
     switch(dbg) {
-    case dTreeNPP: return QStringList() << "id" << "type" << "year" << treeCaps
-                                        << "LRI_modRU" <<"lightResponse" << "effective_area" << "raw_gpp" << "gpp" << "npp" << "aging";
+    case dTreeNPP:
+        return QStringList() << "id" << "type" << "year" << treeCaps
+                             << "LRI_modified" << "light_response" << "effective_area" << "raw_gpp" << "gpp" << "npp" << "aging_factor";
 
-    case dTreeGrowth: return QStringList() << "id" << "type" << "year" <<  treeCaps
-                                           << "netNPPStem" << "massStemOld" << "hd_growth" << "factor_diameter" << "delta_d_estimate" << "d_increment";
+    case dTreeGrowth:
+        return QStringList() << "id" << "type" << "year" << treeCaps
+                             << "net_stem_npp" << "stem_mass_before" << "hd_growth_ratio" << "factor_diameter"
+                             << "dbh_inc_estimate_cm" << "dbh_inc_final_cm";
 
-    case dTreePartition: return QStringList() << "id" << "type" << "year" << treeCaps << "mFineroot" << "mBranch"
-                                              << "npp_kg" << "apct_foliage" << "apct_wood" << "apct_root"
-                                              << "delta_foliage" << "delta_woody" << "delta_root" << "biomass_loss"
-                                              << "mNPPReserve" << "netStemInc" << "stress_index";
+    case dTreePartition:
+        return QStringList() << "id" << "type" << "year" << treeCaps << "mFineroot" << "mBranch"
+                             << "npp_kg" << "apct_foliage" << "apct_wood" << "apct_root"
+                             << "delta_foliage" << "delta_woody" << "delta_root" << "biomass_loss"
+                             << "mNPPReserve" << "netStemInc" << "stress_index";
 
-    case dStandGPP: return QStringList() << "id" << "type" << "year" << "species" << "RU_index" << "rid" << "lai" << "gpp_kg_m2" << "gpp_kg" << "avg_aging" << "f_env_yr";
+    case dStandGPP:
+        return QStringList() << "id" << "type" << "year" << "species" << "RU_index" << "rid"
+                             << "lai" << "gpp_kg_m2" << "gpp_kg" << "avg_aging" << "f_env_yr";
 
-    case dWaterCycle: return QStringList() << "id" << "type" << "year" << "date" << "ruindex" << "rid" << "temp" << "vpd" << "prec" << "rad" << "combined_response"
-                                           << "after_intercept" << "after_snow" << "et_canopy" << "evapo_intercepted"
-                                           << "content" << "psi_kpa" << "excess_mm" << "snow_height" << "lai_effective"
-                                              // permafrost details
-                                           << "pftop" << "pfbottom" << "pffreezeback" << "delta_mm" << "delta_soil" << "thermalConductivity"
-                                           << "soilfrozen" << "waterfrozen" << "current_capacity"
-                                           << "moss_fLight" << "moss_fDecid";
+    case dWaterCycle:
+        return QStringList() << "id" << "type" << "year" << "date" << "ruindex" << "rid" << "temp" << "vpd" << "prec" << "rad" << "combined_response"
+                             << "after_intercept" << "after_snow" << "et_canopy" << "evapo_intercepted"
+                             << "content" << "psi_kpa" << "excess_mm" << "snow_height" << "lai_effective"
+                             // Permafrost details with corrected names
+                             << "pf_top" << "pf_bottom" << "pf_freezeback" << "pf_delta_water_mm" << "pf_delta_soil_m" << "pf_k_unfrozen"
+                             << "pf_soil_frozen_m" << "pf_water_frozen_mm" << "pf_unfrozen_fc_mm"
+                             << "moss_f_light" << "moss_f_deciduous";
 
-    case dDailyResponses: return QStringList() << "id" << "type" << "year" << "species" << "date" << "RU_index" << "rid"
-                                               << "waterResponse" << "tempResponse" << "VpdResponse" << "Radiation of day" << "util.Radiation";
+    case dDailyResponses:
+        return QStringList() << "id" << "type" << "year" << "day_id" << "ru_index" << "ru_id" << "species"
+                             << "temp" << "vpd" << "rad"
+                             << "resp_soil" << "resp_vpd" << "resp_temp" << "resp_meteo"
+                             << "resp_pheno" << "resp_co2" << "apar_mj_m2"
+                             << "resp_daylength" << "utilizable_rad";
 
-    case dEstablishment: return QStringList() << "id" << "type" << "year" << "species" << "RU_index" << "rid"
-                                              << "avgProbDensity" << "TACAminTemp" << "TACAchill" << "TACAfrostFree" << "TACAgdd" << "TACAFrostAfterBud" << "waterLimitation" << "GDD" << "TACAAbioticEnv"
-                                              << "fEnvYr" <<"N_Established" ;
 
-    case dSaplingGrowth: return QStringList() << "id" << "type" << "year" << "species" << "RU_index" << "rid"
-                                              << "Living_cohorts" << "averageHeight" << "averageAge" << "avgDeltaHPot" << "avgDeltaHRealized"
-                                              << "added" << "addedVegetative" << "died" << "recruited" << "refRatio"
-                                              << "carbonLiving" << "carbonGain";
+    case dEstablishment:
+        // Use more descriptive names to match documentation.
+        return QStringList() << "id" << "type" << "year" << "species" << "RU_index" << "rid"
+                             << "avgSeedDensity" << "TACAminTemp" << "TACAchill" << "TACAfrostFree" << "TACAgdd"
+                             << "frostDaysAfterBudburst" << "waterLimitation" << "GDD" << "pAbiotic"
+                             << "fEnvYr" << "newSaplings" ;
 
-    case dCarbonCycle: return QStringList() << "id" << "type" << "year" << "RU_index" << "rid"
-                                            << "SnagState_c" << "TotalC_in" << "TotalC_toAtm" << "SWDtoDWD_c" << "SWDtoDWD_n" << "toLabile_c" << "toLabile_n" << "toRefr_c" << "toRefr_n"
-                                            << "swd1_c" << "swd1_n" << "swd1_count" << "swd1_tsd" << "toSwd1_c" << "toSwd1_n" << "dbh1" << "height1" << "volume1"  // pool of small dbhs
-                                            << "swd2_c" << "swd2_n" << "swd2_count" << "swd2_tsd" << "toSwd2_c" << "toSwd2_n" << "dbh2" << "height2" << "volume2"   // standing woody debris medium dbhs
-                                            << "swd3_c" << "swd3_n" << "swd3_count" << "swd3_tsd" << "toSwd3_c" << "toSwd3_n" << "dbh3" << "height3" << "volume3"   // large trees
-                                            << "otherWood1_c" << "otherWood1_n" << "otherWood2_c" << "otherWood2_n" << "otherWood3_c" << "otherWood3_n" << "otherWood4_c" << "otherWood4_n" << "otherWood5_c" << "otherWood5_n"
-                                            << "iLabC" << "iLabN" << "iKyl" << "iRefC" << "iRefN" << "iKyr" << "re" << "kyl" << "kyr" << "ylC" << "ylN" << "yrC" << "yrN" << "somC" << "somN"
-                                            << "NAvailable" << "NAVLab" << "NAVRef" << "NAVSom";
-    case dPerformance: return QStringList() << "id" << "type" << "year" << "treeCount" << "saplingCount" << "newSaplings" << "management"
-                                            << "applyPattern" << "readPattern" << "treeGrowth" << "seedDistribution" <<  "establishment"<< "saplingGrowth" << "carbonCycle"
-                                            << "writeOutput" << "totalYear";
+    case dSaplingGrowth:
+        return QStringList() << "id" << "type" << "year" << "species" << "RU_index" << "rid"
+                             << "Living_cohorts" << "averageHeight" << "averageAge" << "avgDeltaHPot" << "avgDeltaHRealized"
+                             << "added" << "addedVegetative" << "died" << "recruited" << "refRatio"
+                             << "carbonLiving" << "carbonGain";
+
+    case dCarbonCycle:
+
+        return QStringList() << "id" << "type" << "year" << "RU_index" << "rid"
+                             << "SnagState_c" << "TotalC_in" << "TotalC_toAtm" << "SWDtoDWD_c" << "SWDtoDWD_n" << "toLabile_c" << "toLabile_n" << "toRefr_c" << "toRefr_n"
+                             << "swd1_c" << "swd1_n" << "swd1_count" << "swd1_tsd" << "toSwd1_c" << "toSwd1_n" << "dbh1" << "height1" << "volume1"
+                             << "swd2_c" << "swd2_n" << "swd2_count" << "swd2_tsd" << "toSwd2_c" << "toSwd2_n" << "dbh2" << "height2" << "volume2"
+                             << "swd3_c" << "swd3_n" << "swd3_count" << "swd3_tsd" << "toSwd3_c" << "toSwd3_n" << "dbh3" << "height3" << "volume3"
+                             << "otherWood1_c" << "otherWood1_n" << "otherWood2_c" << "otherWood2_n" << "otherWood3_c" << "otherWood3_n" << "otherWood4_c" << "otherWood4_n" << "otherWood5_c" << "otherWood5_n"
+                             << "iLabC" << "iLabN" << "iKyl" << "iRefC" << "iRefN" << "iKyr" << "re" << "kyl" << "kyr" << "ylC" << "ylN" << "yrC" << "yrN" << "somC" << "somN"
+                             << "NAvailable" << "NAVLab" << "NAVRef" << "NAVSom";
+    case dPerformance:
+        // Note: The 'id' column for this output is the year.
+        return QStringList() << "id" << "type" << "year" << "treeCount" << "saplingCount" << "newSaplings" << "management"
+                             << "applyPattern" << "readPattern" << "treeGrowth" << "seedDistribution" <<  "establishment"<< "saplingGrowth" << "carbonCycle"
+                             << "writeOutput" << "totalYear";
 
     }
     return QStringList() << "invalid debug output!";
 }
+
 
 QStringList GlobalSettings::debugDataTable(GlobalSettings::DebugOutputs type,
                                            const QString separator,
