@@ -76,7 +76,8 @@ GisGrid::~GisGrid()
 
 bool GisGrid::loadFromFile(const QString &fileName) {
     Grid<double> temp_grid;
-    temp_grid.loadGridFromFile(fileName);
+    if (!temp_grid.loadGridFromFile(fileName))
+        return false;
 
     mCellSize = temp_grid.cellsize();
     min_value = temp_grid.min();
