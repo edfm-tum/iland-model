@@ -34,7 +34,7 @@ class ActThinning : public Activity
 {
 public:
     ActThinning(FMSTP *parent);
-    enum ThinningType { Invalid, FromBelow, FromAbove, Custom, Selection};
+    enum ThinningType { Invalid, FromBelow, FromAbove, Custom, Selection, Tending};
     QString type() const;
     void setup(QJSValue value);
     bool evaluate(FMStand *stand);
@@ -49,7 +49,8 @@ private:
         bool targetRelative; ///< if true, the target variable is relative to the stock, if false it is absolute
         QString targetVariable; ///< target variable ('volume', 'basalArea', 'stems') / ha
         QVector<double> classValues; ///< class values (the number of values defines the number of classes)
-        QVector<int> classPercentiles; ///< percentiles [0..100] for the classes (count = count(classValues) + 1
+        QVector<int> cumClassPercentiles; ///< cumulative percentiles [0..100] of the relative classes
+        QVector<int> cumSelectPercentiles; ///< cumulative probability weight of the selectoin
         QJSValue minDbh; ///< only trees with dbh > minDbh are considered (default: 0)
         QJSValue remainingStems; ///< minimum remaining stems/ha (>minDbh)
     };
@@ -62,11 +63,18 @@ private:
 
     SSelectiveThinning mSelectiveThinning;
 
+    struct STendingThinning {
+        QJSValue speciesProb; ///< probability [0...1] for each species to get picked as crop tree (second order after ranking)
+        double intensity; ///< factor that defines tending intensity. 0.0001 - 100
+    } mTendingThinning;
+
     QVector<SCustomThinning> mCustomThinnings;
     /// setup function for custom thinnings
     void setupCustom(QJSValue value);
     /// setup function for selective thinnings ("auslesedurchforstung")
     void setupSelective(QJSValue value);
+    /// setup function for tending ("mischwuchsregulierung")
+    void setupTending(QJSValue value);
 
     // setup a single thinning definition
     void setupSingleCustom(QJSValue value, SCustomThinning &custom);
@@ -81,10 +89,18 @@ private:
     bool markCropTrees(FMStand* stand, bool selective_species=false);
     float testPixel(const QPointF &pos,  Grid<float> &grid);
     void setPixel(const QPointF &pos,  Grid<float> &grid);
+
+    // tending
+
+    bool evaluateTending(FMStand *stand);
+    bool runTending(FMStand* stand);
+
+
+
     ThinningType mThinningType;
 
     // general
-    bool populateSpeciesSelectivity(QJSValue value);
+    bool populateSpeciesSelectivity(QJSValue value, double default_value=1.);
     // syntax checking
     static QStringList mSyntaxCustom;
     static QStringList mSyntaxSelective;

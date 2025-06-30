@@ -79,7 +79,10 @@ void FMSTP::setup(QJSValue &js_value, const QString &name)
     mActivityNames.clear();
     mHasRepeatingActivities = false;
     for (int i=0;i<mActivities.count();++i) {
-        mActivityNames.push_back(mActivities.at(i)->name());
+        QString act_name = mActivities.at(i)->name();
+        if (activity(act_name))
+            throw IException(QString("Setup of STP %1: activity name / id is not unique: %2").arg(mName, act_name));
+        mActivityNames.push_back(act_name);
         mActivityStand.push_back(mActivities.at(i)->standFlags()); // stand = null: create a copy of the activities' base flags
         mActivities.at(i)->setIndex(i);
         if (mActivities.at(i)->isRepeatingActivity())
@@ -116,15 +119,21 @@ bool FMSTP::executeRepeatingActivities(FMStand *stand)
 
 }
 
-bool FMSTP::signal(QString signalstr, FMStand *stand)
+bool FMSTP::signal(QString signalstr, FMStand *stand, QJSValue parameter)
 {
     int found = 0;
     for (auto *act : mActivities) {
         if (act->schedule().listensToSignal(signalstr)) {
+            // only respond when the activity is enabled
+            if (!stand->flags(act->index()).enabled())
+                continue;
+
             int delta_yrs = act->schedule().signalExecutionDelay(signalstr);
             ForestManagementEngine::instance()->addRepeatActivity(stand->id(),
                                                                   act,
-                                                                  delta_yrs);
+                                                                  delta_yrs,
+                                                                  1,
+                                                                  parameter);
             if (verbose())
                 qCDebug(abe) << "Signal" << signalstr << "sent for stand" << stand->id() << "received by activity" << act->name() << "delta yrs:" << delta_yrs;
             ++found;
@@ -220,17 +229,23 @@ void FMSTP::setupActivity(const QJSValue &js_value, const QString &name)
     Activity *act = Activity::createActivity(type, this);
     if (!act) return; // actually, an error is thrown in the previous call.
 
-    // use id-property if available, or the object-name otherwise
-    act->setName(valueFromJs(js_value, "id", name).toString());
-    // call the setup routine (overloaded version)
-    act->setup(js_value);
+    try {
 
-    // call the onCreate handler:
-    FomeScript::bridge()->setActivity(act);
-    QJSValueList params = {  FomeScript::bridge()->activityJS()  };
+        // use id-property if available, or the object-name otherwise
+        QString act_name = valueFromJs(js_value, "id", name).toString();
+        act->setName(act_name);
+        // call the setup routine (overloaded version)
+        act->setup(js_value);
 
-    act->events().run(QStringLiteral("onCreate"),nullptr, &params);
-    mActivities.push_back(act);
+        // call the onCreate handler:
+        FomeScript::bridge()->setActivity(act);
+        QJSValueList params = {  FomeScript::bridge()->activityJS()  };
+
+        act->events().run(QStringLiteral("onCreate"),nullptr, &params);
+        mActivities.push_back(act);
+    } catch (const IException &e) {
+        throw IException(QString("Error in setting up activity '%1': %2").arg(act->name(), e.message()));
+    }
 }
 
 void FMSTP::clear()
@@ -274,13 +289,18 @@ bool FMSTP::checkObjectProperties(const QJSValue &js_value, const QStringList &a
 {
     QJSValueIterator it(js_value);
     bool found_issues = false;
+    QString message;
     while (it.hasNext()) {
         it.next();
         if (!allowed_properties.contains(it.name()) && it.name()!=QLatin1String("length")) {
-            qCDebug(abe) << "Syntax-warning: The javascript property" << it.name() << "is not used! In:" << errorMessage;
+            message += QString("%1,").arg(it.name());
             found_issues = true;
         }
     }
+
+    if (found_issues)
+        throw IException(QString("Invalid properties detected: %1 in %2!").arg(message, errorMessage));
+
     return !found_issues;
 }
 

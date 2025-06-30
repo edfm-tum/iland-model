@@ -56,6 +56,7 @@ void PaintArea::mouseMoveEvent( QMouseEvent * event )
 void PaintArea::wheelEvent ( QWheelEvent * event )
 {
     emit mouseWheel(event->position().toPoint(), event->angleDelta().y() / 120);
+
 }
 
 void PaintArea::mouseReleaseEvent ( QMouseEvent * event )

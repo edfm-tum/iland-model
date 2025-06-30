@@ -441,9 +441,15 @@ bool GlobalSettings::setupDatabaseConnection(const QString& dbname, const QStrin
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE",dbname); // addDatabase replaces a connection with the same name
     qDebug() << "setup database connection" << dbname << "to" << fileName;
     //db.setDatabaseName(":memory:");
-    if (fileMustExist)
-        if (!QFile::exists(fileName))
+    if (fileMustExist) {
+        if (!QFile::exists(fileName)) {
             throw IException("Error setting up database connection: file " + fileName + " does not exist!");
+        }
+    } else {
+        // make sure the path exists
+        QString db_path = QFileInfo(fileName).absolutePath();
+        QDir().mkpath(db_path);
+    }
     db.setDatabaseName(fileName);
     if (fileMustExist)
         db.setConnectOptions("QSQLITE_OPEN_READONLY"); // connect as read only

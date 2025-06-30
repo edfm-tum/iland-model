@@ -98,6 +98,9 @@ public slots:
     /// reset all marks of currently loaded trees to zero
     int resetMarks();
 
+    /// set a given flag for all trees in the list
+    void setFlag(ScriptTree::Flags flag, bool value=true);
+
     /// access to single trees (returns a reference)
     QJSValue tree(int index);
     /// return a copy of a tree

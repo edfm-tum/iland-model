@@ -155,6 +155,7 @@ SOURCES += main.cpp \
     ../core/permafrost.cpp \
     ../output/devstageout.cpp \
     ../output/ecovizout.cpp \
+    ../output/svdindicatorout.cpp \
     ../tools/geotiff.cpp \
     mainwindow.cpp \
     paintarea.cpp \
@@ -288,6 +289,7 @@ HEADERS += mainwindow.h \
     ../core/permafrost.h \
     ../output/devstageout.h \
     ../output/ecovizout.h \
+    ../output/svdindicatorout.h \
     ../tools/geotiff.h \
     stable.h \
     paintarea.h \
@@ -426,6 +428,8 @@ FORMS += mainwindow.ui \
     ui/dialogfunctionplotter.ui \
     ui/settingsTestDialog.ui
 RESOURCES += ./res/iland.qrc \
+    ../abe-lib/abe-library.qrc \
+    abe-library.qrc \
     qml_res.qrc
 
 # QMAKE_EXTRA_TARGETS += revtarget
@@ -452,8 +456,10 @@ DISTFILES += \
     ../abe-lib/ABE-library.js \
     ../abe-lib/harvest/femel.js \
     ../abe-lib/harvest/harvest.js \
+    ../abe-lib/harvest/salvage.js \
     ../abe-lib/lib_helper.js \
     ../abe-lib/planting/planting.js \
+    ../abe-lib/thinning/selective.js \
     ../abe-lib/thinning/thinning.js \
     ../apidoc/ABE/abe_patches.js \
     ../apidoc/ABE/saplinglist_doc.js \

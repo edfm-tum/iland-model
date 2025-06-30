@@ -62,6 +62,10 @@ bool ActGeneral::execute(FMStand *stand)
                              .arg(result.toString())
                              .arg(name(), ScriptGlobal::formattedErrorMessage(result)));
     }
+    // no return value is treated as Ok
+    if (result.isUndefined())
+        return true;
+
     return result.toBool();
 }
 

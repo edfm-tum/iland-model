@@ -64,12 +64,14 @@ bool LinkXmlQt::loadXmlFile()
     if (!curXml.setContent(&file, &errorMsg, &errorLine, &errorColumn)) {
         qDebug() << "Error loading file content. Abort.";
         file.close();
+        xmlFileLoaded =false;
         return false;
     }
 
     mLoadedXml = curXml;
     mXmlFileLoaded = true;
     file.close();
+    xmlFileLoaded = true;
     return true;
 }
 

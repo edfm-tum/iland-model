@@ -190,6 +190,12 @@ bool ActPlanting::execute(FMStand *stand)
         return false;
     }
 
+    if (events().hasEvent(QStringLiteral("onExecute"))) {
+      // run the event instead of executing the individual items
+        events().run(QStringLiteral("onExecute"), stand);
+      return true;
+    }
+
     for (int s=0;s<mItems.count();++s) {
         mItems[s].run(stand);
         if (time.elapsed()>1000.) {

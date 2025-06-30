@@ -41,6 +41,7 @@
 #include "soilinputout.h"
 #include "waterout.h"
 #include "svdout.h"
+#include "svdindicatorout.h"
 #include "devstageout.h"
 #include "ecovizout.h"
 #include "customaggout.h"

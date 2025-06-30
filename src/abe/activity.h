@@ -205,6 +205,8 @@ public:
     virtual bool evaluate(FMStand *stand);
     /// function that evaluates "bound" dynamic expressions
     virtual void evaluateDyanamicExpressions(FMStand *stand);
+    /// run an event
+    void runEvent(const QString &event_name, FMStand *stand);
     /// dumps some information for debugging
     virtual QStringList info();
 

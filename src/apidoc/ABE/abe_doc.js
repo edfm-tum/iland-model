@@ -1,5 +1,18 @@
 // Javascript API documentation framework http://yui.github.io/yuidoc/
-// create with "yuidoc ." in /apidoc directory (/build/apidocs must be available!) or with "yuidoc --server ." for interactive mode.
+
+// create with "yuidoc ." in /apidoc directory (/build/apidocs must be available!)
+
+// or with "yuidoc --server ." for interactive mode.
+
+// to include the abe-library, run:
+
+// yuidoc --server . ../abe-lib
+
+// or: to have a extra copy of abe-lib doc: go to /src/abe-lib
+// run:
+// yuidoc --server .
+// yuidoc .
+
 // see also the yuidoc.json for more options.
 // http://127.0.0.1:3000/
 
@@ -8,7 +21,8 @@
 
 // including a nice search box:
 // https://github.com/jiannicello/yuidocsite
-// run in 'apidocs' folder (the generated YUI docs are pushed to the 'docs' folder):
+// run in 'apidocs' folder (the generated YUI docs are pushed to the 'docs' folder
+// make sure that the folder build/apidocs/docs exist):
 // yuidocsite --port 3000 --search_desc
 
 // bootstrap theme: https://www.npmjs.com/package/yuidoc-bootstrap-theme

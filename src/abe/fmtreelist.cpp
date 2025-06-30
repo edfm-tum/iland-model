@@ -311,6 +311,14 @@ int FMTreeList::resetMarks()
     return n;
 }
 
+void FMTreeList::setFlag(ScriptTree::Flags flag, bool value)
+{
+    for (QVector<QPair<Tree*, double> >::const_iterator it = mTrees.constBegin(); it!=mTrees.constEnd(); ++it) {
+        Tree *t = const_cast<Tree*>((*it).first);
+        ScriptTree::setTreeFlag(t, flag, value);
+    }
+}
+
 QJSValue FMTreeList::tree(int index)
 {
     if (index<0 || index>=count())
@@ -440,6 +448,11 @@ int FMTreeList::remove_trees(QString expression, double fraction, bool managemen
     QVector<QPair<Tree*, double> >::iterator tp=mTrees.begin();
     try {
         for (;tp!=mTrees.end();++tp) {
+            // we skip trees that are explicitly marked as
+            // "NoHarvest".
+            if (tp->first->isMarkedNoHarvest())
+                continue;
+
             tw.setTree(tp->first);
             // if expression evaluates to true and if random number below threshold...
             if (expr.calculate(tw) && drandom() <=fraction) {
@@ -636,6 +649,8 @@ void FMTreeList::prepareGrids()
     while (runner.next()) {
         if (*runner.current()!=mStand->id())
             *p=-1.f;
+        else
+            *p=0.f;
         ++p;
     }
     // copy stand limits to the grid

@@ -191,6 +191,7 @@ public:
 
     int lastExecutionAge() const { return absoluteAge()>0 ? static_cast<int>(absoluteAge()) : mLastRotationAge; }
 
+    void setLastExecution(int index);
     // custom property storage
     static void clearAllProperties() { mStandPropertyStorage.clear(); }
     /// set a property value for the current stand with the name 'name'
@@ -200,6 +201,8 @@ public:
 
     /// general JS object of a stand
     QJSValue &JSobj() { return mJSObj; }
+    QJSValue signalParameter() { return mJSSignalParameter; }
+    void setSignalParameter(QJSValue value) { mJSSignalParameter = value; }
 
     // retrieve current state of the object
     QStringList info();
@@ -257,6 +260,7 @@ private:
     Patches *mPatches;
     static QHash<const FMStand*, QHash<QString, QJSValue> > mStandPropertyStorage;
     QJSValue mJSObj;
+    QJSValue mJSSignalParameter;
 
     friend class StandObj;
 };

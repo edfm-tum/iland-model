@@ -54,7 +54,7 @@ var fmengine= {
   `runActivityEvaluate` executes an {{#crossLink "Activity"}}{{/crossLink}} for stand given by `standId`. This bypasses the normal scheduling (useful for debugging/testing).
   'runActivityEvaluate' invokes the evaluation code of scheduled activites (e.g., ActThinning, ActScheduled).
 
-  @method runActivity
+  @method runActivityEvaluate
   @param {int} standId the (integer) id of the stand in which context the activity should be executed.
   @param {string} activity the name of the activity that should be executed.
   @return {boolean} returns false if the stand or activity were not found.

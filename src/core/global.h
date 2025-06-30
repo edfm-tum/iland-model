@@ -92,7 +92,8 @@ inline void setBit(unsigned int &rTarget, const int bit, const bool value)
     if (value)
         rTarget |= (1 << bit);  // set bit
     else
-        rTarget &= ( (1 << bit) ^ 0xffffff ); // clear bit
+        rTarget &= ~(1 << bit); // clear bit
+        // rTarget &= ( (1 << bit) ^ 0xffffff ); // clear bit
 }
 inline bool isBitSet(const unsigned int value, const int bit)
 {

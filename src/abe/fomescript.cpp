@@ -1029,14 +1029,14 @@ QStringList STPObj::activityNames()
 
 }
 
-bool STPObj::signal(QString signalname)
+bool STPObj::signal(QString signalname, QJSValue parameter)
 {
     if (!mSTP) {
         ScriptGlobal::throwError("stp not valid!"); return false; }
     if (FomeScript::bridge()->standId() < 0) {
         ScriptGlobal::throwError("STP::signal: no valid stand id!"); return false; }
 
-    return mSTP->signal(signalname, FomeScript::bridge()->standObj()->stand());
+    return mSTP->signal(signalname, FomeScript::bridge()->standObj()->stand(), parameter);
 }
 
 

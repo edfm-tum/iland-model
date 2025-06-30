@@ -29,6 +29,8 @@
 #include "species.h"
 
 #include "tree.h"
+#include "fmsaplinglist.h"
+#include "resourceunitspecies.h"
 
 #include <QJSValueIterator>
 namespace ABE {
@@ -65,6 +67,7 @@ QString ActThinning::type() const
     case FromAbove: th="from above"; break;
     case Custom: th = "custom"; break;
     case Selection: th = "selection"; break;
+    case Tending: th="tending"; break;
     }
 
     return QString("thinning (%1)").arg(th);
@@ -79,12 +82,14 @@ void ActThinning::setup(QJSValue value)
     else if (th_type=="fromAbove") mThinningType=FromAbove;
     else if (th_type=="custom") mThinningType=Custom;
     else if (th_type=="selection") mThinningType=Selection;
+    else if (th_type=="tending") mThinningType=Tending;
     else
         throw IException(QString("Setup of thinning: invalid thinning type: %1").arg(th_type));
 
     switch (mThinningType) {
     case Custom: setupCustom(value); break;
     case Selection: setupSelective(value); break;
+    case Tending: setupTending(value); break;
     default: throw IException("No setup defined for thinning type");
     }
 
@@ -104,6 +109,10 @@ bool ActThinning::evaluate(FMStand *stand)
 
     case Selection:
         return evaluateSelective(stand);
+
+    case Tending:
+        return evaluateTending(stand);
+
     default: throw IException("ActThinning::evaluate: not available for thinning type");
     }
     return false;
@@ -161,6 +170,13 @@ void ActThinning::setupSelective(QJSValue value)
     mSelectiveThinning.Ncompetitors = FMSTP::valueFromJs(value, "NCompetitors", "1.5");
 }
 
+void ActThinning::setupTending(QJSValue value)
+{
+    mTendingThinning.speciesProb = FMSTP::valueFromJs(value, "speciesSelectivity");
+    mTendingThinning.intensity = FMSTP::valueFromJs(value, "intensity", "1", "Intensity required!").toNumber();
+
+}
+
 // setup of the "custom" thinning operation
 void ActThinning::setupSingleCustom(QJSValue value, SCustomThinning &custom)
 {
@@ -189,7 +205,9 @@ void ActThinning::setupSingleCustom(QJSValue value, SCustomThinning &custom)
     if (!values.isArray())
         throw IException("setup of custom activity: the 'classes' is not an array.");
     custom.classValues.clear();
-    custom.classPercentiles.clear();
+    custom.cumClassPercentiles.clear();
+    custom.cumSelectPercentiles.clear();
+
     QJSValueIterator it(values);
     while (it.hasNext()) {
         it.next();
@@ -209,12 +227,19 @@ void ActThinning::setupSingleCustom(QJSValue value, SCustomThinning &custom)
             throw IException("setup of custom thinnings: 'classes' do not add up to 100 (relative=true).");
     }
 
-    // span the range between 0..100: from e.g. 10,20,30,20,20 -> 0,10,30,60,80,100
+    // percentiles are calculated cumulatively, both the buckets (cumClassPercentiles)
+    // and the probabilities (cumSelectPercentiles)
+    double p_pct = 0.;
+    double p_select = 0.;
     double f = 100. / custom.classValues.size();
-    double p = 0.;
-    for (int i=0;i<custom.classValues.size();++i, p+=f)
-        custom.classPercentiles.push_back(qRound(p));
-    custom.classPercentiles.push_back(100);
+    for (int i=0;i<custom.classValues.size();++i) {
+        custom.cumClassPercentiles.push_back(qRound(p_pct));
+        custom.cumSelectPercentiles.push_back(qRound(p_select));
+        p_select +=custom.classValues[i];
+        p_pct += f;
+    }
+    custom.cumClassPercentiles.push_back(100);
+    custom.cumSelectPercentiles.push_back(100);
 }
 
 bool ActThinning::evaluateCustom(FMStand *stand, SCustomThinning &custom)
@@ -250,6 +275,7 @@ bool ActThinning::evaluateCustom(FMStand *stand, SCustomThinning &custom)
     if (target_value < 0. || remaining_stems < 0. || min_dbh < 0.)
         throw IException(QString("Thinning activity, error: target_value or min_dbh or remaining_stems < 0."));
 
+    // load trees (considering the filter)
     FMTreeList trees(stand);
     QString filter = custom.filter;
     if (min_dbh>0.) {
@@ -263,7 +289,8 @@ bool ActThinning::evaluateCustom(FMStand *stand, SCustomThinning &custom)
     else
         trees.loadAll();
 
-    if (remaining_stems>0 && remaining_stems>=trees.trees().size())
+    // if not enough trees are on the stand, do nothing
+    if (remaining_stems>0 && remaining_stems*stand->area()>=trees.trees().size())
         return false;
 
     if (trees.trees().size()==0)
@@ -274,36 +301,25 @@ bool ActThinning::evaluateCustom(FMStand *stand, SCustomThinning &custom)
 
     // sort always by target variable (if it is stems, then simply by dbh)
     bool target_dbh = custom.targetVariable=="stems";
-    if (target_dbh)
+    double total_value;
+    if (target_dbh) {
         trees.sort("dbh");
-    else
+        total_value = trees.count();
+    } else {
         trees.sort(custom.targetVariable);
-
-    // count trees and values (e.g. volume) in the defined classes
-    QVector<double> values = custom.classValues; // make a copy
-    QVector<double> tree_counts = custom.classValues; // make a copy
-    QVector<int> percentiles = custom.classPercentiles; // make a copy
-
-    QVector<QPair<Tree*, double> >::const_iterator it;
-    for (int i=0;i<values.count();++i) {
-        tree_counts[i]=0.;
+        total_value = trees.sum(custom.targetVariable);
     }
-    int class_index = 0;
-    int n=0;
 
-    percentiles.first()=0;
-    double tree_count=trees.trees().count();
-    double total_value = 0.;
-    for (it = trees.trees().constBegin(); it!=trees.trees().constEnd(); ++it, ++n) {
-        if (n/tree_count*100. > custom.classPercentiles[class_index+1]) {
-            ++class_index;
-            percentiles[class_index] = n; // then n'th tree
-        }
-        tree_counts[class_index]++;
-        total_value += target_dbh?1.:it->second; // e.g., sum of volume in the class, or simply count
+
+    QVector<double> values = QVector<double>(custom.classValues.size(), 0.);
+    QVector<double> tree_counts = QVector<double>(custom.classValues.size(), 0.);
+    QVector<int> percentiles = QVector<int>(custom.cumClassPercentiles.size(), 0);
+
+    // set percentiles to actual tree-indices
+    // (e.g., if there are 200 trees, the 10th percentiles is tree #20)
+    for (int i=0;i<percentiles.size();++i) {
+        percentiles[i] = custom.cumClassPercentiles[i] * trees.trees().size() / 100;
     }
-    while (++class_index<percentiles.size())
-        percentiles[class_index]=n+1;
 
     double calc_target_value=0.;
     if (custom.targetRelative)
@@ -312,12 +328,13 @@ bool ActThinning::evaluateCustom(FMStand *stand, SCustomThinning &custom)
         calc_target_value = target_value * stand->area();
 
     if (!custom.relative) {
+        throw IException("custom thinning: relative=false currently not supported.");
         // TODO: does not work now!!! redo!!
         // class values are given in absolute terms, e.g. 40m3/ha.
         // this needs to be translated to relative classes.
         // if the demand in a class cannot be met (e.g. planned removal of 40m3/ha, but there are only 20m3/ha in the class),
         // then the "miss" is distributed to the other classes (via the scaling below).
-        for (int i=0;i<values.size();++i) {
+/*        for (int i=0;i<values.size();++i) {
             if (values[i]>0){
                 if (values[i]<=custom.classValues[i]*stand->area()) {
                     values[i] = 1.; // take all from the class
@@ -333,27 +350,26 @@ bool ActThinning::evaluateCustom(FMStand *stand, SCustomThinning &custom)
         if (sum>0.){
             for (int i=0;i<values.size();++i)
                 values[i] *= 100./sum;
-        }
+        }*/
     }
 
     // *****************************************************************
     // ***************    Main loop
     // *****************************************************************
-    for (int i=0;i<values.size();++i)
-        values[i] = 0;
 
     bool finished = false;
-    int cls;
-    double p;
     int removed_trees = 0;
     double removed_value = 0.;
     int no_tree_found = 0;
     bool target_value_reached=false;
     do {
-        // look up a random number: it decides in which class to select a tree:
-        p = nrandom(0,100);
+        // look up a random number: it decides in which class to select a tree
+        // the trick is that in cumSelectPercentiles the probability mass is not evenly
+        // distributed
+        int cls; // selected class
+        double p = nrandom(0,100);
         for (cls=0;cls<values.size();++cls) {
-            if (p < custom.classPercentiles[cls+1])
+            if (p < custom.cumSelectPercentiles[cls+1])
                 break;
         }
         // select a tree:
@@ -378,8 +394,8 @@ bool ActThinning::evaluateCustom(FMStand *stand, SCustomThinning &custom)
 
         } else {
             // tree_idx = -1: no tree found in list, -2: tree found but is not selected
-            no_tree_found += tree_idx == -1 ? 100 : 1; // empty list counts much more
-            if (no_tree_found > 1000)
+            no_tree_found += tree_idx == -1 ? 20 : 1; // empty list counts much more
+            if (no_tree_found > 2000)
                 finished=true;
         }
         // stop harvesting, when the minimum remaining number of stems is reached
@@ -541,7 +557,7 @@ bool ActThinning::markCropTrees(FMStand *stand, bool selective_species)
     int n_found = 0;
     int tests=0;
     int i=0;
-    while (n_found < target_n/3 && i<target_n/2) {                        //JM: why do we need this part?
+    while (n_found < target_n/3 && i<target_n/2) {
         float f=testPixel(treelist->trees().at(i).first->position(), grid); ++tests;
         if (f==0.f) {
             // no neighbors: check species
@@ -574,10 +590,10 @@ bool ActThinning::markCropTrees(FMStand *stand, bool selective_species)
             float f=testPixel(treelist->trees().at(i).first->position(), grid); ++tests;
 
             if ((f==0.f) ||
-                (f<=(0.0805*selective_n-2.4256)) ||                  // JM: define kernel thresholds here     scaled: max(0, 0.0805*NZBaum-2.4256)
-                (run==1 && f<=(0.1484*selective_n-5.4919)) ||        // JM: define kernel thresholds here     scaled: max(0, 0.1484*NZBaum-5.4919)
-                (run==2 && f<=(0.1679*selective_n-4.8988)) ||        // JM: define kernel thresholds here     scaled: max(0, 0.1679*NZBaum-4.8988)
-                ((run==3) && f<=(0.0805*selective_n-2.4256))) {    // JM: define kernel thresholds here     scaled: max(0, 0.0805*NZBaum-2.4256) or 4*(0.1679*mSelectiveThinning.N-4.8988)
+                (f<=(0.0805*selective_n-2.4256)) ||                  // JM: define kernel thresholds here     scaled: max(0, 0.0805*selective_n-2.4256)
+                (run==1 && f<=(0.1484*selective_n-5.4919)) ||        // JM: define kernel thresholds here     scaled: max(0, 0.1484*selective_n-5.4919)
+                (run==2 && f<=(0.1679*selective_n-4.8988)) ||        // JM: define kernel thresholds here     scaled: max(0, 0.1679*selective_n-4.8988)
+                ((run==3) && f<=(4*(0.1679*selective_n-4.8988)))) {  // JM: define kernel thresholds here     scaled: max(0, 0.0805*selective_n-2.4256) or 4*(0.1679*selective_n-4.8988)
 
                 if (selective_species & !( drandom() < mSpeciesSelectivity[treelist->trees().at(i).first->species()]) )
                     continue;
@@ -643,35 +659,6 @@ float ActThinning::testPixel(const QPointF &pos, Grid<float> &grid)
             sum += grid.isIndexValid(x+i,y+j) ? grid.valueAtIndex(x+i, y+j) : 0;
         }
     }
-    // sum += grid.isIndexValid(x-2,y-2) ? grid.valueAtIndex(x-2,y-2) : 0;
-    // sum += grid.isIndexValid(x-2,y-1) ? grid.valueAtIndex(x-2,y-1) : 0;
-    // sum += grid.isIndexValid(x-2,y) ? grid.valueAtIndex(x-2,y) : 0;
-    // sum += grid.isIndexValid(x-2,y+1) ? grid.valueAtIndex(x-2,y+1) : 0;
-    // sum += grid.isIndexValid(x-2,y+2) ? grid.valueAtIndex(x-2,y+2) : 0;
-
-    // sum += grid.isIndexValid(x-1,y-2) ? grid.valueAtIndex(x-1,y-2) : 0;
-    // sum += grid.isIndexValid(x-1,y-1) ? grid.valueAtIndex(x-1,y-1) : 0;
-    // sum += grid.isIndexValid(x-1,y) ? grid.valueAtIndex(x-1,y) : 0;
-    // sum += grid.isIndexValid(x-1,y+1) ? grid.valueAtIndex(x-1,y+1) : 0;
-    // sum += grid.isIndexValid(x-1,y+2) ? grid.valueAtIndex(x-1,y+2) : 0;
-
-    // sum += grid.isIndexValid(x,y-2) ? grid.valueAtIndex(x,y-2) : 0;
-    // sum += grid.isIndexValid(x,y-1) ? grid.valueAtIndex(x,y-1) : 0;
-    // sum += grid.isIndexValid(x,y) ? grid.valueAtIndex(x,y) : 0;
-    // sum += grid.isIndexValid(x,y+1) ? grid.valueAtIndex(x,y+1) : 0;
-    // sum += grid.isIndexValid(x,y+2) ? grid.valueAtIndex(x,y+2) : 0;
-
-    // sum += grid.isIndexValid(x+1,y-2) ? grid.valueAtIndex(x+1,y-2) : 0;
-    // sum += grid.isIndexValid(x+1,y-1) ? grid.valueAtIndex(x+1,y-1) : 0;
-    // sum += grid.isIndexValid(x+1,y) ? grid.valueAtIndex(x+1,y) : 0;
-    // sum += grid.isIndexValid(x+1,y+1) ? grid.valueAtIndex(x+1,y+1) : 0;
-    // sum += grid.isIndexValid(x+1,y+2) ? grid.valueAtIndex(x+1,y+2) : 0;
-
-    // sum += grid.isIndexValid(x+2,y-2) ? grid.valueAtIndex(x+2,y-2) : 0;
-    // sum += grid.isIndexValid(x+2,y-1) ? grid.valueAtIndex(x+2,y-1) : 0;
-    // sum += grid.isIndexValid(x+2,y) ? grid.valueAtIndex(x+2,y) : 0;
-    // sum += grid.isIndexValid(x+2,y+1) ? grid.valueAtIndex(x+2,y+1) : 0;
-    // sum += grid.isIndexValid(x+2,y+2) ? grid.valueAtIndex(x+2,y+2) : 0;
 
     return sum;
 }
@@ -743,38 +730,273 @@ void ActThinning::setPixel(const QPointF &pos, Grid<float> &grid)
 
 }
 
+bool ActThinning::evaluateTending(FMStand *stand)
+{
+    // species probabilities
+    QJSValue result = FMSTP::evaluateJS(mTendingThinning.speciesProb);
+    populateSpeciesSelectivity(result, 0.);
 
-//void ActThinning::setPixelOld(const QPointF &pos, Grid<float> &grid)
-//{
-//    // check Moore neighborhood
-//    int x=grid.indexAt(pos).x();
-//    int y=grid.indexAt(pos).y();
-//
-//    if (grid.isIndexValid(x-1,y-1)) grid.valueAtIndex(x-1, y-1)++;
-//    if (grid.isIndexValid(x,y-1)) grid.valueAtIndex(x, y-1)++;
-//    if (grid.isIndexValid(x+1,y-1)) grid.valueAtIndex(x+1, y-1)++;
-//
-//    if (grid.isIndexValid(x-1,y)) grid.valueAtIndex(x-1, y)++;
-//    if (grid.isIndexValid(x,y)) grid.valueAtIndex(x, y) += 3; // more impact on center pixel
-//    if (grid.isIndexValid(x+1,y)) grid.valueAtIndex(x+1, y)++;
-//
-//    if (grid.isIndexValid(x-1,y+1)) grid.valueAtIndex(x-1, y+1)++;
-//    if (grid.isIndexValid(x,y+1)) grid.valueAtIndex(x, y+1)++;
-//    if (grid.isIndexValid(x+1,y+1)) grid.valueAtIndex(x+1, y+1)++;
-//}
+    runTending(stand);
+    return true;
 
-bool ActThinning::populateSpeciesSelectivity(QJSValue value)
+}
+
+/// this is a 32 bit structure (same size as float)
+/// to store structured information for the tending process
+/// hacky as hell, but I dont want to create a new grid just
+/// for this purpose.
+struct STendingIndex {
+    std::int8_t flag; // 0: unused, 1: a tree, 2: a sapling, 3: do not process
+    std::uint8_t selectivity_byte; // 0..255: higher = more selectivity
+    std::uint16_t index; // index to tree list or sapling array
+    void set(bool is_tree, double dbl_selectivity, int index) {
+        flag = is_tree ? 1 : 2;
+        selectivity_byte = 255 * limit(dbl_selectivity, 0., 1.);
+        this->index = index;
+    }
+    void setSelectivity(double dbl_sel) { selectivity_byte = 255 * limit(dbl_sel, 0., 1.); }
+    double selectivity() { return selectivity_byte / 255.; }
+    void lock() { flag = 3; }
+    bool isLocked() { return flag == 3; }
+    bool isEmpty() { return flag == 0; }
+    bool isTree() { return flag == 1; }
+    bool isSapling() { return flag == 2; }
+    bool isAffected() { return flag < 0; }
+};
+
+bool ActThinning::runTending(FMStand* stand)
+{
+    // tree list from current exeution context, and create a new sapling list
+    FMTreeList *treelist = ForestManagementEngine::instance()->scriptBridge()->treesObj();
+    FMSaplingList saplinglist;
+    saplinglist.loadFromStand(stand->id());
+
+    treelist->setStand(stand);
+    treelist->loadAll();
+    clearTreeMarks(treelist);
+
+    if (treelist->count() > 65535)
+        throw IException("Tending operation: the number of trees on the stand is too high (>2^16). This is awkward and due to a implementation detail of the tending operation. Use smaller stands?");
+
+    // get the 2x2m grid for the current stand
+    Grid<float> &grid = treelist->localStandGrid();
+    // clear (except the out of "stand" pixels)
+    for (float *p=grid.begin(); p!=grid.end(); ++p)
+        if (*p > -1.f)
+            *p = 0.f;
+
+    // pass 1: mark all positions where treees with selectivity > 0.5 are located
+    // save max. one tree (with the highest selectivity) per 2m cell
+    int trees_to_tend = 0;
+    for (int i=0;i< treelist->trees().size(); ++i) {
+        // get the grid cell occupied by the tree
+        Tree *t = treelist->trees().at(i).first;
+        QPointF tree_location = t->position();
+        QPoint lc = grid.indexAt(tree_location);
+        double selectivity = mSpeciesSelectivity[t->species()];
+        STendingIndex *ti = reinterpret_cast<STendingIndex *>(&grid[lc]);
+        if (ti->isLocked())
+            continue;
+        if (t->height() >= 10.) {
+            // skip tall trees
+            ti->lock();
+            continue;
+        }
+        if (t->height() < 10. && selectivity> 0.5) {
+            // relative height between 4m and 10m:
+            double rel_height = std::max((t->height() - 4.) / 6., 0.);
+            double eff_selectivity = pow(selectivity, 1. - rel_height);
+            // select the focal tree if its effective selectivity is higher
+            if (ti->flag == 0 || eff_selectivity > ti->selectivity()) {
+                ti->set(true, eff_selectivity, i);
+                ++trees_to_tend;
+            }
+        }
+    }
+    // pass 1.5: we used the "effective selectivity" in the grid, but later on we continue
+    // with the species selectivity. So we need to reset the values in the grid to
+    // the species selectivity:
+    // We skip for now, as *higher* values (effective selectivity) make it less
+    // probable that a tree is removed to promote saplings
+    // for (float *g = grid.begin(); g!=grid.end(); ++g) {
+    //     if (*g != -1.) {
+    //         STendingIndex *ti = reinterpret_cast<STendingIndex *>(g);
+    //         if (ti->isTree()) {
+    //             ti->setSelectivity( mSpeciesSelectivity[treelist->trees()[ti->index].first->species()] );
+    //         }
+    //     }
+    // }
+
+    // pass 2: mark positions with favorable saplings
+    // for saplings the selectivity is calculated as a function that reaches species selectivity close to 4m
+    // larger saplings (with slightly less selectivity) are therefore favored more strongly
+    float *p = grid.begin();
+    int saps_to_tend = 0;
+    SaplingCellRunner scr(stand->id(), GlobalSettings::instance()->model()->standGrid());
+    while (SaplingCell *sc = scr.next()) {
+        while (p!=grid.end() && *p < 0) ++p; // skip pixels outside of the stand
+        if (p == grid.end())
+            throw IException("activity tending: grid reached end");
+        // look only at pixels that have not yet a favorable tree
+        if (sc && *p == 0.f){
+            if (scr.currentCoord() != grid.cellCenterPoint(p)) {
+                qDebug() << "problem: " << scr.currentCoord() << grid.cellCenterPoint(p);
+            }
+            double max_sel = 0.0;
+            int which_max = -1;
+            for (int i=0;i<NSAPCELLS;++i) {
+                if (sc->saplings[i].is_occupied()) {
+
+                    double selectivity = mSpeciesSelectivity[sc->saplings[i].resourceUnitSpecies(scr.ru())->species()];
+                    double eff_selectivity = selectivity / (1. + exp(-20*(sc->saplings[i].height / 4. - (1.-selectivity))));
+
+                    if (selectivity > 0.5 && eff_selectivity > max_sel) {
+                        max_sel = eff_selectivity;
+                        which_max = i;
+                    }
+
+                }
+            }
+            if (which_max > -1) {
+                // sapling to save found!
+                STendingIndex *ti = reinterpret_cast<STendingIndex *>(p);
+                double selectivity = mSpeciesSelectivity[sc->saplings[which_max].resourceUnitSpecies(scr.ru())->species()];
+                ti->set(false, selectivity, which_max);
+                ++saps_to_tend;
+            }
+        }
+        ++p;
+    }
+
+    // pass 3: now we have marked the grid positions that have either trees
+    // or saplings to be favored.
+    // In this pass we mark 2m cells thare are in the vicinity of a tending target
+    for (float *g = grid.begin(); g!=grid.end(); ++g) {
+        if (*g != -1.) {
+           STendingIndex *ti = reinterpret_cast<STendingIndex *>(g);
+            if (ti->isTree() || ti->isSapling()) {
+                // we have a tree or sapling to protect here
+                QPoint p = grid.indexOf(g);
+                // look at the 5x5 neighborhood (~5m radius around)
+                for (int i=-2;i<=2;++i){
+                    for (int j=-2;j<=2;++j){
+                        QPoint pt(p.x()+i,p.y()+j);
+                        if ((i!=0 && j!=0) && grid.isIndexValid(pt) && grid[pt] != -1.f) {
+                            STendingIndex *ttest = reinterpret_cast<STendingIndex *>(&grid[pt]);
+                            if (ttest->flag == 0) {
+                                // pixels closer to the source pixel will be stronger impacted
+                                if (abs(i)<=1 && abs(j) <=1) {
+                                    ttest->flag = -1;
+                                    ttest->setSelectivity( ti->selectivity() * 0.8 );
+                                } else {
+                                    ttest->flag = -2;
+                                    ttest->setSelectivity( ti->selectivity() * 0.5 );
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+    // pass 4:
+    // time to do the actual tending!
+    const double impact_strength = mTendingThinning.intensity;
+    int tree_marked = 0;
+    for (int i=0;i< treelist->trees().size(); ++i) {
+        // get the grid cell occupied by the tree
+        Tree *t = treelist->trees().at(i).first;
+        QPointF tree_location = t->position();
+        QPoint lc = grid.indexAt(tree_location);
+        double selectivity = mSpeciesSelectivity[t->species()];
+        STendingIndex *ti = reinterpret_cast<STendingIndex *>(&grid[lc]);
+        if (ti->isEmpty() || ti->isLocked() || t->height() > 10.)
+            continue; // nothing to do here (in any case, we do not cut trees above 10m)
+        if (ti->isTree()) {
+            if (ti->index == i) {
+                continue;
+            } else {// this is a tree on a pixel where *another* tree is to be favored.
+                t->markForCut(true);
+                ++tree_marked;
+            }
+        } else {
+            // calculate how much we want to favor this spot: higher (closer to 1): higher likelyhood to clear
+            double favor =  (1. - selectivity) * ti->selectivity();
+            // we translate the favor rating (0..1)
+            double p_cut = pow(favor,  (1. / impact_strength));
+            if (drandom() < p_cut) {
+                t->markForCut(true);
+                ++tree_marked;
+            }
+        }
+    }
+
+    // now the saplings:
+    p = grid.begin();
+    int sap_removed = 0;
+    SaplingCellRunner scr_impact(stand->id(), GlobalSettings::instance()->model()->standGrid());
+    while (SaplingCell *sc = scr_impact.next()) {
+        while (p!=grid.end() && *p < 0) ++p; // skip pixels outside of the stand
+        if (p == grid.end())
+            throw IException("activity tending: grid reached end");
+
+
+        STendingIndex *ti = reinterpret_cast<STendingIndex *>(p);
+
+        if (ti->isSapling()) {
+            // a sapling to be favored: remove all other saplings from the cell
+            for (int i=0;i<NSAPCELLS;++i) {
+                if (sc->saplings[i].is_occupied()) {
+                    if (i != ti->index) {
+                        sc->saplings[i].clear();
+                        ++sap_removed;
+                    }
+                }
+            }
+            sc->checkState();
+        }
+        if (ti->isAffected()) {
+            // neighborhood of favored cells.
+            for (int i=0;i<NSAPCELLS;++i) {
+                if (sc->saplings[i].is_occupied()) {
+                    double selectivity = mSpeciesSelectivity[sc->saplings[i].resourceUnitSpecies(scr.ru())->species()];
+                    // calculate how much we want to favor this spot: higher (closer to 1): higher likelyhood to clear
+                    double favor =  (1. - selectivity) * ti->selectivity();
+                    // we translate the favor rating (0..1)
+                    double p_cut = pow(favor,  (1. / impact_strength));
+                    if (drandom() < p_cut) {
+                        sc->saplings[i].clear();
+                        ++sap_removed;
+                    }
+
+                }
+            }
+            sc->checkState();
+        }
+
+        ++p;
+    }
+
+    qDebug() << "Tending. Found " <<  trees_to_tend << "trees and" << saps_to_tend << "saplings to promote. Removed" << tree_marked << " trees, and" << sap_removed << "saplings from stand" << stand->id();
+
+    return true;
+}
+
+
+bool ActThinning::populateSpeciesSelectivity(QJSValue value, double default_value)
 {
     // fill with all active species in the simulation (this list does not change)
     if (mSpeciesSelectivity.isEmpty()) {
         foreach(const Species *s, GlobalSettings::instance()->model()->speciesSet()->activeSpecies())
-            mSpeciesSelectivity[s] = 1.;
+            mSpeciesSelectivity[s] = default_value;
     }
     if (value.isUndefined() || value.isNull())
         return false;
 
     // fetch from javascript object
-    double rest_val = value.property(QStringLiteral("rest")).isNumber() ?  value.property(QStringLiteral("rest")).toNumber() : 1.;
+    double rest_val = value.property(QStringLiteral("rest")).isNumber() ?  value.property(QStringLiteral("rest")).toNumber() : default_value;
     foreach(const Species *s, mSpeciesSelectivity.keys()) {
         mSpeciesSelectivity[s] = limit( value.property(s->id()).isNumber() ? value.property(s->id()).toNumber() : rest_val, 0., 1.);
     }

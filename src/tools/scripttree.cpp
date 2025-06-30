@@ -17,6 +17,36 @@ ScriptTree::ScriptTree(QObject *parent) : QObject(parent)
     mTree = nullptr;
 }
 
+void ScriptTree::setFlag(Flags flag, bool value)
+{
+    if (!mTree) throw IException("ScriptTree:invalid tree");
+
+    if (flag != Flags::TreeNoHarvest && flag!=Flags::TreeAffectedBite)
+        throw IException("ScriptTree::setFlag: this flag cannot be changed");
+
+    mTree->setFlag(static_cast<Tree::Flags>(flag), value);
+}
+
+bool ScriptTree::flag(Flags flag) const
+{
+    if (!mTree) throw IException("ScriptTree:invalid tree");
+
+    return mTree->flag(static_cast<Tree::Flags>(flag));
+}
+
+void ScriptTree::setTreeFlag(Tree *tree, Flags flag, bool value)
+{
+    if (flag != Flags::TreeNoHarvest && flag!=Flags::TreeAffectedBite)
+        throw IException("ScriptTree::setFlag: this flag cannot be changed");
+
+    tree->setFlag(static_cast<Tree::Flags>(flag), value);
+}
+
+bool ScriptTree::treeFlag(Tree *tree, Flags flag)
+{
+    return tree->flag(static_cast<Tree::Flags>(flag));
+}
+
 QString ScriptTree::info()
 {
     // return some information

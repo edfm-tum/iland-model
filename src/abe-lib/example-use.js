@@ -2,7 +2,7 @@
 
 
 
-/** Set up STPs
+/* Set up STPs
 Clearcut
 Clearcut and planting abal everywhere!
 */
@@ -68,10 +68,14 @@ const femel_step_plant = { type: 'general', schedule: { signal: 'step'},
     }
 }
 
-lib.createSTP('femel', femel, femel_sel, femel_step_plant, femel_step_manage);
+lib.createSTP('femel', femel,
+              femel_sel,
+              femel_step_plant,
+              femel_step_manage,
+              lib.changeSTP({STP: 'phase2'}));
 
 
-/**
+/*
 Structure
 selective thinning, target diameter harvest and natural regeneration
 */
@@ -85,7 +89,7 @@ const StructureHarvest = lib.harvest.targetDBH({dbhList = {"fasy":65,   //source
 //fmengine.addManagement(StructureSTP, 'Structure');
 lib.createSTP('Structure', StructureThinning, StructureHarvest);
 
-/**
+/*
 No Management
 */
 
@@ -96,7 +100,7 @@ const NoHarvest = lib.harvest.noHarvest();
 
 lib.createSTP('NoMgmt', NoHarvest);
 
-/**
+/*
 No 3
 plant douglas fir everywhere
 */

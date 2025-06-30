@@ -802,7 +802,7 @@ inline void Tree::partitioning(TreeGrowthData &d)
     double delta_foliage = apct_foliage * npp - sen_foliage;
     mFoliageMass += static_cast<float>(delta_foliage);
     if (isnan(mFoliageMass))
-        qDebug() << "foliage mass invalid!";
+        qDebug() << "foliage mass invalid!: species: " << species()->id() << "id:" << id();
     if (mFoliageMass<0.) mFoliageMass=0.; // limit to zero
 
     mLeafArea = static_cast<float>( mFoliageMass * species()->specificLeafArea() ); // update leaf area

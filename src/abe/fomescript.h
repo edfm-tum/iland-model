@@ -202,6 +202,7 @@ class StandObj: public QObject
     Q_PROPERTY(Patches* patches READ patches);
 
     Q_PROPERTY(QJSValue obj READ JSObj WRITE setJSObj);
+    Q_PROPERTY(QJSValue signalParameter READ signalParameter);
 
 
 /*    basalArea: 0, // total basal area/ha of the stand
@@ -281,6 +282,7 @@ public:
     /// set general purpose javascript object for a stand
     void setJSObj(QJSValue val) {if (mStand) mStand->JSobj() = val; }
 
+    QJSValue signalParameter() { if (mStand) return mStand->signalParameter(); return QJSValue(); }
 
 private:
     void throwError(QString msg) const;
@@ -370,7 +372,7 @@ public:
     int activityCount() const;
     QStringList activityNames();
 public slots:
-    bool signal(QString signalname);
+    bool signal(QString signalname, QJSValue parameter=QJSValue());
 
 
 private:
@@ -394,6 +396,7 @@ class ActivityObj : public QObject
     Q_PROPERTY(bool scheduled READ scheduled WRITE setScheduled)
     Q_PROPERTY(QString name READ name)
     Q_PROPERTY(int index READ index)
+    Q_PROPERTY(int optimalTime READ optimalTime)
     Q_PROPERTY(QString description READ description)
     Q_PROPERTY(QJSValue obj READ JSObj WRITE setJSObj);
 
@@ -416,6 +419,7 @@ public:
     QString name() const;
     QString description() const;
     int index() const { if( mActivity) return mActivity->index(); return -1; }
+    int optimalTime() { if (mActivity) return mActivity->optimalSchedule(); return -1; }
     bool enabled() const;
     void setEnabled(bool do_enable);
 
