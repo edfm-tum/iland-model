@@ -52,6 +52,7 @@
 #include "scriptresourceunit.h"
 #include "fmsaplinglist.h"
 #include "fmtreelist.h"
+#include "fmdeadtreelist.h"
 #include "scriptgrid.h"
 #include "customaggout.h"
 #include "microclimate.h"
@@ -1365,6 +1366,7 @@ void ScriptGlobal::setupGlobalScripting()
     ScriptGrid::addToScriptEngine(engine);
     ABE::FMSaplingList::addToScriptEngine(engine);
     ABE::FMTreeList::addToScriptEngine(engine);
+    ABE::FMDeadTreeList::addToScriptEngine(engine);
 
 }
 

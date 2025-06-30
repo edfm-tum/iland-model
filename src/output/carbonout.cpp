@@ -119,13 +119,15 @@ void CarbonOut::exec()
             *this << s.cRegeneration() << s.nRegeneration();
 
             // biomass from standing dead wood: this is not scaled to ha-values!
+
+            // snags: sum of pools plus individual snags
             *this << ru->snag()->totalSWD().C / area_factor
                     << ru->snag()->totalSWD().N / area_factor   // snags
-                    << ru->snag()->totalOtherWood().C/area_factor
+                    << ru->snag()->totalOtherWood().C / area_factor
                     << ru->snag()->totalOtherWood().N / area_factor
                     << ru->snag()->totalOtherWood().C/ area_factor * ru->snag()->otherWoodAbovegroundFraction();   // snags, other (branch + coarse root)
 
-            // biomass from soil (convert from t/ha -> kg/ha)
+            // biomass from soil (soil pools are always per ha; convert from t/ha -> kg/ha)
             *this << ru->soil()->youngRefractory().C*1000.
                     << ru->soil()->youngRefractory().N*1000.   // wood
                     << ru->soil()->youngRefractory().C*1000. * ru->soil()->youngRefractoryAbovegroundFraction() // aboveground fraction
@@ -157,7 +159,7 @@ void CarbonOut::exec()
         *vit++ += s.cFineRoot() * area_factor; *vit++ += s.nFineRoot()* area_factor;
         // regen
         *vit++ += s.cRegeneration(); *vit++ += s.nRegeneration();
-        // standing dead wood
+        // standing dead wood: sum pools and individual snags
         *vit++ += ru->snag()->totalSWD().C ; *vit++ += ru->snag()->totalSWD().N ;
         *vit++ += ru->snag()->totalOtherWood().C ; *vit++ += ru->snag()->totalOtherWood().N ; *vit++ += ru->snag()->totalOtherWood().C * ru->snag()->otherWoodAbovegroundFraction();
         // biomass from soil (converstion to kg/ha), and scale with fraction of stockable area

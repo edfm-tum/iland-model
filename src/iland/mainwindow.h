@@ -239,7 +239,10 @@ private slots:
     void on_visRegenNew_clicked()    { on_visFon_toggled();    } // force repaint
     void on_visResourceUnits_clicked()  { on_visFon_toggled();    } // force repaint
     void on_visOtherGrid_clicked()  { on_visFon_toggled();    } // force repaint
-    void on_visShading_clicked() {on_visFon_toggled();   }
+    void on_visShading_clicked() {on_visFon_toggled();   } // force repain
+    void on_visSnags_clicked() { on_visFon_toggled(); }     // force repaint
+    void on_visSpeciesColor_clicked() { on_visFon_toggled(); } // force repaint
+    void on_drawTransparent_clicked() { on_visFon_toggled(); } // force repaint
     void on_actionPerformance_triggered();
     void on_actionTest_triggered();
     void on_pbReloadQml_clicked();
@@ -260,6 +263,8 @@ private slots:
     void on_visRUSpeciesColor_stateChanged(int arg1) {Q_UNUSED(arg1); on_visFon_toggled();  } // force repaint
     void on_actionExpression_plotter_triggered();
     void on_actionUpdate_XML_file_triggered();
+
+
 };
 
 #endif // MAINWINDOW_H

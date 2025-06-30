@@ -149,8 +149,10 @@ for(var, $$list($$enumerate_vars())) {
 # Use Precompiled headers (PCH)
 #PRECOMPILED_HEADER = stable.h
 SOURCES += main.cpp \
+    ../abe/fmdeadtreelist.cpp \
     ../abe/patch.cpp \
     ../abe/patches.cpp \
+    ../core/deadtree.cpp \
     ../core/microclimate.cpp \
     ../core/permafrost.cpp \
     ../output/devstageout.cpp \
@@ -283,8 +285,10 @@ SOURCES += main.cpp \
 
 HEADERS += mainwindow.h \
     ../3rdparty/FreeImage/FreeImage.h \
+    ../abe/fmdeadtreelist.h \
     ../abe/patch.h \
     ../abe/patches.h \
+    ../core/deadtree.h \
     ../core/microclimate.h \
     ../core/permafrost.h \
     ../output/devstageout.h \
@@ -462,6 +466,7 @@ DISTFILES += \
     ../abe-lib/thinning/selective.js \
     ../abe-lib/thinning/thinning.js \
     ../apidoc/ABE/abe_patches.js \
+    ../apidoc/ABE/deadtreelist_doc.js \
     ../apidoc/ABE/saplinglist_doc.js \
     ../apidoc/iLand/grid_doc.js \
     ../apidoc/iLand/map_doc.js \

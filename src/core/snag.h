@@ -21,6 +21,9 @@
 #define SNAG_H
 #include <QList>
 #include <QVariant>
+
+#include "deadtree.h"
+
 class Tree; // forward
 class Species; // forward
 class ResourceUnit; // forward
@@ -79,7 +82,7 @@ class Snag
 {
 public:
     Snag();
-    static void setupThresholds(const double lower, const double upper); ///< setup class thresholds, needs to be called only once... (static)
+    static void setupThresholds(const double lower, const double upper, const double single_tree, QString decay_classes); ///< setup class thresholds, needs to be called only once... (static)
     void setup( const ResourceUnit *ru); ///< initial setup routine.
     void scaleInitialState(); ///< used to scale the input to the actual area of the resource unit
     void newYear(); ///< to be executed at the beginning of a simulation year. This cleans up the transfer pools.
@@ -94,6 +97,7 @@ public:
     double climateFactor() const { return mClimateFactor; } ///< the 're' climate factor to modify decay rates (also used in ICBM/2N model)
     double totalCarbon() const { return mTotalSnagCarbon; } ///< total carbon in snags (kg/RU): not scaled to 1ha!!
     const CNPair &totalSWD() const { return mTotalSWD; } ///< sum of C and N in SWD pools (stems) kg/RU
+    const CNPair totalSingleSWD() const; ///< C / N of standing snags tracked  indvidually
     const CNPair &totalOtherWood() const { return mTotalOther; } ///< sum of C and N in other woody pools (branches + coarse roots) kg/RU
     double otherWoodAbovegroundFraction() const { return mOtherWoodAbovegroundFrac; } ///< fraction of branches in 'other' pools (0..1)
     const CNPair &fluxToAtmosphere() const { return mTotalToAtm; } ///< total kg/RU heterotrophic respiration / flux to atm
@@ -110,6 +114,9 @@ public:
     /// as litter input comes from both trees and saplings, and the only "user" at the moment
     /// is permafrost, which is executed between both processes
     void resetDeciduousFoliage() { mDeciduousFoliageLitter = 0.; }
+
+    /// get list of snags / DWD on the resource unit
+    QVector<DeadTree> &deadTrees() { return mDeadTrees; }
     // actions
     /// add for a tree with diameter
     void addTurnoverLitter(const Species *species, const double litter_foliage, const double litter_fineroot);
@@ -145,9 +152,17 @@ public:
     /// cut down swd and move to soil pools
     void management(const double factor);
     QList<QVariant> debugList(); ///< return a debug output
+    /// clean up list of dead trees
+    void packDeadTreeList();
+
+
+    static double* decayClassThresholds() {return mDecayClassThresholds; }
 private:
+    /// storage for snags that are stored individually
+    QVector<DeadTree> mDeadTrees;
+
     /// split the biomass of a tree into snag pools or move part of the tree directly to the soil
-    void addBiomassPools(const Tree *tree, const double stem_to_snag, const double stem_to_soil, const double branch_to_snag, const double branch_to_soil, const double foliage_to_soil);
+    void addBiomassPools(const Tree *tree, const double stem_to_snag, const double stem_to_soil, const double branch_to_snag, double branch_to_soil, const double foliage_to_soil);
     double calculateClimateFactors(); ///< calculate climate factor 're' for the current year
     double mClimateFactor; ///< current mean climate factor (influenced by temperature and soil water content)
     const ResourceUnit *mRU; ///< link to resource unit
@@ -180,7 +195,9 @@ private:
     CNPair mTotalToExtern; ///< total flux of masses removed from the site (i.e. harvesting) kg/ha
     CNPair mTotalToDisturbance; ///< fluxes due to disturbance
     static double mDBHLower, mDBHHigher; ///< thresholds used to classify to SWD-Pools
+    static double mDBHSingle; ///< threshold above which individul trees are tracked
     static double mCarbonThreshold[3]; ///< carbon content thresholds that are used to decide if the SWD-pool should be emptied
+    static double mDecayClassThresholds[]; ///< thresholds for assigning decay classes to snags / DWD pieces
 
     friend class Snapshot;
 };

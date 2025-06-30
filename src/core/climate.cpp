@@ -125,6 +125,7 @@ void Climate::setup(bool do_log)
     GlobalSettings *g=GlobalSettings::instance();
     XmlHelper xml(g->settings().node("model.climate"));
     QString tableName =xml.value("tableName");
+
     mName = tableName;
     QString filter = xml.value("filter");
 
@@ -246,7 +247,7 @@ void Climate::load()
             }
             yeardays++;
             if (yeardays>366)
-                throw IException("Error in reading climate file: yeardays>366!");
+                throw IException(QString("Error in reading climate file: Year with >366 days detected! Year: %1, table: '%2'.").arg(cday->year).arg(mName));
 
 
             cday = store++; // store values directly in the QVector

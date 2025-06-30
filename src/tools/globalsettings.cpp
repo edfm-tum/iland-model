@@ -309,10 +309,7 @@ QStringList GlobalSettings::debugListCaptions(const DebugOutputs dbg)
                              << "resp_soil" << "resp_vpd" << "resp_temp" << "resp_meteo"
                              << "resp_pheno" << "resp_co2" << "apar_mj_m2"
                              << "resp_daylength" << "utilizable_rad";
-
-
     case dEstablishment:
-        // Use more descriptive names to match documentation.
         return QStringList() << "id" << "type" << "year" << "species" << "RU_index" << "rid"
                              << "avgSeedDensity" << "TACAminTemp" << "TACAchill" << "TACAfrostFree" << "TACAgdd"
                              << "frostDaysAfterBudburst" << "waterLimitation" << "GDD" << "pAbiotic"
