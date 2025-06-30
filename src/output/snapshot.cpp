@@ -209,6 +209,13 @@ bool Snapshot::openStandDatabase(const QString &file_name, bool read)
 
 bool Snapshot::createSnapshot(const QString &file_name)
 {
+    uint bufferSize = GlobalSettings::instance()->settings().value("model.world.buffer").toUInt();
+    if (fmod(bufferSize, 100) != 0) {
+        throw IException(QString("The buffer size needs to be an integer multiple of 100 so that a snapshot can be created. " \
+                                 "Adjust the buffer size and re-run simulation (Model->World). Abort saving snapshot!"));
+        return false;
+    }
+
     openDatabase(file_name, false);
     // save the trees
     saveTrees();
@@ -248,7 +255,6 @@ bool Snapshot::loadSnapshot(const QString &file_name)
     DebugTimer t("loadSnapshot");
     openDatabase(file_name, true);
 
-
     QFileInfo fi(file_name);
     QString grid_file = fi.absolutePath() + "/" + fi.completeBaseName() + ".asc";
     GisGrid grid;
@@ -269,8 +275,9 @@ bool Snapshot::loadSnapshot(const QString &file_name)
 
         if (fmod(to.x(), cRUSize) != 0. || fmod(to.y(), cRUSize) != 0.) {
             QPointF world_offset = GisGrid::modelToWorld(QPointF(0., 0.));
-            throw IException(QString("Loading of the snapshot '%1' failed: The offset from the current location of the project (%4/%5) " \
-                                     "is not a multiple of the resource unit size (100m) relative to grid of the snapshot (origin-x: %2, origin-y: %3).").arg(file_name)
+
+            throw IException(QString("The current project area does not match the project area of the snapshot. The origin of the project area of the snapshot is: origin-x: %2m, origin-y: %3m, " \
+                                     "while your current origin is %4 m/%5 m. Deviations are allowed only in 100m steps (resource unit size)!").arg(file_name)
                              .arg(grid.origin().x()).arg(grid.origin().y()).arg(world_offset.x()).arg(world_offset.y()));
         }
 
@@ -712,7 +719,6 @@ void Snapshot::loadTrees()
     ResourceUnit *ru = 0;
     HeightGrid *hg = GlobalSettings::instance()->model()->heightGrid();
     FloatGrid *lif_grid = GlobalSettings::instance()->model()->grid();
-
     int n=0, ntotal=0;
     try {
         // clear all trees on the landscape
@@ -733,11 +739,12 @@ void Snapshot::loadTrees()
             }
             if (!ru)
                 continue;
+
             QPoint tree_idx(offsetx + q.value(2).toInt() % cPxPerRU, offsety + q.value(3).toInt() % cPxPerRU);
             // check if pixel is valid in the height grid
-            if (!hg->valueAtIndex(lif_grid->index5(lif_grid->index(tree_idx))).isValid())
+            if (!hg->valueAtIndex(lif_grid->index5(lif_grid->index(tree_idx))).isValid()) {
                 continue;
-
+            }
             // add a new tree to the tree list
             Tree &t = ru->newTree();
             t.setRU(ru);
