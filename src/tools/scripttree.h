@@ -23,7 +23,7 @@ public:
     // selected tree flags from tree.h
     enum Flags { TreeDead=1,
                  TreeDeadBarkBeetle=16, TreeDeadWind=32, TreeDeadFire=64, TreeDeadKillAndDrop=128, TreeHarvested=256,
-                 TreeAffectedBite=8192 // affected or killed by biotic disturbance module (BITE)
+                 TreeAffectedBite=8192, TreeNoHarvest=16*1024 // affected or killed by biotic disturbance module (BITE)
                };
     Q_ENUM(Flags)
     static void addToScriptEngine(QJSEngine &engine);
@@ -41,15 +41,22 @@ public:
     QString species() const { return mTree ? mTree->species()->id() : QStringLiteral("invalid"); }
     int flags() const { return mTree ? mTree->flags() : 0; }
 
+    static void setTreeFlag(Tree *tree, Flags flag, bool value);
+    static bool treeFlag(Tree *tree, Flags flag);
 signals:
 
 public slots:
     QString info();
     double expr(QString expr_str);
+    // handling of flags
+    void setFlag(Flags flag, bool value=true);
+    bool flag(Flags flag) const;
 
 private:
     Tree *mTree;
 };
+
+
 
 // Expression class
 class ScriptTreeExpr : public QObject

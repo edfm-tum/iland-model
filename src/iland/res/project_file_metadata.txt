@@ -177,6 +177,7 @@ output.soilinput.enabled = boolean|false|Enabled|The output contains all carbon 
 gui.layout = tab|tabProcesses|Ecosystem processes|todo
 gui.layout = group|Production month|Details about the 3PG production submodule on monthly basis and for each species and resource unit. https://iland-model.org/outputs#Production_per_month_species_and_resource_unit
 output.production_month.enabled = boolean|false|Enabled|Details about the 3PG production submodule on monthly basis and for each species and resource unit.|simple
+output.production_month.condition = string||Capling|Condition to limit execution for specific years with the variable 'year' (the current year).|advanced
 gui.layout = group|Water cycle|Annual water cycle output on resource unit/landscape unit. https://iland-model.org/outputs#Water_output
 output.water.enabled = boolean|true|Enabled|Annual water cycle output on resource unit/landscape unit. The output includes annual averages of precipitation, evapotranspiration, water excess, snow cover, and radiation input. The difference of precip - (evapotranspiration + excess) is the evaporation from intercepted precipitation. The spatial resolution is landscape averages and/or resource unit level (i.e. 100m pixels). Landscape level averages are indicated by -1 for the 'ru' and 'index' columns. Columns related to permafrost are 0 when permafrost module is disabled. The given values for depth are independent from the soil depth of iLand (e.g., soil depth can be 0.5m, but maxDepthFrozen can be 1.5m).|simple
 output.water.condition = function|condition water|Condition|Limits the output execution to specific years (variable 'year').|simple
@@ -231,11 +232,10 @@ gui.layout = group|SVD GPP
 output.svdgpp.enabled = boolean|false|Enable GPP|GPP potential (as conditioned by climate/site) per species and m2.|simple
 
 gui.layout = group|<h2>Ecoviz</h2>|Ecoviz is a forest landscape visualization tool, and this output produces tree data in required format for Ecoviz. Note that output files can become quite large!
-output.ecoviz.enabled = boolean|true|ecoviz|Output of dynamic|simple
-output.ecoviz.condition = string|details|Condition details|The condition determines if output should be generated. Variable: 'year' (the current year).|advanced
-output.ecoviz.fileName = string|ecvoiz_$.pdb|file path|Specify the output path (relative to project root) for output files <$> is replaced with the simulation year.|advanced
-
-
+output.ecoviz.enabled = boolean|true|ecoviz|Output of vegetatition data for Ecoviz tool|simple
+output.ecoviz.condition = function||condition|filter for execution of output|simple
+output.ecoviz.binary = boolean|false|binary|if true, a binary file (version 3) is written (*.pdbb), a text file otherwise (*.pdb)|simple
+output.ecoviz.fileName = string|output/pdb_$.pdb|fileName|file name pattern for output files. "$" is replaced with simulation year|simple
 
 
 ; ************************************
@@ -403,7 +403,7 @@ model.settings.soil.useDynamicAvailableNitrogen = boolean|false|Use Dynamic Avai
 model.settings.soil.nitrogenDeposition = numeric|0|Nitrogen Deposition|To account for external nitrogen input, a nitrogen deposition (kgN/ha*yr) is added to the available nitrogen which is derived by the dynamic soil module calculations. Default: 0. Note that nitrogen deposition is *not* added if the static world.site.availableNitrogen value is used.|simple
 model.settings.soil.qb = numeric|0.2|C/N Ratio Soil Microbes|C/N ratio of soil microbes|simple
 model.settings.soil.qh = numeric|0.2|C/N Ratio SOM|C/N ratio of SOM|simple
-model.settings.soil.leaching = numeric|0.5|string|How many percent of the mineralized nitrogen in O is not available for plants but is leached (0..1)?|simple
+model.settings.soil.leaching = numeric|0.5|Soil Leaching|How many percent of the mineralized nitrogen in O is not available for plants but is leached (0..1)?|simple
 model.settings.soil.el = numeric|0.1|Microbal Eff. Labile Pool|microbal efficiency in the labile pool, auxiliary parameter (see parameterization example)|simple
 model.settings.soil.er = numeric|0.1|Microbal Eff. Refractory Pool|microbal efficiency in the refractory pool, auxiliary parameter (see parameterization example)|simple
 
@@ -587,8 +587,8 @@ model.site.youngRefractoryN = numeric|100|Nitrogen content|(Initial) nitrogen co
 model.site.youngRefractoryDecompRate = numeric|string|Decomposition rate|(Initial) decomposition rate of yr pool|simple
 model.site.youngRefractoryAbovegroundFraction = numeric|0.7|Aboveground fraction|Fraction (0..1) of C in the yR pool from aboveground sources (branches, stems)|simple
 gui.layout = group|Soil organic matter
-model.site.somC = numeric|100000|Nitrogen content|(Initial) carbon content of oC (soil organic matter) soil pool (kg/ha)|simple
-model.site.somN = numeric|100|Carbon content|(Initial) nitrogen content of oN (soil organic matter) soil pool (kg/ha)|simple
+model.site.somC = numeric|100000|Carbon content|(Initial) carbon content of oC (soil organic matter) soil pool (kg/ha)|simple
+model.site.somN = numeric|100|Nitrogen content|(Initial) nitrogen content of oN (soil organic matter) soil pool (kg/ha)|simple
 model.site.somDecompRate = numeric|0.1|Decomposition rate|Decomposition rate for soil organic matter (i.e. the "old" pool sensu ICBM)|simple
 model.site.soilHumificationRate = numeric|0.3|Soil humification rate|humification rate|simple
 

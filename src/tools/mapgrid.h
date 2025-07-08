@@ -25,6 +25,7 @@
 #include "gisgrid.h"
 class ResourceUnit; // forward
 class Tree; // forward
+class DeadTree; // forward
 class SaplingTreeOld; // forward
 class ResourceUnitSpecies; // forward
 
@@ -70,6 +71,10 @@ public:
     QList<Tree*> trees(const int id) const;
     /// load trees and store in list 'rList'. If 'filter'<>"", then the filter criterion is applied
     int loadTrees(const int id,  QVector<QPair<Tree *, double> > &rList, const QString filter=QString(), int n_estimate=0) const;
+
+    /// load dead trees and store in list 'rList'. If 'filter'<>"", then the filter criterion is applied
+    int loadDeadTrees(const int id,  QVector<DeadTree *> &rList, const QString filter=QString(), int n_estimate=0) const;
+
     /// return a list of grid-indices of a given stand-id
     QList<int> gridIndices(const int id) const;
     /// extract a list of neighborhood relationships between all the polygons of the grid

@@ -127,6 +127,7 @@ public:
     const Grid<BiteCell*> &grid() const { return mGrid; }
     static ABE::FMTreeList* threadTreeList();
     static ABE::FMSaplingList* threadSaplingList();
+    static ABE::FMDeadTreeList* threadDeadTreeList();
     BAgentStats &stats()  { return mStats; }
     BiteLifeCycle *lifeCycle() const { return mLC; }
     /// create stats grid (on demand)
@@ -165,6 +166,7 @@ private:
     static void runCell(BiteCell &cell);
     static QHash<QThread*, ABE::FMTreeList* > mTreeLists;
     static QHash<QThread*, ABE::FMSaplingList* > mSaplingLists;
+    static QHash<QThread*, ABE::FMDeadTreeList* > mDeadTreeLists;
 
     void setupScripting();
 

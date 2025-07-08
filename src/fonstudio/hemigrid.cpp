@@ -106,7 +106,7 @@ double& HemiGrid::rGet(const double Azimuth, const double Elevation) const
 {
     // Azimuth goes from -pi .. +pi -> move to 0..2pi, scale to 0..1 and convert to integer indices
     int iAzimuth = indexAzimuth(Azimuth);
-    // Elevation goes from 0..90° = 0..pi/2
+    // Elevation goes from 0..90 deg = 0..pi/2
     int iElevation = indexElevation(Elevation);
 
     return rGetByIndex(iAzimuth, iElevation);

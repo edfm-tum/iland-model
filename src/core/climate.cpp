@@ -125,6 +125,7 @@ void Climate::setup(bool do_log)
     GlobalSettings *g=GlobalSettings::instance();
     XmlHelper xml(g->settings().node("model.climate"));
     QString tableName =xml.value("tableName");
+
     mName = tableName;
     QString filter = xml.value("filter");
 
@@ -141,7 +142,7 @@ void Climate::setup(bool do_log)
             // check for validity
             foreach(int year, mRandomYearList)
                 if (year < 0 || year>=mLoadYears)
-                    throw IException(QString("Invalid randomSamplingList! Year numbers are 0-based and must to between 0 and batchYears-1 (check value of batchYears)!!! Tried to access: '%1', batchYears: '%2'").arg(year).arg(mLoadYears) );
+                    throw IException(QString("Setup climate: invalid 'randomSamplingList'! \nYear numbers are 0-based and must to between 0 and batchYears-1 (check value of 'batchYears')!\n Tried to access: '%1', batchYears: '%2'").arg(year).arg(mLoadYears) );
         }
         if (do_log) {
             if (mRandomYearList.count()>0)
@@ -246,7 +247,7 @@ void Climate::load()
             }
             yeardays++;
             if (yeardays>366)
-                throw IException("Error in reading climate file: yeardays>366!");
+                throw IException(QString("Error in reading climate file: Year with >366 days detected! Year: %1, table: '%2'.").arg(cday->year).arg(mName));
 
 
             cday = store++; // store values directly in the QVector

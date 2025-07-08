@@ -84,4 +84,20 @@ private:
     const ResourceUnit *mRU;
 };
 
+/** SaplingWrapper encapsualates a sapling cohort (on a 2x2m pixel)
+  */
+class DeadTree;
+class DeadTreeWrapper: public ExpressionWrapper
+{
+public:
+    DeadTreeWrapper()  {}
+    DeadTreeWrapper(const DeadTree* deadTree) : mDeadTree(deadTree) {}
+    void setDeadTree(const DeadTree* deadTree) { mDeadTree= deadTree; }
+    virtual const QStringList getVariablesList();
+    virtual double value(const int variableIndex);
+
+private:
+    const DeadTree *mDeadTree {nullptr};
+};
+
 #endif // EXPRESSIONWRAPPER_H

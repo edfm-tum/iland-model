@@ -28,11 +28,12 @@ struct SaplingCell; // forward
 class ResourceUnit; // forward
 class Tree; // forward
 class MapGrid; // forward
+class DeadTree; // forward
 
 class CustomAggOut : public Output
 {
 public:
-    enum AggregationEntity {Invalid, RU, Trees, Saplings};
+    enum AggregationEntity {Invalid, RU, Trees, Saplings, Snags};
     enum AggregationLevel {sInvalid, sRU, sStand, sLandscape};
 
     CustomAggOut();
@@ -83,6 +84,7 @@ private:
 
     void runSaplings(); ///< process saplings
     void runTrees(); ///< process on tree level
+    void runSnags(); ///< process on snag level
 
     // functions that process a single element (tree, sapling, ru)
     // and populate the data in fieldlist
@@ -90,6 +92,7 @@ private:
     void processSapling(const SaplingTree *t, const ResourceUnit *ru, const QString &speciesId, QMap<QString, QVector<QVector<double> > > &data);
     void processSaplingCell(const SaplingCell *sc, const ResourceUnit *ru, QMap<QString, QVector<QVector<double> > > &data);
     void processRU(const ResourceUnit *ru);
+    void processSnag(const DeadTree *dt, QMap<QString, QVector<QVector<double> > > &data);
 
     // aggregation & write outputs functions
     void writeResults(QMap<QString, QVector<QVector<double> > >  &data, ResourceUnit *ru, int stand_id);

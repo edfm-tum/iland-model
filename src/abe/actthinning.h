@@ -49,7 +49,8 @@ private:
         bool targetRelative; ///< if true, the target variable is relative to the stock, if false it is absolute
         QString targetVariable; ///< target variable ('volume', 'basalArea', 'stems') / ha
         QVector<double> classValues; ///< class values (the number of values defines the number of classes)
-        QVector<int> classPercentiles; ///< percentiles [0..100] for the classes (count = count(classValues) + 1
+        QVector<int> cumClassPercentiles; ///< cumulative percentiles [0..100] of the relative classes
+        QVector<int> cumSelectPercentiles; ///< cumulative probability weight of the selectoin
         QJSValue minDbh; ///< only trees with dbh > minDbh are considered (default: 0)
         QJSValue remainingStems; ///< minimum remaining stems/ha (>minDbh)
     };

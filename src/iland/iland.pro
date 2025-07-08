@@ -97,9 +97,11 @@ linux-g++ {
 # basically sudo apt-get install libfreeimage3 libfreeimage-dev
 
 LIBS += -lfreeimage
+}macx{ 
+LIBS += -L/opt/homebrew/Cellar/freeimage/3.18.0/lib -lfreeimage
 } else {
 # external freeimage library (geotiff)
-LIBS += -L$$THIRDPARTY_PATH/FreeImage -lFreeImage
+LIBS += -L$$THIRDPARTY_PATH\FreeImage -lFreeImage
 }
 
 # querying git repo
@@ -147,8 +149,10 @@ for(var, $$list($$enumerate_vars())) {
 # Use Precompiled headers (PCH)
 #PRECOMPILED_HEADER = stable.h
 SOURCES += main.cpp \
+    ../abe/fmdeadtreelist.cpp \
     ../abe/patch.cpp \
     ../abe/patches.cpp \
+    ../core/deadtree.cpp \
     ../core/microclimate.cpp \
     ../core/permafrost.cpp \
     ../core/understory.cpp \
@@ -157,6 +161,7 @@ SOURCES += main.cpp \
     ../output/devstageout.cpp \
     ../output/ecovizout.cpp \
     ../output/understoryout.cpp \
+    ../output/svdindicatorout.cpp \
     ../tools/geotiff.cpp \
     mainwindow.cpp \
     paintarea.cpp \
@@ -283,8 +288,11 @@ SOURCES += main.cpp \
     ui/settingsdialog.cpp
 
 HEADERS += mainwindow.h \
+    ../3rdparty/FreeImage/FreeImage.h \
+    ../abe/fmdeadtreelist.h \
     ../abe/patch.h \
     ../abe/patches.h \
+    ../core/deadtree.h \
     ../core/microclimate.h \
     ../core/permafrost.h \
     ../core/understory.h \
@@ -293,6 +301,7 @@ HEADERS += mainwindow.h \
     ../output/devstageout.h \
     ../output/ecovizout.h \
     ../output/understoryout.h \
+    ../output/svdindicatorout.h \
     ../tools/geotiff.h \
     stable.h \
     paintarea.h \
@@ -454,14 +463,18 @@ OTHER_FILES += maindoc.cpp \
     ../apidoc/abe/abe_context_doc.js
 
 DISTFILES += \
+    ../3rdparty/FreeImage/FreeImage.dll \
+    ../3rdparty/FreeImage/FreeImage.lib \
     ../abe-lib/ABE-library.js \
     ../abe-lib/harvest/femel.js \
     ../abe-lib/harvest/harvest.js \
+    ../abe-lib/harvest/salvage.js \
     ../abe-lib/lib_helper.js \
     ../abe-lib/planting/planting.js \
     ../abe-lib/thinning/selective.js \
     ../abe-lib/thinning/thinning.js \
     ../apidoc/ABE/abe_patches.js \
+    ../apidoc/ABE/deadtreelist_doc.js \
     ../apidoc/ABE/saplinglist_doc.js \
     ../apidoc/iLand/grid_doc.js \
     ../apidoc/iLand/map_doc.js \

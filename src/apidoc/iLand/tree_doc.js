@@ -82,6 +82,29 @@ The y-coordinate of the tree, in m.
 @type int
 */
 
+/**
+`flag` returns true or false for the given `aflag` for the current tree.
+
+@method flag
+@param {Flags} aflag the flag to check
+@return bool
+*/
+
+/**
+The function sets the the flag `aflag` to the provided value.
+Note that not all flags are setable.
+Possible values are currently: `TreeAffectedBite` and `TreeNoHarvest`.
+
+@method setFlag
+@param {Flags} aflag the flag to check
+@param {bool} value value to set the flag, defaults to true
+@Example
+    for (let i=0;i<stand.trees.count;++i)
+      if( i % 17 == 0) {
+        let t = stand.trees.tree(i);
+        t.setFlag(Tree.TreeNoHarvest);
+      }
+*/
 
 /**
 A string with memory address, Id, dbh, height, and coordinates of the tree.

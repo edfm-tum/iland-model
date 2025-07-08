@@ -8,6 +8,11 @@
 
 // yuidoc --server . ../abe-lib
 
+// or: to have a extra copy of abe-lib doc: go to /src/abe-lib
+// run:
+// yuidoc --server .
+// yuidoc .
+
 // see also the yuidoc.json for more options.
 // http://127.0.0.1:3000/
 

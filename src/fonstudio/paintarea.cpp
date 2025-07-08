@@ -63,7 +63,7 @@ void PaintArea::mouseReleaseEvent ( QMouseEvent * event )
 {
     setCursor(Qt::CrossCursor);
 
-    if ( (event->pos()-m_lastDown).manhattanLength() > 3) {
+    if ( (event->position()-m_lastDown).manhattanLength() > 3) {
         emit mouseDrag(m_lastDown, event->pos(), event->button());
     }
     //emit mouseClick(event->pos());

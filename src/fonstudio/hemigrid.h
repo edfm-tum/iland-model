@@ -3,11 +3,15 @@
 #ifndef HemiGrid_H
 #define HemiGrid_H
 
+#include <math.h>
+#include <QString>
+#include <QImage>
+
 /** HemiGrid represents a grid covering the hemisphehre as well as some operations.
     The sky is modeled as equally sized tiles.
     Coordinate system:
     azimuth: angle between -pi .. +pi, where 0=south direction
-    elevation: 0: horizon - pi/2 (90°)
+    elevation: 0: horizon - pi/2 (90deg)
   */
 class HemiGrid
 {

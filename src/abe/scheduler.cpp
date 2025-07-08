@@ -537,6 +537,9 @@ QStringList SchedulerOptions::mAllowedProperties = QStringList()
 void SchedulerOptions::setup(QJSValue jsvalue)
 {
     useScheduler = false;
+    if (jsvalue.isError())
+        return;
+
     if (!jsvalue.isObject()) {
         qCDebug(abeSetup) << "Scheduler options are not an object:" << jsvalue.toString();
         return;

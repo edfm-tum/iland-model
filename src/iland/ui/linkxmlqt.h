@@ -94,7 +94,7 @@ private:
     bool mSiblingIsComment;
 
     QFile mFile(QString& xmlFile);
-    bool xmlFileLoaded;
+    bool mXmlFileLoaded;
     QDomDocument mLoadedXml;
 
     // Functions

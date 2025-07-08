@@ -31,7 +31,7 @@ LinkXmlQt::LinkXmlQt(const QString& xmlFile) :
     mXmlFile(xmlFile),
     mTempHomePath("")
 {
-    xmlFileLoaded = loadXmlFile();
+    mXmlFileLoaded = loadXmlFile();
 
 }
 
@@ -64,12 +64,14 @@ bool LinkXmlQt::loadXmlFile()
     if (!curXml.setContent(&file, &errorMsg, &errorLine, &errorColumn)) {
         qDebug() << "Error loading file content. Abort.";
         file.close();
+        mXmlFileLoaded =false;
         return false;
     }
 
     mLoadedXml = curXml;
-
+    mXmlFileLoaded = true;
     file.close();
+    mXmlFileLoaded = true;
     return true;
 }
 
@@ -77,7 +79,7 @@ bool LinkXmlQt::loadXmlFile()
 QString LinkXmlQt::readCommentXml(const QStringList& xmlPath)
 {
 
-    if ( xmlFileLoaded ) {
+    if ( mXmlFileLoaded ) {
         QDomDocument curXml = mLoadedXml;
 
         QDomElement curNode = curXml.documentElement();
@@ -98,7 +100,7 @@ QString LinkXmlQt::readCommentXml(const QStringList& xmlPath)
 
     }
     else {
-        return "Problem reading comment (see LinkXmlQt::readCommentXml";
+        return "Problem reading comment (see LinkXmlQt::readCommentXml)";
     }
 
 }
@@ -177,7 +179,7 @@ void LinkXmlQt::setComment(QDomNode& curNode, QStringList& commentSplittedLines)
 
 QString LinkXmlQt::readXmlValue(QString key)
 {
-    if (!xmlFileLoaded) {
+    if (!mXmlFileLoaded) {
         throw IException("Error with loading data. Check xml file! Abort.");
     }
     QDomDocument curXml = mLoadedXml;
@@ -207,7 +209,7 @@ void LinkXmlQt::readValuesXml(QStackedWidget* stackedWidget) {
 
     QDomDocument curXml = mLoadedXml;
 
-    if (!xmlFileLoaded) {
+    if (!mXmlFileLoaded) {
         qDebug() << "Error with loading data. Check xml file! Abort.";
         return;
     }
@@ -280,7 +282,7 @@ void LinkXmlQt::checkXmlNodes(QString key) {
     QDomDocument curXml = mLoadedXml;
 
     //QFile file(xmlFile);
-    if (!xmlFileLoaded) {
+    if (!mXmlFileLoaded) {
         qDebug() << "Error with loading data. Check xml file! Abort.";
         return;
     }
@@ -322,7 +324,7 @@ void LinkXmlQt::writeValuesXml(QStackedWidget* stackedWidget) {
     QDomDocument curXml = mLoadedXml;
 
     //QFile file(xmlFile);
-    if (!xmlFileLoaded) {
+    if (!mXmlFileLoaded) {
         qDebug() << "Error with loading data. Check xml file! Abort.";
         return;
     }
@@ -420,7 +422,8 @@ void LinkXmlQt::writeToFile(const QString& xmlFilePath)
 
 }
 
-void LinkXmlQt::createXML(const QStringList& metaKeys, const QString &pathXmlFile)
+void LinkXmlQt::createXML(const QStringList& metaKeys,
+                          const QString &pathXmlFile)
 {
     QStringList initCommentList;
 
@@ -466,6 +469,7 @@ void LinkXmlQt::createXML(const QStringList& metaKeys, const QString &pathXmlFil
                     curNode = childBranch;
                 }
             }
+
             curNode.appendChild(newXml.createTextNode(""));
         }
     }

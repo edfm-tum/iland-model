@@ -46,10 +46,15 @@ ProductionOut::ProductionOut()
 
 void ProductionOut::setup()
 {
+    // use a condition for to control execuation for the current year
+    QString condition = settings().value(".condition", "");
+    mCondition.setExpression(condition);
+
 }
 
 void ProductionOut::execute(const ResourceUnitSpecies *rus)
 {
+
     const Production3PG &prod = rus->prod3PG();
     const SpeciesResponse *resp = prod.mResponse;
     const double *pheno_fractions = rus->ru()->climate()->phenology(rus->species()->phenologyClass()).monthArray();
@@ -84,6 +89,9 @@ void ProductionOut::exec()
 {
     DebugTimer t("ProductionOut");
     Model *m = GlobalSettings::instance()->model();
+
+    if (!mCondition.isEmpty() && !mCondition.calculate(GlobalSettings::instance()->currentYear()))
+        return;
 
     foreach(ResourceUnit *ru, m->ruList()) {
         if (ru->id()==-1)

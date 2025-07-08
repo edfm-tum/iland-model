@@ -34,7 +34,6 @@ public:
     void calculateAbioticEnvironment(); ///< calculate the abiotic environment (TACA model)
     void writeDebugOutputs();
     // some informations after execution
-    double avgSeedDensity() const { return mPxDensity;} ///< average seed density on the RU
     double abioticEnvironment() const {return mPAbiotic; } ///< integrated value of abiotic environment (i.e.: TACA-climate + total iLand environment)
     int numberEstablished() const { return mNumberEstablished; } ///< return number of newly established trees in the current year
     bool TACAminTemp() const { return mTACA_min_temp;} ///< TACA flag for minimum temperature
@@ -56,7 +55,6 @@ private:
     const Climate *mClimate; ///< link to the current climate
     const ResourceUnitSpecies *mRUS; ///< link to the resource unit species (links to production data and species respones)
     // some statistics
-    double mPxDensity;
     int mNumberEstablished; // number of established trees in the current year
     // TACA switches
     bool mTACA_min_temp; // minimum temperature threshold

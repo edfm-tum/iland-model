@@ -23,6 +23,7 @@
 #include "biteengine.h"
 #include "fmtreelist.h"
 #include "fmsaplinglist.h"
+#include "fmdeadtreelist.h"
 #include "debugtimer.h"
 
 #include "bitelifecycle.h"
@@ -51,6 +52,11 @@ ABE::FMTreeList *BiteCellScript::trees()
 ABE::FMSaplingList *BiteCellScript::saplings()
 {
     return BiteAgent::threadSaplingList();
+}
+
+ABE::FMDeadTreeList *BiteCellScript::deadTrees()
+{
+    return BiteAgent::threadDeadTreeList();
 }
 
 QString BiteCellScript::info()
@@ -100,6 +106,13 @@ void BiteCellScript::reloadSaplings()
     int n = mCell->loadSaplings(saplings());
     mCell->setSaplingsLoaded(true);
     // qCDebug(bite) << "reloaded trees for cell" << mCell->index() << ", N=" << n << " (saplinglist: " << saplings();
+
+}
+
+void BiteCellScript::reloadDeadTrees()
+{
+    int n = mCell->loadDeadTrees(deadTrees());
+    mCell->setDeadTreesLoaded(true);
 
 }
 

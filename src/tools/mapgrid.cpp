@@ -254,15 +254,6 @@ QList<ResourceUnit *> MapGrid::resourceUnits(const int id) const
 /// return a list of all living trees on the area denoted by 'id'
 QList<Tree *> MapGrid::trees(const int id) const
 {
-    // QList<Tree*> tree_list;
-    // QList<ResourceUnit*> resource_units = resourceUnits(id);
-    // foreach(ResourceUnit *ru, resource_units) {
-    //     foreach(const Tree &tree, ru->constTrees())
-    //         if (standIDFromLIFCoord(tree.positionIndex()) == id && !tree.isDead()) {
-    //             tree_list.append( & const_cast<Tree&>(tree) );
-    //         }
-    // }
-
 
     QList<Tree*> tree_list;
     auto i = mRUIndex.constFind(id);
@@ -323,6 +314,38 @@ int MapGrid::loadTrees(const int id, QVector<QPair<Tree *, double> > &rList, con
         delete expression;
     return rList.size();
 
+}
+
+int MapGrid::loadDeadTrees(const int id,
+                           QVector<DeadTree *> &rList,
+                           const QString filter,
+                           int n_estimate) const
+{
+    rList.clear();
+    if (n_estimate>0)
+        rList.reserve(n_estimate);
+    DeadTreeWrapper tw;
+    Expression expression(filter, &tw);
+    expression.enableIncSum();
+
+    auto i = mRUIndex.constFind(id);
+    while (i != mRUIndex.cend() && i.key() == id) {
+        auto &dt_list = i.value().first->snag()->deadTrees();
+        for (auto &dt : dt_list) {
+            if (mGrid.constValueAt(dt.x(), dt.y()) == id) {
+
+                tw.setDeadTree(&dt);
+                if (!expression.isEmpty()) {
+                    bool keep = expression.executeBool();
+                    if (!keep)
+                        continue;
+                }
+                rList.push_back(&dt);
+            }
+        }
+        ++i;
+    }
+    return rList.size();
 }
 
 

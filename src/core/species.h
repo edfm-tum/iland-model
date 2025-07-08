@@ -118,8 +118,8 @@ public:
     double turnoverLeaf() const { return mTurnoverLeaf; }
     double turnoverRoot() const { return mTurnoverRoot; }
     // snags
-    double snagKsw() const { return mSnagKSW; }
-    double snagHalflife() const { return mSnagHalflife; }
+    double snagKsw() const { return mSnagKSW; } ///< standing woody debris (swd) decomposition rate
+    double snagHalflife() const { return mSnagHalflife; } ///< half-life-period of standing snags (years)
     double snagKyl() const { return mSnagKYL; } ///< decomposition rate for labile matter (litter) used in soil model
     double snagKyr() const { return mSnagKYR; } ///< decomposition rate for refractory matter (woody) used in soil model
 

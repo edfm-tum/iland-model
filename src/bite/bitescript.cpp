@@ -32,6 +32,7 @@
 
 #include "fmtreelist.h"
 #include "fmsaplinglist.h"
+#include "fmdeadtreelist.h"
 namespace BITE {
 
 
@@ -51,6 +52,7 @@ void BiteScript::setup(BiteEngine *biteengine)
 
     qRegisterMetaType<ABE::FMTreeList*>("ABE::FMTreeList*"); // register type, required to have that type as property
     qRegisterMetaType<ABE::FMSaplingList*>("ABE::FMSaplingList*"); // register type, required to have that type as property
+    qRegisterMetaType<ABE::FMDeadTreeList*>("ABE::FMDeadTreeList*"); // register type, required to have that type as property
     qRegisterMetaType<BiteItem*>("BiteItem*"); // register type, required to have that type as property
     qRegisterMetaType<BiteCellScript*>("BiteCellScript*"); // register type, required to have that type as property
     qRegisterMetaType<BiteAgent*>("BiteAgent*");

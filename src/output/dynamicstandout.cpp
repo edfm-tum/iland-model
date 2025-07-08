@@ -45,7 +45,8 @@ DynamicStandOut::DynamicStandOut()
                    "Each field is defined as: ''field.aggregation'' (separated by a dot). A ''field'' is a valid [Expression]. ''Aggregation'' is one of the following:  " \
                    "mean, sum, min, max, p25, p50, p75, p5, 10, p80, p85, p90, p95 (pXX=XXth percentile), sd (std.dev.).\n" \
                    "Complex expression are allowed, e.g: if(dbh>50,1,0).sum (-> counts trees with dbh>50)\n" \
-                   "Note that the column names in the output table may be slightly different, as dots (and other special characsters) are not allowed in column names und substituted.");
+                   "Note that the column names in the output table may be slightly different, as dots (and other special characsters) are not allowed in column names und substituted.\n" \
+                   "Note also, that `customagg` is another highly customizable output (https://iland-model.org/dynamic+outputs).");
     columns() << OutputColumn::year() << OutputColumn::ru()  << OutputColumn::id() << OutputColumn::species();
     // other colums are added during setup...
 }

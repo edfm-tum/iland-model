@@ -24,6 +24,7 @@
 #include "biteagent.h"
 #include "fmtreelist.h"
 #include "fmsaplinglist.h"
+#include "fmdeadtreelist.h"
 #include "biteengine.h"
 #include "bitelifecycle.h"
 #include "biteclimate.h"
@@ -66,6 +67,15 @@ void BiteCell::checkSaplingsLoaded(ABE::FMSaplingList *saplist)
         loadSaplings(saplist);
         mSaplingsLoaded=true;
     }
+}
+
+void BiteCell::checkDeadTreesLoaded(ABE::FMDeadTreeList *deadtreelist)
+{
+    if (!mDeadTreesLoaded) {
+        loadDeadTrees(deadtreelist);
+        mDeadTreesLoaded = true;
+    }
+
 }
 
 double BiteCell::climateVar(int var_index) const
@@ -146,6 +156,24 @@ int BiteCell::loadSaplings(ABE::FMSaplingList *saplinglist)
     QRectF rect = agent()->grid().cellRect( agent()->grid().indexOf(index()) );
     int added = saplinglist->loadFromRect(mRU, rect);
     return added;
+}
+
+int BiteCell::loadDeadTrees(ABE::FMDeadTreeList *deadtreelist)
+{
+    Q_ASSERT(mRU != nullptr && mAgent != nullptr);
+    if (agent()->cellSize()>cRUSize) {
+        bool first = true;
+        for (ResourceUnit *ru : agent()->largeCellRUs(index())) {
+            deadtreelist->loadFromRU(ru, ABE::FMDeadTreeList::DeadTreeType::Both,!first);
+            first = false;
+        }
+        return deadtreelist->deadTrees().size();
+    }
+
+    QRectF rect = agent()->grid().cellRect( agent()->grid().indexOf(index()) );
+    int added = deadtreelist->loadFromRect(mRU, rect);
+    return added;
+
 }
 
 void BiteCell::largeCellSetup(QPointF pos)

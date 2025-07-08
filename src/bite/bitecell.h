@@ -28,6 +28,7 @@ class Tree;
 namespace ABE {
 class FMTreeList; // forward
 class FMSaplingList; // forward
+class FMDeadTreeList; // forward
 }
 
 namespace BITE {
@@ -57,10 +58,13 @@ public:
 
     void setTreesLoaded(bool loaded) { mTreesLoaded = loaded; }
     void setSaplingsLoaded(bool loaded) { mSaplingsLoaded = loaded; }
+    void setDeadTreesLoaded(bool loaded) { mDeadTreesLoaded = loaded; }
     void checkTreesLoaded(ABE::FMTreeList *treelist);
     void checkSaplingsLoaded(ABE::FMSaplingList *saplist);
+    void checkDeadTreesLoaded(ABE::FMDeadTreeList *deadtreelist);
     bool areTreesLoaded() const { return mTreesLoaded; }
     bool areSaplingsLoaded() const { return mSaplingsLoaded; }
+    bool areDeadTreesLoaded() const { return mDeadTreesLoaded; }
 
     int yearsLiving() const { return mYearsLiving; }
     int yearLastSpread() const { return mLastSpread; }
@@ -77,6 +81,7 @@ public:
 
     int loadTrees(ABE::FMTreeList *treelist);
     int loadSaplings(ABE::FMSaplingList *saplinglist);
+    int loadDeadTrees(ABE::FMDeadTreeList *deadtreelist);
 private:
     void largeCellSetup(QPointF pos);
     ResourceUnit *mRU; ///< ptr to resource unit of the cell
@@ -90,6 +95,7 @@ private:
 
     bool mTreesLoaded; ///< is the tree list already fetched from iLand
     bool mSaplingsLoaded; ///< is the tree list already fetched from iLand
+    bool mDeadTreesLoaded; ///< is dead tree list already fetched from iLand?
 
     float mArea; ///< iLand project area covered by the cell (in ha)
 };

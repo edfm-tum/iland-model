@@ -78,7 +78,9 @@ void CustomAggOut::setStandGrid(MapGrid *mapgrid)
         dynamic_cast<CustomAggOutLevel*>(l)->setStandGrid(mapgrid);
 }
 
-const QStringList aggList = QStringList() << "mean" << "sum" << "min" << "max" << "p25" << "p50" << "p75" << "p5"<< "p10" << "p90" << "p95" << "sd" << "p80" << "p85";
+const QStringList aggList = { "mean", "sum", "min", "max",
+                             "p25", "p50", "p75", "p5", "p10", "p90", "p95",
+                             "sd", "p80","p85"};
 
 void CustomAggOutLevel::setup()
 {
@@ -101,8 +103,9 @@ void CustomAggOutLevel::setup()
     if (aggtype == "tree") mEntity = CustomAggOut::Trees;
     if (aggtype == "ru") mEntity = CustomAggOut::RU;
     if (aggtype == "sapling") mEntity = CustomAggOut::Saplings;
+    if (aggtype == "snag") mEntity = CustomAggOut::Snags;
     if (mEntity == CustomAggOut::Invalid)
-        throw IException(QString("CustomAggOut: invalid value for 'entity': '%1'. Allowed are: RU/Tree/Sapling").arg(aggtype));
+        throw IException(QString("CustomAggOut: invalid value for 'entity': '%1'. Allowed are: ru/tree/sapling/snag").arg(aggtype));
 
     mLevel = CustomAggOut::sInvalid;
     aggtype = settings().value(".level", "ru").toLower();
@@ -110,7 +113,7 @@ void CustomAggOutLevel::setup()
     if (aggtype == "stand") mLevel = CustomAggOut::sStand;
     if (aggtype == "landscape") mLevel = CustomAggOut::sLandscape;
     if (mLevel == CustomAggOut::sInvalid)
-        throw IException(QString("CustomAggOut: invalid value for 'level' (spatial aggregation level): '%1'. Allowed are: RU/stand/landscape").arg(aggtype));
+        throw IException(QString("CustomAggOut: invalid value for 'level' (spatial aggregation level): '%1'. Allowed are: ru/stand/landscape").arg(aggtype));
 
     if (fieldList.isEmpty())
         return;
@@ -130,6 +133,7 @@ void CustomAggOutLevel::setup()
     case CustomAggOut::Trees: columns() << OutputColumn::year() <<  OutputColumn::species(); break;
     case CustomAggOut::Saplings: columns() << OutputColumn::year()  << OutputColumn::species(); break;
     case CustomAggOut::RU: columns() << OutputColumn::year(); break;
+    case CustomAggOut::Snags: columns() << OutputColumn::year() << OutputColumn::species(); break;
     case CustomAggOut::Invalid: break;
     }
     switch (mLevel) {
@@ -147,6 +151,7 @@ void CustomAggOutLevel::setup()
         TreeWrapper tw;
         SaplingWrapper sw;
         RUWrapper rw;
+        DeadTreeWrapper dw;
         QRegularExpressionMatchIterator i = re.globalMatch(fieldList);
         while (i.hasNext()) {
             QRegularExpressionMatch match = i.next();
@@ -164,6 +169,7 @@ void CustomAggOutLevel::setup()
                 case CustomAggOut::Trees: var_index = tw.variableIndex(field); break;
                 case CustomAggOut::Saplings: var_index = sw.variableIndex(field); break;
                 case CustomAggOut::RU: var_index = rw.variableIndex(field); break;
+                case CustomAggOut::Snags: var_index = dw.variableIndex(field); break;
                 default: throw IException("Invalid aggregation in custom agg output!");
                 }
 
@@ -205,6 +211,7 @@ void CustomAggOutLevel::exec()
     switch (mEntity) {
     case CustomAggOut::Trees: runTrees(); break;
     case CustomAggOut::Saplings: runSaplings(); break;
+    case CustomAggOut::Snags: runSnags(); break;
     default: throw IException("Invalid aggregation level in custom agg output!");
     }
 
@@ -288,6 +295,101 @@ void CustomAggOutLevel::runTrees()
                         continue; // skip
                 }
                 processTree(trees[j], data);
+            }
+
+            writeResults(data, nullptr, ids[i]);
+
+        }
+        break;
+
+    }
+    default: return;
+
+    }
+
+}
+
+
+
+// process tree based aggregations
+void CustomAggOutLevel::runSnags()
+{
+    if (!Globals->model()->settings().carbonCycleEnabled)
+        throw IException("CustomAgg: should process Snags, but carbon cycle is not enabled in the model!");
+
+    // data to (temporarily) store values: per species vector (dim=fields) of vectors (dim=trees)
+    QMap<QString, QVector<QVector<double> > > data;
+    DeadTreeWrapper tw;
+    bool do_filter = !mEntityFilter.isEmpty();
+
+    switch (mLevel) {
+    case CustomAggOut::sLandscape: {
+        // loop over all trees in the landsacpe
+        for (const auto &ru : Globals->model()->ruList()) {
+            for (const auto &dt : ru->snag()->deadTrees()) {
+                if (do_filter) {
+                    tw.setDeadTree(&dt);
+                    if (!mEntityFilter.calculateBool(tw))
+                        continue;
+                }
+                processSnag(&dt, data);
+            }
+        }
+
+        writeResults(data, nullptr, 0);
+
+    }
+    case CustomAggOut::sRU: {
+
+        for (const auto &ru : Globals->model()->ruList()) {
+
+            data.clear();
+            if (!mLevelFilter.isEmpty()) {
+                if (!mLevelFilter.calculateBool(ru->id()))
+                    continue;
+            }
+
+            // loop over all snags
+            for (const auto &dt : ru->snag()->deadTrees()) {
+                if (do_filter) {
+                    tw.setDeadTree(&dt);
+                    if (!mEntityFilter.calculateBool(tw))
+                        continue; // skip
+                }
+                processSnag(&dt, data);
+            }
+
+            writeResults(data, ru, 0);
+
+        }
+        break;
+    }
+    case CustomAggOut::sStand: {
+        if (!mStandGrid || !mStandGrid->isValid())
+            throw IException("CustomAggOut: aggregation per stand, but no valid standgrid available / set!");
+
+        QList<int> ids = mStandGrid->mapIds();
+        QVector<DeadTree*> dead_trees;
+        for (int i=0;i<ids.size();++i) {
+            if (!mLevelFilter.isEmpty()) {
+                if (!mLevelFilter.calculateBool(ids[i]))
+                    continue;
+            }
+
+            data.clear();
+            // skip stands with Ids < 1 (empty, out of project area)
+            if (ids[i] <= 0)
+                continue;
+
+            // loop over all trees of each stand
+            mStandGrid->loadDeadTrees(ids[i], dead_trees);
+            for (const auto &dt : dead_trees) {
+                if (do_filter) {
+                    tw.setDeadTree(dt);
+                    if (!mEntityFilter.calculateBool(tw))
+                        continue; // skip
+                }
+                processSnag(dt, data);
             }
 
             writeResults(data, nullptr, ids[i]);
@@ -459,6 +561,27 @@ void CustomAggOutLevel::processRU(const ResourceUnit *ru)
         } else {
             //field.data.push_back( field.expression->calculate(rw) );
             // TODO
+        }
+    }
+}
+
+void CustomAggOutLevel::processSnag(const DeadTree *dt, QMap<QString, QVector<QVector<double> > > &data)
+{
+    DeadTreeWrapper tw;
+    tw.setDeadTree(dt);
+
+    if (!data.contains(dt->species()->id()))
+        data[dt->species()->id()] = QVector<QVector<double> >(mFieldList.size(), QVector<double>(0));
+
+    QVector< QVector<double> >  &dat = data[dt->species()->id()];
+
+    // retrieve values for all fields for the tree
+    for (int i=0;i<mFieldList.size();++i) {
+        SDynamicField *field = mFieldList[i];
+        if (field->var_index>-1) {
+            dat[i].push_back(tw.value(field->var_index));
+        } else {
+            dat[i].push_back( field->expression.calculate(tw) );
         }
     }
 }
