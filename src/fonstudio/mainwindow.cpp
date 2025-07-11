@@ -206,6 +206,13 @@ void MainWindow::on_pbCreateLightroom_clicked()
     double lat = docLightroom.firstChildElement("hemigrid").attribute("latitude").toFloat();
     double diffus = docLightroom.firstChildElement("hemigrid").attribute("diffus").toFloat();
 
+    if (x != y)
+        throw IException("Size for x and y need to be the same!");
+    if (x<20 || y<20 || z<20)
+        throw IException("Sizes for x,y, and z need to be >20m!");
+    if (cellsize != 2)
+        throw IException("Cellsize needs to be 2m (not technically, but yes)");
+
     // create a lightroom object...
     if (!lightroom)
         lightroom = new LightRoom();

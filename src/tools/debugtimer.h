@@ -20,6 +20,8 @@
 #define DEBUGTIMER_H
 #include "ticktack.h"
 #include <QAtomicInt>
+#include <QString>
+#include <QHash>
 
 /** Timer class that writes timings to the Debug-Output-Channel
 

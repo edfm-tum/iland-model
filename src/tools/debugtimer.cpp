@@ -16,8 +16,11 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************************/
-#include "global.h"
 #include "debugtimer.h"
+#include <QDateTime>
+#include <QThread>
+#include <QCoreApplication>
+#include <QMutex>
 
 // static members
 QHash<QString, double> DebugTimer::mTimingList;

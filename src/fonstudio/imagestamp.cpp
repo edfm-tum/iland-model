@@ -1,4 +1,4 @@
-#include "ImageStamp.h"
+#include "imagestamp.h"
 
 bool ImageStamp::load(const QString& filename)
 {

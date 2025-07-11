@@ -20,7 +20,7 @@
 #include "helper.h"
 #include "debugtimer.h"
 #include <QtCore>
-#ifdef ILAND_GUI
+#if defined ILAND_GUI || defined FONSTUDIO
 #if QT_VERSION < 0x050000
 #include <QtGui>
 #else
@@ -30,7 +30,7 @@
 //#include "cycle.h"
 #include <limits>
 
-#ifdef ILAND_GUI
+#if defined ILAND_GUI || defined FONSTUDIO
 #include <QColor>
 #include "version.h"
 #else
@@ -113,7 +113,7 @@ void Helper::saveToFile(const QString &fileName, const QByteArray &data)
 /// ask the user for a input value
 QString Helper::userValue(const QString &message, const QString defaultValue, QWidget *parent)
 {
-#ifdef ILAND_GUI
+#if defined ILAND_GUI || defined FONSTUDIO
     bool ok;
     QString result = QInputDialog::getText(parent, "input data", message, QLineEdit::Normal, defaultValue, &ok);
     if (ok)
@@ -128,7 +128,7 @@ QString Helper::userValue(const QString &message, const QString defaultValue, QW
 
 void Helper::msg(const QString &message, QWidget *parent)
 {
-#ifdef ILAND_GUI
+#if defined ILAND_GUI || defined FONSTUDIO
     QMessageBox::information(parent, "iLand", message);
 #else
     Q_UNUSED(message); Q_UNUSED(parent);
@@ -137,8 +137,8 @@ void Helper::msg(const QString &message, QWidget *parent)
 
 bool Helper::question(const QString &message, QWidget *parent)
 {
-#ifdef ILAND_GUI
-   return QMessageBox::question(parent, "iLand", message, QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes;
+#if defined ILAND_GUI || defined FONSTUDIO
+    return QMessageBox::question(parent, "iLand", message, QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes;
 #else
     Q_UNUSED(message); Q_UNUSED(parent);
     return false;
@@ -147,7 +147,7 @@ bool Helper::question(const QString &message, QWidget *parent)
 
 QString Helper::fileDialog(const QString &title, const QString &start_directory, const QString &filter, const QString& type, QWidget *parent)
 {
-#ifdef ILAND_GUI
+#if defined ILAND_GUI || defined FONSTUDIO
     QString the_filter = filter;
     if (the_filter.isEmpty())
         the_filter = "All files (*.*)";
@@ -176,7 +176,7 @@ QString Helper::fileDialog(const QString &title, const QString &start_directory,
 
 void Helper::openHelp(const QString& topic)
 {
-#ifdef ILAND_GUI
+#if defined ILAND_GUI || defined FONSTUDIO
     QUrl url;
     qDebug() << "current path" << QDir::currentPath();
     url.setUrl(QString("file:///%1/help/%2.html").arg(QDir::currentPath(),topic) , QUrl::TolerantMode);

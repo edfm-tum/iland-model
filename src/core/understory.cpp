@@ -165,6 +165,8 @@ void Understory::checkStateSequence()
         mStates[min_index]->setFirstState();
         pft->setFirstState(mStates[min_index]->id());
         mStates[max_index]->setFinalState();
+        int n_states = max_index - min_index + 1;
+        pft->setNumberOfStates(n_states);
 
         qDebug() << "PFT: " << pft->name() << "First/Last:" << mStates[min_index]->name() << ".." << mStates[max_index]->name();
     }
