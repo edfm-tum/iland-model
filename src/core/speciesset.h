@@ -48,7 +48,9 @@ public:
     double co2Response(const double ambientCO2, const double nitrogenResponse, const double soilWaterResponse) const;
     double co2Beta(const double nitrogenResponse, const double soilWaterResponse) const;
     double lightResponse(const double lightResourceIndex, const double lightResponseClass) const;
-    double LRIcorrection(const double lightResourceIndex, const double relativeHeight) const  { return mLRICorrection.calculate(lightResourceIndex, relativeHeight);}
+    /// correction for light level at a given relative height.
+    /// When relativeHeight = 0, the equation exp(ln(lri)/0.5*(1-0.5*relH)) can be simplified to LRI^2.
+    double LRIcorrection(const double lightResourceIndex, const double relativeHeight) const  { return relativeHeight == 0 ? lightResourceIndex*lightResourceIndex : mLRICorrection.calculate(lightResourceIndex, relativeHeight);}
     // maintenance
     void clear();
     int setup();
