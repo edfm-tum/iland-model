@@ -15,6 +15,8 @@ struct UnderstoryCellParams {
     ResourceUnit *RU; ///< pointer to resource unit
     SaplingCell *saplingCell; ///< corresponding sapling cell
     float lif_corr; ///< corrected LIF value at the 2m cell
+    float lif_plant; ///< lif value corrected for taller plants on the same cell
+    float lif_ground; ///< light value corrected for all understory plants
     double availableNitrogen; ///< kg/ha*yr nitrogen
     //double SWCgrowingSeason; ///< relative soil water content
     double psiGrowingSeason; /// mean psi over the growing season
@@ -105,6 +107,7 @@ public:
 
     UnderstoryCell() {};
     // acess properties
+    bool isEmpty() const { return mState == ECellState::CellEmpty; }
     /// is the cell stockable?
     bool isValid() const { return mState != ECellState::CellInvalid; }
     /// are all slots used?
@@ -124,6 +127,8 @@ public:
     const std::array<UnderstoryPlant, NSlots> &plants() const { return mPlants; }
     std::array<UnderstoryPlant, NSlots> &mod_plants() { return mPlants; }
 
+    float groundLightEffect() const { return mGroundLightEffect; }
+    void resetGroundLight() { mGroundLightEffect = 1.; }
 
     /// summary stats for the cell
     UnderstoryStatsCell stats() const;
@@ -132,11 +137,14 @@ public:
 
     void addStats(QVector<UnderstoryRUStats> &pfts);
 private:
+    std::array<double, UnderstoryCell::NSlots> lightProfile();
+
     /// sum of occupation points on cell
     uint8_t mOccupied {0};
     /// current state of the cell
     ECellState mState { ECellState::CellInvalid };
     std::array<UnderstoryPlant, NSlots> mPlants;
+    float mGroundLightEffect; ///< effect of cumulative LAI of plants on light at the ground
 };
 
 /**

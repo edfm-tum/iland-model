@@ -30,6 +30,7 @@ public:
     UnderstoryPFT() {};
     void setup(UnderstorySetting s, int index);
     void setFirstState(UStateId first_state) { mFirstState = first_state; }
+    void setNumberOfStates(int n_states) { mNStates = n_states; }
 
     const QString &name() const { return mName; }
     int index() const {return mIndex; }
@@ -57,6 +58,7 @@ private:
     void responseToTransitionProb(const double response, double &rPrevious, double &rNext, double &rMort) const;
     QString mName;
     UStateId mFirstState { std::numeric_limits<UStateId>::max()}; ///< id of the initial state of the PFT (for establishment)
+    int mNStates { 0}; ///< number of states of the pft
     int mIndex {-1}; ///< the index of the PFT in the Understory's PFT container
     double mBaseEstablishmentProb {0.}; ///< base establishment probability
 

@@ -239,7 +239,7 @@ inline double WaterCycle::calculateBaseSoilAtmosphereResponse(const double psi_k
 }
 
 /// calculate combined VPD and soilwaterresponse for all species
-/// on the RU. This is used for the calc. of the transpiration.
+/// on the RU. This is used for the calc. of transpiration.
 inline double WaterCycle::calculateSoilAtmosphereResponse(RUSpeciesShares &species_share, const double psi_kpa, const double vpd_kpa)
 {
     // the species_share has pre-calculated shares for the species (and ground-veg) on the total LAI

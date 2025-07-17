@@ -131,7 +131,7 @@ UStateId UnderstoryPFT::stateTransition(const UnderstoryPlant &plant,
                                         UnderstoryCellParams &ucp,
                                         UnderstoryRU &us_ru) const
 {
-    double light_response = mExprLight.calculate(ucp.lif_corr);
+    double light_response = mExprLight.calculate(ucp.lif_plant);
     double nitrogen_response = mExprNutrients.calculate(ucp.availableNitrogen);
     double water_response = mExprWater.calculate(ucp.psiGrowingSeason);
     double temp_response = mExprTemp.calculate(ucp.meanTemperature);
@@ -187,7 +187,7 @@ bool UnderstoryPFT::establishment(UnderstoryCellParams &ucp,
         ucp.PFTcalc = true;
     }
 
-    double light_response = mExprLight.calculate(ucp.lif_corr);
+    double light_response = mExprLight.calculate(ucp.lif_ground);
 
     // the total response combines all sub-responses multiplicatively
     double total_response = light_response * ucp.nitrogenResponse  * ucp.waterResponse * ucp.tempResponse;
@@ -222,8 +222,14 @@ QString UnderstoryPFT::dump()
 
 void UnderstoryPFT::responseToTransitionProb(const double response, double &rPrevious, double &rNext, double &rMort) const
 {
-    // linear functions approach (KB)
-    rNext = 1. / mOptimalGrowth * response;
-    rMort = 1. / mAgeMax * (1. - 0.5 * response);
+    // linear functions approach (KB): optimal growth: time to reach maximum state
+    rNext = mNStates / mOptimalGrowth * response;
+    //rMort = 1. / mAgeMax * (1. - 0.5 * response);
+
+    // mortality considering a stress-related increase at low response values
+    const double p_stress = 0.05;
+    rMort = 1. / mAgeMax + 0.5*exp(- response / p_stress );
+
+    // for the time being: a fixed response
     rPrevious = 0.05;
 }

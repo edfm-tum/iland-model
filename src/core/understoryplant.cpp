@@ -65,12 +65,17 @@ void UnderstoryCell::growth(UnderstoryCellParams &ucp, UnderstoryRU &us_ru)
 {
 
     const auto &us = Understory::instance();
+
+    auto light_ext = lightProfile();
+
     bool states_changed = false;
+    size_t i = 0;
     for (auto &p : mPlants) {
         if (p.isLiving()) {
             const auto * state = us.state(p.stateId());
             const auto * pft = us.pft(state->pftIndex());
 
+            ucp.lif_plant = ucp.lif_corr * light_ext[i];
 
             UStateId new_id = pft->stateTransition(p, ucp, us_ru);
             if (p.stateId() != new_id) {
@@ -80,6 +85,7 @@ void UnderstoryCell::growth(UnderstoryCellParams &ucp, UnderstoryRU &us_ru)
             }
 
         }
+        ++i;
     }
     if (states_changed) {
         update(us_ru);
@@ -159,6 +165,56 @@ void UnderstoryCell::addStats(QVector<UnderstoryRUStats> &pfts)
 
 }
 
+std::array<double, UnderstoryCell::NSlots> UnderstoryCell::lightProfile()
+{
+    const auto &states = Understory::instance().states();
+    std::array<double, NSlots> result{}; // Use {} to zero-initialize
+    const double k = 0.5;
+
+    // 1. Collect pointers to living plants on the stack to avoid heap allocation.
+    const UnderstoryPlant* living_plants[NSlots];
+    int living_count = 0;
+    for (const auto& plant : mPlants) {
+        if (plant.isLiving()) {
+            living_plants[living_count++] = &plant;
+        }
+    }
+
+    if (living_count == 0) {
+        return result; // Early exit if no plants
+    }
+
+    // 2. Use an O(M^2) approach, where M is the number of living plants (M<=N).
+    double total_LAI = 0.;
+    for (int i = 0; i < living_count; ++i) {
+        const auto* focus_plant = living_plants[i];
+        const double focus_height = states[focus_plant->stateId()]->height();
+        double lai_above = 0;
+        total_LAI += states[focus_plant->stateId()]->LAI();
+
+        for (int j = 0; j < living_count; ++j) {
+            if (i == j) continue; // Don't compare a plant to itself
+
+            const auto* other_plant = living_plants[j];
+            const auto* other_state = states[other_plant->stateId()];
+
+            if (other_state->height() >= focus_height) {
+                lai_above += other_state->LAI();
+            }
+        }
+
+        // Calculate the fraction of light absorbed/intercepted by taller plants.
+        // Find original index to place the result. Note: &mPlants[0] is the beginning of the array.
+        size_t original_index = focus_plant - &mPlants[0];
+        result[original_index] = exp(-k * lai_above);
+    }
+
+    // calculate multiplier for ground light
+    mGroundLightEffect = exp(-k * total_LAI);
+
+    return result;
+}
+
 
 // ****************** UnderstoryRU **************************
 
@@ -216,6 +272,7 @@ void UnderstoryRU::establishment()
                         float lif_value = (*lif_grid)[isc];
                         // corrected LIF value for a height of 0 (=forest floor)
                         ucp.lif_corr = speciesSet->LRIcorrection(lif_value, 0.);
+                        ucp.lif_ground = ucp.lif_corr * ucell->groundLightEffect();
 
                         if (pft->establishment(ucp, n_cells_represented)) {
                             // the PFT establishes on the cell
@@ -268,7 +325,8 @@ void UnderstoryRU::growth()
 
         for (int ix=0;ix<cPxPerRU; ++ix, ++ucp.saplingCell, ++isc, ++ucell) {
 
-            if (!ucell->isValid())
+            ucell->resetGroundLight();
+            if (!ucell->isValid() || ucell->isEmpty())
                 continue;
 
             float lif_value = (*lif_grid)[isc];

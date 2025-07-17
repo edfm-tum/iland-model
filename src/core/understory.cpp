@@ -201,7 +201,10 @@ void UnderstoryVisualizer::setupVisualization()
 
     mVarList = {"Understory - CellsOccupied", // 0
                 "Understory - SlotsOccupied", // 1
-                "Understory - Biomass", "Understory - LAI", "Understory - maxHeight", // 2,3,4
+                "Understory - Biomass",
+                "Understory - LAI",
+                "Understory - maxHeight", // 2,3,4
+                "Understory - lightMultiplier", // 5
                 // RU-LEVEL
                 "Understory - RU Covered", // 0
                 "Understory - RU SlotsOccupied", // 1
@@ -214,6 +217,7 @@ void UnderstoryVisualizer::setupVisualization()
                 "Total biomass (kg/m2?)",
                 "LAI (m2/m2) of understory",
                 "Maximum height (m) on cell",
+                "reduction factor light due to understory",
                 // RU - LEVEL
                 "Percent of RU area with >0 plants (%)",
                 "Percent of total #slots of RU occupied (%)",
@@ -259,7 +263,7 @@ Grid<double> *UnderstoryVisualizer::paintGrid(QString what, QStringList &names, 
     // fill the grid with the expected variable
     const auto &us = Globals->model()->understory();
     double value=0.;
-    constexpr int min_idx_ru = 5;
+    constexpr int min_idx_ru = 6;
     if (index < min_idx_ru) {
         // 2m grid
         for (double *p = mGrid.begin(); p!= mGrid.end(); ++p) {
@@ -273,6 +277,7 @@ Grid<double> *UnderstoryVisualizer::paintGrid(QString what, QStringList &names, 
             case 2: value = cell_stats.biomass; break;
             case 3: value = cell_stats.LAI; break;
             case 4: value = cell_stats.height; break;
+            case 5: value = cell->groundLightEffect(); break;
             default: value = 0.;
             }
 

@@ -357,7 +357,7 @@ void Saplings::clearSaplings(SaplingCell *s, ResourceUnit *ru, const bool remove
             if (s->saplings[i].is_occupied()) {
                 ResourceUnitSpecies *rus = s->saplings[i].resourceUnitSpecies(ru);
                 if (!remove_biomass) {
-                    if (!rus && !rus->species()) {
+                    if (!rus || !rus->species()) {
                         qDebug() << "Saplings::clearSaplings(): invalid resource unit!!!";
                         return;
                     }

@@ -8,10 +8,9 @@
 UnderstoryOut::UnderstoryOut()
 {
     setName("Understory cover per RU/landscape", "understory");
-    setDescription("Carbon and nitrogen pools (C and N) per resource unit / year and/or by landsacpe/year. "\
-                   "On resource unit level, the outputs contain aggregated above ground pools (kg/ha) " \
-                   "and below ground pools (kg/ha). \n " \
-                   "For landscape level outputs, all variables are scaled to kg/ha stockable area. "\
+    setDescription("Understory cover by resource unit / year and/or by landsacpe/year. "\
+                   "On resource unit level, the output provides RU proportions, i.e. proportion of stockable area e.g. covered (0..1). \n " \
+                   "For landscape level outputs, all variables are aggregated over the landscape and scaled to per hectare stockable area. "\
                    "The area column contains the stockable area (per resource unit / landscape) and can be used to scale to values to the actual value on the ground. \n " \
                    "You can use the 'condition' to control if the output should be created for the current year(see also dynamic stand output).\n" \
                    "The 'conditionRU' can be used to suppress resource-unit-level details; eg. specifying 'in(year,100,200,300)' limits output on reosurce unit level to the years 100,200,300 " \
@@ -20,10 +19,10 @@ UnderstoryOut::UnderstoryOut()
     columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::id()
               << OutputColumn("area_ha", "total stockable area of the resource unit (ha)", OutDouble)
               << OutputColumn("pft", "Name of the plant functional type", OutString)
-              << OutputColumn("area", "total area where the PFT is present (based on 2m cells) (ha)", OutDouble)
-              << OutputColumn("cover", "total area covered by PFT (area plus state-specific cover) (ha)", OutDouble)
-              << OutputColumn("areaGain", "total area where PFT regenerated (based on 2m cells, ha)", OutDouble)
-              << OutputColumn("areaLoss", "total area with PFT mortality (based on 2m cells, ha)", OutDouble);
+              << OutputColumn("area", "total area where the PFT is present (based on 2m cells) (prop. stockable area)", OutDouble)
+              << OutputColumn("cover", "total area covered by PFT (area x state-specific cover) (prop. stockable area)", OutDouble)
+              << OutputColumn("areaGain", "total area where PFT regenerated (based on 2m cells, prop. stockable area)", OutDouble)
+              << OutputColumn("areaLoss", "total area with PFT mortality (based on 2m cells, prop. stockable area)", OutDouble);
 
 }
 
