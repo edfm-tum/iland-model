@@ -923,6 +923,11 @@ void ForestManagementEngine::notifyTreeRemoval(Tree *tree, int reason)
     //    return;
     // we use an 'int' instead of Tree:TreeRemovalType because it does not work
     // with forward declaration (and I dont want to include the tree.h header in this class header).
+
+    // test for emptyness: this handles the case when ABE is not yet properly set up
+    if (mFMStandGrid.isEmpty())
+        return;
+
     FMStand *stand = mFMStandGrid[tree->position()];
     if (stand)
         stand->notifyTreeRemoval(tree, reason);

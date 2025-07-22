@@ -202,7 +202,7 @@ double SVDIndicatorOut::calcIBP(const ResourceUnit *ru)
 {
     // calculate Index ob Biodiversity Potential
     // based on Larrieu and Gonin 2008, Emberger et al 2023.
-    // see theis of Sarah Pfaffl (2024)
+    // see thesis of Sarah Pfaffl (2024)
 
     if (!ru->soil() || !ru->snag())
         throw IException("SVDIndicator: IBP: requires carbon cycling.");

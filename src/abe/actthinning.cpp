@@ -834,9 +834,12 @@ bool ActThinning::runTending(FMStand* stand)
     int saps_to_tend = 0;
     SaplingCellRunner scr(stand->id(), GlobalSettings::instance()->model()->standGrid());
     while (SaplingCell *sc = scr.next()) {
-        while (p!=grid.end() && *p < 0) ++p; // skip pixels outside of the stand
-        if (p == grid.end())
+        while (p!=grid.end() && *p == -1.f) ++p; // skip pixels outside of the stand
+        if (p == grid.end()) {
+            //QString fileName = GlobalSettings::instance()->path("debuggrid.csv");
+            //gridToFile<float>(grid, fileName);
             throw IException("activity tending: grid reached end");
+        }
         // look only at pixels that have not yet a favorable tree
         if (sc && *p == 0.f){
             if (scr.currentCoord() != grid.cellCenterPoint(p)) {
@@ -938,7 +941,7 @@ bool ActThinning::runTending(FMStand* stand)
     int sap_removed = 0;
     SaplingCellRunner scr_impact(stand->id(), GlobalSettings::instance()->model()->standGrid());
     while (SaplingCell *sc = scr_impact.next()) {
-        while (p!=grid.end() && *p < 0) ++p; // skip pixels outside of the stand
+        while (p!=grid.end() && *p == -1.f) ++p; // skip pixels outside of the stand
         if (p == grid.end())
             throw IException("activity tending: grid reached end");
 
