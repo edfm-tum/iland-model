@@ -27,7 +27,7 @@ When loading dead trees, you need to specify the type:
 
 ### Variables
 A list of available variables for dead trees would typically be found in the iLand documentation (analogous to sapling variables).
-(Assuming a similar pattern to FMSaplingList regarding where variable lists are documented, e.g., https://iland-model.org/variables)
+(Assuming a similar pattern to FMSaplingList regarding where variable lists are documented, e.g., https://iland-model.org/dead+tree+variables)
 
 ### General notes
 The dead tree list heavily uses the expression engine of iLand (see https://iland-model.org/Expression).
@@ -45,7 +45,7 @@ and evaluated by iLand.
      console.log("Number of large DWD pieces: " + dtl.count);
 
      // Calculate the mean decay status of these large DWD pieces
-     var meanDecay = dtl.mean('decay_status');
+     var meanDecay = dtl.mean('decayClass');
      console.log("Mean decay status: " + meanDecay);
 
      // Load snags from stand 42, appending them to the current list,
@@ -94,20 +94,6 @@ Loads dead trees from a specific resource unit (RU) into the list.
 /**
 Loads dead trees from a specific stand into the list.
 
-@method loadFromStand
-@param {Integer} stand_id The ID of the stand from which to load dead trees.
-@param {String} loadWhat Specifies the type of dead wood to load.
-    Possible values are:
-    - `"Snags"`: Load only standing dead trees.
-    - `"DWD"`: Load only downed dead wood.
-    - `"Both"`: Load both snags and DWD.
-@param {String} [filter=""] An optional filter expression. Only dead trees for which this expression
-    evaluates to true will be loaded.
-@param {Boolean} [append=false] If `true`, the newly loaded dead trees are appended to the existing list.
-    If `false` (default), the list is cleared before loading. (Note: This parameter seems to be missing from the C++ slot, but common in other load functions. Assuming it might be intended or added later. If not, remove this param from docs).
-    *Correction based on typical patterns, if `append` is not in the C++ signature for `loadFromStand` as a slot, it should be omitted here or clarified if it's implicitly false.*
-    *Re-checking C++: `int loadFromStand(int stand_id, DeadTreeType loadWhat, QString filter=QString());` - append is NOT there. So, the list is likely cleared by default.*
-    *Corrected documentation for `loadFromStand` based on C++ header:*
 
 @method loadFromStand
 @param {Integer} stand_id The ID of the stand from which to load dead trees.
@@ -140,7 +126,7 @@ Applies a filter to the current list of dead trees. Only elements for which the
 @Example
      // Assume deadwood list is already populated
      // Keep only snags with volume > 0.5 m^3
-     var remaining = deadwood.filter("type == 'snag' && volume > 0.5");
+     var remaining = deadwood.filter("snag=true and volume > 0.5");
      console.log(remaining + " large snags remain in the list.");
 **/
 
@@ -156,11 +142,11 @@ An optional `filter` can be applied to include only specific elements in the cal
     Returns NaN if the list (after filtering) is empty.
 @Example
      // Calculate the mean DBH of all DWD pieces
-     var meanDbhDWD = deadwood.mean("dbh", "type == 'dwd'");
+     var meanDbhDWD = deadwood.mean("dbh", "snag = false");
      console.log("Mean DBH of DWD: " + meanDbhDWD);
 
      // Calculate the mean age of all snags
-     var meanAgeSnags = deadwood.mean("age", "type == 'snag'");
+     var meanAgeSnags = deadwood.mean("age", "snag = true'");
      console.log("Mean age of snags: " + meanAgeSnags);
 **/
 
@@ -178,10 +164,10 @@ Note: Counting elements that fulfill the `filter` expression can be expressed as
 @return {Number} The sum of the `expression` for the (filtered) dead tree elements.
 @Example
      // Calculate the total carbon content of all snags
-     var totalCarbonSnags = deadwood.sum("carbon", "type == 'snag'");
+     var totalCarbonSnags = deadwood.sum("carbon", "snag=true");
      console.log("Total carbon in snags: " + totalCarbonSnags);
 
      // Count the number of DWD pieces with decay class > 2
-     var countAdvancedDecayDWD = deadwood.sum("1", "type == 'dwd' && decay_class > 2");
+     var countAdvancedDecayDWD = deadwood.sum("1", "snag=false and decayClass > 2");
      console.log("Number of DWD pieces in advanced decay: " + countAdvancedDecayDWD);
 **/
