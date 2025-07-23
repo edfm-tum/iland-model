@@ -233,6 +233,7 @@ SOURCES += main.cpp \
     ../abe/actthinning.cpp \
     ../abe/patch.cpp \
     ../abe/patches.cpp \
+    ../abe/fmdeadtreelist.cpp \
     ../core/grasscover.cpp \
     ../tools/scriptgrid.cpp \
     ../output/waterout.cpp \
@@ -262,7 +263,9 @@ SOURCES += main.cpp \
     ../abe/fmsaplinglist.cpp \
     ../bite/biteoutputitem.cpp \
     ../core/permafrost.cpp \
-    ../core/microclimate.cpp
+    ../core/microclimate.cpp \
+    ../core/deadtree.cpp
+
 
 
 HEADERS += \
@@ -366,6 +369,7 @@ HEADERS += \
     ../abe/actthinning.h \
     ../abe/patch.h \
     ../abe/patches.h \
+    ../abe/fmdeadtreelist.h \
     ../core/grasscover.h \
     ../tools/scriptgrid.h \
     ../output/waterout.h \
@@ -394,7 +398,9 @@ HEADERS += \
     ../abe/fmsaplinglist.h \
     ../bite/biteoutputitem.h \
     ../core/permafrost.h \
-    ../core/microclimate.h
+    ../core/microclimate.h \
+    ../core/deadtree.h
+
 
 RESOURCES += ../iland/res/iland.qrc
 
