@@ -41,8 +41,8 @@ SVDIndicatorOut::SVDIndicatorOut()
                    " include for each species the relative proportion calculated based on basal area (for trees >4m). \n" \
                    " \n" \
                    "!!! disturbance history\n" \
-                   "The setting 'disturbanceHistory' indicates if (value != 0) and how many (value>0, maximum=3) disturbance events should be recorded and added to the " \
-                   "output. Each __event__ is defined by three columns. 'tsd_x' is number of years since disturbance, 'type_x' encodes the disturbance " \
+                   "The setting 'disturbanceHistory' indicates if (value > 0) and how many (value>0, maximum=3) disturbance events should be recorded and added to the " \
+                   "output. Each __event__ is defined by three columns. 'tsd_x' is number of years since disturbance (0 if the disturbance happended in the current year), 'type_x' encodes the disturbance " \
                    "agent (see below), and 'addinfo_x' is agent-specific additional information (see below), with 'x' the number of event (1,2,3).\n\n" \
                    "||__value__|__type__|__additional info__\n" \
                    "0|fire|proportion of area burned per ha (0..1) \n" \

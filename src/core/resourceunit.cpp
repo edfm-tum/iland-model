@@ -258,7 +258,7 @@ void ResourceUnit::notifyDisturbance(ERUDisturbanceType source, double info) con
                                             Globals->currentYear(),
                                             source,
                                             info));
-    if (mSVDState.disturbanceEvents->size() > 2 )
+    if (mSVDState.disturbanceEvents->size() > 3 )
         mSVDState.disturbanceEvents->pop_back();
 }
 

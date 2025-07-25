@@ -90,7 +90,7 @@ public:
     int cold_days; // number of days in the winter season with t_min below a given threshold (-15 degree Celsius)
     int cold_days_late;
     bool killed_trees;
-    int killed_pixels;
+    int killed_pixels; // number of pixels on which trees were killed
     int host_pixels;
     int infested; // number of pixels that are currently infested
     float backgroundInfestationProbability; ///< background prob. of infestation per 10m cell (same value for all cells of a RU)

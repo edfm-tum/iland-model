@@ -55,9 +55,10 @@ public:
 // data structure for a resource unit
 class WindRUCell {
 public:
-    WindRUCell(): flag(0), soilIsFrozen(false) {}
+    WindRUCell(): flag(0), soilIsFrozen(false),area_killed(0.) {}
     int flag; // flag to indicate that the trees of the current resource are already processed
     bool soilIsFrozen;
+    double area_killed; ///< area (ha) affected by wind on RU (accumulated over a year)
 };
 
 /** Helper class manage and visualize data layers related to fire.
@@ -121,6 +122,7 @@ private:
     void calculateFetch(); ///< calculate maximum gap sizes in upwind direction
     int calculateWindImpact(); ///< do one round of wind effect calculations
     void setTopexGrid(QString filename); ///< modify the wind speed topex grid on the fly
+    void afterWind(); ///< called the wind event
 
     // details
     /// find distance to the next pixels that give shelter

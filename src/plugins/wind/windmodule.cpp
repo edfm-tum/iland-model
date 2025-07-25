@@ -69,6 +69,7 @@ double WindLayers::value(const WindCell &data, const int param_index) const
     case 11: return data.sum_volume_killed; // sum of killed volume
     case 12: return data.edge_age; // # of years that a cell is an edge
     case 13: return data.basalarea; // # of trees
+    case 14: return ruValueAt(&data, 1); // prop of RU area killed this year
     default: throw IException(QString("invalid variable index for a WindCell: %1").arg(param_index));
     }
 }
@@ -91,17 +92,22 @@ const QVector<LayeredGridBase::LayerElement> &WindLayers::names()
                 << LayeredGridBase::LayerElement(QStringLiteral("nEvents"), QStringLiteral("number of events (total since start of simulation) that killed trees on a pixel."), GridViewReds)
                 << LayeredGridBase::LayerElement(QStringLiteral("sumVolume"), QStringLiteral("running sum of damaged tree volume on the pixel."), GridViewReds)
                 << LayeredGridBase::LayerElement(QStringLiteral("edgeAge"), QStringLiteral("age of an edge (consecutive number of years that a cell is an edge)."), GridViewBlues)
-                << LayeredGridBase::LayerElement(QStringLiteral("basalArea"), QStringLiteral("sum of basal area (trees>4m) on the cell."), GridViewRainbow);
+                << LayeredGridBase::LayerElement(QStringLiteral("basalArea"), QStringLiteral("sum of basal area (trees>4m) on the cell."), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QStringLiteral("areaKilled"), QStringLiteral("proportion of RU area killed (0..1)."), GridViewRainbow); // 14
     return mNames;
 }
 
 // helper function (avoid a special ru-level grid and use the 10m cell resolution instead)
 double WindLayers::ruValueAt(const WindCell *cell, const int what) const
 {
-    QPoint pos = mGrid->indexOf(cell);
-    const WindRUCell &ru_cell = mRUGrid->constValueAt(mGrid->cellCenterPoint(pos));
+    QPointF pos = mGrid->cellCenterPoint(mGrid->indexOf(cell));
+    if (!mRUGrid->coordValid(pos))
+        return 0.;
+
+    const WindRUCell &ru_cell = mRUGrid->constValueAt(pos);
     switch (what) {
     case 0: return ru_cell.soilIsFrozen?1.:0.;
+    case 1: return ru_cell.area_killed;
     default: return -1.;
     }
 }
@@ -355,6 +361,8 @@ void WindModule::run(const int iteration, const bool execute_from_script)
     }
     qDebug() << "iterations: " << mCurrentIteration << "total pixels affected:" << mPixelAffected << "totals: killed trees:" << mTreesKilled << "basal-area:" << mTotalKilledBasalArea;
 
+    afterWind(); // some aggregations
+
     GlobalSettings::instance()->outputManager()->execute("wind");
     GlobalSettings::instance()->outputManager()->save();
 
@@ -398,6 +406,7 @@ void WindModule::initWindGrid()
         // reset resource unit grid...
         for (WindRUCell *cell=mRUGrid.begin(); cell!=mRUGrid.end(); ++cell) {
             cell->flag = 0;
+            cell->area_killed = 0.;
             scanResourceUnitTrees(mGrid.indexAt(mRUGrid.cellCenterPoint(mRUGrid.indexOf(cell))));
         }
         return;
@@ -508,23 +517,7 @@ void WindModule::calculateFetch()
     GlobalSettings::instance()->model()->threadExec().runGrid(nc_calculateFetch, mGrid.begin(), mGrid.end());
     qDebug() << "calculated fetch for" << impact_c << "pixels";
     return;
-//    int calculated = 0;
-//    double current_direction;
-//    WindCell *end = mGrid.end();
-//    for (WindCell *p=mGrid.begin(); p!=end; ++p) {
-//        if (p->edge == 1.f) {
-//            QPoint pt=mGrid.indexOf(p);
-//            current_direction = mWindDirection + (mWindDirectionVariation>0.?nrandom(-mWindDirectionVariation, mWindDirectionVariation):0);
-//            checkFetch(pt.x(), pt.y(), current_direction, p->height * 10., p->height - mEdgeDetectionThreshold);
-//            ++calculated;
-//            // only simulate edges with gapsize > 20m
-//            // this skips small gaps (e.g. areas marked as "stones")
-//            if (p->edge < 20.f) {
-//                p->edge = 0.f;
-//            }
-//        }
-//   }
-//    qDebug() << "calculated fetch for" << calculated << "pixels";
+
 }
 
 static int effective_c;
@@ -533,6 +526,7 @@ void nc_calculateWindImpact(ResourceUnit *unit)
     GridRunner<WindCell> runner(wind_module->mGrid, unit->boundingBox());
     int calculated=0;
     int effective=0;
+    const double pixel_fraction = WindModule::cellsize()*WindModule::cellsize() / cRUArea; // fraction of one pixel, default: 0.01 (10x10 / 100x100)
     try {
     while (WindCell *p = runner.next()) {
         if (p->edge >= 1.f) {
@@ -542,6 +536,9 @@ void nc_calculateWindImpact(ResourceUnit *unit)
             ++calculated;
         }
     }
+    // accumulate disturbance for RU over all iterations
+    wind_module->mRUGrid[unit->boundingBox().center()].area_killed += effective * pixel_fraction;
+
     } catch (const IException &e) {
     // thread-safe error message
     GlobalSettings::instance()->model()->threadExec().throwError(e.message());
@@ -553,7 +550,7 @@ void nc_calculateWindImpact(ResourceUnit *unit)
     effective_c+=effective;
 }
 
-/** calculate for each pixel the impact of wind
+/** calculate for each pixel the impact of wind (current round)
   @return number of pixels with killed trees
   */
 int WindModule::calculateWindImpact()
@@ -564,19 +561,7 @@ int WindModule::calculateWindImpact()
     GlobalSettings::instance()->model()->executePerResourceUnit(nc_calculateWindImpact);
     qDebug() << "calculated impact for" << impact_c << "pixels, affected" << effective_c;
     return effective_c;
-//    int calculated = 0;
-//    int effective = 0;
-//    WindCell *end = mGrid.end();
-//    for (WindCell *p=mGrid.begin(); p!=end; ++p) {
-//        if (p->edge >= 1.f) {
-//            QPoint pt=mGrid.indexOf(p);
-//            if (windImpactOnPixel(pt, p))
-//                ++effective;
-//            ++calculated;
-//        }
-//    }
-//    qDebug() << "calculated impact for" << calculated << "pixels";
-    //    return effective;
+
 }
 
 void WindModule::setTopexGrid(QString filename)
@@ -591,6 +576,18 @@ void WindModule::setTopexGrid(QString filename)
         mTopexFromGrid = true;
     } else {
         throw IException(QString("Error: topex-grid-file for wind not found: %1").arg(filename));
+    }
+}
+
+void WindModule::afterWind()
+{
+    for (int i=0;i<mRUGrid.count();++i) {
+        if (mRUGrid[i].area_killed > 0.) {
+            // notify iLand that a wind disturbance took place here. info = proportion of area affected on the RU [0..1]
+            ResourceUnit *ru = GlobalSettings::instance()->model()->RUgrid()[i];
+            if (ru)
+                ru->notifyDisturbance(ResourceUnit::dtWind, mRUGrid[i].area_killed );
+        }
     }
 }
 
