@@ -415,8 +415,9 @@ FMUnit *nc_plan_update_unit(FMUnit *unit)
 
 void ForestManagementEngine::setup()
 {
-    QLoggingCategory::setFilterRules("abe.debug=true\n" \
-                                     "abe.setup.debug=true"); // enable *all*
+    QString enable_debug = logLevelDebug() ? "true" : "false";
+    QLoggingCategory::setFilterRules(QString("abe.debug=%1\n" \
+                                             "abe.setup.debug=true").arg(enable_debug) ); // enable *all*
 
     DebugTimer time_setup("ABE:setupScripting");
     clear();

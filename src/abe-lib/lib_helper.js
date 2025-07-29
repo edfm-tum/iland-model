@@ -678,7 +678,7 @@ lib.repeater = function(options) {
                 const signal = opts.signal;
                 stand.repeat(this,
                     function() {
-                        console.log(`repeater: emit signal "${opts.signal}"`);
+                        lib.dbg(`repeater: emit signal "${opts.signal}"`);
                         let param = opts.parameter;
                         if (typeof opts.parameter === 'function')
                             param = opts.parameter.call(opts);
@@ -785,7 +785,7 @@ lib.buildRareSpeciesFilter = function(speciesList, threshold) {
     
         // Combine all species conditions
         const combinedFilter = filterParts.join(' and ');
-        console.log(combinedFilter);
+        lib.log(combinedFilter);
         return combinedFilter || 'true'; // if empty, return always true
 
     } else {
