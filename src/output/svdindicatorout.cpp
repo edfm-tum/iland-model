@@ -391,7 +391,7 @@ void SVDIndicatorOut::exec()
         if (mIndicators.test(EbasalArea))
             *this << (*it)->statistics().basalArea();
         if (mIndicators.test(EstemDensity))
-            *this << (*it)->statistics().nStem();
+            *this << (*it)->statistics().count();
         if (mIndicators.test(EsaplingDensity))
             *this << (*it)->statistics().saplingCount();
         if (mIndicators.test(EIBP))
