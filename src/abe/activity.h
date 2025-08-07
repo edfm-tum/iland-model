@@ -36,7 +36,7 @@ public:
     // setup and life cycle
     Schedule()  {}
     Schedule(QJSValue &js_value) { clear(); setup(js_value); }
-    void clear() { tmin=tmax=topt=-1; tminrel=tmaxrel=toptrel=-1.; force_execution=false; repeat_interval=-1; repeat_start=0; repeat=false; absolute=false; }
+    void clear() { tmin=tmax=topt=-1; tminrel=tmaxrel=toptrel=-1.; force_execution=false; repeat_interval=-1; repeat_start=0; repeat=false; absolute=false; mSignalStr="", mSignalDelta=-1; }
     void setup(const QJSValue &js_value);
     QString dump() const;
     // functions
@@ -50,6 +50,9 @@ public:
     double maxValue(const double U=100.) const;
     /// returns the "optimal" year, i.e. the first year when prob. to execute is highest.
     double optimalValue(const double U=100.) const;
+    // signals
+    bool listensToSignal(const QString &signalstr) { return signalstr == mSignalStr; }
+    int signalExecutionDelay(const QString &signalstr) { Q_UNUSED(signalstr); return mSignalDelta; }
     // some stuffs
     int tmin; int tmax; int topt;
     double tminrel; double tmaxrel; double toptrel;
@@ -59,6 +62,9 @@ public:
     int repeat_start;
     bool repeat;
     bool absolute;
+private:
+    QString mSignalStr;
+    int mSignalDelta;
 };
 
 class Events {
@@ -67,7 +73,7 @@ public:
     /// clear the list of events
     void clear();
     /// setup events from the javascript object
-    void setup(QJSValue &js_value, QStringList event_names);
+    void setup(QJSValue &js_value, QJSValue &this_object, QStringList event_names);
     /// execute javascript event /if registered) in the context of the forest stand 'stand'.
     QJSValue run(const QString event, FMStand *stand, QJSValueList *params=0);
     /// returns true, if the event 'event' is available.
@@ -123,6 +129,7 @@ public:
     bool isScheduled() const {return flag(IsScheduled);}
     bool isDoSimulate() const {return flag(DoSimulate);}
     bool isSalvage() const {return flag(IsSalvage);}
+    bool manualExit() const {return flag(ManualExit);}
 
 
     void setActive(const bool active) { setFlag(Active, active); }
@@ -135,6 +142,7 @@ public:
     void setIsScheduled(const bool doschedule) {setFlag(IsScheduled, doschedule); }
     void setDoSimulate(const bool dosimulate) {setFlag(DoSimulate, dosimulate); }
     void setIsSalvage(const bool issalvage) {setFlag(IsSalvage, issalvage); }
+    void setManualExit(const bool isterminate) {setFlag(ManualExit, isterminate); }
 
 private:
     /// (binary coded)  flags
@@ -147,7 +155,8 @@ private:
                  FinalHarvest=64,  // the management of the activity is a "endnutzung" (compared to "vornutzung")
                  IsScheduled=128, // the execution time of the activity is scheduled by the Scheduler component
                  DoSimulate=256,  // the default operation mode of harvests (simulate or not)
-                 IsSalvage=512   // the activity is triggered by tree mortality events
+                 IsSalvage=512,   // the activity is triggered by tree mortality events
+                 ManualExit=1024 // the activity does not exit activity automatically after execution
                  };
     bool flag(const ActivityFlags::Flags flag) const { return mFlags & flag; }
     void setFlag(const ActivityFlags::Flags flag, const bool value) { if (value) mFlags |= flag; else mFlags &= (flag ^ 0xffffff );}
@@ -196,8 +205,14 @@ public:
     virtual bool evaluate(FMStand *stand);
     /// function that evaluates "bound" dynamic expressions
     virtual void evaluateDyanamicExpressions(FMStand *stand);
+    /// run an event
+    void runEvent(const QString &event_name, FMStand *stand);
     /// dumps some information for debugging
     virtual QStringList info();
+
+    /// general purpose and user-defined JS object of an activity
+    QJSValue &JSobj() { return mJSObj; }
+
 protected:
     Schedule &schedule()  { return mSchedule; }
     Constraints &constraints()  { return mConstraints; }
@@ -216,6 +231,7 @@ private:
     Constraints mConstraints; // constraining factors
     Events mEvents; // action handlers such as "onExecute"
     DynamicExpression mEnabledIf; // enabledIf property (dynamically evaluated)
+    QJSValue mJSObj; // general purpose javascript object
     friend class FMSTP; // allow access of STP class to internals
     friend class FMStand; // allow access of the activity class (e.g for events)
     friend class ActivityObj; // allow access to scripting function

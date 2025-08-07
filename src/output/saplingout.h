@@ -43,6 +43,7 @@ public:
     virtual void setup();
 private:
     Expression mCondition;
+    Expression mFilter;
     double *mVarRu;
     double *mVarYear;
     double mMinDbh;

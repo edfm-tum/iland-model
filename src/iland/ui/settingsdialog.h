@@ -18,6 +18,7 @@ class FilterButton : public QAbstractButton
 public:
     explicit FilterButton(const QString& text, const QString& pathIcon, QWidget *parent = nullptr);
 
+
     //void paintEvent(QPaintEvent *e) override;
 
 private:
@@ -51,6 +52,7 @@ public:
                             QWidget *parent = nullptr);
     //~SettingsDialog();
 
+    QAbstractButton* saveAsButton;
     QAbstractButton* saveButton;
     QAbstractButton* cancelButton;
     QAction* a_changedValuesDialog;

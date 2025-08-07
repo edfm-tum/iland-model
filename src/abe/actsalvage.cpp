@@ -62,7 +62,7 @@ ActSalvage::~ActSalvage()
 void ActSalvage::setup(QJSValue value)
 {
     Activity::setup(value); // setup base events
-    events().setup(value, QStringList() << "onBarkBeetleAttack" << "onAfterDisturbance");
+    events().setup(value, FomeScript::bridge()->activityJS(), QStringList() << "onBarkBeetleAttack" << "onAfterDisturbance");
 
     QString condition = FMSTP::valueFromJs(value, "disturbanceCondition").toString();
     if (!condition.isEmpty() && condition!="undefined") {

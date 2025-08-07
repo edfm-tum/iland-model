@@ -174,6 +174,8 @@ void Model::initialize()
 void Model::setupSpace()
 {
     setCurrentTask("setup landscape");
+    GeoTIFF::clearProjection(); // first chance to load a tif
+
     XmlHelper xml(GlobalSettings::instance()->settings().node("model.world"));
     double cellSize = xml.value("cellSize", "2").toDouble();
     double width = xml.value("width", "100").toDouble();
@@ -253,6 +255,7 @@ void Model::setupSpace()
 
 
     // simple case: create ressource units in a regular grid.
+    bool has_stand_grid = false;
     if (xml.valueBool("resourceUnitsAsGrid")) {
 
         mRUmap.setup(QRectF(0., 0., width, height),100.); // Grid, that holds positions of resource units
@@ -264,6 +267,8 @@ void Model::setupSpace()
             mStandGrid = new MapGrid(fileName,false); // create stand grid index later
             if (!mStandGrid->isValid()) {
                 throw IException("Error loading stand grid '" + fileName + "'.");
+            } else {
+                has_stand_grid = true;
             }
 
 
@@ -296,28 +301,47 @@ void Model::setupSpace()
         ResourceUnit *new_ru;
 
         int ru_index = 0;
+        int ru_skipped = 0;
         for (p=mRUmap.begin(); p!=mRUmap.end(); ++p) {
             QRectF r = mRUmap.cellRect(mRUmap.indexOf(p));
-            if (!mStandGrid || !mStandGrid->isValid() || *p!=nullptr) {
+            if (!has_stand_grid || *p!=nullptr) {
                 mEnvironment->setPosition( r.center() ); // if environment is 'disabled' default values from the project file are used.
-                // create resource units for valid positions only
-                new_ru = new ResourceUnit(ru_index++); // create resource unit
-                new_ru->setBoundingBox(r);
-                new_ru->setID( mEnvironment->currentID() ); // set id of resource unit in grid mode
-                new_ru->setClimate( mEnvironment->climate() );
-                if (!mEnvironment->climate()) {
-                    QString err_msg = QString("Setup of landscape: Trying to set up a resource unit " \
-                                              " with center point (%1/%2), but no climate is defined in the environment for that location. \n " \
-                                              "Check spatial extent of your stand grid / environment grid, and the log file.").
-                                      arg(r.center().x()).arg(r.center().y());
-                    throw IException(err_msg);
+                if (mEnvironment->currentID() >= 0) {
+                    // create resource units for valid positions only
+                    new_ru = new ResourceUnit(ru_index++); // create resource unit
+                    new_ru->setBoundingBox(r);
+                    new_ru->setID( mEnvironment->currentID() ); // set id of resource unit in grid mode
+                    new_ru->setClimate( mEnvironment->climate() );
+                    if (!mEnvironment->climate()) {
+                        QString err_msg = QString("Setup of landscape: Trying to set up a resource unit " \
+                                                  "with center point (%1/%2), but no climate is defined in the environment for that location. \n " \
+                                                  "Check spatial extent of your stand grid / environment grid, and the log file.").
+                                          arg(r.center().x()).arg(r.center().y());
+                        throw IException(err_msg);
+                    }
+                    new_ru->setSpeciesSet( mEnvironment->speciesSet() );
+                    new_ru->setup();
+                    mRU.append(new_ru);
+                    *p = new_ru; // save in the RUmap grid
+                } else {
+                    // resource unit grid is null
+                    if (*p != 0) {
+                        QString err_msg = QString("Setup of landscape: The resource unit " \
+                                                  "with center point (%1/%2) is null (according to environment grid), " \
+                                                  "but the stand grid seems to have valid stands there. This is not good. \n" \
+                                                  "Check for overlap of your stand grid / environment grid, and the log file.").
+                                          arg(r.center().x()).arg(r.center().y());
+                        throw IException(err_msg);
+                    }
+                    ru_skipped++;
+
+
                 }
-                new_ru->setSpeciesSet( mEnvironment->speciesSet() );
-                new_ru->setup();
-                mRU.append(new_ru);
-                *p = new_ru; // save in the RUmap grid
+            } else {
+                ru_skipped++;
             }
         }
+        qDebug() << "Created" << ru_index << "resource units (" << ru_skipped << " resource units skipped).";
         if (mEnvironment) {
             // retrieve species sets and climates (that were really used)
             mSpeciesSets << mEnvironment->speciesSetList();
@@ -560,7 +584,9 @@ void Model::loadProject()
     changeSettings().carbonCycleEnabled = xml.valueBool("model.settings.carbonCycleEnabled", false);
     // class size of snag classes
     Snag::setupThresholds(xml.valueDouble("model.settings.soil.swdDBHClass12"),
-                          xml.valueDouble("model.settings.soil.swdDBHClass23"));
+                          xml.valueDouble("model.settings.soil.swdDBHClass23"),
+                          xml.valueDouble("model.settings.soil.swdDBHSingle", 1000.),
+                          xml.value("model.settings.soil.decayClassThresholds", "0.2, 0.4, 0.7, 0.9"));
 
     // setup of modules
     if (mModules)
@@ -572,7 +598,7 @@ void Model::loadProject()
 
     setupSpace();
     if (mRU.isEmpty())
-        throw IException("Setup of Model: no resource units present!");
+        throw IException("Setup of Model: no valid resource units found. Check extent (width and height of sim area), location (x,y offset for GIS data), and environment grid (plus stand grid). And the log.");
 
     // (3) additional issues
 
@@ -791,6 +817,7 @@ void Model::beforeRun()
     GlobalSettings::instance()->outputManager()->execute("saplingdetail"); // year=0
     GlobalSettings::instance()->outputManager()->execute("tree"); // year=0
     GlobalSettings::instance()->outputManager()->execute("dynamicstand"); // year=0
+    GlobalSettings::instance()->outputManager()->execute("carbon"); // year=0
     GlobalSettings::instance()->outputManager()->execute("svdstate"); // year=0
     GlobalSettings::instance()->outputManager()->execute("devstage"); // year=0
     GlobalSettings::instance()->outputManager()->execute("ecoviz"); // tree output for visualization, year 0

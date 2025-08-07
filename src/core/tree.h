@@ -124,6 +124,9 @@ public:
     bool isMarkedAsCropTree() const { return flag(Tree::MarkCropTree);}
     void markCropCompetitor(bool do_mark) { setFlag(Tree::MarkCropCompetitor, do_mark);}
     bool isMarkedAsCropCompetitor() const { return flag(Tree::MarkCropCompetitor);}
+    void markNoHarvest(bool do_mark) { setFlag(Tree::MarkNoHarvest, do_mark);}
+    bool isMarkedNoHarvest() const { return flag(Tree::MarkNoHarvest);}
+
     // death reasons
     void setDeathReasonWind()  { setFlag(Tree::TreeDeadWind, true); }
     void setDeathReasonBarkBeetle()  { setFlag(Tree::TreeDeadBarkBeetle, true); }
@@ -212,9 +215,10 @@ private:
                  TreeDeadBarkBeetle=16, TreeDeadWind=32, TreeDeadFire=64, TreeDeadKillAndDrop=128, TreeHarvested=256,
                  MarkForCut=512, // mark tree for being cut down
                  MarkForHarvest=1024, // mark tree for being harvested
-                 MarkCropTree=2048, // mark as crop tree
-                 MarkCropCompetitor=4096, // mark as competitor for a crop tree
-                 TreeAffectedBite=8192 // affected or killed by biotic disturbance module (BITE)
+                 MarkCropTree=2*1024, // mark as crop tree
+                 MarkCropCompetitor=4*1024, // mark as competitor for a crop tree
+                 TreeAffectedBite=8*1024, // affected or killed by biotic disturbance module (BITE)
+                 MarkNoHarvest=16*1024 // tree is marked as a habitat tree, and can be easily spared for management
                };
     /// set a Flag 'flag' to the value 'value'.
     void setFlag(const Tree::Flags flag, const bool value) { if (value) mFlags |= flag; else mFlags &= (flag ^ 0xffffff );}

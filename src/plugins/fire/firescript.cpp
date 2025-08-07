@@ -75,24 +75,31 @@ bool FireScript::gridToFile(QString grid_type, QString file_name)
 {
     if (!GlobalSettings::instance()->model())
         return false;
-    QString result;
+    file_name = GlobalSettings::instance()->path(file_name);
+
     if (grid_type == "spread") {
-        result = gridToESRIRaster(mFire->mGrid);
+        ::gridToFile(mFire->mGrid, file_name);
+        return true;
     } else if (grid_type == "border") {
         if (mFire->mBorderGrid.isEmpty())
             throw IException("Fire: 'border' grid not available!");
-        result = gridToESRIRaster(mFire->mBorderGrid, &fireCharToStr);
+        //result = gridToESRIRaster(mFire->mBorderGrid); // &fireCharToStr
+        ::gridToFile(mFire->mBorderGrid, file_name);
+        return true;
     } else {
         fireRUValueType = grid_type;
-        result = gridToESRIRaster(mFire->mRUGrid, &fireRUValue); // use a specific value function (see above)
-    }
-
-    if (!result.isEmpty()) {
-        file_name = GlobalSettings::instance()->path(file_name);
-        Helper::saveToTextFile(file_name, result);
-        qDebug() << "saved grid to " << file_name;
+        ::gridToFile<FireRUData, double>(mFire->mRUGrid, file_name, [](const FireRUData &data) -> double {
+            if (FireScript::fireRUValueType=="kbdi") return data.kbdi();
+            if (FireScript::fireRUValueType=="dbh") return data.fireRUStats.avg_dbh;
+            if (FireScript::fireRUValueType=="crownkill") return data.fireRUStats.crown_kill;
+            if (FireScript::fireRUValueType=="basalarea") return data.fireRUStats.basal_area>0?data.fireRUStats.died_basal_area / data.fireRUStats.basal_area:0.;
+            if (FireScript::fireRUValueType=="baseIgnition") return data.baseIgnitionProbability();
+            return 0.;
+        }); // use a specific value function (see above) &fireRUValue
         return true;
     }
+
+
     qDebug() << "could not save gridToFile because" << grid_type << "is not a valid grid.";
     return false;
 

@@ -238,10 +238,10 @@ void Environment::setPosition(const QPointF position)
 
     } else {
         if (mGridMode)
-            throw IException(QString("Environment:setposition: invalid grid id (or not present in input file): %1m/%2m (mapped to id %3).")
+            throw IException(QString("Environment:setposition: invalid grid id (or not present in input file): %1m/%2m (mapped to id %3).\n Check that id values in 'model.world.environmentGrid' are also present in 'model.world.environmentFile'!")
                              .arg(position.x()).arg(position.y()).arg(id));
         else
-            throw IException(QString("Environment:setposition: invalid coordinates (or not present in input file): %1m/%2m (mapped to indices %3/%4).")
+            throw IException(QString("Environment:setposition: invalid coordinates (or not present in input file): %1m/%2m (mapped to indices %3/%4). \nYou may miss these indices in the environment file.")
                              .arg(position.x()).arg(position.y()).arg(ix).arg(iy));
     }
 }

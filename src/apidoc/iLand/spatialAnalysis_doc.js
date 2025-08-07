@@ -3,11 +3,14 @@
 The `SpatialAnalysis` class encapsulates special spatial analysis operations in iLand. For example, the class
 contains methods to conduct patch size analysis, or calculate the Rumple index.
 
-An instance of the object is available in the global Javascript context with the name `SpatialAnalysis`.
+You can create an instance of this class using the `new`operator: `new SpatialAnalysis()`.
 
 Example
 -------
-    SpatialAnalysis.saveRumpleGrid('temp/rumple.asc');
+    // create an object (only once)
+    var spatial_analysis = new SpatialAnalysis();
+    // save data
+    spatial_analysis.saveRumpleGrid('temp/rumple.asc');
 
 @module iLand
 @class SpatialAnalysis

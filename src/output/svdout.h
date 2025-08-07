@@ -2,19 +2,7 @@
 #define SVDOUT_H
 #include "output.h"
 #include "expression.h"
-#include <bitset>
-#include "grid.h"
-// Qt5.12 bug with MSVC compiler
-// https://bugreports.qt.io/browse/QTBUG-72073
-// created an updated version of "bitset" including a lil fix
-//#ifdef Q_OS_WIN // <- not working for GCC on Windows
-#ifdef Q_CC_MSVC
-//#include "../3rdparty/bitset.h"
-#else
-#include <bitset>
-#endif
 
-class ResourceUnit; // forward
 
 /// An auxiliary output which saves
 /// GPP per resource unit and year
@@ -57,34 +45,6 @@ private:
 };
 
 
-
-
-/// SVDIndicatorOut saves (compressed) indicator data for SVD.
-/// Data is collected for each resource unit and for every year
-class SVDIndicatorOut: public Output
-{
-public:
-    SVDIndicatorOut();
-    virtual void exec();
-    virtual void setup();
-private:
-    // list of active indicators
-    enum Indicators {EshannonIndex, EabovegroundCarbon, EtotalCarbon, Evolume, EcrownCover,
-                    ELAI, EbasalArea, EstemDensity, EsaplingDensity};
-    std::bitset<32> mIndicators;
-    QVector<QPair<QString, int> > mSpecies; // store species IDs and corresponding index
-    int mNDisturbanceHistory;
-
-    Grid<float> mCrownCoverGrid;
-
-    // indicator calculators
-    double calcShannonIndex(const ResourceUnit *ru);
-    double calcCrownCover(const ResourceUnit *ru);
-    double calcTotalCarbon(const ResourceUnit *ru);
-
-    void addSpeciesProportions(const ResourceUnit *ru);
-    void addDisturbanceHistory(const ResourceUnit *ru);
-};
 
 
 #endif // SVDOUT_H

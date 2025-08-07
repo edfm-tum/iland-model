@@ -70,7 +70,11 @@ public:
     GisGrid();
     ~GisGrid();
     // maintenance
-    bool loadFromFile(const QString &fileName); ///< load ESRI style text file
+    /// load grid from file
+    /// (either GeoTiff or ESRI ASCII)
+    /// @return bool true on success
+    bool loadFromFile(const QString &fileName);
+    bool loadFromFile_old(const QString &fileName); ///< load ESRI style text file
     // access
     int dataSize() const { return mDataSize; }   ///< number of data items (rows*cols)
     int rows() const { return mNRows; } ///< number of rows
@@ -120,7 +124,7 @@ private:
     int mNRows;
     int mNCols;     // count of rows and cols
     double *mData;
-    int mNODATAValue;
+    double mNODATAValue;
 };
 
 

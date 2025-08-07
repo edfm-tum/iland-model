@@ -59,7 +59,7 @@ void Species::setup()
     mName = stringVar("name");
 #ifdef ILAND_GUI
     QString col_name = '#' + stringVar("displayColor");
-    mDisplayColor.setNamedColor(col_name);
+    mDisplayColor = QColor::fromString(col_name); // since Qt 6.6; before it was mDisplayColor.fromString(...)
 #else
     mDisplayColor = 0;
 #endif

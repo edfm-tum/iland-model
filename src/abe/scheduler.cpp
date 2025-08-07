@@ -222,6 +222,7 @@ void Scheduler::run()
             harvest_scheduled += item->harvest;
 
             bool executed = item->flags->activity()->execute(item->stand);
+            item->stand->setLastExecution( item->stand->currentActivityIndex() );
             if (final_harvest)
                 total_final_harvested += item->stand->totalHarvest() + item->stand->salvagedTimber();
             else
@@ -536,6 +537,9 @@ QStringList SchedulerOptions::mAllowedProperties = QStringList()
 void SchedulerOptions::setup(QJSValue jsvalue)
 {
     useScheduler = false;
+    if (jsvalue.isError())
+        return;
+
     if (!jsvalue.isObject()) {
         qCDebug(abeSetup) << "Scheduler options are not an object:" << jsvalue.toString();
         return;

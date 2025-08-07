@@ -120,7 +120,7 @@ private:
     QString mDescription; ///< textual description of the content
     QList<OutputColumn> mColumns; ///< list of columns of output
     QVector<QVariant> mRow; ///< current row
-    QSqlQuery mInserter;
+    QSqlQuery *mInserter;
     QFile mOutputFile;
     QTextStream mFileStream; ///< for file based output
     int mCount;

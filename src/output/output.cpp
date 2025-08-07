@@ -92,6 +92,8 @@ void Output::setup()
 Output::~Output()
 {
     //mInserter.clear();
+    if (mInserter)
+        delete mInserter;
 }
 
 Output::Output()
@@ -100,6 +102,7 @@ Output::Output()
     mMode = OutDatabase;
     mOpen = false;
     mEnabled = false;
+    mInserter = nullptr;
     newRow();
 }
 
@@ -127,8 +130,9 @@ void Output::openDatabase()
     }
     sql[sql.length()-1]=')'; // replace last "," with )
     //qDebug()<< sql;
-    if (mInserter.isValid())
-        mInserter.clear();
+    mInserter = new QSqlQuery(db);
+    if (mInserter->isValid())
+        mInserter->clear();
     QSqlQuery creator(db);
     QString drop=QString("drop table if exists %1").arg(tableName());
     creator.exec(drop); // drop table (if exists)
@@ -142,13 +146,13 @@ void Output::openDatabase()
     values[values.length()-1]=')';
     insert += QString(" values (") + values;
     //qDebug() << insert;
-    mInserter = QSqlQuery(db);
-    mInserter.prepare(insert);
-    if (mInserter.lastError().isValid()){
-        throw IException(QString("Error creating output: %1 \n Statement: %2").arg( mInserter.lastError().text()).arg(insert) );
+
+    mInserter->prepare(insert);
+    if (mInserter->lastError().isValid()){
+        throw IException(QString("Error creating output: %1 \n Statement: %2").arg( mInserter->lastError().text()).arg(insert) );
     }
     for (int i=0;i<columns().count();i++)
-        mInserter.bindValue(i,mRow[i]);
+        mInserter->bindValue(i,mRow[i]);
 
     mOpen = true;
 }
@@ -259,9 +263,10 @@ void Output::close()
         case OutDatabase:
             // calling finish() ensures, that the query and all locks are freed.
             // having (old) locks on database connections, degrades insert performance.
-            if (mInserter.isValid())
-                mInserter.finish();
-            mInserter = QSqlQuery(); // clear inserter
+            if (mInserter->isValid())
+                mInserter->finish();
+            delete mInserter;
+            mInserter = nullptr;
          break;
     case OutFile:
         mOutputFile.close();
@@ -276,13 +281,13 @@ void Output::close()
 void Output::saveDatabase()
 {
    for (int i=0;i<mCount;i++)
-        mInserter.bindValue(i,mRow[i]);
-    mInserter.exec();
-    if (mInserter.lastError().isValid()){
+        mInserter->bindValue(i,mRow[i]);
+    mInserter->exec();
+    if (mInserter->lastError().isValid()){
         throw IException(QString("Error during saving of output tables: '%1'' (native code: '%2', driver: '%3')")
-                         .arg( mInserter.lastError().text())
-                         .arg(mInserter.lastError().nativeErrorCode())
-                         .arg(mInserter.lastError().driverText()) );
+                         .arg( mInserter->lastError().text())
+                         .arg(mInserter->lastError().nativeErrorCode())
+                         .arg(mInserter->lastError().driverText()) );
     }
 
     newRow();

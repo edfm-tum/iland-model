@@ -7,6 +7,7 @@
 *
 * Use the 'flag' and 'setFlag' methods to (persistently) modify / read user-specific properties for each stand. This is a means
 * to pass stand-specific information between activities (or between different events within one activity).
+* In addition, each stand can hold arbitrary Javascript objects with the `obj` property.
 *
 *
 @class Stand
@@ -36,6 +37,43 @@ var stand = {
   @property id
   @type integer
   @default -1
+*/
+
+/**
+  The `obj` is a general purpose javascript entity that is stored for a stand.
+
+  Note that `obj` can hold arbitrary Javascript objects, including data structures and functions. This extends
+  the functionality available with `flag` and `setFlag`: while `flag` store simple data types and storage is handled by C++,
+  `obj` entirely lives in Javascript world.
+
+
+  See also: {{#crossLink "Stand/flag:method"}}{{/crossLink}}.
+
+  @property obj
+  @type Javascript object
+  @default undefined
+*/
+
+/**
+  The `stp` refers to stand treatment program the stand is currently assigned to.
+
+
+  See also: {{#crossLink "Stand/activity:property"}}{{/crossLink}}.
+
+  @property stp
+  @type STP
+  @default undefined
+*/
+
+/**
+  The `activity` refers to activity that is currently active for the stand.
+
+
+  See also: {{#crossLink "Stand/activityByName:method"}}{{/crossLink}}, {{#crossLink "FMEngine/standId:property"}}{{/crossLink}}.
+
+  @property activity
+  @type Activity
+  @default undefined
 */
 
 /**
@@ -117,6 +155,23 @@ var stand = {
   @property area
   @type double
 */
+
+/**
+  Sets a new STP for a stand. This can be used to "switch" from one STP to another STP.
+  Use `updateSTP()` from `fmengine` to change/update an already existing STP.
+
+  See also {{#crossLink "FMEngine/updateManagement:method"}}{{/crossLink}}.
+
+      // get the share of the dominant species:
+      console.log(stand.stp.name); // e.g. 'BAU'
+      fmengine.addManagement( { ... }, 'femel');
+      fmengine.standId=1; // explicitly set to stand with ID = 1
+      stand.setSTP('femel');
+
+
+  @method setSTP
+  @param {string} stp_name The name of the STP to set for the stand
+*/
 /**
   Retrieve the species id at position `index`.
 
@@ -185,16 +240,16 @@ var stand = {
 
 
 /**
-  Use `activity` to retrieve an {{#crossLink "Activity"}}{{/crossLink}} object.
+  Use `activityByName` to retrieve an {{#crossLink "Activity"}}{{/crossLink}} object.
 
-  Note: the global variable `activity` is a "short-cut" to access the currently active activity.
+  Note: the variable `activity` is a "short-cut" to access the currently active activity.
 
-        stand.activity("my_thinning_2").enabled = false; // disable an activity
-        var act = stand.activity("my_thinning_1"); // save a reference to the activity for later use
+        stand.activityByName("my_thinning_2").enabled = false; // disable an activity
+        var act = stand.activityByName("my_thinning_1"); // save a reference to the activity for later use
 
-  See also: the global variable `{{#crossLink "Activity"}}activity{{/crossLink}}`
+  See also: the variable `{{#crossLink "Stand/activity:property"}}activity{{/crossLink}}`
 
-  @method activity
+  @method activityByName
   @param {string} activity_name The name of the activity to be retrieved. Activity names are provided during activity definition (see {{#crossLink "FMEngine/addManagement:method"}}fmengine.addManagement{{/crossLink}})
   @return {Activity} the Activity, or `undefined` if not found.
 */

@@ -151,7 +151,8 @@ Grid = {
       */
 
     /**
-    Save to a file `file_name` as ESRI ASCII raster file.
+    Save to a file `file_name` as ESRI ASCII raster file or GeoTIFF. A TIF is created
+    when the file name ends with `.tif` or `.TIF`.
 
 
     See also: {{#crossLink "Grid/load:method"}}{{/crossLink}}

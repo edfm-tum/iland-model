@@ -18,6 +18,7 @@
 ********************************************************************************************/
 
 #include "saplingout.h"
+#include "expressionwrapper.h"
 #include "model.h"
 #include "resourceunit.h"
 #include "saplings.h"
@@ -96,8 +97,9 @@ SaplingDetailsOut::SaplingDetailsOut()
     setName("Sapling Details Output", "saplingdetail");
     setDescription("Detailed output on indidvidual sapling cohorts.\n" \
                    "For each occupied and living 2x2m pixel, a row is generated, unless" \
-                   "the tree diameter is below the 'minDbh' threshold (cm). " \
-                   "You can further specify a 'condition' to limit execution for specific time/ area with the variables 'ru' (resource unit id) and 'year' (the current year).");
+                   "the tree diameter is below the 'minDbh' threshold (cm). \n " \
+                   "You can further specify a 'condition' to limit execution for specific time/ area with the variables 'ru' (resource unit id) and 'year' (the current year)." \
+                   " and you can use the `filter` property to filter using sapling variables (such as species or x/y)");
     columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::id() << OutputColumn::species()
               << OutputColumn("position", "location of the cell within the resource unit; a number between 0 (lower left corner) and 2499 (upper right corner) (x=index %% 50; y=floor(index / 50) ).", OutInteger)
               << OutputColumn("n_represented", "number of trees that are represented by the cohort (Reineke function).", OutDouble)
@@ -124,6 +126,8 @@ void SaplingDetailsOut::exec()
             if (!mCondition.execute() )
                 continue;
         }
+        SaplingWrapper sw;
+        mFilter.setModelObject(&sw);
         SaplingCell *s = ru->saplingCellArray();
         for (int px=0;px<cPxPerHectare;++px, ++s) {
             int n_on_px = s->n_occupied();
@@ -136,6 +140,12 @@ void SaplingDetailsOut::exec()
                         // check minimum dbh
                         if (dbh<mMinDbh)
                             continue;
+
+                        if (!mFilter.isEmpty()) {
+                            sw.setSaplingTree(&s->saplings[i],ru);
+                            if (!mFilter.executeBool())
+                                continue;
+                        }
 
                         double n_repr = species->saplingGrowthParameters().representedStemNumberH(s->saplings[i].height) / static_cast<double>(n_on_px);
 
@@ -159,4 +169,7 @@ void SaplingDetailsOut::setup()
         mVarYear = mCondition.addVar("year");
     }
     mMinDbh = settings().valueDouble(".minDbh");
+    QString filter = settings().value(".filter","");
+    mFilter.setExpression(filter);
+
 }

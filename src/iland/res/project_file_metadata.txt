@@ -25,7 +25,7 @@ gui.layout = group|Special (dynamic) state outputs
 output.dynamic.enabled = connected| dynamic (landscape level)
 output.dynamicstand.enabled = connected|Dynamic stand
 output.customagg.enabled = connected|Custom aggregagations
-output.devStage.enabled = connected|development stages
+output.devstage.enabled = connected|development stages
 
 gui.layout = group|Flows
 output.landscape_removed.enabled = connected|Landscape removed
@@ -149,8 +149,10 @@ gui.layout = group|Custom aggregagtes|`customagg` are advanced outputs, that all
 output.customagg.enabled = boolean|true|Enabled|Output of dynamic|simple
 
 gui.layout = group|Development stage https://iland-model.org/development+stages
-output.devStage.enabled = boolean|true|devStage|Output of dynamic|simple
-
+output.devstage.enabled = boolean|true|Enable|Output of dynamic|simple
+output.devstage.cellsize = combo|10;20;50;100|Cellsize|Defines the cell size in meters. The value need to align with the 100m / 10m cells. Possible values are therefore: 10, 20, 50, 100 |simple
+output.devstage.handler = string|JavaScript handler file|Handler|The name of the Javascript object that is handling the calculation of development stages.|simple
+output.devstage.filter = string|in(year,100,200,300)|Filter|Filter to limit output to specific years (variable: simulation year, e.g., 'in(year, 100, 200, 300)' |simple
 
 ; **** Vegetation flows *********
 gui.layout = tab|tabFlows|Ecosystem flows
@@ -175,6 +177,7 @@ output.soilinput.enabled = boolean|false|Enabled|The output contains all carbon 
 gui.layout = tab|tabProcesses|Ecosystem processes|todo
 gui.layout = group|Production month|Details about the 3PG production submodule on monthly basis and for each species and resource unit. https://iland-model.org/outputs#Production_per_month_species_and_resource_unit
 output.production_month.enabled = boolean|false|Enabled|Details about the 3PG production submodule on monthly basis and for each species and resource unit.|simple
+output.production_month.condition = string||Capling|Condition to limit execution for specific years with the variable 'year' (the current year).|advanced
 gui.layout = group|Water cycle|Annual water cycle output on resource unit/landscape unit. https://iland-model.org/outputs#Water_output
 output.water.enabled = boolean|true|Enabled|Annual water cycle output on resource unit/landscape unit. The output includes annual averages of precipitation, evapotranspiration, water excess, snow cover, and radiation input. The difference of precip - (evapotranspiration + excess) is the evaporation from intercepted precipitation. The spatial resolution is landscape averages and/or resource unit level (i.e. 100m pixels). Landscape level averages are indicated by -1 for the 'ru' and 'index' columns. Columns related to permafrost are 0 when permafrost module is disabled. The given values for depth are independent from the soil depth of iLand (e.g., soil depth can be 0.5m, but maxDepthFrozen can be 1.5m).|simple
 output.water.condition = function|condition water|Condition|Limits the output execution to specific years (variable 'year').|simple
@@ -228,9 +231,11 @@ output.svdindicator.enabled = boolean|false|Enable Indicator|Indicator data per 
 gui.layout = group|SVD GPP
 output.svdgpp.enabled = boolean|false|Enable GPP|GPP potential (as conditioned by climate/site) per species and m2.|simple
 
-gui.layout = group|<h2>Ecoviz</h2>|Ecoviz is a forest landscape visualization tool, and this output produces tree data in required format for Ecoviz.
-output.ecoviz.enabled = boolean|true|ecoviz|Output of dynamic|simple
-
+gui.layout = group|<h2>Ecoviz</h2>|Ecoviz is a forest landscape visualization tool, and this output produces tree data in required format for Ecoviz. Note that output files can become quite large!
+output.ecoviz.enabled = boolean|true|ecoviz|Output of vegetatition data for Ecoviz tool|simple
+output.ecoviz.condition = function||condition|filter for execution of output|simple
+output.ecoviz.binary = boolean|false|binary|if true, a binary file (version 3) is written (*.pdbb), a text file otherwise (*.pdb)|simple
+output.ecoviz.fileName = string|output/pdb_$.pdb|fileName|file name pattern for output files. "$" is replaced with simulation year|simple
 
 
 ; ************************************
@@ -248,7 +253,7 @@ gui.layout = tab|tabSystem|System Settings|The settings in this section let you 
 gui.layout = tab|tabPath|File paths|Default paths for different types of files are defined in the section system.path in the project file. Generally, all paths might be given either as absolute or as relative. If relative paths are provided, then they are considered to be relative to the home directory of the project. If the home project setting is empty, the location of the project.xml itself will be used as the the home-directory. https://iland-model.org/filenames+and+paths
 system.path.home = directory|project's home directory|Home|The project's home directory. If empty, the directory containing the project file is the home folder.|simple
 system.path.database = directory|database directory|Database|Directory containing the databases. Default: "database"|simple
-system.path.lip = directory|LIP file directory|LIP files|Directory containing the binary LIP files. Default: "lip"|simple
+system.path.lip = directory|LIP file directory|LIP files|Directory containing the binary LIP files. See https://iland-model.org/Lightroom about creating LIPS! Default: "lip"|simple
 system.path.output = directory|output directory|Output|Default path for the output database(s). Default: "output"|simple
 system.path.temp = directory|temp|temp|default path for temporary files. Deprecated.|all
 system.path.script = directory|script|script|default for script files. Deprecated.|all
@@ -398,7 +403,7 @@ model.settings.soil.useDynamicAvailableNitrogen = boolean|false|Use Dynamic Avai
 model.settings.soil.nitrogenDeposition = numeric|0|Nitrogen Deposition|To account for external nitrogen input, a nitrogen deposition (kgN/ha*yr) is added to the available nitrogen which is derived by the dynamic soil module calculations. Default: 0. Note that nitrogen deposition is *not* added if the static world.site.availableNitrogen value is used.|simple
 model.settings.soil.qb = numeric|0.2|C/N Ratio Soil Microbes|C/N ratio of soil microbes|simple
 model.settings.soil.qh = numeric|0.2|C/N Ratio SOM|C/N ratio of SOM|simple
-model.settings.soil.leaching = numeric|0.5|string|How many percent of the mineralized nitrogen in O is not available for plants but is leached (0..1)?|simple
+model.settings.soil.leaching = numeric|0.5|Soil Leaching|How many percent of the mineralized nitrogen in O is not available for plants but is leached (0..1)?|simple
 model.settings.soil.el = numeric|0.1|Microbal Eff. Labile Pool|microbal efficiency in the labile pool, auxiliary parameter (see parameterization example)|simple
 model.settings.soil.er = numeric|0.1|Microbal Eff. Refractory Pool|microbal efficiency in the refractory pool, auxiliary parameter (see parameterization example)|simple
 
@@ -418,8 +423,9 @@ model.settings.permafrost.enabled = boolean|false|Enable|Permafrost sub module s
 model.settings.permafrost.onlySimulate = booelan|false|Only simulate|If true, permafrost is calculated but has no effect on water cycle|simple
 model.settings.permafrost.initialGroundTemperature = numeric|4|Initial ground temperature|Initial temperature in depth ‘groundBaseDepth’ below the active layer: at depth "groundBaseDepth" the temperature is assumed to remain +- constant within a year and to follow MAT with a 10yr delay. The initial value is given with 'initialGroundTemperature' and the depth from which thermal energy flows.|simple
 model.settings.permafrost.initialDepthFrozen = numeric|2|Initial depth frozen|Depth (m) up to which the soil is frozen at the start of the simulation (1st of January). For permanent permafrost the value is capped at 2m.|simple
-model.settings.permafrost.groudBaseDepth = numeric|3|Ground base depth|Depth (m) of the zone below the active layer from where the secondary heat flux (from below) originates.|simple
+model.settings.permafrost.groundBaseDepth = numeric|3|Ground base depth|Depth (m) of the zone below the active layer from where the secondary heat flux (from below) originates.|simple
 model.settings.permafrost.lambdaOrganicLayer = numeric|1|Lambda organic layer|Thermal conductivity W/m*K of soil organic layer and moss|simple
+model.settings.permafrost.lambdaSnow = numeric|0.5|Lambda snow|Thermal conductivity W/m*K of snow|simple
 model.settings.permafrost.organicLayerDensity = numeric|50|Organic layer density|Density (kg/m3) of the soil organic layer (default: 50).|simple
 model.settings.permafrost.organicLayerDefaultDepth = numeric|0.1|Organic layer default depth|Depth of the soil organic layer (m) (only relevant when dynamic carbon cycle is disabled) (default: 0.1)|simple
 model.settings.permafrost.maxFreezeThawPerDay = numeric|10|Max. freeze/thaw per day|Cap for daily freezing and thawing (mm water column)|simple
@@ -581,14 +587,14 @@ model.site.youngRefractoryN = numeric|100|Nitrogen content|(Initial) nitrogen co
 model.site.youngRefractoryDecompRate = numeric|string|Decomposition rate|(Initial) decomposition rate of yr pool|simple
 model.site.youngRefractoryAbovegroundFraction = numeric|0.7|Aboveground fraction|Fraction (0..1) of C in the yR pool from aboveground sources (branches, stems)|simple
 gui.layout = group|Soil organic matter
-model.site.somC = numeric|100000|Nitrogen content|(Initial) carbon content of oC (soil organic matter) soil pool (kg/ha)|simple
-model.site.somN = numeric|100|Carbon content|(Initial) nitrogen content of oN (soil organic matter) soil pool (kg/ha)|simple
+model.site.somC = numeric|100000|Carbon content|(Initial) carbon content of oC (soil organic matter) soil pool (kg/ha)|simple
+model.site.somN = numeric|100|Nitrogen content|(Initial) nitrogen content of oN (soil organic matter) soil pool (kg/ha)|simple
 model.site.somDecompRate = numeric|0.1|Decomposition rate|Decomposition rate for soil organic matter (i.e. the "old" pool sensu ICBM)|simple
 model.site.soilHumificationRate = numeric|0.3|Soil humification rate|humification rate|simple
 
 ; ************* Climate **************
 ; model.climate
-gui.layout = tab|tabClimate|Climate|This section controls the processing of climate data in iLand. <br/> https://iland-model.org/ClimateData
+gui.layout = tab|tabClimate|Climate|This section controls the processing of climate data in iLand. See the section "System->Database" to change the climate scenario!<br/> https://iland-model.org/ClimateData
 gui.layout = group|database table|The table name in the climate database and a SQL filter to select a subset of data. See environment file mechanism for spatial data https://iland-model.org/simulation+extent#spatially_distributed_parameters
 model.climate.tableName = string|name sqlite table|Table name|Name of the SQLite table within the defined climate database to load (system.database.climate).|simple
 model.climate.filter = string|filter expression|Filter|An optional filter criterion that is added to the where clause of the SQL for reading the climate data. This can be useful e.g. for skipping parts of the climate records. Example: 'year>2000 and year<2010' limits used climate data to the years 2001 to 2009.|simple
@@ -652,6 +658,8 @@ modules.fire.rLand = numeric|1|r Land|"Multiplier for the fire spread probabilit
 modules.fire.meanAnnualPrecipitation = numeric|240|Mean Annual Precipitation|Mean annual precipitation (mm)|simple
 modules.fire.averageFireSize = numeric||Average Fire Size|Average fire size in m2|simple
 modules.fire.fireSizeSigma = numeric||Fire Size Sigma|""|simple
+modules.fire.minFireSize = numeric||Minimum Fire Size|Minimum fire size (m2). If minFireSize is set to a very high value, the fire size distribution has effectively no limiting effect on the simulated fire sizes.|simple
+modules.fire.maxFireSize = numeric||Maximum Fire Size|Maximum fire size (m2).|simple
 modules.fire.fireReturnInterval = numeric|100|Fire Return Interval|Average number of years between two fires affecting a single pixel. A value of e.g. 100 means, that, on average, a pixel burns every 100 years"|simple
 modules.fire.fireExtinctionProbability = numeric|0|Fire Ext. Probability|Probability that a the fire on a burning pixel extincts without a chance to spread further|simple
 
@@ -660,7 +668,7 @@ modules.fire.fireExtinctionProbability = numeric|0|Fire Ext. Probability|Probabi
 gui.layout = tab|tabWind|Wind|The wind modules simulates the disturbance agent wind on landscape level. <br/>See https://iland-model.org/wind%20disturbance and https://iland-model.org/wind+module for modeling concept and implementation, respectively.
 modules.wind.enabled = boolean|true|Enable|Turn wind simulation on or off|simple
 modules.wind.triggeredByTimeEvent = boolean|false|Time triggers wind|If checked, then wind events are triggered by time events (i.e. defined in an external input file). |simple
-modules.wind.onbeforeWind = string|javascript expression|on BeforeWind|Javascript expression evaluated before a wind event is executed. For example, you could define a function that sets an event-specifc topo grid. (Note: it is "on BeforeWind" (without space) not "onbeforeWind" - the wiki does not allow the correct term) |simple
+modules.wind.onBeforeWind = string|javascript expression|on BeforeWind|Javascript expression evaluated before a wind event is executed. For example, you could define a function that sets an event-specifc topo grid. (Note: it is "on BeforeWind" (without space) not "onbeforeWind" - the wiki does not allow the correct term) |simple
 modules.wind.onAfterWind = string|javascript expression|on AfterWind|Javascript function that is called after every wind event (e.g. for postprocessing). For example, you can provide myTestFunction() in XML, and defined a myTestFunction within the iLand Javascript engine. (Note: it is "on AfterWind" (no space) not "onafterWind" - the wiki does not allow the correct term )|simple
 
 gui.layout = layout|hl

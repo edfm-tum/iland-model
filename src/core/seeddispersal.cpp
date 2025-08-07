@@ -25,6 +25,7 @@
 #include "helper.h"
 #include "species.h"
 #include "tree.h"
+#include "resourceunit.h"
 #ifdef ILAND_GUI
 #include <QtGui/QImage>
 #endif
@@ -142,11 +143,11 @@ void SeedDispersal::setup()
             // current species in list??
             mHasExternalSeedInput = GlobalSettings::instance()->settings().value("model.settings.seedDispersal.externalSeedSpecies").contains(mSpecies->id());
             QString dir = GlobalSettings::instance()->settings().value("model.settings.seedDispersal.externalSeedSource").toLower();
-            // encode cardinal positions as bits: e.g: "e,w" -> 6
-            mExternalSeedDirection += dir.contains("n")?1:0;
-            mExternalSeedDirection += dir.contains("e")?2:0;
-            mExternalSeedDirection += dir.contains("s")?4:0;
-            mExternalSeedDirection += dir.contains("w")?8:0;
+            // encode cardinal positions as bits: e.g: "e,w" -> 10 (bit 0 not used)
+            setBit(mExternalSeedDirection, 1, dir.contains("n"));
+            setBit(mExternalSeedDirection, 2, dir.contains("e"));
+            setBit(mExternalSeedDirection, 3, dir.contains("s"));
+            setBit(mExternalSeedDirection, 4, dir.contains("w"));
             QStringList buffer_list = GlobalSettings::instance()->settings().value("model.settings.seedDispersal.externalSeedBuffer").split(QRegularExpression("([^\\.\\w]+)"));
             int index = buffer_list.indexOf(mSpecies->id());
             if (index>=0) {
@@ -592,10 +593,10 @@ void SeedDispersal::newYear()
                         } else {
                             // seeds only from specific directions
                             float value = 0.f;
-                            if (isBitSet(mExternalSeedDirection,1) && ix>=seed_map->sizeX()-buf_size) value = 1; // north
-                            if (isBitSet(mExternalSeedDirection,2) && iy<buf_size) value = 1; // east
-                            if (isBitSet(mExternalSeedDirection,3) && ix<buf_size) value = 1; // south
-                            if (isBitSet(mExternalSeedDirection,4) && iy>=seed_map->sizeY()-buf_size) value = 1; // west
+                            if (isBitSet(mExternalSeedDirection,1) && iy>=seed_map->sizeY()-buf_size) value = 1; // north
+                            if (isBitSet(mExternalSeedDirection,2) && ix<buf_size) value = 1; // east
+                            if (isBitSet(mExternalSeedDirection,3) && iy<buf_size) value = 1; // south
+                            if (isBitSet(mExternalSeedDirection,4) && ix>=seed_map->sizeX()-buf_size) value = 1; // west
                             seed_map->valueAtIndex(ix,iy)=value;
                         }
                     }
@@ -679,8 +680,7 @@ void SeedDispersal::execute()
     float background_value = static_cast<float>(mExternalSeedBackgroundInput); // there is potentitally a background probability <>0 for all pixels.
     if (background_value>0.f) {
         // add a constant number of seeds on the map
-        mSeedMap.add(background_value);
-        mSeedMap.limit(0.f, 1.f);
+        addExternalBackgroundSeeds(mSeedMap, background_value);
     }
 
 
@@ -691,6 +691,7 @@ void SeedDispersal::execute()
     }
 
     if (!mDumpNextYearFileName.isEmpty()) {
+        gridToFile<float>(seedMap(), GlobalSettings::instance()->path(mDumpNextYearFileName));
         Helper::saveToTextFile(GlobalSettings::instance()->path(mDumpNextYearFileName), gridToESRIRaster(seedMap()));
         qDebug() << "saved seed map for " << species()->id() << "to" << GlobalSettings::instance()->path(mDumpNextYearFileName);
         mDumpNextYearFileName = QString();
@@ -849,3 +850,34 @@ void SeedDispersal::distributeSeeds(Grid<float> *seed_map)
         }
     }
 }
+
+void SeedDispersal::addExternalBackgroundSeeds(Grid<float> &map, double background_value)
+{
+    if (background_value > 0.01) {
+        // for high values of background prob we add the value everywhere
+        map.add(background_value);
+        map.limit(0.f, 1.f);
+        return;
+    }
+    // for lower values we make some performance optimizations, essentially by reducing the number of cells that need to be processed during establishment
+    const double frac_RU = 0.1; // fraction of resource units to process
+    const double frac_cells = 0.2; // fraction of seed cells (20m) 0.2 ~ 5 from 25 cells per RU
+
+    float effective_prob = background_value * 1. / (frac_RU * frac_cells);
+    int ncells = 0;
+
+    for (auto ru : GlobalSettings::instance()->model()->RUgrid()) {
+        if (ru!=nullptr && drandom() < frac_RU) {
+            GridRunner<float> runner(map, ru->boundingBox());
+            while (runner.next()) {
+                if (drandom() < frac_cells) {
+                    *(runner.current()) += effective_prob;
+                    ++ncells;
+                }
+            }
+        }
+    }
+    if (logLevelDebug())
+        qDebug() << "add external seeds (background): value=" << background_value << "set" << ncells << "cells with value" << effective_prob;
+}
+

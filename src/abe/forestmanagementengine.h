@@ -20,6 +20,7 @@
 #define FORESTMANAGEMENTENGINE_H
 #include <QMultiMap>
 #include <QVector>
+#include <QJSValue>
 
 #include "abegrid.h"
 
@@ -37,6 +38,7 @@ class FMSTP; // forward
 class Agent; // forward
 class AgentType; // forward
 class FomeScript; // forward
+class Activity; // forward
 
 /// the ForestManagementEngine is the container for the agent based forest management engine.
 class ForestManagementEngine
@@ -98,6 +100,13 @@ public:
     FMStand *standAt(QPointF coord) const { return mFMStandGrid.constValueAt(coord); }
     // functions
 
+    void addRepeatJS(int stand_id, QJSValue obj, QJSValue callback, int repeatInterval=1, int repeatTimes=-1);
+    void addRepeatActivity(int stand_id, Activity *act, int repeatInterval=1, int repeatTimes=-1, QJSValue parameter=QJSValue());
+    void stopRepeat(int stand_id, QJSValue obj);
+    // run advanced repeated operations
+    void runRepeatedItems(int stand_id);
+
+
     /// called by iLand for every tree that is removed/harvested/died due to disturbance.
     void notifyTreeRemoval(Tree* tree, int reason);
     /// called when bark beetle are likely going to spread
@@ -119,6 +128,8 @@ private:
     void setupOutputs();
     void runJavascript(bool after_processing);
 
+
+
     static ForestManagementEngine *singleton_fome_engine;
     int mCurrentYear; ///< current year of the simulation (=year of the model)
 
@@ -133,6 +144,28 @@ private:
     QMultiMap<FMUnit*, FMStand*> mUnitStandMap;
     QVector<FMStand*> mStands;
     QHash<int, FMStand*> mStandHash;
+
+    // advanced repeating operations
+    struct SRepeatItem {
+        SRepeatItem(): interval(1), times(-1), N(0), waitYears(1),activity(nullptr) {}
+        SRepeatItem(int ainterval, int atimes, QJSValue &aobj, QJSValue &acallback): interval(ainterval), times(atimes),
+            N(0), waitYears(ainterval), jsobj(aobj), callback(acallback), activity(nullptr) {}
+        SRepeatItem(int ainterval, int atimes, Activity *act, QJSValue aparam=QJSValue()): interval(ainterval), times(atimes),
+            N(0), waitYears(ainterval), parameter(aparam), activity(act) {}
+
+        int interval;
+        int times;
+        int N; // times already repeated
+        int waitYears; // years until next execution
+        QJSValue jsobj; // this object (for JS calls)
+        QJSValue callback; // callback function (for JS)
+        QJSValue parameter; // signal parameter
+        Activity *activity; // activity to execute
+    };
+    bool runSingleRepeatedItem(int stand_id, SRepeatItem &item);
+
+    QMultiHash<int, SRepeatItem> mRepeatStore; ///< store multiple repeat-items per stand (int)
+    QList<QPair< int, SRepeatItem> >* mRepeatStoreBuffer {nullptr}; // used to store elements while iterating
 
     // agents
     QVector<AgentType*> mAgentTypes; ///< collection of agent types

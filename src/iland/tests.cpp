@@ -961,6 +961,42 @@ void Tests::testMap()
 DEM *_dem = 0;
 void Tests::testDEM()
 {
+    try {
+    GisGrid gg1, gg2;
+    Grid<double> gr;
+    GeoTIFF::clearProjection();
+
+    gg1.loadFromFile("c:/temp/test.asc");
+    gg2.loadFromFile("c:/temp/test.tif");
+    gr.loadGridFromFile("c:/temp/test.tif");
+    for (int j=0;j<gg1.rows();++j)
+        for (int i=0;i<gg1.cols();++i)
+            qDebug() << i << j << gg1.value(i,j) << gg2.value(i,j); // << gr.constValueAtIndex(i,j);
+
+    // save tif
+    gr.valueAtIndex(1,1) = -1;
+    gridToFile<double>(gr, "c:/temp/testout.tif");
+
+    // test NAs: this is a short (INT2S grid):
+    gg1.loadFromFile("C:/Daten/iLand/projects/BGD/Berchtesgaden/gis/net_area_np.tif");
+    int NAs = 0; int minus1 = 0 ;
+    for (int j=0;j<gg1.rows();++j)
+        for (int i=0;i<gg1.cols();++i) {
+            if (gg1.value(i,j) == gg1.noDataValue())
+                ++NAs;
+            if (gg1.value(i,j) == -1.)
+                ++minus1;
+        }
+    qDebug() << "grid has"<< NAs << "NA values, and " << minus1 << " -1 values, from " <<  gg1.dataSize() << "values. ";
+
+
+
+    } catch (IException &e) {
+        Helper::msg(e.message());
+    }
+    return;
+
+
     QString fileName = GlobalSettings::instance()->path("gis/dtm1m_clip.txt");
 
     if (_dem) {

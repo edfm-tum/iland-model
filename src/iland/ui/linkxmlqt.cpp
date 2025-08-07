@@ -5,6 +5,7 @@
 #include <QtXml>
 #include <QDomDocument>
 #include <QPlainTextEdit>
+#include <QComboBox>
 
 /*
  * Module used to read/write data from/to xml file.
@@ -30,7 +31,7 @@ LinkXmlQt::LinkXmlQt(const QString& xmlFile) :
     mXmlFile(xmlFile),
     mTempHomePath("")
 {
-    xmlFileLoaded = loadXmlFile();
+    mXmlFileLoaded = loadXmlFile();
 
 }
 
@@ -63,12 +64,14 @@ bool LinkXmlQt::loadXmlFile()
     if (!curXml.setContent(&file, &errorMsg, &errorLine, &errorColumn)) {
         qDebug() << "Error loading file content. Abort.";
         file.close();
+        mXmlFileLoaded =false;
         return false;
     }
 
     mLoadedXml = curXml;
-
+    mXmlFileLoaded = true;
     file.close();
+    mXmlFileLoaded = true;
     return true;
 }
 
@@ -76,7 +79,7 @@ bool LinkXmlQt::loadXmlFile()
 QString LinkXmlQt::readCommentXml(const QStringList& xmlPath)
 {
 
-    if ( xmlFileLoaded ) {
+    if ( mXmlFileLoaded ) {
         QDomDocument curXml = mLoadedXml;
 
         QDomElement curNode = curXml.documentElement();
@@ -97,7 +100,7 @@ QString LinkXmlQt::readCommentXml(const QStringList& xmlPath)
 
     }
     else {
-        return "Problem reading comment (see LinkXmlQt::readCommentXml";
+        return "Problem reading comment (see LinkXmlQt::readCommentXml)";
     }
 
 }
@@ -176,7 +179,7 @@ void LinkXmlQt::setComment(QDomNode& curNode, QStringList& commentSplittedLines)
 
 QString LinkXmlQt::readXmlValue(QString key)
 {
-    if (!xmlFileLoaded) {
+    if (!mXmlFileLoaded) {
         throw IException("Error with loading data. Check xml file! Abort.");
     }
     QDomDocument curXml = mLoadedXml;
@@ -206,7 +209,7 @@ void LinkXmlQt::readValuesXml(QStackedWidget* stackedWidget) {
 
     QDomDocument curXml = mLoadedXml;
 
-    if (!xmlFileLoaded) {
+    if (!mXmlFileLoaded) {
         qDebug() << "Error with loading data. Check xml file! Abort.";
         return;
     }
@@ -271,6 +274,48 @@ void LinkXmlQt::readValuesXml(QStackedWidget* stackedWidget) {
     }
 }
 
+// function checks if a node to a valid input item corresponding to key exists
+// if not, a node will be added to xml file
+// function is called, when SettingsDialog is opened to ensure proper comment and data handling
+void LinkXmlQt::checkXmlNodes(QString key) {
+
+    QDomDocument curXml = mLoadedXml;
+
+    //QFile file(xmlFile);
+    if (!mXmlFileLoaded) {
+        qDebug() << "Error with loading data. Check xml file! Abort.";
+        return;
+    }
+
+    else {
+        //QTabWidget* moduleTabs = tabWidget;
+        QDomElement rootElement = curXml.documentElement();
+        QDomElement curNode = rootElement;
+        QStringList xmlPath = key.split(".");
+        bool inputElement = xmlPath.contains("connected") ? false: true;
+
+        foreach (QString node, xmlPath) {
+            curNode = curNode.firstChildElement(node);
+            //qDebug() << "Current node: " << curNode.nodeName();
+        }
+
+        if (curNode.isNull() && inputElement == true) {
+            qDebug() << "Add node " << xmlPath << " to xml file.";
+            QDomNode childBranch, newNode;
+            newNode = rootElement;
+            for (int i = 0; i < xmlPath.length(); i++) {
+                childBranch = newNode.firstChildElement(xmlPath[i]);
+                if ( childBranch.isNull() ) {
+                    newNode = newNode.appendChild(curXml.createElement(xmlPath[i]));
+                }
+                else {
+                    newNode = childBranch;
+                }
+            }
+            newNode.appendChild(curXml.createTextNode(""));
+        }
+    }
+}
 
 // Values from the gui are read and written into the xml tree
 // In general, procedure follows the approach described in loadValuesXml
@@ -279,7 +324,7 @@ void LinkXmlQt::writeValuesXml(QStackedWidget* stackedWidget) {
     QDomDocument curXml = mLoadedXml;
 
     //QFile file(xmlFile);
-    if (!xmlFileLoaded) {
+    if (!mXmlFileLoaded) {
         qDebug() << "Error with loading data. Check xml file! Abort.";
         return;
     }
@@ -297,41 +342,55 @@ void LinkXmlQt::writeValuesXml(QStackedWidget* stackedWidget) {
             QString widgetName = curWidget->objectName();
             QStringList xmlPath = widgetName.split(".");
 
+            //QString curValue = curNode.firstChild().toText().data();
+            //qDebug() << "Aktueller Wert: " << curValue;
+            if (QLineEdit* lineEdit = dynamic_cast<QLineEdit*>(curWidget)) {
+                elementValue = lineEdit->text();
+            }
+            else if (QComboBox* comboBox = dynamic_cast<QComboBox*>(curWidget)) {
+                elementValue = comboBox->currentText();
+            }
+            else if (QCheckBox* checkBox = dynamic_cast<QCheckBox*>(curWidget)) {
+                if (checkBox->isChecked()) {
+                    elementValue = "true";
+                }
+                else {
+                    elementValue = "false";
+                }
+            } else {
+                //inputElement = false;
+            }
+
             curNode = rootElement;
+
             foreach (QString node, xmlPath) {
                 curNode = curNode.firstChildElement(node);
                 //qDebug() << "Current node: " << curNode.nodeName();
             }
 
-
             if (!curNode.isNull()) {
-
-                //QString curValue = curNode.firstChild().toText().data();
-                //qDebug() << "Aktueller Wert: " << curValue;
-                if (QLineEdit* lineEdit = dynamic_cast<QLineEdit*>(curWidget)) {
-                    elementValue = lineEdit->text();
-                }
-                else if (QComboBox* comboBox = dynamic_cast<QComboBox*>(curWidget)) {
-                    elementValue = comboBox->currentText();
-                }
-                else if (QCheckBox* checkBox = dynamic_cast<QCheckBox*>(curWidget)) {
-                    if (checkBox->isChecked()) {
-                        elementValue = "true";
-                    }
-                    else {
-                        elementValue = "false";
-                    }
-                }
-                else {
-                    //qDebug() << "Widget not specified: " << curWidget->objectName();
-                }
 
                 curNode.firstChild().setNodeValue(elementValue);
                 if ( curNode.firstChild().isNull() ) {
                     curNode.appendChild(curXml.createTextNode(""));
                 }
 
-            }
+            } /*else if (curNode.isNull() && inputElement == true){
+                qDebug() << "Add node " << xmlPath << " to xml file.";
+                QDomNode childBranch, newNode;
+                newNode = rootElement;
+                for (int i = 0; i < xmlPath.length(); i++) {
+                    childBranch = newNode.firstChildElement(xmlPath[i]);
+                    if ( childBranch.isNull() ) {
+                        newNode = newNode.appendChild(curXml.createElement(xmlPath[i]));
+                    }
+                    else {
+                        newNode = childBranch;
+                    }
+                }
+                newNode.appendChild(curXml.createTextNode(""));
+
+            }*/
 
         }
 
@@ -363,7 +422,8 @@ void LinkXmlQt::writeToFile(const QString& xmlFilePath)
 
 }
 
-void LinkXmlQt::createXML(const QStringList& metaKeys, const QString &pathXmlFile)
+void LinkXmlQt::createXML(const QStringList& metaKeys,
+                          const QString &pathXmlFile)
 {
     QStringList initCommentList;
 
@@ -409,6 +469,7 @@ void LinkXmlQt::createXML(const QStringList& metaKeys, const QString &pathXmlFil
                     curNode = childBranch;
                 }
             }
+
             curNode.appendChild(newXml.createTextNode(""));
         }
     }

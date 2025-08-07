@@ -23,7 +23,6 @@
 #include <QDateTime>
 #include <QStringList>
 #include "version.h"
-#include <stdexcept>
 #include <QTimer>
 #include <QString>
 
@@ -34,7 +33,7 @@ int main(int argc, char *argv[])
     QString copyright_str = QString("(c) Werner Rammer, Rupert Seidl, 2009-%1").arg(buildYear());
 
     printf("iLand console (%s)\n", currentVersion());
-    printf("This is the console version of iLand, the individual based\nlandscape and disturbance forest model.\n");
+    printf("This is the console version of iLand, the individual based\nforest landscape and disturbance model.\n");
     printf("More at: https://iland-model.org \n");
     printf("%s\n", copyright_str.toLocal8Bit().data());
     printf("version: %s\n", verboseVersion().toLocal8Bit().data());

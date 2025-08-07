@@ -58,6 +58,12 @@ void Schedule::setup(const QJSValue &js_value)
 {
     clear();
     if (js_value.isObject()) {
+        const QStringList allowed = {"min", "max", "opt", "minRel", "maxRel", "optRel",
+                               "repeatInterval", "repeatStart", "force", "absolute",
+                               "signal", "repeat", "wait" };
+
+        FMSTP::checkObjectProperties(js_value, allowed, "Schedule" );
+
         tmin = FMSTP::valueFromJs(js_value, "min", "-1").toInt();
         tmax = FMSTP::valueFromJs(js_value, "max", "-1").toInt();
         topt = FMSTP::valueFromJs(js_value, "opt", "-1").toInt();
@@ -70,7 +76,13 @@ void Schedule::setup(const QJSValue &js_value)
         force_execution = FMSTP::boolValueFromJs(js_value, "force", false);
         repeat = FMSTP::boolValueFromJs(js_value, "repeat", false);
         absolute = FMSTP::boolValueFromJs(js_value, "absolute", false);
-        if (!repeat) {
+        // signals
+        mSignalStr = FMSTP::valueFromJs(js_value, "signal").toString();
+        if (mSignalStr == "undefined") mSignalStr.clear();
+        if (!mSignalStr.isEmpty())
+            mSignalDelta = FMSTP::valueFromJs(js_value, "wait","0").toInt();
+
+        if (!repeat && mSignalStr.isEmpty()) {
 
             if (tmin>-1 && tmax>-1 && topt==-1)
                 topt = (tmax+tmin) / 2;
@@ -189,8 +201,8 @@ double Schedule::value(const FMStand *stand, const int specific_year)
 
 double Schedule::minValue(const double U) const
 {
-    if (absolute) return tmin;
-    if (repeat) return 100000000.;
+    if (absolute && tmin>-1) return tmin;
+    if (repeat || !mSignalStr.isEmpty()) return 100000000.;
     if (tmin>-1) return tmin;
     if (tminrel>-1.) return tminrel * U; // assume a fixed U of 100yrs
     if (repeat) return -1.; // repeating executions are treated specially
@@ -200,7 +212,8 @@ double Schedule::minValue(const double U) const
 
 double Schedule::maxValue(const double U) const
 {
-    if (absolute) return tmax;
+    if (!mSignalStr.isEmpty()) return 1000000000;
+    if (absolute && tmax>-1) return tmax;
     if (tmax>-1) return tmax;
     if (tmaxrel>-1.) return tmaxrel * U; // assume a fixed U of 100yrs
     if (repeat) return -1.; // repeating executions are treated specially
@@ -211,6 +224,7 @@ double Schedule::maxValue(const double U) const
 
 double Schedule::optimalValue(const double U) const
 {
+    if (!mSignalStr.isEmpty()) return 1000000000;
     if (topt>-1) return topt;
     if (toptrel>-1) return toptrel*U;
     if (tmin>-1 && tmax>-1) return (tmax+tmin)/2.;
@@ -228,9 +242,9 @@ void Events::clear()
     mEvents.clear();
 }
 
-void Events::setup(QJSValue &js_value, QStringList event_names)
+void Events::setup(QJSValue &js_value, QJSValue &this_object, QStringList event_names)
 {
-    mInstance = js_value; // save the object that contains the events
+    mInstance = this_object; //
     foreach (QString event, event_names) {
         QJSValue val = FMSTP::valueFromJs(js_value, event);
         if (val.isCallable()) {
@@ -491,7 +505,7 @@ void Activity::setup(QJSValue value)
 
     // setup of events
     mEvents.clear();
-    mEvents.setup(value, QStringList() << "onCreate" << "onSetup" << "onEnter" << "onExit" << "onExecute" << "onExecuted" << "onCancel");
+    mEvents.setup(value, FomeScript::bridge()->activityJS(), QStringList() << "onCreate" << "onSetup" << "onEnter" << "onExit" << "onExecute" << "onExecuted" << "onCancel");
     if (FMSTP::verbose())
         qCDebug(abeSetup) << "Events: " << mEvents.dump();
 
@@ -507,6 +521,9 @@ void Activity::setup(QJSValue value)
 
     QJSValue description = FMSTP::valueFromJs(value, "description");
     mDescription = description.toString();
+
+    // initial value for the general purpose JS object
+    mJSObj = value.property("obj");
 }
 
 double Activity::scheduleProbability(FMStand *stand, const int specific_year)
@@ -542,6 +559,11 @@ void Activity::evaluateDyanamicExpressions(FMStand *stand)
         bool result = mEnabledIf.evaluate(stand);
         stand->flags(mIndex).setEnabled(result);
     }
+}
+
+void Activity::runEvent(const QString &event_name, FMStand *stand)
+{
+    events().run(event_name, stand);
 }
 
 QStringList Activity::info()

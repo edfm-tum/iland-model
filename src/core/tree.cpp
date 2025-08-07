@@ -648,7 +648,7 @@ void Tree::grow()
 //    if (mId==m_statAboveZ)
 //        qDebug() << "debug id hit!";
 
-    if (mFoliageMass>1000.)
+    if (mFoliageMass>1000. && logLevelDebug())
         qDebug() << "high foliage mass (>1000kg):" << mSpecies->id() << ", dbh:" << mDbh;
 
     // step 1: get "interception area" of the tree individual [m2]
@@ -802,7 +802,7 @@ inline void Tree::partitioning(TreeGrowthData &d)
     double delta_foliage = apct_foliage * npp - sen_foliage;
     mFoliageMass += static_cast<float>(delta_foliage);
     if (isnan(mFoliageMass))
-        qDebug() << "foliage mass invalid!";
+        qDebug() << "foliage mass invalid!: species: " << species()->id() << "id:" << id();
     if (mFoliageMass<0.) mFoliageMass=0.; // limit to zero
 
     mLeafArea = static_cast<float>( mFoliageMass * species()->specificLeafArea() ); // update leaf area

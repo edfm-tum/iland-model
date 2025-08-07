@@ -47,7 +47,7 @@ ExpressionWrapper::ExpressionWrapper()
 {
 }
 // must be overloaded!
-static QStringList baseVarList=QStringList() << "year";
+static QStringList baseVarList={"year"};
 const int baseVarListCount = baseVarList.count();
 
 const QStringList ExpressionWrapper::getVariablesList()
@@ -86,7 +86,7 @@ static QStringList treeVarList=QStringList() << baseVarList << "id" << "dbh" << 
                         << "basalarea" << "crownarea" // 20, 21
                         << "markharvest" << "markcut" << "markcrop" << "markcompetitor"
                         << "branchmass" << "is_conifer" // 22-27
-                        << "patch"; // 28
+                        << "patch" << "marknoharvest"; // 28-29
 
 const QStringList TreeWrapper::getVariablesList()
 {
@@ -130,6 +130,7 @@ double TreeWrapper::value(const int variableIndex)
     case 26: return static_cast<double>(mTree->mBranchMass);
     case 27: return mTree->species()->isConiferous();
     case 28: return ABE::Patches::getPatch(mTree->positionIndex()); // patch
+    case 29: return mTree->isMarkedNoHarvest(); // marknoharvest
     }
     return ExpressionWrapper::value(variableIndex);
 }
@@ -229,18 +230,51 @@ double SaplingWrapper::value(const int variableIndex)
               return sp->biomassFoliage(dbh); }
     case 6:  { size_t diff = (int*)(mSapling) - (int*)( mRU->saplingCellArray() ); // difference in int* ptr (64bit, usually)
               size_t index = diff * sizeof(int) / sizeof(SaplingCell); // convert to difference in "SaplingCell" (with size (currently) 72 bytes)
-              QPointF p = Saplings::coordOfCell(mRU, index);
+              QPointF p = Saplings::coordOfCell(mRU, static_cast<int>(index));
               return p.x();    }
     case 7:  { size_t diff = (int*)(mSapling) - (int*)( mRU->saplingCellArray() ); // difference in int* ptr (64bit, usually)
               size_t index = diff * sizeof(int) / sizeof(SaplingCell); // convert to difference in "SaplingCell" (with size (currently) 72 bytes)
-              QPointF p = Saplings::coordOfCell(mRU, index);
+              QPointF p = Saplings::coordOfCell(mRU, static_cast<int>(index));
               return p.y();    }
     case 8:  { size_t diff = (int*)(mSapling) - (int*)( mRU->saplingCellArray() ); // difference in int* ptr (64bit, usually)
               size_t index = diff * sizeof(int) / sizeof(SaplingCell); // convert to difference in "SaplingCell" (with size (currently) 72 bytes)
-              QPoint p = Saplings::coordOfCellLIF(mRU, index);
+              QPoint p = Saplings::coordOfCellLIF(mRU, static_cast<int>(index));
               return ABE::Patches::getPatch(p);    }
 
     }
 
     return ExpressionWrapper::value(variableIndex);
+}
+
+const static QStringList deadTreeVarList = QStringList()<< baseVarList << "x" <<"y" << // 0,1
+                                            "snag" << // 2
+                                            "species" << "volume" << // 3,4
+                                            "decayClass" << "biomass" << "remaining" << // 5,6,7
+                                           "yearsStanding" << "yearsDowned" << "reason" // 8,9, 10
+    ;
+const QStringList DeadTreeWrapper::getVariablesList()
+{
+    return deadTreeVarList;
+}
+
+double DeadTreeWrapper::value(const int variableIndex)
+{
+    Q_ASSERT(mDeadTree!=nullptr);
+    if (!mDeadTree)
+        return 0.;
+    switch (variableIndex - baseVarListCount) {
+        case 0: return mDeadTree->x(); // x
+        case 1: return mDeadTree->y(); // y
+        case 2: return mDeadTree->isStanding(); // snag
+        case 3: return mDeadTree->species()->index(); // species
+        case 4: return mDeadTree->volume(); // volume
+        case 5: return mDeadTree->decayClass(); // decayClass
+        case 6: return mDeadTree->biomass(); // biomass
+        case 7: return mDeadTree->proportionBiomass(); // "remaining"
+        case 8: return mDeadTree->yearsStanding(); // yearsStanding
+        case 9: return mDeadTree->yearsDowned(); // yearsDowned
+        case 10: return mDeadTree->reason(); // reason of death
+
+    }
+    return 0;
 }

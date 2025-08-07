@@ -48,7 +48,9 @@ ABEStandRemovalOut::ABEStandRemovalOut()
 void ABEStandRemovalOut::exec()
 {
     foreach(const FMStand *stand, ForestManagementEngine::instance()->stands()) {
-        if (stand->totalHarvest()>0. || stand->disturbedTimber()>0.) {
+        if (stand->totalHarvest()>0. ||
+            stand->disturbedTimber()>0. ||
+            stand->lastExecution() == ForestManagementEngine::instance()->currentYear()) {
             *this << currentYear();
             *this << stand->unit()->id() << stand->id() << stand->area() << stand->lastExecutionAge();
             *this << (stand->lastExecutedActivity()?stand->lastExecutedActivity()->name():QString());

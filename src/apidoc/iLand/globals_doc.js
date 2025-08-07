@@ -524,7 +524,9 @@ force a repaint of the GUI main visualization area.
 */
 
 /**
-Creates a [ESRI style](http://en.wikipedia.org/wiki/Esri_grid) grid file from an iLand grid.
+Creates a grid file from an iLand grid either as [ESRI style](http://en.wikipedia.org/wiki/Esri_grid) or
+GeoTIF (when the file ends with .tif or .TIF).
+
 Specify the target file name with `file_name` and the type of the source grid with the string `grid_type`.
 
 The avaialable `grid_type`s are:

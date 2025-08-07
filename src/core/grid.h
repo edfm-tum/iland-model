@@ -25,9 +25,14 @@
 
 #include <stdexcept>
 #include <limits>
-#include <cstring>
+//#include <cstring>
+#include <string>
+#include <sstream>
 
+#include "geotiff.h"
 #include "global.h"
+#include "helper.h"
+
 
 /** Grid class (template).
 @ingroup tools
@@ -51,6 +56,10 @@ public:
     /// load a grid from an ASCII grid file
     /// the coordinates and cell size remain as in the grid file.
     bool loadGridFromFile(const QString &fileName);
+    /// load a grid from an GeoTIF
+    /// the coordinates and cell size remain as in the grid file.
+    bool loadGridFromGeoTIFF(const QString &fileName);
+
     // copy ctor
     Grid(const Grid<T>& toCopy);
     ~Grid() { clear(); }
@@ -148,6 +157,10 @@ public:
     /// get the metric rectangle of the cell with index @pos
     QRectF cellRect(const QPoint &pos) const { QRectF r( QPointF(mRect.left() + mCellsize*pos.x(), mRect.top() + pos.y()*mCellsize),
                                                    QSizeF(mCellsize, mCellsize)); return r; } ///< return coordinates of rect given by @param pos.
+
+    /// nullValue is the value for empty/null/NA
+    static T nullValue() { return std::numeric_limits<T>::lowest(); }
+    bool isNull(const T &value) const {return value==nullValue(); }
 
     inline  T* begin() const { return mData; } ///< get "iterator" pointer
     inline  T* end() const { return mEnd; } ///< get iterator end-pointer
@@ -423,7 +436,7 @@ T  Grid<T>::min() const
     T* p;
     T* pend = end();
     for (p=begin(); p!=pend;++p)
-       maxv = std::min(maxv, *p);
+       maxv = *p != nullValue() ? std::min(maxv, *p) : maxv;
     return maxv;
 }
 
@@ -433,7 +446,8 @@ T  Grid<T>::sum() const
     T* pend = end();
     T total = 0;
     for (T *p=begin(); p!=pend;++p)
-       total += *p;
+       if (*p != nullValue())
+        total += *p;
     return total;
 }
 
@@ -449,15 +463,16 @@ template <class T>
 void Grid<T>::add(const T& summand)
 {
     T* pend = end();
-    for (T *p=begin(); p!=pend;*p+=summand,++p)
-       ;
+    for (T *p=begin(); p!=pend; ++p)
+        if (*p != nullValue())
+            *p += summand;
 }
 
 template <class T>
 void Grid<T>::multiply(const T& factor)
 {
     T* pend = end();
-    for (T *p=begin(); p!=pend;*p*=factor,++p)
+    for (T *p=begin(); p!=pend;*p!=nullValue() ? *p*=factor : *p,++p)
         ;
 }
 
@@ -680,175 +695,377 @@ template <class T>
 
     return res;
 }
-
+/*
 /// template version for non-float grids (see also version for FloatGrid)
 /// @param valueFunction pointer to a function with the signature: QString func(const T&) : this should return a QString
 /// @param sep string separator
 /// @param newline_after if <>-1 a newline is added after every 'newline_after' data values
 template <class T>
-        QString gridToString(const Grid<T> &grid, QString (*valueFunction)(const T& value), const QChar sep=QChar(';'), const int newline_after=-1 )
-        {
-            QString res;
-            QTextStream ts(&res);
-            ts.setRealNumberPrecision(10);
+QString gridToString(const Grid<T> &grid, QString (*valueFunction)(const T& value), const QChar sep=QChar(';'), const int newline_after=-1 )
+{
+    QString res;
+    QTextStream ts(&res);
+    ts.setRealNumberPrecision(10);
 
-            int newl_counter = newline_after;
-            for (int y=grid.sizeY()-1;y>=0;--y){
-                for (int x=0;x<grid.sizeX();x++){
-                    ts << (*valueFunction)(grid.constValueAtIndex(x,y)) << sep;
+    int newl_counter = newline_after;
+    for (int y=grid.sizeY()-1;y>=0;--y){
+        for (int x=0;x<grid.sizeX();x++){
+            ts << (*valueFunction)(grid.constValueAtIndex(x,y)) << sep;
 
-                    if (--newl_counter==0) {
-                        ts << "\r\n";
-                        newl_counter = newline_after;
-                    }
-                }
+            if (--newl_counter==0) {
                 ts << "\r\n";
+                newl_counter = newline_after;
             }
-
-            return res;
         }
+        ts << "\r\n";
+    }
+
+    return res;
+} */
+
+/// template version for non-double grids (see also version for DoubleGrid)
+/// @param valueFunction pointer to a function with the signature: QString func(const T&) : this should return a QString
+/// @param sep string separator
+/// @param newline_after if <>-1 a newline is added after every 'newline_after' data values
+template <class T, typename U>
+QString gridToString(const Grid<T> &grid, std::function<U(const T&)> valueFunction, const char sep=';', const int newline_after=-1 )
+{
+    std::ostringstream ts;
+
+    int newl_counter = newline_after;
+    for (int y=grid.sizeY()-1;y>=0;--y){
+        for (int x=0;x<grid.sizeX();x++){
+            ts << valueFunction(grid.constValueAtIndex(x,y)) << sep;
+
+            if (--newl_counter==0) {
+                ts << "\r\n";
+                newl_counter = newline_after;
+            }
+        }
+        ts << "\r\n";
+    }
+
+    return QString::fromStdString(ts.str());
+}
+
 void modelToWorld(const Vector3D &From, Vector3D &To);
 
-template <class T>
-    QString gridToESRIRaster(const Grid<T> &grid, QString (*valueFunction)(const T& value) )
+/// Save a grid to a GeoTIFF and provide a valueFunction to extract the basic data from a class/structure
+/// @param fileName string file path
+/// @param datatype the datatype for the tif file (see geotiff.h for values)
+/// @param valueFunction function that should return a double (for NA use std::numeric_limits<double>::lowest())
+template <class T, typename U>
+bool gridToGeoTIFF(const Grid<T> &grid, const QString &fileName, GeoTIFF::TIFDatatype datatype, std::function<U(const T&)> valueFunction)
 {
-        Vector3D model(grid.metricRect().left(), grid.metricRect().top(), 0.);
-        Vector3D world;
-        modelToWorld(model, world);
-        QString result = QString("ncols %1\r\nnrows %2\r\nxllcorner %3\r\nyllcorner %4\r\ncellsize %5\r\nNODATA_value %6\r\n")
-                                .arg(grid.sizeX())
-                                .arg(grid.sizeY())
-                                .arg(world.x(),0,'f').arg(world.y(),0,'f')
-                                .arg(grid.cellsize()).arg(-9999);
-        QString line =  gridToString(grid, valueFunction, QChar(' ')); // for special grids
-        return result + line;
-}
+    GeoTIFF tif;
+    tif.initialize(grid.sizeX(), grid.sizeY(), datatype);
 
-    template <class T>
-        QString gridToESRIRaster(const Grid<T> &grid )
-{
-            Vector3D model(grid.metricRect().left(), grid.metricRect().top(), 0.);
-            Vector3D world;
-            modelToWorld(model, world);
-            QString result = QString("ncols %1\r\nnrows %2\r\nxllcorner %3\r\nyllcorner %4\r\ncellsize %5\r\nNODATA_value %6\r\n")
-                    .arg(grid.sizeX())
-                    .arg(grid.sizeY())
-                    .arg(world.x(),0,'f').arg(world.y(),0,'f')
-                    .arg(grid.cellsize()).arg(-9999);
-            QString line = gridToString(grid, QChar(' ')); // for normal grids (e.g. float)
-            return result + line;
-}
-
-
-template <class T>
-        bool Grid<T>::loadGridFromFile(const QString &fileName)
-        {
-            double min_value = 1000000000;
-            double max_value = -1000000000;
-
-            // loads from a ESRI-Grid [RasterToFile] File.
-            QFile file(fileName);
-
-            if (!file.open(QIODevice::ReadOnly)) {
-                qDebug() << "Grid::loadGridFromFile: " << fileName << "does not exist!";
-                return false;
-            }
-            QTextStream s(&file);
-            //s.setCodec("UTF-8");
-            QByteArray file_content=s.readAll().toLatin1();
-
-            if (file_content.isEmpty()) {
-                qDebug() << "GISGrid: file" << fileName << "not present or empty.";
-                return false;
-            }
-            QList<QByteArray> lines = file_content.split('\n');
-
-            // processing of header-data
-            bool header=true;
-            int pos=0;
-            QString line;
-            QString key;
-            double value;
-            int ncol=0, nrow=0;
-            double cellsize=0;
-            double ox=0., oy=0.;
-            double no_data_val=0.;
-            do {
-                if (pos>lines.count())
-                    throw IException("Grid load from ASCII file: unexpected end of file. File: " + fileName);
-                line=lines[pos].simplified();
-                if (line.length()==0 || line.at(0)=='#') {
-                    pos++; // skip comments
-                    continue;
-                }
-                key=line.left(line.indexOf(' ')).toLower();
-                if (key.length()>0 && (key.at(0).isNumber() || key.at(0)=='-')) {
-                    header=false;
-                } else {
-                    value = line.mid(line.indexOf(' ')).toDouble();
-                    if (key=="ncols")
-                        ncol=(int)value;
-                    else if (key=="nrows")
-                        nrow=int(value);
-                    else if (key=="xllcorner")
-                        ox = value;
-                    else if (key=="yllcorner")
-                       oy = value;
-                    else if (key=="cellsize")
-                        cellsize = value;
-                    else if (key=="nodata_value")
-                        no_data_val=value;
-                    else
-                        throw IException( QString("GISGrid: invalid key %1.").arg(key));
-                    pos++;
-                }
-            } while (header);
-
-            // create the grid
-            QRectF rect(ox, oy, ncol*cellsize, nrow*cellsize);
-            setup( rect, cellsize );
-
-
-            // loop thru datalines
-            int i,j;
-            char *p=nullptr;
-            char *p2;
-            pos--;
-            for (i=nrow-1;i>=0;i--)
-                for (j=0;j<ncol;j++) {
-                // copy next value to buffer, change "," to "."
-                if (!p || *p==0) {
-                    pos++;
-                    if (pos>=lines.count())
-                        throw std::logic_error("GISGrid: Unexpected End of File!");
-                    p=lines[pos].data();
-                    // replace chars
-                    p2=p;
-                    while (*p2) {
-                        if (*p2==',')
-                            *p2='.';
-                        p2++;
-                    }
-                }
-                // skip spaces
-                while (*p && strchr(" \r\n\t", *p))
-                    p++;
-                if (*p) {
-                    value = atof(p);
-                    if (value!=no_data_val) {
-                        min_value=std::min(min_value, value);
-                        max_value=std::max(max_value, value);
-                    }
-                    valueAtIndex(j,i) = value;
-                    // skip text...
-                    while (*p && !strchr(" \r\n\t", *p))
-                        p++;
-                } else
-                    j--;
-            }
-
-            return true;
+    for (int y=0; y<grid.sizeY();++y){
+        for (int x=0;x<grid.sizeX();x++){
+            U value = valueFunction(grid.constValueAtIndex(x,y));
+            //if (value > std::numeric_limits<double>::min())
+            tif.setValue(x, y, value );
         }
+    }
+
+    return tif.saveToFile(fileName);
+}
+
+/// Save a simple grid to a GeoTIFF
+/// @param grid grid to save
+/// @param fileName string file path
+/// @param datatype the datatype for the tif file (see geotiff.h for values)
+template <class T>
+bool gridToGeoTIFF(const Grid<T> &grid, const QString &fileName, GeoTIFF::TIFDatatype datatype)
+{
+    GeoTIFF tif;
+    tif.initialize(grid.sizeX(), grid.sizeY(), datatype);
+
+    for (int y=0; y<grid.sizeY();++y){
+        for (int x=0;x<grid.sizeX();x++){
+            tif.setValue(x,y, grid.constValueAtIndex(x,y));
+        }
+    }
+
+    return tif.saveToFile(fileName);
+}
+
+
+template <class T, typename U>
+QString gridToESRIRaster(const Grid<T> &grid, std::function<U(const T&)>  valueFunction )
+{
+    Vector3D model(grid.metricRect().left(), grid.metricRect().top(), 0.);
+    Vector3D world;
+    modelToWorld(model, world);
+    QString result = QString("ncols %1\r\nnrows %2\r\nxllcorner %3\r\nyllcorner %4\r\ncellsize %5\r\nNODATA_value %6\r\n")
+                         .arg(grid.sizeX())
+                         .arg(grid.sizeY())
+                         .arg(world.x(),0,'f').arg(world.y(),0,'f')
+                         .arg(grid.cellsize()).arg(-9999);
+    QString line =  gridToString(grid, valueFunction, ' '); // for special grids
+    return result + line;
+}
+
+template <class T>
+QString gridToESRIRaster(const Grid<T> &grid )
+{
+    Vector3D model(grid.metricRect().left(), grid.metricRect().top(), 0.);
+    Vector3D world;
+    modelToWorld(model, world);
+    QString result = QString("ncols %1\r\nnrows %2\r\nxllcorner %3\r\nyllcorner %4\r\ncellsize %5\r\nNODATA_value %6\r\n")
+                         .arg(grid.sizeX())
+                         .arg(grid.sizeY())
+                         .arg(world.x(),0,'f').arg(world.y(),0,'f')
+                         .arg(grid.cellsize()).arg(-9999);
+    QString line = gridToString(grid, ' '); // for normal grids (e.g. float)
+    return result + line;
+}
+
+
+/// Save a grid to a file (either ASC or GeoTIFF) using a complex data type. The type of file depends on the file ending (.tif or .TIF -> GeoTIFF).
+/// Template parameters: 1st: class the grid consists of, 2nd: type of the return value that should be saved.
+/// @param grid grid to save
+/// @param fileName string file path
+/// @param datatype the datatype for the tif file (see geotiff.h for values)
+/// @param valueFunction function that should return a double (for NA use std::numeric_limits<double>::lowest())
+/// @return true on success, false on failure
+template <class T, typename U>
+bool gridToFile(const Grid<T> &grid, const QString &fileName, std::function<U(const T&)> valueFunction, GeoTIFF::TIFDatatype datatype=GeoTIFF::DTUNKNOWN)
+{
+    // number of fires per cell:
+    if (fileName.endsWith(".tif", Qt::CaseInsensitive)) {
+        // save as tif
+        // save as tif
+        GeoTIFF::TIFDatatype auto_datatype;
+        if (datatype == GeoTIFF::DTUNKNOWN) {
+            // Automatic datatype detection
+            if (std::is_same_v<U, int16_t>) {
+                auto_datatype = GeoTIFF::DTSINT16;
+            } else if (std::is_same_v<U, int32_t>) {
+                auto_datatype = GeoTIFF::DTSINT32;
+            } else if (std::is_same_v<U, float>) {
+                auto_datatype = GeoTIFF::DTFLOAT;
+            } else if (std::is_same_v<U, double>) {
+                auto_datatype = GeoTIFF::DTDOUBLE;
+            } else {
+                // Handle unsupported types (optional)
+                throw IException("Unsupported data type for automatic type detection for GeoTIFF");
+            }
+        } else {
+            auto_datatype = datatype;
+        }
+
+        return gridToGeoTIFF( grid, fileName, auto_datatype, valueFunction);
+
+    } else {
+        QString result = gridToESRIRaster(grid, valueFunction);
+        Helper::saveToTextFile(fileName, result);
+        return true;
+    }
+}
+
+
+/// Save a grid to a file (either ASC or GeoTIFF) using a simple data type. The type of file depends on the file ending (.tif or .TIF -> GeoTIFF).
+/// Template parameter: class the grid consists of. The datatype is autodetected if not provided.
+/// @param grid grid to save
+/// @param fileName string file path
+/// @param datatype the datatype for the tif file (see geotiff.h for values)
+/// @return true on sucess, false on failure
+template <class T>
+bool gridToFile(const Grid<T> &grid, const QString &fileName, GeoTIFF::TIFDatatype datatype = GeoTIFF::DTUNKNOWN)
+{
+    // determine type of file format based on filename
+    if (fileName.endsWith(".tif", Qt::CaseInsensitive)) {
+        // save as tif
+        GeoTIFF::TIFDatatype auto_datatype;
+        if (datatype == GeoTIFF::DTUNKNOWN) {
+            // Automatic datatype detection
+            if (std::is_same_v<T, int16_t>) {
+                auto_datatype = GeoTIFF::DTSINT16;
+            } else if (std::is_same_v<T, int32_t>) {
+                auto_datatype = GeoTIFF::DTSINT32;
+            } else if (std::is_same_v<T, float>) {
+                auto_datatype = GeoTIFF::DTFLOAT;
+            } else if (std::is_same_v<T, double>) {
+                auto_datatype = GeoTIFF::DTDOUBLE;
+            } else {
+                // Handle unsupported types (optional)
+                throw IException("Unsupported data type for automatic type detection for GeoTIFF");
+            }
+        } else {
+        auto_datatype = datatype;
+        }
+
+        return gridToGeoTIFF<T>( grid, fileName, auto_datatype);
+
+    } else {
+        QString result = gridToESRIRaster<T>(grid);
+
+        Helper::saveToTextFile(fileName, result);
+        return true;
+
+    }
+}
+
+
+template <class T>
+bool Grid<T>::loadGridFromFile(const QString &fileName)
+{
+
+    if (fileName.endsWith(".tif", Qt::CaseInsensitive) ) {
+        return loadGridFromGeoTIFF(fileName);
+    }
+
+    // loads from a ESRI-Grid [RasterToFile] File.
+    QFile file(fileName);
+
+    if (!file.open(QIODevice::ReadOnly)) {
+        qDebug() << "Grid::loadGridFromFile: " << fileName << "does not exist!";
+        return false;
+    }
+    QTextStream s(&file);
+    //s.setCodec("UTF-8");
+    QByteArray file_content=s.readAll().toLatin1();
+
+    if (file_content.isEmpty()) {
+        qDebug() << "GISGrid: file" << fileName << "not present or empty.";
+        return false;
+    }
+    QList<QByteArray> lines = file_content.split('\n');
+
+    // processing of header-data
+    bool header=true;
+    int pos=0;
+    QString line;
+    QString key;
+    double value;
+    int ncol=0, nrow=0;
+    double cellsize=0;
+    double ox=0., oy=0.;
+    double no_data_val=0.;
+    do {
+        if (pos>lines.count())
+            throw IException("Grid load from ASCII file: unexpected end of file. File: " + fileName);
+        line=lines[pos].simplified();
+        if (line.length()==0 || line.at(0)=='#') {
+            pos++; // skip comments
+            continue;
+        }
+        key=line.left(line.indexOf(' ')).toLower();
+        if (key.length()>0 && (key.at(0).isNumber() || key.at(0)=='-')) {
+            header=false;
+        } else {
+            value = line.mid(line.indexOf(' ')).toDouble();
+            if (key=="ncols")
+                ncol=(int)value;
+            else if (key=="nrows")
+                nrow=int(value);
+            else if (key=="xllcorner")
+                ox = value;
+            else if (key=="yllcorner")
+                oy = value;
+            else if (key=="cellsize")
+                cellsize = value;
+            else if (key=="nodata_value")
+                no_data_val=value;
+            else
+                throw IException( QString("GISGrid: invalid key %1.").arg(key));
+            pos++;
+        }
+    } while (header);
+
+    // create the grid
+    QRectF rect(ox, oy, ncol*cellsize, nrow*cellsize);
+    setup( rect, cellsize );
+
+
+    // loop thru datalines
+    int i,j;
+    char *p=nullptr;
+    char *p2;
+    pos--;
+    for (i=nrow-1;i>=0;i--)
+        for (j=0;j<ncol;j++) {
+            // copy next value to buffer, change "," to "."
+            if (!p || *p==0) {
+                pos++;
+                if (pos>=lines.count())
+                    throw std::logic_error("GISGrid: Unexpected End of File!");
+                p=lines[pos].data();
+                // replace chars
+                p2=p;
+                while (*p2) {
+                    if (*p2==',')
+                        *p2='.';
+                    p2++;
+                }
+            }
+            // skip spaces
+            while (*p && strchr(" \r\n\t", *p))
+                p++;
+            if (*p) {
+                value = atof(p);
+                if (value==no_data_val)
+                    value = nullValue();
+
+                // write value
+                valueAtIndex(j,i) = value;
+                // skip whitespaces
+                while (*p && !strchr(" \r\n\t", *p))
+                    p++;
+            } else
+                j--;
+        }
+
+    return true;
+}
+
+template<typename T>
+bool Grid<T>::loadGridFromGeoTIFF(const QString &fileName) {
+    Q_UNUSED(fileName)
+    return false; // not impl
+}
+
+template<> inline bool Grid<double>::loadGridFromGeoTIFF(const QString &fileName)
+{
+    GeoTIFF tif;
+    tif.loadImage(fileName);
+    // fill grid with the contents of the file, but first set up the grid
+    //    RectF rect(tif.ox(), tif.oy(), tif.ox() + tif.ncol()*tif.cellsize(), tif.oy() + tif.nrow()*tif.cellsize());
+    QRectF rect(tif.ox(), tif.oy() - tif.nrow()*tif.cellsize(), // x,y
+                tif.ncol()*tif.cellsize(), tif.nrow()*tif.cellsize() ); // width, height
+    setup(rect, tif.cellsize());
+    tif.copyToDoubleGrid(this);
+    return true;
+    //tif.saveToGrid(this)
+}
+template<> inline bool Grid<float>::loadGridFromGeoTIFF(const QString &fileName)
+{
+    GeoTIFF tif;
+    tif.loadImage(fileName);
+    // fill grid with the contents of the file, but first set up the grid
+    // Note: Y coord inverse, y from tif = upper edge
+    QRectF rect(tif.ox(), tif.oy() - tif.nrow()*tif.cellsize(),
+                tif.ncol()*tif.cellsize(), tif.nrow()*tif.cellsize() ); // width, height
+    setup(rect, tif.cellsize());
+    tif.copyToFloatGrid(this);
+    return true;
+    //tif.saveToGrid(this)
+}
+
+template<> inline bool Grid<int>::loadGridFromGeoTIFF(const QString &fileName)
+{
+    GeoTIFF tif;
+    tif.loadImage(fileName);
+    // fill grid with the contents of the file, but first set up the grid
+    //    RectF rect(tif.ox(), tif.oy(), tif.ox() + tif.ncol()*tif.cellsize(), tif.oy() + tif.nrow()*tif.cellsize());
+    QRectF rect(tif.ox(), tif.oy() - tif.nrow()*tif.cellsize(),
+                tif.ncol()*tif.cellsize(), tif.nrow()*tif.cellsize() ); // width, height
+    setup(rect, tif.cellsize());
+    tif.copyToIntGrid(this);
+    return true;
+    //tif.saveToGrid(this)
+}
 
 
 #endif // GRID_H

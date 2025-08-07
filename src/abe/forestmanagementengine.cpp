@@ -131,7 +131,7 @@ void ForestManagementEngine::setupScripting()
         for (int i=std::max(0, lineno - 5); i<std::min(lineno+5, static_cast<int>(code_lines.count())); ++i)
             code_part.append(QString("%1: %2 %3\n").arg(i).arg(code_lines[i]).arg(i==lineno?"  <---- [ERROR]":""));
         qCCritical(abeSetup) << "Javascript Error in file" << result.property("fileName").toString() << ":" << result.property("lineNumber").toInt() << ":" << result.toString() << ":\n" << code_part;
-        QString error_message = "Abe Error in Javascript (Please check also the logfile): " + result.toString()+ "\nIn:\n" + code_part;
+        QString error_message = "Abe Error in Javascript (Please check also the logfile): " + result.toString()+ "\nIn:\n" + code_part + "\n" + result.property("stack").toString();
         Helper::msg(error_message);
         ScriptGlobal::throwError(error_message);
 
@@ -219,6 +219,114 @@ void ForestManagementEngine::runJavascript(bool after_processing)
     }
 }
 
+void ForestManagementEngine::runRepeatedItems(int stand_id)
+{
+    // anything to do?
+    auto it = mRepeatStore.find(stand_id);
+    if (it == mRepeatStore.end())
+        return;
+
+
+    // Use two buffers to avoid concurrent modification issues
+    QList<QPair< int, SRepeatItem> > buffer1;
+    QList<QPair< int, SRepeatItem> > buffer2;
+    QList<QPair< int, SRepeatItem> >* currentBuffer = &buffer1;
+    QList<QPair< int, SRepeatItem> >* nextBuffer = &buffer2;
+
+    // Move initial items from mRepeatStore to buffer1
+    while (it != mRepeatStore.end() && it.key() == stand_id) {
+        buffer1.push_back(QPair< int, SRepeatItem>(stand_id, it.value()));
+        it = mRepeatStore.erase(it);
+    }
+
+    // process elements
+    int iteration_depth = 0;
+    while (!currentBuffer->empty()) {
+        mRepeatStoreBuffer = nextBuffer; // Allow adding new items to the next buffer
+
+        // Iterate through the items in the current buffer
+        for (auto &p : *currentBuffer) {
+            bool do_erase = runSingleRepeatedItem(stand_id, p.second);
+            if (!do_erase) {
+                mRepeatStore.insert(p.first, p.second);
+            }
+        }
+
+        currentBuffer->clear(); // Clear the buffer (all elements are processed)
+
+        std::swap(currentBuffer, nextBuffer); // Swap the buffers
+        mRepeatStoreBuffer = nullptr; // Disable adding while swapping the buffers
+
+        if (++iteration_depth > 99) {
+            throw IException("ABE: Signal handling: infinite loop detected!");
+        }
+    }
+}
+
+bool ForestManagementEngine::runSingleRepeatedItem(int stand_id, SRepeatItem &item) {
+    if (--item.waitYears <= 0) {
+        // run the item
+        item.N++; // number of invocation, 1,2,3,...
+
+
+        FMStand* stnd = stand(stand_id);
+        if (!stnd)
+            throw IException(QString("Invalid stand-id for repeating activity: '%1'").arg(stand_id));
+        FomeScript::setExecutionContext(stnd);
+
+        if (item.activity) {
+            // run the activity
+            //bool res = stnd->executeActivity(it->activity);
+            int old_index = stnd->currentActivityIndex();
+            stnd->setSignalParameter(item.parameter);
+            stnd->setActivityIndex( item.activity->index() );
+            bool res = item.activity->execute(stnd);
+            // special case final harvest: if the activcity is a final harvest, we
+            // need to reset the rotation (onExecuted is called as well)
+            if (stnd->currentFlags().isFinalHarvest()) {
+                stnd->afterExecution(!res);
+            } else {
+                item.activity->runEvent(QStringLiteral("onExecuted"),stnd);
+                stnd->setActivityIndex( old_index );
+            }
+            stnd->setSignalParameter(QJSValue());
+            qCDebug(abe) << "executed activity (repeated): " << item.activity->name() << ". Result: " << res;
+        } else {
+            // run javascript function
+            QJSValueList params = { item.parameter };
+            QJSValue result;
+
+
+            if (item.jsobj.isUndefined())
+                result = item.callback.call(params);
+            else
+                result = item.callback.callWithInstance(item.jsobj, params);
+
+            if (result.isError())
+                FomeScript::bridge()->abort(result);
+
+            qCDebug(abe) << "executed repeated op for stand" << stand_id << ", result:" << result.toString();
+        }
+
+        // reset
+        item.waitYears = item.interval; // start again the countdown
+
+        if (item.N >= item.times) {
+            /*if (item.activity && item.times * item.interval > 1) {
+                // call also the offboarding code for activities when the repeating activity
+                // was active for a longer time (make sure we do not miss activities)
+                int old_index = stnd->currentActivityIndex();
+                stnd->setActivityIndex( item.activity->index() );
+                stnd->afterExecution();
+                //stnd->setActivityIndex( old_index );
+            }*/
+            return true;
+        }
+    }
+    return false;
+
+}
+
 AgentType *ForestManagementEngine::agentType(const QString &name)
 {
     for (int i=0;i<mAgentTypes.count();++i)
@@ -251,10 +359,15 @@ FMUnit *nc_execute_unit(FMUnit *unit)
         int executed = 0;
         int total = 0;
         while (it!=stand_map.constEnd() && it.key()==unit) {
-            it.value()->stp()->executeRepeatingActivities(it.value());
+            // execute repeating activities for the stand
+            if (it.value()->stp())
+                it.value()->stp()->executeRepeatingActivities(it.value());
+            ForestManagementEngine::instance()->runRepeatedItems(it.value()->id());
+
+            // run the "normal" management for the stand
             if (it.value()->execute())
                 ++executed;
-            //MapGrid::freeLocksForStand( it.value()->id() );
+
             if (ForestManagementEngine::instance()->isCancel())
                 break;
 
@@ -302,8 +415,9 @@ FMUnit *nc_plan_update_unit(FMUnit *unit)
 
 void ForestManagementEngine::setup()
 {
-    QLoggingCategory::setFilterRules("abe.debug=true\n" \
-                                     "abe.setup.debug=true"); // enable *all*
+    QString enable_debug = logLevelDebug() ? "true" : "false";
+    QLoggingCategory::setFilterRules(QString("abe.debug=%1\n" \
+                                             "abe.setup.debug=true").arg(enable_debug) ); // enable *all*
 
     DebugTimer time_setup("ABE:setupScripting");
     clear();
@@ -498,6 +612,10 @@ void ForestManagementEngine::setup()
 void ForestManagementEngine::initialize()
 {
 
+    if (isCancel()) {
+        qCDebug(abeSetup) << "ABE setup stopped due to errors.";
+        return;
+    }
     DebugTimer time_setup("ABE:setup");
 
     foreach (FMStand* stand, mStands) {
@@ -772,12 +890,45 @@ QVariantList ForestManagementEngine::standIds() const
     return standids;
 }
 
+void ForestManagementEngine::addRepeatJS(int stand_id, QJSValue obj, QJSValue callback, int repeatInterval, int repeatTimes)
+{
+    if (mRepeatStoreBuffer)
+        mRepeatStoreBuffer->push_back({stand_id, SRepeatItem(repeatInterval, repeatTimes, obj, callback)}); // to avoid problems with invalid iterators
+    else
+        mRepeatStore.insert(stand_id, SRepeatItem(repeatInterval, repeatTimes, obj, callback));
+}
+
+void ForestManagementEngine::addRepeatActivity(int stand_id, Activity *act, int repeatInterval, int repeatTimes, QJSValue parameter)
+{
+    if (mRepeatStoreBuffer)
+        mRepeatStoreBuffer->push_back({stand_id, SRepeatItem(repeatInterval, repeatTimes, act, parameter)});
+    else
+        mRepeatStore.insert(stand_id, SRepeatItem(repeatInterval, repeatTimes, act, parameter));
+}
+
+void ForestManagementEngine::stopRepeat(int stand_id, QJSValue obj)
+{
+    auto it = mRepeatStore.find(stand_id);
+    while (it != mRepeatStore.end() && it.key() == stand_id) {
+        if (it->jsobj.equals(obj))
+            it = mRepeatStore.erase(it);
+        else
+            ++it;
+    }
+
+}
+
 void ForestManagementEngine::notifyTreeRemoval(Tree *tree, int reason)
 {
     //if (!enabled())
     //    return;
     // we use an 'int' instead of Tree:TreeRemovalType because it does not work
     // with forward declaration (and I dont want to include the tree.h header in this class header).
+
+    // test for emptyness: this handles the case when ABE is not yet properly set up
+    if (mFMStandGrid.isEmpty())
+        return;
+
     FMStand *stand = mFMStandGrid[tree->position()];
     if (stand)
         stand->notifyTreeRemoval(tree, reason);

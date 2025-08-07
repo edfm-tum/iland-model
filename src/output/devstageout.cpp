@@ -132,8 +132,8 @@ void DevStageOut::setup()
         if (!ok)
             throw IException("setup of DevStageOut: the keys in the 'types' structure need to be numeric! wrong:" + str_keys[j]);
     }
-    int *max_val = std::max_element(keys.begin(), keys.end());
-    if (*max_val == 0)
+    auto max_val = std::max_element(keys.begin(), keys.end());
+    if (max_val == keys.end())
         throw IException("DevStageOutput: the 'types' object does not contain valid numeric keys > 0!");
 
     mStages.clear(); mColor.clear();
@@ -265,7 +265,7 @@ int DevStageCell::loadTrees(int8_t *grid_ptr)
     const QVector<Tree> trees = ru->constTrees();
     for (QVector<Tree>::const_iterator i = trees.constBegin(); i!=trees.constEnd(); ++i)
         if (cell_rect.contains(i->position()))
-            mTrees.append(i);
+            mTrees.append(&(*i));
 
     return mTrees.size();
 }

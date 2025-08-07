@@ -138,7 +138,8 @@ void SpatialAnalysis::saveRumpleGrid(QString fileName)
     if (!mRumple)
         mRumple = new RumpleIndex;
 
-    Helper::saveToTextFile(GlobalSettings::instance()->path(fileName), gridToESRIRaster(mRumple->rumpleGrid()) );
+    gridToFile<float>(mRumple->rumpleGrid(), GlobalSettings::instance()->path(fileName));
+    // Helper::saveToTextFile(GlobalSettings::instance()->path(fileName), gridToESRIRaster(mRumple->rumpleGrid()) );
 
 }
 

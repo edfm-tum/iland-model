@@ -58,7 +58,7 @@
      <x>0</x>
      <y>0</y>
      <width>1065</width>
-     <height>17</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuOutput_menu">
@@ -152,7 +152,7 @@
     </size>
    </property>
    <property name="toolButtonStyle">
-    <enum>Qt::ToolButtonTextUnderIcon</enum>
+    <enum>Qt::ToolButtonStyle::ToolButtonTextUnderIcon</enum>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -211,7 +211,10 @@
           <string>Name of the XML project file </string>
          </property>
          <property name="text">
-          <string>fon.xml</string>
+          <string/>
+         </property>
+         <property name="placeholderText">
+          <string>Path to xml project file...</string>
          </property>
         </widget>
        </item>
@@ -382,7 +385,7 @@ QProgressBar::chunk {
         <item>
          <spacer name="horizontalSpacer">
           <property name="orientation">
-           <enum>Qt::Horizontal</enum>
+           <enum>Qt::Orientation::Horizontal</enum>
           </property>
           <property name="sizeHint" stdset="0">
            <size>
@@ -470,14 +473,112 @@ QProgressBar::chunk {
         <property name="verticalSpacing">
          <number>1</number>
         </property>
-        <item row="19" column="0" colspan="3">
+        <item row="10" column="0">
+         <widget class="QCheckBox" name="visClipStandGrid">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;if checked, (some) visualizations are clipped to the stands of the project area.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>clip to stands</string>
+          </property>
+         </widget>
+        </item>
+        <item row="21" column="0" colspan="3">
+         <widget class="QComboBox" name="speciesFilterBox"/>
+        </item>
+        <item row="6" column="0">
+         <widget class="QCheckBox" name="drawTransparent">
+          <property name="toolTip">
+           <string>draw single trees transparent</string>
+          </property>
+          <property name="text">
+           <string>draw transparent</string>
+          </property>
+         </widget>
+        </item>
+        <item row="18" column="0">
+         <widget class="QLabel" name="label_4">
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>12</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Expression</string>
+          </property>
+         </widget>
+        </item>
+        <item row="11" column="1">
+         <widget class="QCheckBox" name="visShading">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked and if a DEM is loaded, then some of the visualizations add a &amp;quot;shading&amp;quot; effect based on the DEM.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>Shading</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QRadioButton" name="visSeeds">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Seed availability per species on 20m resolution. Please select a species in the dropdown box below. The color indicate the amount of seeds on a cell (blue few, red many seeds).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>seed availability</string>
+          </property>
+         </widget>
+        </item>
+        <item row="7" column="1">
+         <widget class="QCheckBox" name="visRUSpeciesColor">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, species dominance on resource unit level is shown. If a species is selected in the dropdown box below, then basal aera of the selected species is drawn.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>species shares</string>
+          </property>
+         </widget>
+        </item>
+        <item row="9" column="0" colspan="3">
+         <widget class="QRadioButton" name="visOtherGrid">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Display additional data layers.&lt;/p&gt;&lt;p&gt;Which layers are available depends on model settings (e.g. availability of a DEM, enabled disturbance modules).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>other grid</string>
+          </property>
+         </widget>
+        </item>
+        <item row="14" column="0" colspan="3">
+         <widget class="QLabel" name="label_8">
+          <property name="text">
+           <string>other grids</string>
+          </property>
+         </widget>
+        </item>
+        <item row="17" column="0" colspan="3">
+         <widget class="QTreeWidget" name="otherGridTree">
+          <property name="alternatingRowColors">
+           <bool>true</bool>
+          </property>
+          <attribute name="headerVisible">
+           <bool>false</bool>
+          </attribute>
+          <column>
+           <property name="text">
+            <string>Grid</string>
+           </property>
+          </column>
+         </widget>
+        </item>
+        <item row="20" column="0" colspan="3">
          <widget class="QLabel" name="fonValue">
           <property name="text">
            <string>(value)</string>
           </property>
          </widget>
         </item>
-        <item row="18" column="2">
+        <item row="19" column="2">
          <widget class="QPushButton" name="pbExecExpression">
           <property name="maximumSize">
            <size>
@@ -500,36 +601,6 @@ QProgressBar::chunk {
           </property>
          </widget>
         </item>
-        <item row="5" column="1">
-         <widget class="QCheckBox" name="visSpeciesColor">
-          <property name="text">
-           <string>color by species</string>
-          </property>
-         </widget>
-        </item>
-        <item row="17" column="0">
-         <widget class="QLabel" name="label_4">
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>12</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>Expression</string>
-          </property>
-         </widget>
-        </item>
-        <item row="18" column="0" colspan="2">
-         <widget class="QLineEdit" name="lTreeExpr"/>
-        </item>
-        <item row="13" column="0" colspan="3">
-         <widget class="QLabel" name="label_8">
-          <property name="text">
-           <string>other grids</string>
-          </property>
-         </widget>
-        </item>
         <item row="0" column="0" colspan="3">
          <widget class="QRadioButton" name="visFon">
           <property name="toolTip">
@@ -543,7 +614,34 @@ QProgressBar::chunk {
           </property>
          </widget>
         </item>
-        <item row="10" column="0">
+        <item row="1" column="0">
+         <widget class="QRadioButton" name="visDomGrid">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;show the maximum tree height on 10m resolution. In addition, greyed pixels indicates pixels that are not within the project area.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>dominance grid</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QCheckBox" name="visRegenNew">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;highlight pixels that have newly established saplings (use species list below to filter only saplings of specific species)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>established</string>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="1">
+         <widget class="QCheckBox" name="visSpeciesColor">
+          <property name="text">
+           <string>color by species</string>
+          </property>
+         </widget>
+        </item>
+        <item row="11" column="0">
          <widget class="QCheckBox" name="visAutoScale">
           <property name="toolTip">
            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;if checked, then some visualizations based on resource units (and 'other grids') are scaled automatically to the value range in the data. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -553,27 +651,17 @@ QProgressBar::chunk {
           </property>
          </widget>
         </item>
-        <item row="6" column="1">
-         <widget class="QCheckBox" name="visRUSpeciesColor">
+        <item row="3" column="0">
+         <widget class="QRadioButton" name="visRegeneration">
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, species dominance on resource unit level is shown. If a species is selected in the dropdown box below, then basal aera of the selected species is drawn.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;show state of the regen layer (2x2m pixels). Value is the maximum height of saplings on the pixel of either all species, or for specific species.&lt;/p&gt;&lt;p&gt;If a species is selected, you can show expressions with sapling variables (e.g., age, nrep, height)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
-           <string>species shares</string>
+           <string>Regeneration</string>
           </property>
          </widget>
         </item>
-        <item row="10" column="1">
-         <widget class="QCheckBox" name="visShading">
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked and if a DEM is loaded, then some of the visualizations add a &amp;quot;shading&amp;quot; effect based on the DEM.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <property name="text">
-           <string>Shading</string>
-          </property>
-         </widget>
-        </item>
-        <item row="6" column="0">
+        <item row="7" column="0">
          <widget class="QRadioButton" name="visResourceUnits">
           <property name="toolTip">
            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;show resource units (100m). Click on a unit to view details in the &amp;quot;Data&amp;quot; pane. You can visualize variables on resource unit level using expressions below.&lt;/p&gt;&lt;p&gt;If &amp;quot;species share&amp;quot; is checked, then either the dominant species (based on basal area) is drawn, or - when a species is selected - the basal area of the respective species is displayed.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -593,93 +681,8 @@ QProgressBar::chunk {
           </property>
          </widget>
         </item>
-        <item row="20" column="0" colspan="3">
-         <widget class="QComboBox" name="speciesFilterBox"/>
-        </item>
-        <item row="9" column="0">
-         <widget class="QCheckBox" name="visClipStandGrid">
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;if checked, (some) visualizations are clipped to the stands of the project area.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <property name="text">
-           <string>clip to stands</string>
-          </property>
-         </widget>
-        </item>
-        <item row="8" column="0" colspan="3">
-         <widget class="QRadioButton" name="visOtherGrid">
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Display additional data layers.&lt;/p&gt;&lt;p&gt;Which layers are available depends on model settings (e.g. availability of a DEM, enabled disturbance modules).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <property name="text">
-           <string>other grid</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0">
-         <widget class="QRadioButton" name="visRegeneration">
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;show state of the regen layer (2x2m pixels). Value is the maximum height of saplings on the pixel of either all species, or for specific species.&lt;/p&gt;&lt;p&gt;If a species is selected, you can show expressions with sapling variables (e.g., age, nrep, height)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <property name="text">
-           <string>Regeneration</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QRadioButton" name="visDomGrid">
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;show the maximum tree height on 10m resolution. In addition, greyed pixels indicates pixels that are not within the project area.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <property name="text">
-           <string>dominance grid</string>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="0">
-         <widget class="QCheckBox" name="drawTransparent">
-          <property name="toolTip">
-           <string>draw single trees transparent</string>
-          </property>
-          <property name="text">
-           <string>draw transparent</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="1">
-         <widget class="QCheckBox" name="visRegenNew">
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;highlight pixels that have newly established saplings (use species list below to filter only saplings of specific species)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <property name="text">
-           <string>established</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0">
-         <widget class="QRadioButton" name="visSeeds">
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Seed availability per species on 20m resolution. Please select a species in the dropdown box below. The color indicate the amount of seeds on a cell (blue few, red many seeds).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <property name="text">
-           <string>seed availability</string>
-          </property>
-         </widget>
-        </item>
-        <item row="16" column="0" colspan="3">
-         <widget class="QTreeWidget" name="otherGridTree">
-          <property name="alternatingRowColors">
-           <bool>true</bool>
-          </property>
-          <attribute name="headerVisible">
-           <bool>false</bool>
-          </attribute>
-          <column>
-           <property name="text">
-            <string>Grid</string>
-           </property>
-          </column>
-         </widget>
+        <item row="19" column="0" colspan="2">
+         <widget class="QLineEdit" name="lTreeExpr"/>
         </item>
         <item row="1" column="1">
          <widget class="QCheckBox" name="visDomHeightStem">
@@ -688,6 +691,16 @@ QProgressBar::chunk {
           </property>
           <property name="text">
            <string>based on stems</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0">
+         <widget class="QRadioButton" name="visSnags">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show standing / lying deadwood (stems) above threshold. Standing: circles, downed: squares.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>Snags</string>
           </property>
          </widget>
         </item>
@@ -844,7 +857,7 @@ QProgressBar::chunk {
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;(no shortcuts defined)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="textFormat">
-        <enum>Qt::RichText</enum>
+        <enum>Qt::TextFormat::RichText</enum>
        </property>
       </widget>
      </item>
@@ -1344,38 +1357,5 @@ QProgressBar::chunk {
  <resources>
   <include location="res/iland.qrc"/>
  </resources>
- <connections>
-  <connection>
-   <sender>visSpeciesColor</sender>
-   <signal>clicked()</signal>
-   <receiver>visImpact</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>979</x>
-     <y>265</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>864</x>
-     <y>242</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>drawTransparent</sender>
-   <signal>clicked()</signal>
-   <receiver>visImpact</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>864</x>
-     <y>265</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>864</x>
-     <y>242</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

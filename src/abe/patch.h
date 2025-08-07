@@ -17,7 +17,7 @@ class Patch : public QObject
     Q_PROPERTY(double score READ score WRITE setScore)
 public:
     explicit Patch(Patches* patches, int id, QObject *parent = nullptr);
-    Patch(const Patch &p) { mPatches = p.mPatches; mPatchId=p.mPatchId; mArea = p.mArea; mScore=p.mScore; mCells = p.mCells; }
+    Patch(const Patch &p) : QObject(this) { mPatches = p.mPatches; mPatchId=p.mPatchId; mArea = p.mArea; mScore=p.mScore; mCells = p.mCells; }
 
     void update(); ///< update area and rectangle after updating indices
     int id() const {return mPatchId; }

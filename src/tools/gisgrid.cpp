@@ -74,7 +74,40 @@ GisGrid::~GisGrid()
         delete[] mData;
 }
 
-bool GisGrid::loadFromFile(const QString &fileName)
+bool GisGrid::loadFromFile(const QString &fileName) {
+    Grid<double> temp_grid;
+    if (!temp_grid.loadGridFromFile(fileName))
+        return false;
+
+    mCellSize = temp_grid.cellsize();
+    min_value = temp_grid.min();
+    max_value = temp_grid.max();
+    mDataSize = temp_grid.count();
+    mOrigin = temp_grid.metricRect().topLeft();
+    mNCols = temp_grid.sizeX();
+    mNRows = temp_grid.sizeY();
+    mNODATAValue = temp_grid.nullValue();
+
+
+    if (mDataSize < 0 || mDataSize > 1000000000)
+        throw IException(QString("Size of GisGrid is out of range. #elements = %1, which is >1000000000 (allowed range) ").arg(mDataSize));
+
+    // setup data and copy from temporary grid
+    mData = new double[mDataSize];
+    double *p = mData;
+    double *src = temp_grid.begin();
+    for (int i = 0; i<mDataSize; ++i, ++p, ++src) {
+        // copy data, but handle NULL values in the way that for GisGrids
+        // null is represented as -1.
+        *p = temp_grid.isNull(*src) ? -1. :  *src;
+    }
+
+    return true;
+
+
+}
+
+bool GisGrid::loadFromFile_old(const QString &fileName)
 {
     min_value = 1000000000;
     max_value = -1000000000;

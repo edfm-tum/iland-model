@@ -209,7 +209,9 @@ void Microclimate::calculateFixedFactors()
 MicroclimateVisualizer *MicroclimateVisualizer::mVisualizer = nullptr;
 
 MicroclimateVisualizer::MicroclimateVisualizer(QObject *parent)
+    :QObject(parent)
 {
+    Q_UNUSED(parent);
 }
 
 MicroclimateVisualizer::~MicroclimateVisualizer()

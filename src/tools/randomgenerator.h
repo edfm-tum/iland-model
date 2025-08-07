@@ -23,8 +23,8 @@
 #include <math.h>
 #include <time.h>
 
-#define RANDOMGENERATORSIZE 500000
-#define RANDOMGENERATORROTATIONS 0
+#define RANDOMGENERATORSIZE 2000000
+#define RANDOMGENERATORROTATIONS 10
 // a new set of numbers is generated for every 5*500000 = 2.500.000 numbers
 class RandomGenerator
 {

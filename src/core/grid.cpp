@@ -18,7 +18,7 @@
 ********************************************************************************************/
 #include "grid.h"
 #include "exception.h"
-#include "global.h"
+
 
 QString gridToString(const FloatGrid &grid, const QChar sep, const int newline_after)
 {

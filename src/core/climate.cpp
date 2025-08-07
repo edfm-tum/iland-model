@@ -92,12 +92,12 @@ const ClimateDay *Climate::day(const int month, const int day) const
 {
     if (mDayIndices.isEmpty())
         return &mInvalidDay;
-    return mStore.constBegin() + mDayIndices[mCurrentYear*12 + month] + day;
+    return mStore.data() + mDayIndices[mCurrentYear*12 + month] + day;
 }
 void Climate::monthRange(const int month, const ClimateDay **rBegin, const ClimateDay **rEnd) const
 {
-    *rBegin = mStore.constBegin() + mDayIndices[mCurrentYear*12 + month];
-    *rEnd = mStore.constBegin() + mDayIndices[mCurrentYear*12 + month+1];
+    *rBegin = mStore.data() + mDayIndices[mCurrentYear*12 + month];
+    *rEnd = mStore.data() + mDayIndices[mCurrentYear*12 + month+1];
     //qDebug() << "monthRange returning: begin:"<< (*rBegin)->toString() << "end-1:" << (*rEnd-1)->toString();
 }
 
@@ -125,6 +125,7 @@ void Climate::setup(bool do_log)
     GlobalSettings *g=GlobalSettings::instance();
     XmlHelper xml(g->settings().node("model.climate"));
     QString tableName =xml.value("tableName");
+
     mName = tableName;
     QString filter = xml.value("filter");
 
@@ -141,7 +142,7 @@ void Climate::setup(bool do_log)
             // check for validity
             foreach(int year, mRandomYearList)
                 if (year < 0 || year>=mLoadYears)
-                    throw IException(QString("Invalid randomSamplingList! Year numbers are 0-based and must to between 0 and batchYears-1 (check value of batchYears)!!! Tried to access: '%1', batchYears: '%2'").arg(year).arg(mLoadYears) );
+                    throw IException(QString("Setup climate: invalid 'randomSamplingList'! \nYear numbers are 0-based and must to between 0 and batchYears-1 (check value of 'batchYears')!\n Tried to access: '%1', batchYears: '%2'").arg(year).arg(mLoadYears) );
         }
         if (do_log) {
             if (mRandomYearList.count()>0)
@@ -205,7 +206,7 @@ void Climate::load()
 
     ClimateDay lastDay = *day(11,30); // 31.december
     mMinYear = mMaxYear;
-    QVector<ClimateDay>::iterator store=mStore.begin();
+    ClimateDay *store=mStore.data();
 
     mDayIndices.clear();
     ClimateDay *cday = store;
@@ -235,7 +236,7 @@ void Climate::load()
         while(1==1) {
             if(!mClimateQuery.next()) {
                 if (mDoRandomSampling)
-                    throw IException(QString("Climate: not enough years in climate database - tried to load %1 years (random sampling of climate is enabled)").arg(mLoadYears) );
+                    throw IException(QString("Climate: not enough years in climate database - tried to load %1 years (random sampling of climate is enabled).\n%2").arg(mLoadYears).arg(mClimateQuery.lastQuery()) );
 
                 // rewind to the start of the time series
                 qDebug() << "restart of climate table";
@@ -246,7 +247,7 @@ void Climate::load()
             }
             yeardays++;
             if (yeardays>366)
-                throw IException("Error in reading climate file: yeardays>366!");
+                throw IException(QString("Error in reading climate file: Year with >366 days detected! Year: %1, table: '%2'.").arg(cday->year).arg(mName));
 
 
             cday = store++; // store values directly in the QVector
@@ -285,7 +286,7 @@ void Climate::load()
                 // new month...
                 lastmon = cday->month;
                 // save relative position of the beginning of the new month
-                mDayIndices.push_back( cday - mStore.constBegin() );
+                mDayIndices.push_back( cday - mStore.data() );
             }
             if (yeardays==1) {
                 // check on first day of the year
@@ -295,19 +296,19 @@ void Climate::load()
             if (cday->month==12 && cday->dayOfMonth==31)
                 break;
 
-            if (cday==mStore.end())
+            if (cday >= mStore.data() + mStore.size() )
                 throw IException("Error in reading climate file: read across the end!");
         }
         lastyear = cday->year;
     }
-    while (store!=mStore.end())
+    while (store < mStore.data() + mStore.size())
         *store++ = mInvalidDay; // save a invalid day at the end...
 
-    mDayIndices.push_back(cday- mStore.begin()); // the absolute last day...
+    mDayIndices.push_back(cday- mStore.data()); // the absolute last day...
     mMaxYear = mMinYear+mLoadYears;
     mCurrentYear = 0;
-    mBegin = mStore.begin() + mDayIndices[mCurrentYear*12];
-    mEnd = mStore.begin() + mDayIndices[(mCurrentYear+1)*12];; // point to the 1.1. of the next year
+    mBegin = mStore.data() + mDayIndices[mCurrentYear*12];
+    mEnd = mStore.data() + mDayIndices[(mCurrentYear+1)*12];; // point to the 1.1. of the next year
 
     climateCalculations(lastDay); // perform additional calculations based on the climate data loaded from the database
 
@@ -351,8 +352,8 @@ void Climate::nextYear()
     // update ambient CO2 level
     updateCO2concentration();
 
-    mBegin = mStore.begin() + mDayIndices[mCurrentYear*12];
-    mEnd = mStore.begin() + mDayIndices[(mCurrentYear+1)*12];; // point to the 1.1. of the next year
+    mBegin = mStore.data() + mDayIndices[mCurrentYear*12];
+    mEnd = mStore.data() + mDayIndices[(mCurrentYear+1)*12];; // point to the 1.1. of the next year
 
     // some aggregates:
     // calculate radiation sum of the year and monthly precipitation
@@ -381,7 +382,7 @@ void Climate::nextYear()
 
 void Climate::climateCalculations(const ClimateDay &lastDay)
 {
-    ClimateDay *c = mStore.begin();
+    ClimateDay *c = mStore.data();
     const double tau = Model::settings().temperatureTau;
     // handle first day: use tissue temperature of the last day of the last year (if available)
     if (lastDay.isValid())

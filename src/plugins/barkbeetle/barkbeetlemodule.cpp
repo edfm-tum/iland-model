@@ -737,10 +737,13 @@ void BarkBeetleModule::barkbeetleKill()
     int n_killed=0;
     double basal_area=0.;
     double volume=0.;
-    for (BarkBeetleRUCell *rucell=mRUGrid.begin(); rucell!=mRUGrid.end(); ++rucell)
+    const double pixel_fraction = cellsize()*cellsize() / cRUArea; // fraction of one pixel, default: 0.01 (10x10 / 100x100)
+
+    for (BarkBeetleRUCell *rucell=mRUGrid.begin(); rucell!=mRUGrid.end(); ++rucell) {
         if (rucell->killed_trees) {
             // there are killed pixels within the resource unit....
-            QVector<Tree> &tv = GlobalSettings::instance()->model()->RUgrid().constValueAtIndex(mRUGrid.indexOf(rucell))->trees();
+            ResourceUnit *ru = GlobalSettings::instance()->model()->RUgrid().constValueAtIndex(mRUGrid.indexOf(rucell));
+            QVector<Tree> &tv = ru->trees();
             for (QVector<Tree>::const_iterator t=tv.constBegin(); t!=tv.constEnd(); ++t) {
                 if (!t->isDead() && t->dbh()>params.minDbh && t->species()->id()==QStringLiteral("piab")) {
                     // check if on killed pixel?
@@ -763,8 +766,12 @@ void BarkBeetleModule::barkbeetleKill()
                     }
                 }
             }
+            // notify iLand that a wind disturbance took place here. info = proportion of area affected on the RU [0..1]
+            ru->notifyDisturbance(ResourceUnit::dtBarkBeetle, rucell->killed_pixels * pixel_fraction);
+
 
         }
+    }
     stats.NTreesKilled = n_killed;
     stats.BasalAreaKilled = basal_area;
     stats.VolumeKilled = volume;

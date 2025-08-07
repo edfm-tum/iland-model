@@ -1,6 +1,7 @@
 #ifndef SolarRadiation_H
 #define SolarRadiation_H
 //---------------------------------------------------------------------------
+#include <math.h>
 
 class HemiGrid;
 /** Handles sun and radiation calculations.
