@@ -142,9 +142,9 @@ DEFINES += ILAND_GUI
 DEFINES += NO_DEBUG_MSGS
 
 # for debugging only: print all qmake variables
-for(var, $$list($$enumerate_vars())) {
-    message($$var ": " $$eval($$var))
-}
+#for(var, $$list($$enumerate_vars())) {
+#    message($$var ": " $$eval($$var))
+#}
 
 # Use Precompiled headers (PCH)
 #PRECOMPILED_HEADER = stable.h
@@ -432,8 +432,7 @@ FORMS += mainwindow.ui \
     ui/dialogfunctionplotter.ui \
     ui/settingsTestDialog.ui
 RESOURCES += ./res/iland.qrc \
-    ../abe-lib/abe-library.qrc \
-    abe-library.qrc \
+    ./../abe-lib/abe-library.qrc \
     qml_res.qrc
 
 # QMAKE_EXTRA_TARGETS += revtarget

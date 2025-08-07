@@ -19,6 +19,10 @@
 #include "global.h"
 #include "debugtimer.h"
 
+#include <QDateTime>
+#include <QMutexLocker>
+#include <QHash>
+
 // static members
 QHash<QString, double> DebugTimer::mTimingList;
  bool DebugTimer::m_responsive_mode = false;
@@ -47,6 +51,7 @@ void DebugTimer::sampleClock(int ms)
 DebugTimer::~DebugTimer()
 {
     --m_count;
+#ifndef FONSTUDIO
     if (responsiveMode()) {
         qint64 diff = QDateTime::currentMSecsSinceEpoch() - ms_since_epoch;
         if (diff > 100) {
@@ -57,6 +62,7 @@ DebugTimer::~DebugTimer()
                 QCoreApplication::processEvents();
         }
     }
+#endif
 
     double t = elapsed();
     mTimingList[m_caption]+=t;
