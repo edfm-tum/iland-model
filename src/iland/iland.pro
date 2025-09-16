@@ -289,6 +289,7 @@ HEADERS += mainwindow.h \
     ../abe/patch.h \
     ../abe/patches.h \
     ../core/deadtree.h \
+    ../core/herbivory.h \
     ../core/microclimate.h \
     ../core/permafrost.h \
     ../output/devstageout.h \

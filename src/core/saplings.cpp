@@ -29,6 +29,12 @@
 #include "mapgrid.h"
 #include "grasscover.h"
 
+// herbivory hack:
+#include "herbivory.h"
+// to avoid creating a herbivory.cpp file, static definitions are here:
+QHash<int, HerbivorySettings> Herbivory::StoreHerbivorySettings;
+QHash<HerbivoryEffectKey, HerbivoryEffect> Herbivory::herbivoryData;
+
 double Saplings::mRecruitmentVariation = 0.1; // +/- 10%
 double Saplings::mBrowsingPressure = 0.;
 
@@ -53,6 +59,13 @@ void Saplings::setup()
                 s->state = SaplingCell::CellEmpty;
         }
 
+    }
+
+    // init herbivory data (load data, parse resource unit keys)
+    Herbivory::ensureHerbivoryDataLoaded();
+    for (auto ru : GlobalSettings::instance()->model()->ruList()) {
+        auto &settings = Herbivory::herbivorySettings(ru->id());
+        qDebug() << "Init-Herbivory: RU" << ru->id() << "treatment" << settings.EventType << "open" << settings.OpenCanopy << "warm" << settings.IncreasedTemp << "effect year 1" << settings.Sequence[0];
     }
 
 }
@@ -487,6 +500,36 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTr
         return false;
     }
 
+    // herbivory hack
+    auto &herbivory_settings = Herbivory::herbivorySettings( ru->id() );
+    bool is_event_year = Herbivory::isEventYear(herbivory_settings, GlobalSettings::instance()->currentYear());
+    bool is_snow_removed = is_event_year && (herbivory_settings.EventType == HerbivorySettings::WinterOnly || herbivory_settings.EventType == HerbivorySettings::Both);
+    bool is_drought_year = is_event_year && (herbivory_settings.EventType == HerbivorySettings::SummerOnly || herbivory_settings.EventType == HerbivorySettings::Both);
+
+
+    auto &herb_effect = Herbivory::herbivoryEffect(herbivory_settings, species->id());
+
+
+    double p_herbivory_mortality = Herbivory::herbivoryMortality(herbivory_settings,
+                                                                 species->id(),
+                                                                 GlobalSettings::instance()->currentYear());
+    double p_herbivory_growth_factor = Herbivory::herbivoryFactorGrowth(herbivory_settings,
+                                                                 species->id(),
+                                                                 GlobalSettings::instance()->currentYear());
+
+    qDebug() << "Herbivory values: mort: " << p_herbivory_mortality << "growth:" << p_herbivory_growth_factor;
+
+    // Check herbivory in winter
+    if (is_snow_removed) {
+        if (drandom() < herb_effect.pTreeBrowsed) {
+            // new size, somehow related to effect, and done
+
+        }
+    }
+
+    if (is_drought_year) {
+        // ....
+    }
 
     // (1) calculate height growth potential for the tree (uses linerization of expressions...)
     double h_pot = species->saplingGrowthParameters().heightGrowthPotential.calculate(tree.height);
@@ -902,3 +945,6 @@ QPointF SaplingCellRunner::currentCoord() const
 {
     return mRunner->currentCoord();
 }
+
+
+
