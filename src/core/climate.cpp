@@ -435,8 +435,10 @@ void Climate::updateCO2concentration()
 
     } else {
         ClimateDay::co2 = GlobalSettings::instance()->settings().valueDouble("model.climate.co2concentration", 380.);
-
     }
+
+    if (ClimateDay::co2 < 200 || ClimateDay::co2 > 2000)
+        throw IException(QString("Invalid CO2 concentration! Value: %1 (allowed: 200-2000ppm)").arg(ClimateDay::co2));
 
     if (logLevelDebug())
         qDebug() << "CO2 concentration" << ClimateDay::co2 << "ppm.";
