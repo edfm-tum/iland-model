@@ -500,36 +500,17 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTr
         return false;
     }
 
-    // herbivory hack
+    // herbivory checks
+    // effects based on resource unit settings and only for saplings < 2m height
     auto &herbivory_settings = Herbivory::herbivorySettings( ru->id() );
     bool is_event_year = Herbivory::isEventYear(herbivory_settings, GlobalSettings::instance()->currentYear());
-    bool is_snow_removed = is_event_year && (herbivory_settings.EventType == HerbivorySettings::WinterOnly || herbivory_settings.EventType == HerbivorySettings::Both);
-    bool is_drought_year = is_event_year && (herbivory_settings.EventType == HerbivorySettings::SummerOnly || herbivory_settings.EventType == HerbivorySettings::Both);
+    bool is_snow_removed = tree.height<2.f &&  is_event_year && (herbivory_settings.EventType == HerbivorySettings::WinterOnly || herbivory_settings.EventType == HerbivorySettings::Both);
+    bool is_drought_year = tree.height<2.f && is_event_year && (herbivory_settings.EventType == HerbivorySettings::SummerOnly || herbivory_settings.EventType == HerbivorySettings::Both);
 
 
     auto &herb_effect = Herbivory::herbivoryEffect(herbivory_settings, species->id());
 
 
-    double p_herbivory_mortality = Herbivory::herbivoryMortality(herbivory_settings,
-                                                                 species->id(),
-                                                                 GlobalSettings::instance()->currentYear());
-    double p_herbivory_growth_factor = Herbivory::herbivoryFactorGrowth(herbivory_settings,
-                                                                 species->id(),
-                                                                 GlobalSettings::instance()->currentYear());
-
-    qDebug() << "Herbivory values: mort: " << p_herbivory_mortality << "growth:" << p_herbivory_growth_factor;
-
-    // Check herbivory in winter
-    if (is_snow_removed) {
-        if (drandom() < herb_effect.pTreeBrowsed) {
-            // new size, somehow related to effect, and done
-
-        }
-    }
-
-    if (is_drought_year) {
-        // ....
-    }
 
     // (1) calculate height growth potential for the tree (uses linerization of expressions...)
     double h_pot = species->saplingGrowthParameters().heightGrowthPotential.calculate(tree.height);
@@ -572,10 +553,38 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTr
         delta_h_factor = 0.;
         tree.set_browsed(false);
     }
+    // check browsing due to winter herbivory (Miguel)
+    // Check herbivory in winter
+    if (is_snow_removed) {
+        if (drandom() < herb_effect.pTreeBrowsed) {
+            // new size, somehow related to effect, and done
+            // TODO: check
+            //delta_h_factor = herb_effect.factorBrowsingHeightRemoved;
+            // interpret values as cm reduction
+            delta_h_factor = (delta_h_factor * delta_h_pot - herb_effect.factorBrowsingHeightRemoved/100.) / delta_h_pot;
+            // alternative: value is *absolute* growth
+
+
+        }
+    }
+
+    double additional_mortality_prob = 0.;
+    if (is_drought_year) {
+        // determine prob of death
+        additional_mortality_prob += herb_effect.pMortality;
+
+        // determine height growth reduction
+        // this also has effect on stress mortality
+        // TODO: what if both browsing and drought happen? Now double effect
+        if (herb_effect.factorGrowth < 1.)
+            delta_h_factor = delta_h_factor * herb_effect.factorGrowth;
+    }
+
+
 
     // intrinsic mortality of saplings: use the same approach as adult trees (probability based on the maximum age species parameter)
     bool sapling_dies = false;
-    if (drandom() < species->deathProb_intrinsic()) {
+    if (drandom() < species->deathProb_intrinsic() + additional_mortality_prob) {
         sapling_dies = true;
     }
     // check stress mortality of saplings

@@ -185,38 +185,6 @@ public:
 
     }
 
-    static double herbivoryMortality(const HerbivorySettings &settings, const QString &species, int year) {
-        ensureHerbivoryDataLoaded();
-
-        if (!settings.Sequence.test(year - 1)) { // Assuming year is 1-based
-            return 0.0;
-        }
-
-        HerbivoryEffectKey key = {species, settings.EventType, settings.OpenCanopy, settings.IncreasedTemp};
-
-        auto it = herbivoryData.find(key);
-        if (it != herbivoryData.end()) {
-            return it.value().pMortality; // Found, return the mortality
-        }
-
-        return 0.0; // No effect defined for this combination
-    }
-    static double herbivoryFactorGrowth(const HerbivorySettings &settings, const QString &species, int year) {
-        ensureHerbivoryDataLoaded();
-
-        if (!settings.Sequence.test(year - 1)) { // Assuming year is 1-based
-            return 0.0;
-        }
-
-        HerbivoryEffectKey key = {species, settings.EventType, settings.OpenCanopy, settings.IncreasedTemp};
-
-        auto it = herbivoryData.find(key);
-        if (it != herbivoryData.end()) {
-            return it.value().factorGrowth; // Found, return the factor growth
-        }
-
-        return 1.0; // No effect defined for this combination
-    }
 
 
     /// Get settings for a given resource unit id (or resource unit index)
