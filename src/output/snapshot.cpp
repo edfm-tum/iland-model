@@ -330,7 +330,9 @@ bool Snapshot::saveStandSnapshot(const int stand_id, const MapGrid *stand_grid, 
         openStandDatabase(GlobalSettings::instance()->path(file_name), false);
         db=QSqlDatabase::database("snapshotstand");
         // check if tree/sapling tables are already present
-        if (!db.tables().contains("trees_stand") || !db.tables().contains("saplings_stand")) {
+        if (!db.tables().contains("trees_stand") ||
+            !db.tables().contains("saplings_stand") ||
+            !db.tables().contains("deadtrees_stand")) {
             // create tables
             QSqlQuery q(db);
             // trees
