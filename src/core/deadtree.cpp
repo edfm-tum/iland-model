@@ -86,6 +86,9 @@ bool DeadTree::calculateDWD(double climate_factor_re, CNPair &rFlux_to_atmospher
     // update biomass... use the decomposition rate for woody biomass on the ground
     // Note: carbon calculation for DWD is only "for fun" - the actual tracking of
     // biomass/carbon is done in Soil-pools! (all BM is transferred when the stem is downed)
+    if (!species())
+        return false;
+
     double decay_factor = exp(-species()->snagKyr() * climate_factor_re);
     rFlux_to_atmosphere.C += mBiomass * (1. - decay_factor) * biomassCFraction;
     mBiomass *= decay_factor;

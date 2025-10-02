@@ -1402,14 +1402,13 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
 
         QString single_tree_expr = ui->lTreeExpr->text();
         if (single_tree_expr.isEmpty())
-            single_tree_expr = "1";
+            single_tree_expr = "remaining";
         DeadTreeWrapper tw;
 
         Expression tree_value(single_tree_expr, &tw);    // get maximum value
         tree_value.setCatchExceptions(); // silent catching...
 
         QString filter_expr = ui->expressionFilter->text();
-        bool do_filter = ui->cbDrawFiltered->isChecked();
         if (filter_expr.isEmpty())
             filter_expr = "1"; // a constant, always true
 
@@ -1423,7 +1422,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         if (!mRulerColors->autoScale()) {
             max_val = mRulerColors->maxValue(); min_val = mRulerColors->minValue();
         }
-        if (auto_scale_color && !ui->lTreeExpr->text().isEmpty()) {
+        if (auto_scale_color) {
             // find min / max
             for (const auto &ru : model->ruList()) {
                 for (const auto &dt : ru->snag()->deadTrees()) {
@@ -1738,7 +1737,8 @@ void MainWindow::mouseClick(const QPoint& pos)
     ui->PaintWidget->setCursor(Qt::CrossCursor);
     Model *model = mRemoteControl.model();
     ResourceUnit *ru = model->ru(coord);
-    // find adjactent tree
+
+    ui->dataTree->clear();
 
     // test ressource units...
     if (ui->visResourceUnits->isChecked()) {
@@ -1749,19 +1749,32 @@ void MainWindow::mouseClick(const QPoint& pos)
 
     // test for ABE grid
     if (ui->visOtherGrid->isChecked()) {
-        if (showABEDetails(coord))
-            return;
+        showABEDetails(coord);
+        return; // return also when click is not handled by ABE
     }
 
+    // test for regeneration
     if (ui->visRegeneration->isChecked()) {
         showRegenDetails(coord);
         return;
     }
 
+    // test for regeneration
+    if (ui->visSnags->isChecked()) {
+        showSnagsDetails(ru, coord);
+        return;
+    }
+
+    if (ui->visSeeds->isChecked() ||
+        ui->visFon->isChecked() ||
+        ui->visDomGrid->isChecked())
+        return; // nothing
+
     //qDebug() << "coord:" << coord << "RU:"<< ru << "ru-rect:" << ru->boundingBox();
     if (!ru)
         return;
 
+    // find closest tree
     QVector<Tree> &mTrees =  ru->trees();
     QVector<Tree>::iterator tit;
     Tree *closestTree=0;
@@ -1880,6 +1893,49 @@ void MainWindow::showRegenDetails(const QPointF &coord)
         }
     }
     ui->dataTree->addTopLevelItems(items);
+}
+
+void MainWindow::showSnagsDetails(const ResourceUnit *ru, const QPointF &coord)
+{
+    ui->dataTree->clear();
+    if (!ru || !ru->snag())
+        return;
+
+    auto &dead_trees  = ru->snag()->deadTrees();
+    const DeadTree *closest = nullptr;
+    double min_dist = 10000000000000;
+
+    for (const auto &dt : dead_trees) {
+        double current_dist = distance(QPointF(dt.x(), dt.y()),coord);
+        if (current_dist < min_dist) {
+            min_dist = current_dist;
+            closest = &dt;
+        }
+    }
+
+    if (min_dist>5 || !closest) {
+        return;
+    }
+    // closest snag identified, populate items using the wrapper class
+    QList<QTreeWidgetItem *> items;
+    DeadTreeWrapper dtw;
+    dtw.setDeadTree(closest);
+    const QStringList &names = dtw.getVariablesList();
+
+    QString value;
+    for (auto name: names) {
+        if (name == "species")
+            value = mRemoteControl.model()->speciesSet()->species(dtw.valueByName(name))->id() ;
+        else if (name == "snag")
+            value = dtw.valueByName(name) == 1. ? "standing" : "downed";
+        else
+            value = QString::number( dtw.valueByName(name));
+
+        items.append(new QTreeWidgetItem(QStringList() << name << value ));
+    }
+
+    ui->dataTree->addTopLevelItems(items);
+
 }
 
 

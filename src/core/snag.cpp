@@ -279,7 +279,8 @@ void Snag::calculateYear()
     bool to_remove = false;
     CNPair flux_to_refr;
     for (auto &dead_tree : mDeadTrees)
-        to_remove |= dead_tree.calculate(climate_factor_re, mTotalToAtm, flux_to_refr);
+        if (!dead_tree.calculate(climate_factor_re, mTotalToAtm, flux_to_refr))
+            to_remove = true;
 
     if (to_remove)
         packDeadTreeList();
