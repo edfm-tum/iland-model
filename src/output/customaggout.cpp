@@ -243,6 +243,7 @@ void CustomAggOutLevel::runTrees()
             processTree(t, data);
         }
         writeResults(data, nullptr, 0);
+        break;
 
     }
     case CustomAggOut::sRU: {

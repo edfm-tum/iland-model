@@ -91,17 +91,39 @@ LIBS += -L$$PLUGIN_PATH -liland_fire$$PLUGIN_SUFFIX -liland_wind$$PLUGIN_SUFFIX 
 message("PRE_TARGETDEPS:" $$PRE_TARGETDEPS)
 
 
-linux-g++ {
-# The "FreeImage" library is used for processing GeoTIFF data files.
-# FreeImage on Linux: see https://codeyarns.com/2014/02/11/how-to-install-and-use-freeimage/
-# basically sudo apt-get install libfreeimage3 libfreeimage-dev
+# ===============================================================
+# FreeImage linking setup (for GeoTIFF image support)
+# ===============================================================
+# The "FreeImage" library is required for GeoTIFF support.
+# On different platforms, it is linked and installed differently:
+#
+# Linux:
+#   Install via package manager:
+#     sudo apt-get install libfreeimage3 libfreeimage-dev
+#
+# macOS:
+#   Install via Homebrew:
+#     brew install freeimage
+#   Homebrew usually installs to: /opt/homebrew/opt/freeimage
+#   This block ensures correct linking of headers and library files.
+#
+# Windows:
+#   Precompiled binaries are expected under the 3rd-party path
+#   (THIRDPARTY_PATH/FreeImage).
+# ===============================================================
 
-LIBS += -lfreeimage
-} else: macx{
-LIBS += -L/opt/homebrew/Cellar/freeimage/3.18.0/lib -lfreeimage
-} else {
-# external freeimage library (geotiff)
-LIBS += -L$$THIRDPARTY_PATH\FreeImage -lFreeImage
+linux-g++ {
+    LIBS += -lfreeimage
+}
+
+macx {
+    INCLUDEPATH += /opt/homebrew/opt/freeimage/include
+    LIBS += -L/opt/homebrew/opt/freeimage/lib -lfreeimage
+}
+
+else {
+    # external FreeImage library (Windows / other systems)
+    LIBS += -L$$THIRDPARTY_PATH/FreeImage -lFreeImage
 }
 
 # querying git repo
