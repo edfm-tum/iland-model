@@ -67,19 +67,25 @@ void UnderstoryPFT::setup(UnderstorySetting s, int index)
     try {
         // load properties
         mName = s.value("pftId").toString();
-        mBaseEstablishmentProb = s.value("estBaseProb").toDouble();
-        mAgeMax = s.value("ageMax").toDouble(&ok);
-        if (!ok || mAgeMax<=0) throw IException("invalid value for 'ageMax'!");
+        mBaseEstablishmentProb = s.value("estBaseProb").toDouble(&ok);
+        if (!ok || mBaseEstablishmentProb<0) throw IException("invalid value for 'estBaseProb'!");
+
+        mBaseMortalityProb = s.value("mortalityBaseProb").toDouble(&ok);
+        if (!ok || mBaseMortalityProb<0) throw IException("invalid value for 'mortalityBaseProb'!");
+
         mOptimalGrowth = s.value("optimalGrowth").toDouble(&ok);
         if (!ok || mOptimalGrowth<=0) throw IException("invalid value for 'optimalGrowth'!");
+
+        mPDecline = s.value("pDecline").toDouble(&ok);
+        if (!ok || mPDecline<0) throw IException("invalid value for 'pDecline'!");
 
         // response functions
         resp = "lightResponse";
         expr = s.value(resp).toString();
         if (expr.isEmpty()) {
             expr = QString("min(0.05 + 1.5/(1 + ((lr - (0.15*LightEIV-0.4))/(0.8-0.05*LightEIV))^2),1)");
-            s.value("LightEIV").toDouble(&ok);
-            if (!ok) throw IException("LightEIV required, but not a number!");
+            double value = s.value("LightEIV").toDouble(&ok);
+            if (!ok || value < 1. || value > 9.) throw IException("LightEIV required, but not a number or out of range (1..9)!");
             expr.replace("LightEIV", s.value("LightEIV").toString());
         }
         mExprLight.setAndParse(expr);
@@ -89,8 +95,8 @@ void UnderstoryPFT::setup(UnderstorySetting s, int index)
         expr = s.value(resp).toString();
         if (expr.isEmpty()) {
             expr = QString("min(0.05 + 1.3/(1 + ((swpgs + 14 + (10-MoistureEIV)*0.5)/3)^2),1)");
-            s.value("MoistureEIV").toDouble(&ok);
-            if (!ok) throw IException("MoistureEIV required, but not a number!");
+            double value = s.value("MoistureEIV").toDouble(&ok);
+            if (!ok || value < 1. || value > 9.) throw IException("MoistureEIV required, but not a number or out of range (1..9)!");
             expr.replace("MoistureEIV", s.value("MoistureEIV").toString());
         }
         mExprWater.setAndParse(expr);
@@ -101,8 +107,8 @@ void UnderstoryPFT::setup(UnderstorySetting s, int index)
         expr = s.value(resp).toString();
         if (expr.isEmpty()) {
             expr = QString("min(0.05 + 1.5/(1 + ((PlantAvailN - (5*NutrientEIV+40))/20)^2),1)");
-            s.value("NutrientEIV").toDouble(&ok);
-            if (!ok) throw IException("NutrientEIV required, but not a number!");
+            double value = s.value("NutrientEIV").toDouble(&ok);
+            if (!ok || value < 1. || value > 9.) throw IException("NutrientEIV required, but not a number or out of range (1..9)!");
             expr.replace("NutrientEIV", s.value("NutrientEIV").toString());
         }
         mExprNutrients.setAndParse(expr);
@@ -113,15 +119,28 @@ void UnderstoryPFT::setup(UnderstorySetting s, int index)
         expr = s.value(resp).toString();
         if (expr.isEmpty()) {
             expr = QString("min(0.05 + 1.2/(1 + ((meanTemp - (TemperatureEIV*1.5))/3)^2),1)");
-            s.value("TemperatureEIV").toDouble(&ok);
-            if (!ok) throw IException("NutrientEIV required, but not a number!");
+            double value = s.value("TemperatureEIV").toDouble(&ok);
+            if (!ok || value < 1. || value > 9.) throw IException("NutrientEIV required, but not a number or out of range (1..9)!");
             expr.replace("TemperatureEIV", s.value("TemperatureEIV").toString());
         }
         mExprTemp.setAndParse(expr);
         mExprTemp.linearize(0., 1.);
 
+        // expression for stress
+        resp = "stressFunction";
+        expr = s.value(resp).toString();
+        if (expr.isEmpty()) {
+            expr = QString("0.5*exp(-x/stressSensitivity)");
+            double value = s.value("stressSensitivity").toDouble(&ok);
+            if (!ok || value < 1. || value > 9.) throw IException("stressSensitivity required, but not a number or out of range (1..9)!");
+            expr.replace("stressSensitivity", s.value("stressSensitivity").toString());
+        }
+        mExprStress.setAndParse(expr);
+        mExprStress.linearize(0., 1.);
+
+
     } catch (const IException &e) {
-        throw IException( s.error(QString("'%1': Expression error: %2").arg(resp, e.message()))   );
+        throw IException( s.error(QString("'%1' for PFT '%3': Expression error: %2").arg(resp, e.message(), name()))   );
     }
     if (logLevelDebug())
         qDebug().noquote() << dump(); // use noquote() to get newlines etc
@@ -139,12 +158,17 @@ UStateId UnderstoryPFT::stateTransition(const UnderstoryPlant &plant,
     // calculate total response value as a multiplication of individual factors
     double total_response = light_response * nitrogen_response  * water_response * temp_response;
 
+    // **********************************************************
     // translate environmental response to
     // transition probabilites
+    // **********************************************************
     double p_previous, p_next, p_mort;
     responseToTransitionProb(total_response, p_previous, p_next, p_mort);
 
+    // **********************************************************
+    // the actual decision:
     // draw a random number and determine the next state probabilistically
+    // **********************************************************
     const auto *state = Understory::instance().state(plant.stateId());
     double r = drandom();
     UStateId next_state = plant.stateId(); // default: no change
@@ -211,11 +235,13 @@ QString UnderstoryPFT::dump()
     QString result;
     QTextStream str(&result);
     str << "PFT:" << name() << " index:" << index() << Qt::endl;
-    str << "base probability:" << mBaseEstablishmentProb << Qt::endl;
+    str << "base establishment probability:" << mBaseEstablishmentProb << Qt::endl;
+    str << "base mortality probability:" << mBaseMortalityProb << Qt::endl;
     str << "Response Light:" << mExprLight.expression()<< Qt::endl;
     str << "Response Nutrient:" << mExprNutrients.expression()<< Qt::endl;
     str << "Response Water:" << mExprWater.expression()<< Qt::endl;
     str << "Response Temperature:" << mExprTemp.expression()<< Qt::endl;
+    str << "Stress function:" << mExprStress.expression()<< Qt::endl;
 
     return result;
 }
@@ -223,13 +249,20 @@ QString UnderstoryPFT::dump()
 void UnderstoryPFT::responseToTransitionProb(const double response, double &rPrevious, double &rNext, double &rMort) const
 {
     // linear functions approach (KB): optimal growth: time to reach maximum state
+    // rationale: prob of state change per year = rNext
+    // expected value for the number of years for one step = 1/rNext, for N Steps: NStates * 1/rNext
+    // ->  optimalGrowth = NStates * 1/rNext
     rNext = mNStates / mOptimalGrowth * response;
-    //rMort = 1. / mAgeMax * (1. - 0.5 * response);
 
-    // mortality considering a stress-related increase at low response values
-    const double p_stress = 0.05;
-    rMort = 1. / mAgeMax + 0.5*exp(- response / p_stress );
+    // stress is a function of environment
+    const double stress_factor = mExprStress.calculate(response);
 
-    // for the time being: a fixed response
-    rPrevious = 0.05;
+    // mortality is based only on an annual prob. of mortality and stress
+    rMort = mBaseMortalityProb + stress_factor;
+
+    // decline is a fixed response
+    rPrevious = mPDecline;
+
+
+
 }

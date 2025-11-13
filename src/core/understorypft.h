@@ -36,7 +36,7 @@ public:
     int index() const {return mIndex; }
     UStateId firstState() const { return mFirstState; }
     /// base establishment probability should be relative small (e.g. 0.01 to 0.05).
-    /// the prob scales the number resource units that are tested for establish ment each year
+    /// the prob scales the number resource units that are tested for establishment each year
     double baseEstablishmentProbability() const { return mBaseEstablishmentProb; }
 
     /// determine if the state updates
@@ -62,14 +62,17 @@ private:
     int mIndex {-1}; ///< the index of the PFT in the Understory's PFT container
     double mBaseEstablishmentProb {0.}; ///< base establishment probability
 
-    double mAgeMax; ///< maximum age (yrs)
-    double mOptimalGrowth; ///< growth rate under optimal env. conditions
+    double mBaseMortalityProb {0.}; ///< base probability of a cells die-off (mortality) (prop)
+    double mOptimalGrowth { 1.}; ///< time to grow under optimal env. conditions to reach the last state (years)
+    double mPDecline {0. }; ///< global probability of decline (one state down) (prop.)
+
 
     // response functions for the PFT
     Expression mExprLight; ///< light response (param: corrected lif_value on the ground)
     Expression mExprNutrients; ///< nutrient response (param: available nitrogen kg/ha*yr)
     Expression mExprWater; ///< water response (param: average soil water content in veg. period)
     Expression mExprTemp; ///< temperature response (param: MAT macro or microclimate)
+    Expression mExprStress; ///< function expressing "stress" as f(environment) (param: total_response)
 
 };
 

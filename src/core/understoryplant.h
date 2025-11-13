@@ -43,6 +43,7 @@ public:
 
     /// the stateId is a unique number for a state, and also the index
     /// within the list of possible states. Growing to the next state is therefore just stateId() + 1
+    /// the lowest state (after establishmeht) is pft.firstState()
     UStateId stateId() const { return mId; }
     void setState(UStateId new_state) { mId = new_state; }
 private:
