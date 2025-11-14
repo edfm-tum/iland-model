@@ -215,13 +215,13 @@ void Soil::calculateYear()
 
     // update of state variables
     // precalculations
-    double lfactor = model_exp(-mKyl*mRE*t);
-    double rfactor = model_exp(-mKyr*mRE*t);
+    double lfactor = exp(-mKyl*mRE*t);
+    double rfactor = exp(-mKyr*mRE*t);
     // young labile pool
     CNPair yl=mYL;
     mYL.C = ylss + (yl.C-ylss)*lfactor;
     // N: see eq A18
-    mYL.N = ynlss + (yl.N-ynlss-cl/(sp.el-mH)*(yl.C-ylss))*model_exp(-mKyl*mRE*(1.-mH)*t/(1.-sp.el)) + cl/(sp.el-mH)*(yl.C-ylss)*lfactor;
+    mYL.N = ynlss + (yl.N-ynlss-cl/(sp.el-mH)*(yl.C-ylss))*exp(-mKyl*mRE*(1.-mH)*t/(1.-sp.el)) + cl/(sp.el-mH)*(yl.C-ylss)*lfactor;
     if (mYL.N < 0.)
         mYL.N = 0.;
 
@@ -231,7 +231,7 @@ void Soil::calculateYear()
     CNPair yr=mYR;
     mYR.C = yrss + (yr.C-yrss)*rfactor;
     // N: see eq A19.
-    mYR.N = ynrss + (yr.N-ynrss-cr/(sp.er-mH)*(yr.C-yrss))*model_exp(-mKyr*mRE*(1.-mH)*t/(1.-sp.er)) + cr/(sp.er-mH)*(yr.C-yrss)*rfactor;
+    mYR.N = ynrss + (yr.N-ynrss-cr/(sp.er-mH)*(yr.C-yrss))*exp(-mKyr*mRE*(1.-mH)*t/(1.-sp.er)) + cr/(sp.er-mH)*(yr.C-yrss)*rfactor;
     if (mYR.N < 0.) {
         mYR.N = 0.;
         //qDebug() << "YR.N <0 ";
@@ -239,8 +239,8 @@ void Soil::calculateYear()
     mYR.setParameter( mKyr ); // update decomposition rate
     // SOM pool (old)
     CNPair o = mSOM;
-    mSOM.C = oss + (o.C -oss - al - ar)*model_exp(-mKo*mRE*t) + al*lfactor + ar*rfactor;
-    mSOM.N = onss + (o.N - onss -(al+ar)/sp.qh)*model_exp(-mKo*mRE*t) + al/sp.qh * lfactor + ar/sp.qh * rfactor;
+    mSOM.C = oss + (o.C -oss - al - ar)*exp(-mKo*mRE*t) + al*lfactor + ar*rfactor;
+    mSOM.N = onss + (o.N - onss -(al+ar)/sp.qh)*exp(-mKo*mRE*t) + al/sp.qh * lfactor + ar/sp.qh * rfactor;
 
     if (!mYL.isValid() || !mYR.isValid() || !mSOM.isValid()) {
         qDebug() << "Soil::calculateYear: invalid soil pools in yL, yR, or SOM";
