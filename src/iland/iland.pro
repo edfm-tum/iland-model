@@ -97,10 +97,10 @@ linux-g++ {
 # basically sudo apt-get install libfreeimage3 libfreeimage-dev
 
 LIBS += -lfreeimage
-}macx{ 
+} else:macx {
 LIBS += -L/opt/homebrew/Cellar/freeimage/3.18.0/lib -lfreeimage
 } else {
-# external freeimage library (geotiff)
+# external freeimage library (geotiff) (Windows)
 LIBS += -L$$THIRDPARTY_PATH\FreeImage -lFreeImage
 }
 

@@ -42,6 +42,19 @@ constexpr double INV_LN2 = 1.4426950408889634;
 
 inline double exp_hybrid(double x) {
     // fast exp approximation using argument reduction by ln(2) and a low-order minimax polynomial
+
+    // 1. Check for NaN (x != x is a standard, fast NaN check)
+    if (x != x) {
+        return x; // Propagate NaN
+    }
+    // 2. Check for +Infinity
+    if (x == std::numeric_limits<double>::infinity()) {
+        return x; // exp(inf) = inf
+    }
+    // 3. Check for -Infinity
+    if (x == -std::numeric_limits<double>::infinity()) {
+        return 0.0; // exp(-inf) = 0
+    }
     // 1. Range Reduction
     // n = floor(x / ln(2))
     double n = std::floor(x * INV_LN2);
@@ -50,9 +63,12 @@ inline double exp_hybrid(double x) {
 
     // 2. Calculate 2^n (using bit manipulation)
     // This is precise for integers.
+
     uint64_t n_bits = static_cast<uint64_t>(1023 + n);
+    n_bits <<= 52;
+
     double pow2n;
-    __builtin_memcpy(&pow2n, &(n_bits <<= 52), sizeof(double));
+    __builtin_memcpy(&pow2n, &n_bits, sizeof(double));
 
     // 3. 3rd-Order Minimax Polynomial for e^r
     // (r is now small, in [0, ~0.693])
