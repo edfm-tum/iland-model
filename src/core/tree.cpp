@@ -150,7 +150,7 @@ void Tree::setup()
 
     // LeafArea[m2] = LeafMass[kg] * specificLeafArea[m2/kg]
     mLeafArea = static_cast<float>( mFoliageMass * species()->specificLeafArea() );
-    mOpacity = static_cast<float>( 1. - exp(- Model::settings().lightExtinctionCoefficientOpacity * mLeafArea / mStamp->crownArea()) );
+    mOpacity = static_cast<float>( 1. - model_exp(- Model::settings().lightExtinctionCoefficientOpacity * mLeafArea / mStamp->crownArea()) );
     mNPPReserve = static_cast<float>( (1+species()->finerootFoliageRatio())*mFoliageMass ); // initial value
     mDbhDelta = 0.1f; // initial value: used in growth() to estimate diameter increment
 
@@ -972,7 +972,7 @@ inline void Tree::grow_diameter(TreeGrowthData &d)
     mStamp = species()->stamp(mDbh, mHeight); // get new stamp for updated dimensions
     // calculate the CrownFactor which reflects the opacity of the crown
     const double k=Model::settings().lightExtinctionCoefficientOpacity;
-    mOpacity = static_cast<float>( 1. - exp(-k * mLeafArea / mStamp->crownArea()) );
+    mOpacity = static_cast<float>( 1. - model_exp(-k * mLeafArea / mStamp->crownArea()) );
 
 }
 
@@ -1062,7 +1062,7 @@ void Tree::removeBiomassOfTree(const double removeFoliageFraction, const double 
     if (removeFoliageFraction>0.) {
         // update related leaf area
         mLeafArea = static_cast<float>( mFoliageMass * species()->specificLeafArea() ); // update leaf area
-        mOpacity = static_cast<float>( 1. - exp(-Model::settings().lightExtinctionCoefficientOpacity * mLeafArea / mStamp->crownArea()) );
+        mOpacity = static_cast<float>( 1. - model_exp(-Model::settings().lightExtinctionCoefficientOpacity * mLeafArea / mStamp->crownArea()) );
         //if (removeFoliageFraction==1.)
         //    m_statAboveZ = mId; // temp
     }

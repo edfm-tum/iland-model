@@ -254,7 +254,7 @@ inline void Species::hdRange(const double dbh, double &rLowHD, double &rHighHD) 
     Input: vpd [kPa]*/
 inline double Species::vpdResponse(const double &vpd) const
 {
-    return exp(mRespVpdExponent * vpd);
+    return model_exp(mRespVpdExponent * vpd);
 }
 
 /** temperatureResponse calculates response on delayed daily temperature.
@@ -283,7 +283,7 @@ inline double Species::deathProb_stress(const double &stress_index) const
 {
     if (stress_index==0.)
         return 0.;
-    double result = 1. - exp(-mDeathProb_stress*stress_index);
+    double result = 1. - model_exp(-mDeathProb_stress*stress_index);
     return result;
 }
 

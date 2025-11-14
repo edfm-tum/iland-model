@@ -265,7 +265,7 @@ void FireModule::calculateDroughtIndex(const ResourceUnit *resource_unit, const 
         // * there is no snow cover
         if (tmax > 10. && water_data->snow_cover[iday]==0.) {
             // calculate drying: (kbdi already includes current wetting!)
-            dq = 0.001*(800.-kbdi)*( (0.9676*exp(0.0486*(tmax*9./5.+32.))-8.299) / (1 + 10.88*exp(-0.0441*mean_ap/25.4)) );
+            dq = 0.001*(800.-kbdi)*( (0.9676*model_exp(0.0486*(tmax*9./5.+32.))-8.299) / (1 + 10.88*model_exp(-0.0441*mean_ap/25.4)) );
 
             kbdi += dq;
         }
@@ -431,7 +431,7 @@ double FireModule::calcSlopeFactor(const double slope) const
         static double gamma = 10.0;/* Scaling coeff for graph steepness       */
         static double zeta  = 0.0; /* Scaling coeff for y intercept           */
 
-        slopespread = zeta + ( alpha / ( 1.0 + ( beta * exp( -gamma * slope ) ) ) );
+        slopespread = zeta + ( alpha / ( 1.0 + ( beta * model_exp( -gamma * slope ) ) ) );
     }
 
 

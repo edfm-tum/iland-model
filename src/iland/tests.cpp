@@ -393,6 +393,40 @@ void Tests::testCSVFile()
 void Tests::testRandom()
 {
 
+    // test fast exponential
+    qDebug() << "value exp_correct exp_fast delta_%";
+    for (double x = 0.; x > -20; x -= 0.1) {
+        double exp_correct = exp(x);
+        double exp_fast = model_exp(x);
+        qDebug() << x << exp_correct << exp_fast << (exp_fast-exp_correct)/exp_correct*100;
+    }
+
+    {DebugTimer t("fast");
+    double sum = 0;
+
+    for (double x = 0.; x > -20; x -= 0.1) {
+        for (int i=0;i<10000000;++i) {
+            double exp_fast = model_exp(x);
+            sum+=exp_fast;
+        }
+    }
+    qDebug() << sum;
+    }
+    {DebugTimer t("standard");
+    double sum = 0;
+
+    for (double x = 0.; x > -20; x -= 0.1) {
+        for (int i=0;i<10000000;++i) {
+            double exp_correct = exp(x);
+            sum+=exp_correct;
+        }
+    }
+    qDebug() << sum;
+    }
+
+    return;
+
+
     QStringList list;
     for (int i=0;i<1000;i++)
         list << QString::number(irandom(0,5));

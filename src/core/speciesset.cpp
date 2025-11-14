@@ -258,7 +258,7 @@ inline double SpeciesSet::nitrogenResponse(const double &availableNitrogen, cons
 {
     if (availableNitrogen<=NB)
         return 0;
-    double x = 1. - exp(NA * (availableNitrogen-NB));
+    double x = 1. - model_exp(NA * (availableNitrogen-NB));
     return x;
 }
 

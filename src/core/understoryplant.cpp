@@ -206,11 +206,11 @@ std::array<double, UnderstoryCell::NSlots> UnderstoryCell::lightProfile()
         // Calculate the fraction of light absorbed/intercepted by taller plants.
         // Find original index to place the result. Note: &mPlants[0] is the beginning of the array.
         size_t original_index = focus_plant - &mPlants[0];
-        result[original_index] = exp(-k * lai_above);
+        result[original_index] = model_exp(-k * lai_above);
     }
 
     // calculate multiplier for ground light
-    mGroundLightEffect = exp(-k * total_LAI);
+    mGroundLightEffect = model_exp(-k * total_LAI);
 
     return result;
 }

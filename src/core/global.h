@@ -107,4 +107,6 @@ inline bool isBitSet(const unsigned int value, const int bit)
 
 #include "globalsettings.h"
 
+#include "math_utils.h"
+
 #endif // GLOBAL_H

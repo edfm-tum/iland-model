@@ -395,7 +395,7 @@ void ResourceUnit::production()
     double LAI = mAggregatedLA / mStockedArea;
     // calculate the intercepted radiation fraction using the law of Beer Lambert
     const double k = Model::settings().lightExtinctionCoefficient;
-    double interception_fraction = 1. - exp(-k * LAI);
+    double interception_fraction = 1. - model_exp(-k * LAI);
     mEffectiveArea = mStockedArea * interception_fraction; // m2
 
     // calculate the total weighted leaf area on this RU:

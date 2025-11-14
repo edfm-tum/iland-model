@@ -138,6 +138,11 @@ public:
 
     void addStats(QVector<UnderstoryRUStats> &pfts);
 private:
+    /// return an array with the proportion of light
+    /// reaching the plant (within understory). E.g., a value
+    /// of 0.9 means that 10% of the light reaching understory is
+    /// intercepted by competing vegetation
+    /// same sequence as mPlants array (i.e., mPlants[i] <-> lightProfile()[i] )
     std::array<double, UnderstoryCell::NSlots> lightProfile();
 
     /// sum of occupation points on cell

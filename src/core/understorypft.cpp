@@ -132,7 +132,7 @@ void UnderstoryPFT::setup(UnderstorySetting s, int index)
         if (expr.isEmpty()) {
             expr = QString("0.5*exp(-x/stressSensitivity)");
             double value = s.value("stressSensitivity").toDouble(&ok);
-            if (!ok || value < 1. || value > 9.) throw IException("stressSensitivity required, but not a number or out of range (1..9)!");
+            if (!ok || value < 0. || value > 1.) throw IException("stressSensitivity required, but not a number or out of range (0..1)!");
             expr.replace("stressSensitivity", s.value("stressSensitivity").toString());
         }
         mExprStress.setAndParse(expr);

@@ -488,7 +488,7 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTr
     }
 
 
-    // (1) calculate height growth potential for the tree (uses linerization of expressions...)
+    // (1) calculate height growth potential for the tree
     double h_pot = species->saplingGrowthParameters().heightGrowthPotential.calculate(tree.height);
     double delta_h_pot = h_pot - tree.height;
 

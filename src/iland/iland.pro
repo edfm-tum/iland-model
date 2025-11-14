@@ -142,9 +142,9 @@ DEFINES += ILAND_GUI
 DEFINES += NO_DEBUG_MSGS
 
 # for debugging only: print all qmake variables
-for(var, $$list($$enumerate_vars())) {
-    message($$var ": " $$eval($$var))
-}
+# for(var, $$list($$enumerate_vars())) {
+#    message($$var ": " $$eval($$var))
+# }
 
 # Use Precompiled headers (PCH)
 #PRECOMPILED_HEADER = stable.h
@@ -303,6 +303,7 @@ HEADERS += mainwindow.h \
     ../output/understoryout.h \
     ../output/svdindicatorout.h \
     ../tools/geotiff.h \
+    ../tools/math_utils.h \
     stable.h \
     paintarea.h \
     ../core/version.h \

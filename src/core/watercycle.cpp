@@ -91,10 +91,10 @@ void WaterCycle::setup(const ResourceUnit *ru)
         // note: conversion of cm -> kPa (1cm = 9.8 Pa), therefore 0.098 instead of 0.000098
         // the log(10) from Schwalm&Ek cannot be found in Cosby (1984),
         // and results are more similar to the static WHC estimate without the log(10).
-        mPsi_sat = -exp((1.54 - 0.0095*pct_sand + 0.0063*pct_silt) ) * 0.098; // Eq. 83
+        mPsi_sat = -model_exp((1.54 - 0.0095*pct_sand + 0.0063*pct_silt) ) * 0.098; // Eq. 83
     } else {
         // old version (before fix in 2018)
-        mPsi_sat = -exp((1.54 - 0.0095*pct_sand + 0.0063*pct_silt) * log(10)) * 0.000098; // Eq. 83
+        mPsi_sat = -model_exp((1.54 - 0.0095*pct_sand + 0.0063*pct_silt) * log(10)) * 0.000098; // Eq. 83
     }
     mPsi_koeff_b = -( 3.1 + 0.157*pct_clay - 0.003*pct_sand );  // Eq. 84
     mTheta_sat = 0.01 * (50.5 - 0.142*pct_sand - 0.037*pct_clay); // Eq. 78
@@ -104,8 +104,8 @@ void WaterCycle::setup(const ResourceUnit *ru)
     if (xml.valueBool("model.settings.waterUseSoilSaturation",false)==false) {
         mFieldCapacity = heightFromPsi(-15);
     } else {
-        // =-EXP((1.54-0.0095* pctSand +0.0063* pctSilt)*LN(10))*0.000098
-        double psi_sat = -exp((1.54-0.0095 * pct_sand + 0.0063*pct_silt)*log(10.))*0.000098;
+        // =-model_exp((1.54-0.0095* pctSand +0.0063* pctSilt)*LN(10))*0.000098
+        double psi_sat = -model_exp((1.54-0.0095 * pct_sand + 0.0063*pct_silt)*log(10.))*0.000098;
         mFieldCapacity = heightFromPsi(psi_sat);
         if (logLevelDebug()) qDebug() << "psi: saturation " << psi_sat << "field capacity:" << mFieldCapacity;
     }
@@ -234,7 +234,7 @@ inline double WaterCycle::calculateBaseSoilAtmosphereResponse(const double psi_k
     // see species::vpdResponse
 
     double vpd_resp;
-    vpd_resp =  exp(vpd_exp * vpd_kpa);
+    vpd_resp =  model_exp(vpd_exp * vpd_kpa);
     return qMin(water_resp, vpd_resp);
 }
 
@@ -563,7 +563,7 @@ double Canopy::flow(const double &preciptitation_mm)
 
     if (mLAINeedle>0.) {
         // (1) calculate maximum fraction of thru-flow the crown (based on precipitation)
-        double max_flow_needle = 0.9 * sqrt(1.03 - exp(-0.055*preciptitation_mm));
+        double max_flow_needle = 0.9 * sqrt(1.03 - model_exp(-0.055*preciptitation_mm));
         max_interception_mm += preciptitation_mm *  (1. - max_flow_needle * mLAINeedle/mLAI);
         // (2) calculate maximum storage potential based on the current LAI
         //     by weighing the needle/deciduous storage capacity
@@ -572,14 +572,14 @@ double Canopy::flow(const double &preciptitation_mm)
 
     if (mLAIBroadleaved>0.) {
         // (1) calculate maximum fraction of thru-flow the crown (based on precipitation)
-        double max_flow_broad = 0.9 * pow(1.22 - exp(-0.055*preciptitation_mm), 0.35);
+        double max_flow_broad = 0.9 * pow(1.22 - model_exp(-0.055*preciptitation_mm), 0.35);
         max_interception_mm += preciptitation_mm *  (1. - max_flow_broad) * mLAIBroadleaved/mLAI;
         // (2) calculate maximum storage potential based on the current LAI
         max_storage_potentital += mDecidousFactor * mLAIBroadleaved/mLAI;
     }
 
     // the extent to which the maximum stoarge capacity is exploited, depends on LAI:
-    max_storage_mm = max_storage_potentital * (1. - exp(-0.5 * mLAI));
+    max_storage_mm = max_storage_potentital * (1. - model_exp(-0.5 * mLAI));
 
     // (3) calculate actual interception and store for evaporation calculation
     mInterception = qMin( max_storage_mm, max_interception_mm );

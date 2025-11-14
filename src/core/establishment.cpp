@@ -146,7 +146,7 @@ double Establishment::calculateSOLDepthLimitation()
     depth = depth * 100.; // to cm
 
     double est_SOLlimit = mRUS->species()->establishmentParameters().SOL_thickness;
-    double effect = exp( -est_SOLlimit * depth );
+    double effect = model_exp( -est_SOLlimit * depth );
     return effect;
 }
 

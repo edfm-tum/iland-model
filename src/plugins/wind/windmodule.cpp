@@ -868,7 +868,7 @@ double WindModule::calculateCrownWindSpeed(const Tree *tree, const WindSpeciesPa
     // calculate zero-plane-displacement height (Raupachs drag partitioning model (Raupach 1992, 1994))
     // the zero plane displacement is the virtual "ground" height in the canopy; it is usually at about 80% of the tree height
     const double cdl = 7.5;
-    double d0 = tree->height() * ( 1. - (1-exp(-sqrt(cdl*lambda)))/(sqrt(cdl*lambda)));
+    double d0 = tree->height() * ( 1. - (1-model_exp(-sqrt(cdl*lambda)))/(sqrt(cdl*lambda)));
 
     const double surface_drag_coefficient = 0.003;
     const double element_drag_coefficient = 0.3;
@@ -879,7 +879,7 @@ double WindModule::calculateCrownWindSpeed(const Tree *tree, const WindSpeciesPa
     double gamma = 1./sqrt(surface_drag_coefficient + element_drag_coefficient*lambda_drag/2.);
 
     // surface roughness
-    double z0 = (tree->height() - d0)*exp(-kaman_constant*gamma + 0.193);
+    double z0 = (tree->height() - d0)*model_exp(-kaman_constant*gamma + 0.193);
 
     // now we calculate the windspeed at the crown top. Our input is a windspeed 10m above the zero-plane-displacement (U10)
     // if U10 is from a weather station above open ground, a transformation to the wind speed 10m above the forest would be necessary:
@@ -956,10 +956,10 @@ bool WindModule::isSoilFrozen(const ResourceUnit *ru, const int day_of_year) con
     double temp_day = ru->climate()->dayOfYear(day_of_year)->temperature;
 
     double t_x = 297. - day_of_year;
-    double as = mean_annual_temp*1.23*exp(-0.06*(lai+weed_cover));
+    double as = mean_annual_temp*1.23*model_exp(-0.06*(lai+weed_cover));
     double pa = summer_temp - mean_annual_temp;
-    double ps = pa*1.12*exp(-0.15*(lai+weed_cover))*exp(-0.01*litter_mass)+2.22;
-    double ds = ((mean_annual_temp + pa*sin(2*M_PI/365.*t_x))-temp_day)*exp(-0.08*soil_depth);
+    double ps = pa*1.12*model_exp(-0.15*(lai+weed_cover))*model_exp(-0.01*litter_mass)+2.22;
+    double ds = ((mean_annual_temp + pa*sin(2*M_PI/365.*t_x))-temp_day)*model_exp(-0.08*soil_depth);
     double ts = as + ps*sin(2*M_PI/365.*t_x) - ds;
 
     if (ts>0.)

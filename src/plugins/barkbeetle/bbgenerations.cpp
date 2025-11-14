@@ -158,7 +158,7 @@ void BBGenerations::calculateBarkTemperature(const ResourceUnit *ru)
 {
     // estimate the fraction of light on the ground (multiplier from 0..1)
     const double k = 0.5; // constant for the beer lambert function
-    double ground_light_fraction = exp(-k * ru->leafAreaIndex() );
+    double ground_light_fraction = model_exp(-k * ru->leafAreaIndex() );
 
     mFrostDaysEarly=0;
     mFrostDaysLate=0;

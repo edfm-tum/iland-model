@@ -237,7 +237,7 @@ double Snag::calculateClimateFactors()
             ratio = mRU->climate()->precipitationMonth()[m] /  mRU->waterCycle()->referenceEvapotranspiration()[m];
         else
             ratio = 0;
-        fw_month[m] = 1. / (1. + 30.*exp(-8.5*ratio));
+        fw_month[m] = 1. / (1. + 30.*model_exp(-8.5*ratio));
         //if (logLevelDebug()) qDebug() <<"month"<< m << "PET" << mRU->waterCycle()->referenceEvapotranspiration()[m] << "prec" <<mRU->climate()->precipitationMonth()[m];
     }
 
@@ -253,7 +253,7 @@ double Snag::calculateClimateFactors()
         }
         // empirical variable Q10 model of Lloyd and Taylor (1994), see also Adair et al. (2008)
         // Note: function becomes unstable with very low temperatures (e.g. Alaska)
-        ft = temp_day > -30 ? exp(308.56*(1./56.02-1./((273.+ temp_day )-227.13))) : 0.;
+        ft = temp_day > -30 ? model_exp(308.56*(1./56.02-1./((273.+ temp_day )-227.13))) : 0.;
         fw = fw_month[day->month-1];
 
         f_sum += ft*fw;
@@ -296,7 +296,7 @@ void Snag::calculateYear()
     // decay of branches/coarse roots
     for (int i=0;i<5;i++) {
         if (mOtherWood[i].C>0.) {
-            double survive_rate = exp(- climate_factor_re * mOtherWood[i].parameter() ); // parameter: the "kyr" value...
+            double survive_rate = model_exp(- climate_factor_re * mOtherWood[i].parameter() ); // parameter: the "kyr" value...
             mTotalToAtm.C += mOtherWood[i].C * (1. - survive_rate); // flux to atmosphere (decayed carbon)
             mOtherWood[i].C *= survive_rate;
         }
@@ -321,7 +321,7 @@ void Snag::calculateYear()
         if (mSWD[i].C > 0.) {
             // reduce the Carbon (note: the N stays, thus the CN ratio changes)
             // use the decay rate that is derived as a weighted average of all standing woody debris
-            double survive_rate = exp(-mKSW[i] *climate_factor_re * 1. ); // 1: timestep
+            double survive_rate = model_exp(-mKSW[i] *climate_factor_re * 1. ); // 1: timestep
             mTotalToAtm.C += mSWD[i].C * (1. - survive_rate);
             mSWD[i].C *= survive_rate;
 
