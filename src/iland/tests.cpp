@@ -348,10 +348,10 @@ void Tests::testRandom()
     Expression::setLinearizationEnabled(true);
 
 
-    Expression expr_test("exp(ln(lri)/0.5*(1-0.5*relH))");
+    Expression expr_test("x + y + x + y");
     expr_test.calculate();
-    expr_test.setVar("lri", 0.5);
-    expr_test.setVar("relH", 0.3);
+    expr_test.setVar("x", 0.5);
+    expr_test.setVar("y", 0.3);
 
     double sum = 0;
     { DebugTimer t("execute optimized");
@@ -369,7 +369,16 @@ void Tests::testRandom()
     }
     qDebug() << "value" << sum;
 
+    sum = 0.;
+    expr_test.linearize2d(0.,1., 0., 1.);
+    { DebugTimer t("execute linearized");
+        for (int i=0;i<100000000;++i)
+            sum += expr_test.execute();
 
+    }
+    qDebug() << "value" << sum;
+
+    return;
 
     // test fast linearized function
     qDebug() << "test linearized function";

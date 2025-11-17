@@ -630,7 +630,7 @@ double Expression::execute(double *varlist, ExpressionWrapper *object) const
 
     // 3. Setup Stack
     // Using a raw array is fastest. 256 depth is usually sufficient for expressions.
-    double stack[256] = {0.0};
+    double stack[256];
     double* sp = stack; // Points to the next FREE slot
 
     // 4. Setup Instruction Pointer to the first instruction
@@ -841,7 +841,7 @@ double Expression::execute_unopt(double *varlist, ExpressionWrapper *object) con
     ExtExecListItem *exec=m_execList;
     int i;
     double result=0.;
-    double Stack[200]={0.0};
+    double Stack[200];
     bool   LogicStack[200];
     bool   *lp=LogicStack;
     double *p=Stack;  // p=head pointer
