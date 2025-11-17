@@ -393,6 +393,79 @@ void Tests::testCSVFile()
 void Tests::testRandom()
 {
 
+    // test fast linearized function
+    qDebug() << "test linearized function";
+    Expression::setLinearizationEnabled(true);
+
+
+    // test 2d case
+    Expression expr2d("exp(ln(lri)/0.5*(1-0.5*relH))");
+    expr2d.calculate(0.5, 0.5); // force parsing
+    Expression expr2d_opt("exp(ln(lri)/0.5*(1-0.5*relH))");
+    expr2d_opt.calculate(0.5, 0.5); // force parsing
+    expr2d_opt.linearize2d(0, 1, 0, 1, 64, 32);
+
+/*    qDebug() << "Calculation test (x,y,exact,linearized)";
+    for (double x=0.; x<1.; x+=0.045)
+        for (double y=0.; y<1.; y+=0.045)
+            qDebug() << x << y << expr2d.calculate(x,y) << expr2d_opt.calculate(x,y);
+*/
+    qDebug() << "performance test";
+
+    double sum = 0;
+    { DebugTimer t("run not linearized");
+        for (int i=0;i<100000000;++i)
+            sum += expr2d.calculate(0.5, 0.7);
+
+    }
+    qDebug() << "value" << sum;
+
+
+     sum = 0;
+    { DebugTimer t("run  linearized");
+        for (int i=0;i<100000000;++i)
+            sum += expr2d_opt.calculate(0.5, 0.7);
+
+    }
+    qDebug() << "value" << sum;
+
+    sum = 0;
+    { DebugTimer t("run  raw code");
+        double lri = 0.5; double relH = 0.7;
+        for (int i=0;i<100000000;++i) {
+
+            sum += exp(log(lri)/0.5*(1-0.5*relH));
+        }
+            //sum += expr2d_opt.calculate(0.5, 0.7);
+
+    }
+    qDebug() << "value" << sum;
+
+    return;
+
+
+
+    Expression expr("1-exp(-5.5*(lri-0.05))");
+    expr.calculate(0.5); // force parsing
+    sum = 0;
+    { DebugTimer t("run not linearized");
+        for (int i=0;i<100000000;++i)
+            sum += expr.calculate(0.5);
+
+    }
+    qDebug() << "value" << sum;
+
+    expr.linearize(0., 1.);
+    sum = 0;
+    { DebugTimer t("run linearized");
+    for (int i=0;i<100000000;++i)
+        sum += expr.calculate(0.5);
+
+    }
+    qDebug() << "value" << sum;
+
+    return;
+
     // test fast exponential
     qDebug() << "value exp_correct exp_fast delta_%";
     for (double x = 0.; x > -20; x -= 0.1) {

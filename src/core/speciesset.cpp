@@ -152,7 +152,7 @@ int SpeciesSet::setup()
     // lri-correction
     mLRICorrection.setAndParse(light.value("LRImodifier","1"));
     // x: LRI, y: relative heigth
-    mLRICorrection.linearize2d(0., 1., 0., 1.);
+    mLRICorrection.linearize2d(0., 1., 0., 1., 64, 32);
 
     createRandomSpeciesOrder();
     return mSpecies.count();

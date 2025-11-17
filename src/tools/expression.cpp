@@ -493,19 +493,7 @@ void Expression::setVar(const QString& Var, double Value)
         throw IException("Invalid variable " + Var);
 }
 
-double Expression::calculate(const double Val1, const double Val2, const bool forceExecution) const
-{
-    if (mLinearizeMode>0 && !forceExecution) {
-        if (mLinearizeMode==1)
-            return linearizedValue(Val1);
-        return linearizedValue2d(Val1, Val2); // matrix case
-    }
-    double var_space[EXPRNLOCALVARS];
-    var_space[0]=Val1;
-    var_space[1]=Val2;
-    m_strict=false;
-    return execute(var_space); // execute with local variables on stack
-}
+
 
 double Expression::calculate(ExpressionWrapper &object, const double variable_value1, const double variable_value2) const
 {
@@ -882,6 +870,7 @@ void Expression::linearize(const double low_value, const double high_value, cons
     mLinearLow = low_value;
     mLinearHigh  = high_value;
     mLinearStep = (high_value - low_value) / (double(steps));
+    mLinearInvStep = 1. / mLinearStep;
     // for the high value, add another step (i.e.: include maximum value) and add one step to allow linear interpolation
     for (int i=0;i<=steps+1;i++) {
         double x = mLinearLow + i*mLinearStep;
@@ -905,7 +894,9 @@ void Expression::linearize2d(const double low_x, const double high_x,
     mLinearHighY = high_y;
 
     mLinearStep = (high_x - low_x) / (double(stepsx));
+    mLinearInvStep = 1. / mLinearStep;
     mLinearStepY = (high_y - low_y) / (double(stepsy));
+    mLinearInvStepY = 1. / mLinearStepY;
     for (int i=0;i<=stepsx+1;i++) {
         for (int j=0;j<=stepsy+1;j++) {
             double x = mLinearLow + i*mLinearStep;
@@ -920,41 +911,7 @@ void Expression::linearize2d(const double low_x, const double high_x,
 }
 
 
-/// calculate the linear approximation of the result value
-double Expression::linearizedValue(const double x) const
-{
-    if (x<mLinearLow || x>mLinearHigh)
-        return calculate(x,0.,true); // standard calculation without linear optimization- but force calculation to avoid infinite loop
-    int lower = int((x-mLinearLow) / mLinearStep); // the lower point
-    Q_ASSERT(lower+1<mLinearized.count());
 
-    const QVector<double> &data = mLinearized;
-    const double *entry = &data[lower];
-    // linear interpolation
-    double result = *entry + (- *entry + *(entry+1))/mLinearStep*(x-(mLinearLow+lower*mLinearStep));
-    //double result = data[lower] + (data[lower+1]-data[lower])/mLinearStep*(x-(mLinearLow+lower*mLinearStep));
-    return result;
-}
 
-/// calculate the linear approximation of the result value
-double Expression::linearizedValue2d(const double x, const double y) const
-{
-    if (x<mLinearLow || x>mLinearHigh || y<mLinearLowY || y>mLinearHighY)
-        return calculate(x,y,true); // standard calculation without linear optimization- but force calculation to avoid infinite loop
-    int lowerx = int((x-mLinearLow) / mLinearStep); // the lower point (x-axis)
-    int lowery = int((y-mLinearLowY) / mLinearStepY); // the lower point (y-axis)
-    int idx = mLinearStepCountY*lowerx + lowery;
-    Q_ASSERT(idx + mLinearStepCountY+1 <mLinearized.count());
-    const QVector<double> &data = mLinearized;
-    // linear interpolation
-    // mean slope in x - direction
-    const double *dval = &data[idx];
-    const double *dvaly = &data[idx+mLinearStepCountY];
-    double slope_x = ( (*(dvaly) - *dval)/mLinearStepY + (*(dvaly+1) - *(dval+1))/mLinearStepY ) / 2.;
-    double slope_y = ( (*(dval+1) - *dval)/mLinearStep + (*(dvaly+1) - *(dvaly))/mLinearStep ) / 2.;
-    double result = *dval + (x-(mLinearLow+lowerx*mLinearStep))*slope_x + (y-(mLinearLowY+lowery*mLinearStepY))*slope_y;
-//    double slope_x = ( (data[idx+mLinearStepCountY]-data[idx])/mLinearStepY + (data[idx+mLinearStepCountY+1]-data[idx+1])/mLinearStepY ) / 2.;
-//    double slope_y = ( (data[idx+1]-data[idx])/mLinearStep + (data[idx+mLinearStepCountY+1]-data[idx+mLinearStepCountY])/mLinearStep ) / 2.;
-//    double result = data[idx] + (x-(mLinearLow+lowerx*mLinearStep))*slope_x + (y-(mLinearLowY+lowery*mLinearStepY))*slope_y;
-    return result;
-}
+
+
