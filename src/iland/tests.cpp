@@ -343,6 +343,34 @@ void Tests::testCSVFile()
 void Tests::testRandom()
 {
 
+    //
+    qDebug() << "test new  compile/execute function";
+    Expression::setLinearizationEnabled(true);
+
+
+    Expression expr_test("exp(ln(lri)/0.5*(1-0.5*relH))");
+    expr_test.calculate();
+    expr_test.setVar("lri", 0.5);
+    expr_test.setVar("relH", 0.3);
+
+    double sum = 0;
+    { DebugTimer t("execute optimized");
+        for (int i=0;i<100000000;++i)
+            sum += expr_test.execute();
+
+    }
+    qDebug() << "value" << sum;
+
+    sum = 0;
+    { DebugTimer t("execute unoptimized / OLD");
+        for (int i=0;i<100000000;++i)
+            sum += expr_test.execute_unopt();
+
+    }
+    qDebug() << "value" << sum;
+
+
+
     // test fast linearized function
     qDebug() << "test linearized function";
     Expression::setLinearizationEnabled(true);
@@ -362,7 +390,7 @@ void Tests::testRandom()
 */
     qDebug() << "performance test";
 
-    double sum = 0;
+    sum = 0;
     { DebugTimer t("run not linearized");
         for (int i=0;i<100000000;++i)
             sum += expr2d.calculate(0.5, 0.7);
@@ -378,6 +406,7 @@ void Tests::testRandom()
 
     }
     qDebug() << "value" << sum;
+    return;
 
     sum = 0;
     { DebugTimer t("run  raw code");
@@ -1422,16 +1451,6 @@ private:
         return std::abs(a - b) <= ( (std::abs(a) < std::abs(b) ? std::abs(b) : std::abs(a)) * EPSILON);
     }
 
-    // HELPER: Adapt this to your specific API for loading a string
-    void setupExpression(Expression& e, const std::string& formula) {
-        // Assuming you have a method to set the string and parse
-        // e.setExpression(formula.c_str());
-        // e.parse(nullptr);
-
-        // Or if you pass it via constructor/parse:
-        // const_cast<Expression&>(e).m_expression = QString::fromStdString(formula);
-        // e.parse(nullptr);
-    }
 
 public:
     // Variant 1: Constant Expressions (No variables)
@@ -1447,8 +1466,16 @@ public:
                 QString err=QString("Failed: %1 - Expected: %2 Got: %3").arg(exprStr).arg(expected).arg(result);
                 return err;
             }
-        } catch (...) {
-            return "CRASHED: [" + exprStr + "] Threw exception";
+
+            double result_old = e.execute_unopt();
+            if (!isClose(result, result_old)) {
+                QString err=QString("optimized version differs: %1 - Expected: %2 Got: %3").arg(exprStr).arg(result).arg(result_old);
+                return err;
+            }
+
+
+        } catch (const std::logic_error &e) {
+            return "CRASHED: [" + exprStr + "] Threw exception: " + e.what();
         }
         return ""; // Success
     }
@@ -1469,12 +1496,50 @@ public:
             if (!isClose(result, expected)) {
                 QString err=QString("Failed: %1 - Expected: %2 (with x=%4, y=%5) Got: %3").arg(exprStr).arg(expected).arg(result).arg(x).arg(y);
                 return err;
-
             }
-        } catch (...) {
-            return "CRASHED: [" + exprStr + "] Threw exception";
+
+            double result_old = e.execute_unopt();
+            if (!isClose(result, result_old)) {
+                QString err=QString("optimized version differs: %1 - Expected: %2 Got: %3").arg(exprStr).arg(result).arg(result_old);
+                return err;
+            }
+        } catch (const std::logic_error &e) {
+            return "CRASHED: [" + exprStr + "] Threw exception: " + e.what();
         }
         return ""; // Success
+    }
+
+    QString testIncSum(QString exprStr, int n, double expected) {
+
+        Expression e(exprStr);
+        e.enableIncSum();
+        double result = 0;
+        for (int i=0;i<n;i++)
+            result = e.calculate();
+
+        if (!isClose(result, expected))
+            return QString("Incsum: failed!");
+        else
+            return "";
+    }
+
+    QString testRandom() {
+
+        try {
+        Expression e("rnd(-1,1)+rndg(0,1)");
+        double result = 0;
+        for (int i=0;i<100000;i++)
+            result += e.calculate();
+
+        qDebug() << "mean over 100000 random numbers: " << result/100000.;
+        if (!isClose(result/100000., 0.))
+            return QString("Random: expected 0: got: %1").arg(result/100000.);
+        else
+            return "";
+
+        } catch (const IException &err) {
+            return QString("CRASHED: testRandom:  Threw exception: %1").arg(err.message());
+        }
     }
 };
 
@@ -1546,6 +1611,20 @@ void runExpressionTests() {
     // Let lri (x) = 1, relH (y) = 0.5
     // ln(1) = 0 -> exp(0) = 1
     check(t.runTestVariable("exp(ln(x)/0.5 * (1 - 0.5*y))", 1.0, 0.5, 1.0));
+
+    // 8. custom functions
+    check(t.runTest("round(1.234)", 1.0));
+    check(t.runTest("round(-1.4)", -1.0));
+    check(t.runTest("mod(17,5)", 2.0));
+    //polygon(x, 0,0, 0.2,0.1, 0.8,0.75)
+    check(t.runTestVariable("polygon(x, 0,0, 0.2,0.1, 0.8,0.75)", 0.9, 0, 0.75));
+    check(t.runTestVariable("in(x,1,2,3)*in(y,1,2,3)", 2, 3, 1.0));
+
+    check(t.runTestVariable("sigmoid(x, 0,1,1)", 0, 0, 0.5));
+
+    check(t.testIncSum("incsum(0.01)", 100, 1.0));
+
+    check( t.testRandom() );
 
     qDebug() << "\n\nTest Complete. " << count << " tests run.";
     if (errors.empty()) {

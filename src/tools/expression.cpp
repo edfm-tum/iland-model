@@ -93,8 +93,99 @@ void Expression::addConstant(const QString const_name, const double const_value)
     mConstants[const_name] = const_value;
 }
 
+void Expression::compile() {
+    m_program.clear();
+    m_program.reserve(m_execIndex + 1);
+
+    // Iterating the old list (m_execList is a C-array, m_execIndex is count)
+    for (int i = 0; i < m_execIndex; ++i) {
+        const auto& item = m_execList[i];
+        Instruction instr;
+        std::memset(&instr, 0, sizeof(Instruction)); // Clear padding
+
+        switch (item.Type) {
+        case etNumber:
+            instr.code = OP_PUSH_IMM;
+            instr.data.val = item.Value;
+            break;
+
+        case etVariable:
+            instr.data.index = item.Index;
+
+            if (item.Index < 100) {
+                instr.code = OP_LOAD_LOCAL; // on stack
+            } else if (item.Index < 1000) {
+                instr.code = OP_LOAD_MODEL_VAR; // dynamic variable from the model
+            } else {
+                instr.code = OP_LOAD_EXTERN_VAR; // variable from an external list of vars
+            }
+            break;
+
+        case etOperator:
+            switch (item.Index) {
+            case '+': instr.code = OP_ADD; break;
+            case '-': instr.code = OP_SUB; break;
+            case '*': instr.code = OP_MUL; break;
+            case '/': instr.code = OP_DIV; break;
+            case '^': instr.code = OP_POW; break;
+            case '_': instr.code = OP_NEG; break;
+            }
+            break;
+
+        case etFunction:
+            instr.data.count = (int)item.Value; // Store argument count
+            switch (item.Index) {
+            case 0: instr.code = OP_SIN; break;
+            case 1: instr.code = OP_COS; break;
+            case 2: instr.code = OP_TAN; break;
+            case 3: instr.code = OP_EXP; break;
+            case 4: instr.code = OP_LOG; break;
+            case 5: instr.code = OP_SQRT; break;
+            case 6: instr.code = OP_MIN; break;
+            case 7: instr.code = OP_MAX; break;
+            case 8: instr.code = OP_IF; break;
+            // ... custom functions
+            case 9: instr.code = OP_INCSUM; break;
+            case 10: instr.code = OP_POLYGON; break;
+            case 11: instr.code = OP_MODULO; break;
+            case 12: instr.code = OP_SIGMOID; break;
+            case 13: instr.code = OP_RND; break;
+            case 14: instr.code = OP_RNDG; break;
+            case 15: instr.code = OP_IN; break;
+            case 16: instr.code = OP_ROUND; break;
+            }
+            break;
+
+        case etCompare:
+            switch (item.Index) {
+            case opEqual: instr.code = OP_EQ; break;
+            case opNotEqual: instr.code = OP_NE; break;
+            case opLowerThen: instr.code = OP_LT; break;
+            case opGreaterThen: instr.code = OP_GT; break;
+            case opGreaterOrEqual: instr.code = OP_GE; break;
+            case opLowerOrEqual: instr.code = OP_LE; break;
+            }
+            break;
+
+        case etLogical:
+            switch (item.Index) {
+            case opAnd: instr.code = OP_AND; break;
+            case opOr: instr.code = OP_OR; break;
+            }
+            break;
+
+        default: break;
+        }
+        m_program.push_back(instr);
+    }
+
+    Instruction stop;
+    stop.code = OP_STOP;
+    m_program.push_back(stop);
+}
+
 bool Expression::mLinearizationAllowed = false;
-bool Expression::mThrowExceptionsInJS = true;
+bool Expression::mThrowExceptionsInJS = false;
 
 Expression::Expression()
 {
@@ -273,6 +364,10 @@ void  Expression::parse(ExpressionWrapper *wrapper)
         m_execList[m_execIndex].Value=0;
         m_execList[m_execIndex++].Index=0;
         checkBuffer(m_execIndex);
+
+        // translate to fast execution structure
+        compile();
+
         m_parsed=true;
 
     } catch (const IException& e) {
@@ -525,11 +620,228 @@ double Expression::execute(double *varlist, ExpressionWrapper *object) const
         if (!m_parsed)
             return 0.;
     }
+
+    // 1. Safety Check
+    if (m_program.empty()) return 0.0;
+
+    // 2. Setup Variable Space
+    // If varlist is null, fall back to internal storage
+    const double* locals = varlist ? varlist : m_varSpace;
+
+    // 3. Setup Stack
+    // Using a raw array is fastest. 256 depth is usually sufficient for expressions.
+    double stack[256] = {0.0};
+    double* sp = stack; // Points to the next FREE slot
+
+    // 4. Setup Instruction Pointer to the first instruction
+    const Instruction* ip = m_program.data();
+
+    // 5. The inner loop
+    while (true) {
+
+        switch (ip->code) {
+        case OP_STOP:
+            // Return the value sitting at the top of the stack
+            // If stack is empty (shouldn't happen), return 0.0
+            return (sp > stack) ? *(sp - 1) : 0.0;
+
+            // -----------------------------------------------------
+            // DATA LOADING
+            // -----------------------------------------------------
+        case OP_PUSH_IMM:
+            *sp++ = ip->data.val;
+            break;
+
+        case OP_LOAD_LOCAL:
+            // No bounds check here for speed (guaranteed by parser)
+            *sp++ = locals[ip->data.index];
+            break;
+
+        case OP_LOAD_MODEL_VAR:
+            // Helper call - 'const_cast' might be needed if getModelVar isn't const
+            *sp++ = const_cast<Expression*>(this)->getModelVar(ip->data.index, object);
+            break;
+
+        case OP_LOAD_EXTERN_VAR:
+            *sp++ = const_cast<Expression*>(this)->getExternVar(ip->data.index);
+            break;
+
+            // -----------------------------------------------------
+            // ARITHMETIC (In-place modification of stack)
+            // -----------------------------------------------------
+        case OP_ADD:
+            sp--;           // Pop
+            *(sp-1) += *sp; // Add to the value below
+            break;
+        case OP_SUB:
+            sp--;
+            *(sp-1) -= *sp;
+            break;
+        case OP_MUL:
+            sp--;
+            *(sp-1) *= *sp;
+            break;
+        case OP_DIV:
+            sp--;
+            *(sp-1) /= *sp;
+            break;
+
+        case OP_POW:
+            sp--;
+            *(sp-1) = std::pow(*(sp-1), *sp);
+            break;
+
+        case OP_NEG:
+            // Unary minus: just negate the top, don't move stack pointer
+            *(sp-1) = -(*(sp-1));
+            break;
+
+            // -----------------------------------------------------
+            // FUNCTIONS
+            // -----------------------------------------------------
+        case OP_SIN: *(sp-1) = std::sin(*(sp-1)); break;
+        case OP_COS: *(sp-1) = std::cos(*(sp-1)); break;
+        case OP_TAN: *(sp-1) = std::tan(*(sp-1)); break;
+        case OP_EXP: *(sp-1) = std::exp(*(sp-1)); break;
+        case OP_LOG: *(sp-1) = std::log(*(sp-1)); break; // Natural Log
+        case OP_SQRT: *(sp-1) = std::sqrt(*(sp-1)); break;
+
+            // -----------------------------------------------------
+            // VARIADIC FUNCTIONS (Min, Max)
+            // -----------------------------------------------------
+        case OP_MIN: {
+            int count = ip->data.count;
+            // Stack has: [arg1] [arg2] ... [argN] <--- sp
+            // We move sp back to [arg1]
+            sp -= count;
+            double m = *sp;
+            // Scan forward
+            for (int k = 1; k < count; ++k) {
+                if (sp[k] < m) m = sp[k];
+            }
+            // Overwrite arg1 with result and advance sp by 1
+            *sp++ = m;
+            break;
+        }
+        case OP_MAX: {
+            int count = ip->data.count;
+            sp -= count;
+            double m = *sp;
+            for (int k = 1; k < count; ++k) {
+                if (sp[k] > m) m = sp[k];
+            }
+            *sp++ = m;
+            break;
+        }
+
+            // -----------------------------------------------------
+            // LOGIC (Using 1.0 / 0.0)
+            // -----------------------------------------------------
+            // Compare Top (sp-1) with Below (sp-2). Pop one.
+        case OP_EQ: sp--; *(sp-1) = (*(sp-1) == *sp) ? 1.0 : 0.0; break;
+        case OP_NE: sp--; *(sp-1) = (*(sp-1) != *sp) ? 1.0 : 0.0; break;
+        case OP_GT: sp--; *(sp-1) = (*(sp-1) > *sp)  ? 1.0 : 0.0; break;
+        case OP_LT: sp--; *(sp-1) = (*(sp-1) < *sp)  ? 1.0 : 0.0; break;
+        case OP_GE: sp--; *(sp-1) = (*(sp-1) >= *sp) ? 1.0 : 0.0; break;
+        case OP_LE: sp--; *(sp-1) = (*(sp-1) <= *sp) ? 1.0 : 0.0; break;
+
+        case OP_AND:
+            sp--;
+            // Standard C++ bool cast: anything != 0 is true
+            *(sp-1) = (*(sp-1) != 0.0 && *sp != 0.0) ? 1.0 : 0.0;
+            break;
+        case OP_OR:
+            sp--;
+            *(sp-1) = (*(sp-1) != 0.0 || *sp != 0.0) ? 1.0 : 0.0;
+            break;
+
+        case OP_IF:
+            // Structure: if(condition, val_true, val_false)
+            // Stack: [Condition] [TrueVal] [FalseVal] <--- sp
+            sp -= 3;
+            // If condition != 0, pick TrueVal (offset 1), else FalseVal (offset 2)
+            *sp = (*sp != 0.0) ? *(sp+1) : *(sp+2);
+            sp++;
+            break;
+
+        // -----------------------------------------------------
+        // SPECIAL CUSTOM FUNCTIONS
+        // -----------------------------------------------------
+        case OP_INCSUM:
+            m_incSumVar += *(sp-1);
+            *(sp-1) = m_incSumVar;
+            break;
+
+        case OP_MODULO:
+            sp--;
+            *(sp-1)=fmod(*(sp-1), *sp);
+            break;
+
+
+        case OP_RND:
+            sp--;
+            *(sp-1) = udfRandom(0, *(sp-1), *sp);
+            break;
+
+        case OP_RNDG:
+            sp--;
+            *(sp-1) = udfRandom(1, *(sp-1), *sp);
+            break;
+
+        case OP_ROUND:
+            *(sp-1) = std::round(*(sp-1));
+            break;
+
+        case OP_SIGMOID:
+            sp-=3;
+            *(sp-1) = udfSigmoid(*(sp-1), *sp, *(sp+1), *(sp+2));
+            break;
+
+        case OP_POLYGON: {
+            int count = ip->data.count;
+            double x = *(sp - count);
+            double result = udfPolygon(x, sp-1, count);
+
+            sp-= count;
+            *sp++ = result;
+            break;
+        }
+        case OP_IN: {
+            // Stack: [Val] [L1] [L2] ... [Ln] <--- sp
+            int count = ip->data.count;
+            double val = *(sp - count);
+
+            // udfInList runs backward
+            double result = udfInList(val, sp - 1, count);
+            sp -= count; // pop all args
+            *sp++ = result; // push result
+            break;
+        }
+
+
+        default:
+            // Optional: throw exception for corrupted bytecode
+            IException(QString("invalid token during (compiled) execution: %1").arg(m_expression));
+            return 0.0;
+        }
+
+        // Move to next instruction
+        ip++;
+    }
+
+}
+double Expression::execute_unopt(double *varlist, ExpressionWrapper *object) const
+{
+    if (!m_parsed) {
+        const_cast<Expression*>(this)->parse(object);
+        if (!m_parsed)
+            return 0.;
+    }
     const double *varSpace = varlist?varlist:m_varSpace;
     ExtExecListItem *exec=m_execList;
     int i;
     double result=0.;
-    double Stack[200];
+    double Stack[200]={0.0};
     bool   LogicStack[200];
     bool   *lp=LogicStack;
     double *p=Stack;  // p=head pointer
@@ -544,13 +856,13 @@ double Expression::execute(double *varlist, ExpressionWrapper *object) const
         case etOperator:
             p--;
             switch (exec->Index) {
-                  case '+': *(p-1)=*(p-1) + *p;  break;
-                  case '-': *(p-1)=*(p-1)-*p;  break;
-                  case '*': *(p-1)=*(p-1) * *p;  break;
-                  case '/': *(p-1)=*(p-1) / *p;  break;
-                  case '^': *(p-1)=pow(*(p-1), *p);  break;
-                  case '_': *p=-*p; p++; break;  // unary operator -
-                  }
+            case '+': *(p-1)=*(p-1) + *p;  break;
+            case '-': *(p-1)=*(p-1)-*p;  break;
+            case '*': *(p-1)=*(p-1) * *p;  break;
+            case '/': *(p-1)=*(p-1) / *p;  break;
+            case '^': *(p-1)=pow(*(p-1), *p);  break;
+            case '_': *p=-*p; p++; break;  // unary operator -
+            }
             break;
         case etVariable:
             if (exec->Index<100)
@@ -622,8 +934,8 @@ double Expression::execute(double *varlist, ExpressionWrapper *object) const
             p--;
             lp--;
             switch (exec->Index) {
-                case opAnd: *(lp-1)=(*(lp-1) && *lp);  break;
-                case opOr:  *(lp-1)=(*(lp-1) || *lp);  break;
+            case opAnd: *(lp-1)=(*(lp-1) && *lp);  break;
+            case opOr:  *(lp-1)=(*(lp-1) || *lp);  break;
             }
             if (*(lp-1))
                 *(p-1)=1;
@@ -634,13 +946,13 @@ double Expression::execute(double *varlist, ExpressionWrapper *object) const
             p--;
             bool LogicResult=false;
             switch (exec->Index) {
-                 case opEqual: LogicResult=(*(p-1)==*p); break;
-                 case opNotEqual: LogicResult=(*(p-1)!=*p); break;
-                 case opLowerThen: LogicResult=(*(p-1)<*p); break;
-                 case opGreaterThen: LogicResult=(*(p-1)>*p); break;
-                 case opGreaterOrEqual: LogicResult=(*(p-1)>=*p); break;
-                 case opLowerOrEqual: LogicResult=(*(p-1)<=*p); break;
-                 }
+            case opEqual: LogicResult=(*(p-1)==*p); break;
+            case opNotEqual: LogicResult=(*(p-1)!=*p); break;
+            case opLowerThen: LogicResult=(*(p-1)<*p); break;
+            case opGreaterThen: LogicResult=(*(p-1)>*p); break;
+            case opGreaterOrEqual: LogicResult=(*(p-1)>=*p); break;
+            case opLowerOrEqual: LogicResult=(*(p-1)<=*p); break;
+            }
             if (LogicResult) {
                 *(p-1)=1.;   // 1 means true...
             } else {
@@ -660,6 +972,7 @@ double Expression::execute(double *varlist, ExpressionWrapper *object) const
     //m_logicResult=*(lp-1);
     return result;
 }
+
 
 double * Expression::addVar(const QString& VarName)
 {
@@ -733,6 +1046,8 @@ inline double Expression::getModelVar(const int varIdx, ExpressionWrapper *objec
     throw IException("Expression::getModelVar: invalid model variable!");
 }
 
+
+
 void Expression::setExternalVarSpace(const QStringList& ExternSpaceNames, double* ExternSpace)
 {
     // externe variablen (zB von Scripting-Engine) bekannt machen...
@@ -746,6 +1061,14 @@ double Expression::getExternVar(int Index) const
     //   return Script->GetNumVar(Index-1000);
     //else   // berhaupt noch notwendig???
     return m_externVarSpace[Index-1000];
+}
+
+double *Expression::getExternVarPtr(int Index) const
+{
+    //if (Script)
+    //   return Script->GetNumVar(Index-1000);
+    //else   // berhaupt noch notwendig???
+    return &m_externVarSpace[Index-1000];
 }
 
 void Expression::enableIncSum()
