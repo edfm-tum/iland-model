@@ -97,58 +97,8 @@ void Tests::testXml()
     }
 }
 
-void Tests::speedOfExpression()
-{
-    Q_ASSERT(1==0);
-//    int *p;
-//    p = 0;
-//    *p = 1; --> signal handler does not really work
-    // (1) for each
-    double sum;
-    int count;
-    {
-        DebugTimer t("plain loop");
-        for (int i=0;i<10;i++) {
-            sum=0;
-            count=0;
-            foreach(const ResourceUnit *ru,GlobalSettings::instance()->model()->ruList()) {
-                foreach(const Tree &tree, ru->constTrees()) {
-                    sum+=tree.volume();
-                    count++;
-                }
-            }
+//void runExpressionTests(); // forward
 
-        }
-        qDebug() << "Sum of volume" << sum << "count" << count;
-    }
-    {
-        DebugTimer t("plain loop (iterator)");
-        for (int i=0;i<10;i++) {
-            AllTreeIterator at(GlobalSettings::instance()->model());
-            sum = 0.;
-            count = 0;
-            while (Tree *tree=at.next()) {
-                sum += pow(tree->dbh(),2.1f); count++;
-            }
-        }
-        qDebug() << "Sum of volume" << sum << "count" << count;
-    }
-    {
-        TreeWrapper tw;
-        Expression expr("dbh^2.1", &tw);
-        DebugTimer t("Expression loop");
-        for (int i=0;i<10;i++) {
-
-            AllTreeIterator at(GlobalSettings::instance()->model());
-            sum = 0.;
-            while (Tree *tree=at.next()) {
-                tw.setTree(tree);
-                sum += expr.execute();
-            }
-        }
-        qDebug() << "Sum of volume" << sum;
-    }
-}
 
 
 void Tests::clearTrees()
@@ -1453,4 +1403,216 @@ void Tests::testGridIndexHack()
       s=m10.sum() / m10.count();
       qDebug() << "test average value (square brackets):" << s << "time" << el;
 
+}
+
+
+
+/* expression tests */
+
+
+class ExpressionTester {
+private:
+    // Epsilon for double comparison
+    const double EPSILON = 1e-7;
+
+    bool isClose(double a, double b) {
+        // Handle strict zero cases
+        if (std::abs(a) < 1e-9 && std::abs(b) < 1e-9) return true;
+        // Relative error for larger numbers
+        return std::abs(a - b) <= ( (std::abs(a) < std::abs(b) ? std::abs(b) : std::abs(a)) * EPSILON);
+    }
+
+    // HELPER: Adapt this to your specific API for loading a string
+    void setupExpression(Expression& e, const std::string& formula) {
+        // Assuming you have a method to set the string and parse
+        // e.setExpression(formula.c_str());
+        // e.parse(nullptr);
+
+        // Or if you pass it via constructor/parse:
+        // const_cast<Expression&>(e).m_expression = QString::fromStdString(formula);
+        // e.parse(nullptr);
+    }
+
+public:
+    // Variant 1: Constant Expressions (No variables)
+    QString runTest(QString exprStr, double expected) {
+        try {
+            Expression e(exprStr);
+
+
+            // Run with empty vars
+            double result = e.calculate();
+
+            if (!isClose(result, expected)) {
+                QString err=QString("Failed: %1 - Expected: %2 Got: %3").arg(exprStr).arg(expected).arg(result);
+                return err;
+            }
+        } catch (...) {
+            return "CRASHED: [" + exprStr + "] Threw exception";
+        }
+        return ""; // Success
+    }
+
+    // Variant 2: Variable Expressions (x, y)
+    QString runTestVariable(QString exprStr, double x, double y, double expected) {
+        try {
+            Expression e;
+            double *varx = e.addVar("x");
+            double *vary = e.addVar("y");
+            e.setExpression(exprStr);
+            *varx = x;
+            *vary = y; // set variables
+
+            // Assuming calculate(v1, v2) maps to variable index 0 and 1
+            double result = e.execute();
+
+            if (!isClose(result, expected)) {
+                QString err=QString("Failed: %1 - Expected: %2 (with x=%4, y=%5) Got: %3").arg(exprStr).arg(expected).arg(result).arg(x).arg(y);
+                return err;
+
+            }
+        } catch (...) {
+            return "CRASHED: [" + exprStr + "] Threw exception";
+        }
+        return ""; // Success
+    }
+};
+
+// --- The Main Test Suite ---
+void runExpressionTests() {
+    ExpressionTester t;
+    QVector<QString> errors;
+    int count = 0;
+
+    auto check = [&](QString err) {
+        count++;
+        if (!err.isEmpty()) {
+            errors.push_back(err);
+        }
+    };
+
+    qDebug() << "Running Expression Engine Regression Tests...";
+
+    // 1. Basic Arithmetic & Precedence (The "Order of Operations" Check)
+    check(t.runTest("10 + 2 * 3", 16.0));       // Mult before Add
+    check(t.runTest("(10 + 2) * 3", 36.0));     // Parenthesis
+    check(t.runTest("10 / 2 + 5", 10.0));       // Div before Add
+    check(t.runTest("10 / (2 + 3)", 2.0));      // Parenthesis divisor
+    check(t.runTest("-5 + 2", -3.0));           // Unary Minus at start
+    check(t.runTest("10 + -2", 8.0));           // Unary Minus inside
+    check(t.runTest("2^3", 8.0));               // Power
+    check(t.runTest("2^3^2", 64.0));           // Power associativity (usually right-to-left, or 64 if left-to-right. Check your engine!)
+    check(t.runTest("4 + 3 * 2 ^ 2", 16.0));    // PEMDAS: 4 + 3*4 = 16
+
+    // 2. Variables (Linearity Check)
+    check(t.runTestVariable("x + y", 3, 4, 7.0));
+    check(t.runTestVariable("x * y + 10", 2, 5, 20.0));
+    check(t.runTestVariable("x / y", 10, 2, 5.0));
+    check(t.runTestVariable("x^2 + y^2", 3, 4, 25.0)); // Pythagoras
+    check(t.runTestVariable("-x", 5, 0, -5.0));
+
+    // 3. Transcendental Functions
+    check(t.runTest("sin(0)", 0.0));
+    check(t.runTest("cos(0)", 1.0));
+    check(t.runTest("tan(0)", 0.0));
+    check(t.runTest("sqrt(16)", 4.0));
+    check(t.runTest("exp(1)", 2.718281828));
+    check(t.runTest("ln(2.718281828)", 1.0)); // Assuming 'log' is natural log (ln)
+    check(t.runTest("ln(1)", 0.0));
+
+    // 4. Variadic Functions (Min, Max)
+    check(t.runTest("min(10, 5)", 5.0));
+    check(t.runTest("max(10, 5)", 10.0));
+    check(t.runTest("min(3, 1, 5, 2)", 1.0));   // 4 args
+    check(t.runTest("max(-5, -2, -9)", -2.0));  // Negative args
+
+    // 5. Logical Operators (Assuming 1.0=True, 0.0=False)
+    check(t.runTest("1 < 2", 1.0));
+    check(t.runTest("2 < 1", 0.0));
+    check(t.runTest("5 >= 5", 1.0));
+    check(t.runTest("10 <> 10", 0.0));
+    check(t.runTest("10 = 10", 1.0)); // or == depending on your parser
+
+    // 6. Complex Logic (IF statement)
+    // if(condition, true_val, false_val)
+    check(t.runTest("if(1, 100, 200)", 100.0));
+    check(t.runTest("if(0, 100, 200)", 200.0));
+    check(t.runTest("if(5 > 2, 42, 0)", 42.0));
+    check(t.runTestVariable("if(x > y, x, y)", 10, 5, 10.0)); // Max implemented as If
+    check(t.runTestVariable("if(x > y, x, y)", 5, 10, 10.0));
+
+    // 7. Complex Combination
+    // exp(ln(lri)/0.5*(1-0.5*relH)) -> simplified test
+    // Let lri (x) = 1, relH (y) = 0.5
+    // ln(1) = 0 -> exp(0) = 1
+    check(t.runTestVariable("exp(ln(x)/0.5 * (1 - 0.5*y))", 1.0, 0.5, 1.0));
+
+    qDebug() << "\n\nTest Complete. " << count << " tests run.";
+    if (errors.empty()) {
+        qDebug() << "SUCCESS: All systems nominal.";
+    } else {
+        qDebug() << "FAILURE: " << errors.size() << " tests failed.";
+        for (const auto& e : errors) {
+            qDebug() << "  -> " << e;
+        }
+    }
+}
+
+
+void Tests::speedOfExpression()
+{
+    qDebug() << " Run expression tests!";
+    runExpressionTests();
+    return;
+
+
+    Q_ASSERT(1==0);
+    //    int *p;
+    //    p = 0;
+    //    *p = 1; --> signal handler does not really work
+    // (1) for each
+    double sum;
+    int count;
+    {
+        DebugTimer t("plain loop");
+        for (int i=0;i<10;i++) {
+            sum=0;
+            count=0;
+            foreach(const ResourceUnit *ru,GlobalSettings::instance()->model()->ruList()) {
+                foreach(const Tree &tree, ru->constTrees()) {
+                    sum+=tree.volume();
+                    count++;
+                }
+            }
+
+        }
+        qDebug() << "Sum of volume" << sum << "count" << count;
+    }
+    {
+        DebugTimer t("plain loop (iterator)");
+        for (int i=0;i<10;i++) {
+            AllTreeIterator at(GlobalSettings::instance()->model());
+            sum = 0.;
+            count = 0;
+            while (Tree *tree=at.next()) {
+                sum += pow(tree->dbh(),2.1f); count++;
+            }
+        }
+        qDebug() << "Sum of volume" << sum << "count" << count;
+    }
+    {
+        TreeWrapper tw;
+        Expression expr("dbh^2.1", &tw);
+        DebugTimer t("Expression loop");
+        for (int i=0;i<10;i++) {
+
+            AllTreeIterator at(GlobalSettings::instance()->model());
+            sum = 0.;
+            while (Tree *tree=at.next()) {
+                tw.setTree(tree);
+                sum += expr.execute();
+            }
+        }
+        qDebug() << "Sum of volume" << sum;
+    }
 }

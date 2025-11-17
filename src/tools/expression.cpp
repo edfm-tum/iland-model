@@ -427,7 +427,9 @@ void  Expression::parse_level3()
     QString op;
     op=m_token;
     bool Unary=false;
-    if (op=="-" && (m_lastState==etOperator || m_lastState==etUnknown || m_lastState==etCompare || m_lastState==etLogical || m_lastState==etFunction)) {
+    if (op=="-" && (m_lastState==etOperator || m_lastState==etUnknown ||
+                      m_lastState==etCompare || m_lastState==etLogical ||
+                      m_lastState==etFunction || m_lastState==etDelimeter)) {
         next_token();
         Unary=true;
     }
@@ -567,7 +569,7 @@ double Expression::execute(double *varlist, ExpressionWrapper *object) const
             case 0: *p=sin(*p); break;
             case 1: *p=cos(*p); break;
             case 2: *p=tan(*p); break;
-            case 3: *p=model_exp(*p); break;
+            case 3: *p=exp(*p); break;
             case 4: *p=log(*p); break;
             case 5: *p=sqrt(*p); break;
                 // min, max, if:  variable zahl von argumenten
