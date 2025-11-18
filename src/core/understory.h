@@ -49,6 +49,9 @@ public:
     /// get the RU container for given coordinates (or nullptr if not valid)
     const UnderstoryRU *understoryRU(QPointF metric_coord) const;
 
+    /// get the RU container for given index
+    UnderstoryRU *understoryRU(int index)  { return &mUnderstoryRU[index]; }
+
     // actions
     /// setup the understory module
     void setup();

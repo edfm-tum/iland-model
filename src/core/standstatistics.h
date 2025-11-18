@@ -109,20 +109,28 @@ public:
     SystemStatistics() { reset(); }
     void reset() { treeCount=0; saplingCount=0; newSaplings=0;
                    tManagement = 0.; tApplyPattern=tReadPattern=tTreeGrowth=0.;
-                   tSeedDistribution=tSapling=tEstablishment=tCarbonCycle=tWriteOutput=tTotalYear=0.; }
+                   tSeedDistribution=tSapling=tEstablishment=tCarbonCycle=tWriteOutput=tTotalYear=0.;
+                   tUnderstoryEstablishment=tUnderstoryGrowth=tTotalRegeneration=tDisturbanceModules=tClimate=0.;    }
     void writeOutput();
+    void printPerformanceStats();
     // the system counters
     int treeCount;
     int saplingCount;
     int newSaplings;
     // timings
+    double tClimate;
+    double tDisturbanceModules;
     double tManagement;
     double tApplyPattern;
     double tReadPattern;
     double tTreeGrowth;
+    // regeneration
+    double tTotalRegeneration;
+    double tEstablishment;
     double tSeedDistribution;
     double tSapling;
-    double tEstablishment;
+    double tUnderstoryGrowth;
+    double tUnderstoryEstablishment;
     double tCarbonCycle;
     double tWriteOutput;
     double tTotalYear;

@@ -18,10 +18,10 @@
 ********************************************************************************************/
 #ifndef DEBUGTIMER_H
 #define DEBUGTIMER_H
-#include "ticktack.h"
 #include <QAtomicInt>
 #include <QString>
 #include <QHash>
+#include <QElapsedTimer>
 
 /** Timer class that writes timings to the Debug-Output-Channel
 
@@ -34,9 +34,9 @@ The class writes the elapsed time to qDebug() when either destructed, or when ex
     counted in the sums. If setAsWarning() is issued, the debug messages are print as warning, thus also visible
   when debug messages are disabled.
   @code void foo() {
-     DebugTimer t("foo took [ms]:");
+     DebugTimer t("foo took (ms)]:");
      <some lengthy operation>
- } // will e.g. print "foo took [ms]: 123" to debug console
+ } // will e.g. print "foo took (ms): 123" to debug console
 
  void bar() {
     DebugTimer::clearAllTimers(); // set all timers to 0
@@ -45,7 +45,6 @@ The class writes the elapsed time to qDebug() when either destructed, or when ex
     DebugTimer::printAllTimers(); // print the sum of the timings.
  }
  @endcode
- For Windows, the "TickTack"-backend is used.
 
 */
 class DebugTimer
@@ -57,7 +56,12 @@ public:
     void setHideShort(bool hide_short_messages) { m_hideShort = hide_short_messages; }
     ~DebugTimer();
     void showElapsed();
-    double elapsed(); // elapsed time in milliseconds
+    /// get elapsed time (since start) in milliseconds
+    inline double elapsed()
+    {
+        return t.elapsed();
+    }
+
     void start();
     void interval(const QString &text);
     static void clearAllTimers();
@@ -69,7 +73,7 @@ private:
     static QHash<QString, double> mTimingList;
     static bool m_responsive_mode;
     static qint64 ms_since_epoch; // milliseconds since epoch for the first call
-    TickTack t;
+    QElapsedTimer t;
     bool m_hideShort; // if true, hide messages for short operations (except an explicit call to showElapsed())
     bool m_shown;
     bool m_silent;

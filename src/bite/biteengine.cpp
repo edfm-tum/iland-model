@@ -31,6 +31,7 @@
 #include "modelcontroller.h"
 #include "debugtimer.h"
 #include "outputmanager.h"
+#include "standstatistics.h"
 
 Q_LOGGING_CATEGORY(bite, "bite")
 
@@ -220,6 +221,7 @@ void BiteEngine::run()
     }
     // execute bite related outputs
     GlobalSettings::instance()->outputManager()->execute("bite");
+    GlobalSettings::instance()->systemStatistics()->tDisturbanceModules+=t.elapsed();
 }
 
 void BiteEngine::error(QString error_msg)

@@ -24,6 +24,7 @@
 #include "globalsettings.h"
 #include "debugtimer.h"
 #include "exception.h"
+#include "standstatistics.h"
 #include <QtPlugin>
 
 // include the static modules here in the code:
@@ -143,6 +144,8 @@ void Modules::run()
             throw IException(QString("ERROR in module: %1\n%2").arg(di->name(), e.message()));
         }
     }
+
+    GlobalSettings::instance()->systemStatistics()->tDisturbanceModules+=t.elapsed();
 
 
     // *** run in random order ****
