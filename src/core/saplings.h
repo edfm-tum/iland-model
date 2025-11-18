@@ -49,7 +49,9 @@ struct SaplingTree {
     // get resource unit species of the sapling tree
     ResourceUnitSpecies *resourceUnitSpecies(const ResourceUnit *ru) const;
 };
-struct SaplingCell {
+
+/// container for all saplings on a 2x2m cell.
+struct alignas(64) SaplingCell {
     static constexpr int NSapCells = 5;
     enum class ECellState : uint8_t { CellInvalid=0, ///< not stockable (outside project area)
                       CellEmpty=1,   ///< the cell has no slots occupied (no saplings on the cell)
