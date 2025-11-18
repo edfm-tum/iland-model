@@ -210,6 +210,8 @@ void Saplings::saplingGrowth(const ResourceUnit *ru)
         SaplingCell *s = &sap_cells[iy*cPxPerRU]; // ptr to row
         int isc = lif_grid->index(imap.x(), imap.y()+iy);
 
+        HeightGridValue *hgv = &height_grid->valueAtIndex(lif_grid->index5(isc));
+        int offset5 = 0;
         for (int ix=0;ix<cPxPerRU; ++ix, ++s, ++isc) {
             if (s->state() != SaplingCell::ECellState::CellInvalid) {
                 need_check=false;
@@ -217,15 +219,23 @@ void Saplings::saplingGrowth(const ResourceUnit *ru)
                 for (int i=0;i<SaplingCell::NSapCells;++i) {
                     if (s->saplings[i].is_occupied()) {
                         // growth of this sapling tree
-                        HeightGridValue &hgv = height_grid->valueAtIndex(lif_grid->index5(isc));
+                        //HeightGridValue &hgv = height_grid->valueAtIndex(lif_grid->index5(isc));
                         float lif_value = (*lif_grid)[isc];
 
-                        need_check |= growSapling(ru, *s, s->saplings[i], isc, hgv, lif_value, n_on_px);
+                        need_check |= growSapling(ru, *s, s->saplings[i], isc, *hgv, lif_value, n_on_px);
                     }
                 }
                 if (need_check)
                     s->checkState();
 
+            }
+
+            ++offset5;
+            if (offset5 == 5) {
+                // advances the pointer to height-grid every five steps.
+                // Height grid is guaranteed to be aligned with ix=0
+                offset5 = 0;
+                ++hgv;
             }
         }
     }
