@@ -1121,7 +1121,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                                     *rg = st ? st->height : 0.f;
                                 } else {
                                     // use the expression with the saplings
-                                    sw.setSaplingTree(st, sc->ru);
+                                    sw.setSaplingTree(st, sc->ru());
                                     double value = expression.execute();
                                     scaling_max = std::max(scaling_max, value);
                                     *rg = value;

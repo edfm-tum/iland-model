@@ -74,10 +74,29 @@ public:
         if (m_strict) const_cast<Expression*>(this)->m_strict = false;
         return execute(var_space); // execute with local variables on stack
     }
-    bool calculateBool(const double Val1=0., const double Val2=0., const bool forceExecution=false) const { return calculate(Val1, Val2, forceExecution) != 0.; }
-    /// calculate formula with object
-    ///
-    double calculate(ExpressionWrapper &object, const double variable_value1=0., const double variable_value2=0.) const;
+
+    /// evaluate expression with local variables 1 and 2 set to to Val1 and Val2.
+    /// Set forceExecution=true to turn off linearization
+    bool calculateBool(const double Val1=0., const double Val2=0., const bool forceExecution=false) const
+    { return calculate(Val1, Val2, forceExecution) != 0.; }
+
+    /// calculate formula with object (based on ExpressionWrapper)
+    /// provide two extra local variables
+    /// returns a double (result of expression)
+    double calculate(ExpressionWrapper &object, const double variable_value1=0., const double variable_value2=0.) const
+    {
+        double var_space[2]; // use only two local variables (good for cache)
+        var_space[0] = variable_value1;
+        var_space[1]=variable_value2;
+        if (m_strict)
+            const_cast<Expression*>(this)->m_strict=false;
+
+        return execute(var_space,&object); // execute with local variables on stack
+    }
+
+    /// calculate formula with object (based on ExpressionWrapper)
+    /// provide two extra local variables
+    /// returns a bool (result of expression)
     double calculateBool(ExpressionWrapper &object, const double variable_value1=0., const double variable_value2=0.) const { return calculate(object,variable_value1, variable_value2)!=0.; }
 
     //variables

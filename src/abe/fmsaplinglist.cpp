@@ -66,7 +66,7 @@ int FMSaplingList::loadFromStand(int standId, QString filter, bool do_append)
         if (sc){
             for (int i=0;i<SaplingCell::NSapCells;++i) {
                 if (sc->saplings[i].is_occupied()) {
-                    sw.setSaplingTree(&sc->saplings[i], sc->ru);
+                    sw.setSaplingTree(&sc->saplings[i], sc->ru());
                     if (filter.isEmpty() || filter_expr.execute()) {
                         mSaplings.push_back(QPair<SaplingTree*, SaplingCell*>( &(sc->saplings[i]), sc));
                     }
@@ -90,7 +90,7 @@ int FMSaplingList::filter(QString filter)
     QPair<SaplingTree*, SaplingCell*> empty_tree(nullptr,nullptr);
 
     for (int i=0;i<mSaplings.size();++i) {
-        sw.setSaplingTree(mSaplings[i].first, mSaplings[i].second->ru);
+        sw.setSaplingTree(mSaplings[i].first, mSaplings[i].second->ru());
         if (!expression.execute())
             mSaplings[i] = empty_tree; // mark for removal
     }
@@ -107,7 +107,7 @@ int FMSaplingList::kill(QString filter)
     SaplingWrapper sw;
     Expression expression(filter.isEmpty() ? QStringLiteral("true") : filter, &sw);
     for (int i=0;i<mSaplings.size();++i) {
-        sw.setSaplingTree(mSaplings[i].first, mSaplings[i].second->ru);
+        sw.setSaplingTree(mSaplings[i].first, mSaplings[i].second->ru());
         if (expression.execute()) {
             mSaplings[i].first->clear();
             mSaplings[i].second->checkState();
@@ -133,7 +133,7 @@ double FMSaplingList::sum(QString expression, QString filter)
     Expression filterexpr(filter, &sw);
     Expression expr(expression, &sw);
     for (int i=0;i<mSaplings.size();++i) {
-        sw.setSaplingTree(mSaplings[i].first, mSaplings[i].second->ru);
+        sw.setSaplingTree(mSaplings[i].first, mSaplings[i].second->ru());
         if (filterexpr.isEmpty() || filterexpr.execute()) {
             running_sum += expr.execute();
         }

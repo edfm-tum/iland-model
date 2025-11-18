@@ -57,26 +57,46 @@ struct SaplingCell {
                       CellFree=3,    ///< seedlings may establish on the cell (at least one slot occupied)
                       CellFull=4};   ///< cell is full (no establishment) (either all slots used or one slot > 1.3m)
     SaplingCell() {
-        state=ECellState::CellInvalid;
-        ru=nullptr;
+        setState(ECellState::CellInvalid);
+        ru_index = 0;
     }
-    ECellState state;
     SaplingTree saplings[NSapCells];
-    ResourceUnit *ru;
+
+    // pack into 32 bit. SaplingTree are 12 byte x 5 = 60 + 4 = 64 -> nice for cachelines
+    uint32_t state_bits : 8;  // 8 bits for ECellState (Values 0-255)
+    uint32_t ru_index   : 24; // 24 bits for Index (Values 0-16,777,215)
+
+    ECellState state() const {
+        return static_cast<ECellState>(state_bits);
+    }
+    void setState(ECellState s) {
+        state_bits = static_cast<uint8_t>(s);
+    }
+
+    ResourceUnit* ru() const {
+        return GlobalSettings::instance()->model()->ru(this->ru_index);
+    }
+
+    void setRuIndex(int index) {
+        // Q_ASSERT(index < (1<<24));
+        ru_index = index;
+    }
+
+
     /// returns true if establishment is allowed for the cell
-    bool hasFreeSlots() const {return state>ECellState::CellInvalid && state<ECellState::CellFull; }
-    void checkState() { if (state==ECellState::CellInvalid) return;
+    bool hasFreeSlots() const {return state()>ECellState::CellInvalid && state()<ECellState::CellFull; }
+    void checkState() { if (state()==ECellState::CellInvalid) return;
                         bool free = false;
                         bool occupied=false;
                         for (int i=0;i<NSapCells;++i) {
                             // locked for all species, if a sapling of one species >1.3m
-                            if (saplings[i].height>1.3f) {state = ECellState::CellFull; return; }
+                            if (saplings[i].height>1.3f) {setState( ECellState::CellFull ); return; }
                             occupied |= saplings[i].is_occupied();
                             // locked, if all slots are occupied.
                             if (!saplings[i].is_occupied())
                                 free=true;
                         }
-                        state = free? (occupied? ECellState::CellEmpty: ECellState::CellFree) : ECellState::CellFull;
+                        setState( free? (occupied? ECellState::CellEmpty: ECellState::CellFree) : ECellState::CellFull );
                       }
     /// get an index to an open slot in the cell, or -1 if all slots are occupied
     int free_index() {
@@ -102,13 +122,13 @@ struct SaplingCell {
         return &saplings[idx];
     }
     /// return the maximum height on the pixel
-    float max_height() { if (state==ECellState::CellInvalid) return 0.f;
+    float max_height() { if (state()==ECellState::CellInvalid) return 0.f;
                          float h_max = 0.f;
                          for (int i=0;i<NSapCells;++i)
                              h_max = std::max(saplings[i].height, h_max);
                          return h_max;
                        }
-    bool has_new_saplings() { if (state==ECellState::CellInvalid) return 0.f;
+    bool has_new_saplings() { if (state()==ECellState::CellInvalid) return 0.f;
                         for (int i=0;i<NSapCells;++i)
                             if (saplings[i].is_occupied() && saplings[i].age<2)
                                 return true;
@@ -116,7 +136,7 @@ struct SaplingCell {
     }
     /// return the sapling tree of the requested species, or 0
     SaplingTree *saplingOfSpecies(int species_index) {
-        if (state==ECellState::CellInvalid) return nullptr;
+        if (state()==ECellState::CellInvalid) return nullptr;
         for (int i=0;i<NSapCells;++i)
             if (saplings[i].species_index == species_index)
                 return &saplings[i];

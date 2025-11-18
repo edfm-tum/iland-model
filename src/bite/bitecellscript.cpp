@@ -449,7 +449,7 @@ double Constraints::evaluate(ABE::FMSaplingList *saplinglist)
         SaplingCell *sapcell= saplinglist->saplings()[t].second;
 
         for (int i=0;i<mConstraints.count();++i) {
-            if (mConstraints.at(i)->evaluateBool(sap, sapcell->ru)) {
+            if (mConstraints.at(i)->evaluateBool(sap, sapcell->ru())) {
                 found = true;
                 return 1.; // done! at least one tree passes one constraint
             }

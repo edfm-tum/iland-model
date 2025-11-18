@@ -343,7 +343,7 @@ bool BiteImpact::runImpactSaplings(BiteImpact::BiteImpactItem *item, BiteCell *c
     if (!item->treeFilter.isEmpty()) {
         // count all sapling cohorts:
         for (it = saplist->saplings().begin(); it!=saplist->saplings().end(); ++it) {
-            sw.setSaplingTree(it->first, it->second->ru);
+            sw.setSaplingTree(it->first, it->second->ru());
             if (item->treeFilter.execute(nullptr, &sw)==0.)
                 continue;
             ++n_saplings;
@@ -378,7 +378,7 @@ bool BiteImpact::runImpactSaplings(BiteImpact::BiteImpactItem *item, BiteCell *c
         SaplingCell *sc = it->second;
         // filtering?
         if (!item->treeFilter.isEmpty()) {
-            sw.setSaplingTree(stree, sc->ru);
+            sw.setSaplingTree(stree, sc->ru());
             if (item->treeFilter.execute(nullptr, &sw)==0.)
                 continue;
         }

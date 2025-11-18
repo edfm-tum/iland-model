@@ -496,7 +496,7 @@ void Management::killSaplings(MapGridWrapper *wrap, int key, QString filter)
                 } else {
                     for (int i=0;i<SaplingCell::NSapCells;++i) {
                         if (sc->saplings[i].is_occupied()) {
-                            sw.setSaplingTree(&sc->saplings[i], sc->ru);
+                            sw.setSaplingTree(&sc->saplings[i], sc->ru());
                             if (expr.executeBool()) {
                                 sc->saplings[i].clear();
                                 nsap_removed++;

@@ -664,16 +664,16 @@ void CustomAggOutLevel::populateSaplingData(QMap<QString, QVector<QPair<SaplingT
             if (sapcell->saplings[i].is_occupied()) {
 
                 if (!filter.isEmpty()) {
-                    sw.setSaplingTree(&sapcell->saplings[i], sapcell->ru);
+                    sw.setSaplingTree(&sapcell->saplings[i], sapcell->ru());
                     if (!filter.execute())
                         continue; //
                 }
                 // store a pointer to the sapling tree in the data structure
                 if (by_species) {
 
-                    data[ sapcell->saplings[i].resourceUnitSpecies(sapcell->ru)->species()->id() ].push_back( QPair<SaplingTree*, ResourceUnit*> (&sapcell->saplings[i], sapcell->ru) );
+                    data[ sapcell->saplings[i].resourceUnitSpecies(sapcell->ru())->species()->id() ].push_back( QPair<SaplingTree*, ResourceUnit*> (&sapcell->saplings[i], sapcell->ru()) );
                 } else {
-                    data[ "" ].push_back( QPair<SaplingTree*, ResourceUnit*> (&sapcell->saplings[i], sapcell->ru) );
+                    data[ "" ].push_back( QPair<SaplingTree*, ResourceUnit*> (&sapcell->saplings[i], sapcell->ru()) );
                 }
 
             }

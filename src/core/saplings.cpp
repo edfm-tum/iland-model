@@ -48,9 +48,9 @@ void Saplings::setup()
         SaplingCell *s = cell(lif_grid->indexOf(i), false); // false: retrieve also invalid cells
         if (s) {
             if (!hg->valueAtIndex(lif_grid->index5(i)).isValid())
-                s->state = SaplingCell::ECellState::CellInvalid;
+                s->setState( SaplingCell::ECellState::CellInvalid );
             else
-                s->state = SaplingCell::ECellState::CellEmpty;
+                s->setState( SaplingCell::ECellState::CellEmpty );
         }
 
     }
@@ -66,7 +66,7 @@ void Saplings::calculateInitialStatistics(const ResourceUnit *ru)
     SaplingCell *s = sap_cells;
 
     for (int i=0; i<cPxPerHectare; ++i, ++s) {
-        if (s->state != SaplingCell::ECellState::CellInvalid) {
+        if (s->state() != SaplingCell::ECellState::CellInvalid) {
             int cohorts_on_px = s->n_occupied();
             for (int j=0;j<SaplingCell::NSapCells;++j) {
                 if (s->saplings[j].is_occupied()) {
@@ -211,7 +211,7 @@ void Saplings::saplingGrowth(const ResourceUnit *ru)
         int isc = lif_grid->index(imap.x(), imap.y()+iy);
 
         for (int ix=0;ix<cPxPerRU; ++ix, ++s, ++isc) {
-            if (s->state != SaplingCell::ECellState::CellInvalid) {
+            if (s->state() != SaplingCell::ECellState::CellInvalid) {
                 need_check=false;
                 int n_on_px = s->n_occupied();
                 for (int i=0;i<SaplingCell::NSapCells;++i) {
@@ -273,8 +273,8 @@ void Saplings::simplifiedGrassCover(const ResourceUnit *ru)
         int isc = lif_grid->index(imap.x(), imap.y()+iy);
 
         for (int ix=0;ix<cPxPerRU; ++ix, ++s, ++isc) {
-            if (s->state == SaplingCell::ECellState::CellEmpty || s->state== SaplingCell::ECellState::CellGrass) {
-                s->state =  (*lif_grid)[isc] > threshold ? SaplingCell::ECellState::CellGrass : SaplingCell::ECellState::CellEmpty;
+            if (s->state() == SaplingCell::ECellState::CellEmpty || s->state() == SaplingCell::ECellState::CellGrass) {
+                s->setState(  (*lif_grid)[isc] > threshold ? SaplingCell::ECellState::CellGrass : SaplingCell::ECellState::CellEmpty );
             }
         }
     }
@@ -287,7 +287,7 @@ double Saplings::topHeight(const ResourceUnit *ru) const
     //int n_cells = ru->stockableArea() / (cPxSize*cPxSize);
     float h_max = 0.f;
     for (int iy=0; iy<cPxPerRU; ++iy, ++sap_cell) {
-        if (sap_cell->state!=SaplingCell::ECellState::CellInvalid) {
+        if (sap_cell->state()!=SaplingCell::ECellState::CellInvalid) {
             h_max = qMax(sap_cell->max_height(), h_max);
         }
     }
@@ -312,7 +312,7 @@ SaplingCell *Saplings::cell(QPoint lif_coords, bool only_valid, ResourceUnit **r
                  qDebug("invalid coords in Saplings::cell");
                     );
         SaplingCell *s=&ru->saplingCellArray()[idx];
-        if (s && (!only_valid || s->state!=SaplingCell::ECellState::CellInvalid))
+        if (s && (!only_valid || s->state()!=SaplingCell::ECellState::CellInvalid))
             return s;
     }
     return nullptr;
@@ -669,7 +669,7 @@ void Saplings::vegetativeSprouting(const Species *species, SaplingCell &scell, Q
             if (sc_new && !sc_new->saplingOfSpecies(species->index())) {
                 if (GlobalSettings::instance()->model()->settings().torusMode) {
                     // in torus mode we make sure not to grow saplings in an adjacent resource unit
-                    if (scell.ru != ru_new) {
+                    if (scell.ru() != ru_new) {
                         s = (s+1)%8; // move on...
                         continue;
                     }

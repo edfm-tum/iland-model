@@ -1550,6 +1550,26 @@ public:
             return QString("CRASHED: testRandom:  Threw exception: %1").arg(err.message());
         }
     }
+
+    QString runTestBoolean(QString exprStr, bool expected) {
+        try {
+            Expression e(exprStr);
+
+
+            // Run with empty vars
+            bool result = e.calculateBool();
+
+            if (result != expected) {
+                QString err=QString("Failed: %1 - Expected: %2 Got: %3").arg(exprStr).arg(expected).arg(result);
+                return err;
+            }
+
+        } catch (const std::logic_error &e) {
+            return "CRASHED: [" + exprStr + "] Threw exception: " + e.what();
+        }
+        return ""; // Success
+
+    }
 };
 
 // --- The Main Test Suite ---
@@ -1601,11 +1621,12 @@ void runExpressionTests() {
     check(t.runTest("max(-5, -2, -9)", -2.0));  // Negative args
 
     // 5. Logical Operators (Assuming 1.0=True, 0.0=False)
-    check(t.runTest("1 < 2", 1.0));
-    check(t.runTest("2 < 1", 0.0));
-    check(t.runTest("5 >= 5", 1.0));
-    check(t.runTest("10 <> 10", 0.0));
-    check(t.runTest("10 = 10", 1.0)); // or == depending on your parser
+    check(t.runTestBoolean("1 < 2", true));
+    check(t.runTestBoolean("2 < 1", false));
+    check(t.runTestBoolean("5 >= 5", true));
+    check(t.runTestBoolean("10 <> 10", false));
+    check(t.runTestBoolean("10 = 10", true)); // or == depending on your parser
+    check(t.runTestBoolean("if(1=2-1, true, false)", true)); // built in true/false
 
     // 6. Complex Logic (IF statement)
     // if(condition, true_val, false_val)

@@ -592,14 +592,7 @@ void Expression::setVar(const QString& Var, double Value)
 
 
 
-double Expression::calculate(ExpressionWrapper &object, const double variable_value1, const double variable_value2) const
-{
-    double var_space[EXPRNLOCALVARS];
-    var_space[0] = variable_value1;
-    var_space[1]=variable_value2;
-    m_strict=false;
-    return execute(var_space,&object); // execute with local variables on stack
-}
+
 
 
 int Expression::getFuncIndex(const QString& functionName)
