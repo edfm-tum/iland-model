@@ -62,7 +62,9 @@ DebugTimer::~DebugTimer()
     }
 
     double t = elapsed();
-    mTimingList[m_caption]+=t;
+    if (!m_caption.isEmpty())
+        mTimingList[m_caption]+=t;
+
     // show message if timer is not set to silent, and if time > 100ms (if timer is set to hideShort (which is the default))
     if (!m_silent && (!m_hideShort || t>100.))
         showElapsed();
@@ -77,13 +79,15 @@ DebugTimer::DebugTimer(const QString &caption, bool silent)
         ms_since_epoch = QDateTime::currentMSecsSinceEpoch();
     }
 
-    m_caption = caption;
     m_silent=silent;
     m_hideShort=true;
-    if (!mTimingList.contains(caption)) {
-        QMutexLocker locker(&timer_mutex);
-        if (!mTimingList.contains(caption))
-            mTimingList[caption]=0.;
+    m_caption = caption;
+    if (!caption.isEmpty()) {
+        if (!mTimingList.contains(caption)) {
+            QMutexLocker locker(&timer_mutex);
+            if (!mTimingList.contains(caption))
+                mTimingList[caption]=0.;
+        }
     }
     start();
 
@@ -108,7 +112,6 @@ void DebugTimer::printAllTimers()
          total+=i.value();
          ++i;
      }
-    qWarning() << "Sum: " << total << "ms";
 }
 
 // pretty formatting of timing information
@@ -153,10 +156,7 @@ void DebugTimer::showElapsed()
     }
     m_shown=true;
 }
-double DebugTimer::elapsed()
-{
-    return t.elapsed()*1000;
-}
+
 
 void DebugTimer::start()
 {

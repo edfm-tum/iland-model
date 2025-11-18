@@ -30,7 +30,6 @@ SOURCES += main.cpp \
     lightroom.cpp \
     ../core/stamp.cpp \
     ../core/stampcontainer.cpp \
-    ../tools/ticktack.cpp \
     ../tools/settingmetadata.cpp \
     ../tools/xmlhelper.cpp \
     ../core/threadrunner.cpp \
@@ -53,7 +52,6 @@ HEADERS += mainwindow.h \
     ../core/global.h \
     ../core/stamp.h \
     ../core/stampcontainer.h \
-    ../tools/ticktack.h \
     ../tools/settingmetadata.h \
     ../core/speciesset.h \
     ../tools/xmlhelper.h \

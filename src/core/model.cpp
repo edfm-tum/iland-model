@@ -708,6 +708,61 @@ void Model::initOutputDatabase()
 
 }
 
+
+/// multithreaded run function for resource unit level
+/// * prepare resource unit data
+/// * regeneration
+/// * sapling growth
+/// * understory
+static void nc_full_regeneration_phase(ResourceUnit *unit)
+{
+    Saplings *s = GlobalSettings::instance()->model()->saplings();
+    auto *stats = GlobalSettings::instance()->systemStatistics();
+
+    UnderstoryRU *us_ru = nullptr;
+    if (GlobalSettings::instance()->model()->settings().understoryEnabled )
+        us_ru = GlobalSettings::instance()->model()->understory()->understoryRU(unit->index());
+
+    DebugTimer t;
+    struct elapsed_time {
+        double establishment{0};
+        double sapling_growth{0};
+        double us_growth {0};
+        double us_establishment {0};
+    } elapsed;
+
+    try {
+        // 1. Run establishment
+        s->establishment(unit);
+
+        elapsed.establishment = t.elapsed();
+
+        // 2. growth (and mortality) of saplings
+        s->saplingGrowth(unit);
+        elapsed.sapling_growth = t.elapsed() - elapsed.establishment;
+
+        if (us_ru) {
+            us_ru->growth();
+            elapsed.us_growth = t.elapsed() - elapsed.sapling_growth;
+
+            us_ru->establishment();
+            elapsed.us_establishment = t.elapsed() - elapsed.us_growth;
+        }
+
+        // copy back to system stats to track runtime
+        stats->tEstablishment += elapsed.establishment;
+        stats->tSapling += elapsed.sapling_growth;
+        stats->tUnderstoryGrowth += elapsed.us_growth;
+        stats->tUnderstoryEstablishment += elapsed.us_establishment;
+
+
+    } catch (const IException& e) {
+        GlobalSettings::instance()->model()->threadExec().throwError(e.message());
+    }
+
+}
+
+
 /// multithreaded run function for resource unit level establishment
 static void nc_establishment(ResourceUnit *unit)
 {
@@ -862,7 +917,6 @@ void Model::beforeRun()
 void Model::runYear()
 {
     DebugTimer t_all("Model::runYear()");
-    GlobalSettings::instance()->systemStatistics()->reset();
     threadRunner.clearErrors();
     RandomGenerator::checkGenerator(); // see if we need to generate new numbers...
     // initalization at start of year for external modules
@@ -892,6 +946,7 @@ void Model::runYear()
     foreach(SpeciesSet *set, mSpeciesSets)
         set->newYear();
 
+    GlobalSettings::instance()->systemStatistics()->tClimate+=t_all.elapsed();
     // management classic
     if (mManagement) {
         setCurrentTask("Management");
@@ -935,24 +990,41 @@ void Model::runYear()
         // establishment
         Saplings::updateBrowsingPressure();
 
-
-        { DebugTimer t("establishment");
-        setCurrentTask("Establishment");
-        executePerResourceUnit( nc_establishment, false /* true: force single threaded operation */);
-        GlobalSettings::instance()->systemStatistics()->tEstablishment+=t.elapsed();
-        }
-        { DebugTimer t("sapling growth");
-        setCurrentTask("sapling growth");
-
         foreach(SpeciesSet *set, mSpeciesSets) {
             // the sapling seed maps are cleared before sapling growth (where sapling seed maps are filled)
             // the content of the seed maps is used in the *next* year
             set->clearSaplingSeedMap();
         }
 
-        executePerResourceUnit( nc_sapling_growth, false /* true: force single threaded operation */);
+        { DebugTimer t("Regeneration_total");
+
+            setCurrentTask("regeneration ...");
+            executePerResourceUnit(nc_full_regeneration_phase, false /* true: force single threaded operation */);
+
+            GlobalSettings::instance()->systemStatistics()->tTotalRegeneration+=t.elapsed();
+            qDebug() << "Timertest: elapsed:" << t.elapsed() << "total:" << GlobalSettings::instance()->systemStatistics()->tTotalRegeneration;
+
+        }
+        /*
+        { DebugTimer t("establishment");
+        setCurrentTask("Establishment");
+        executePerResourceUnit( nc_establishment, false / * true: force single threaded operation * /);
+        GlobalSettings::instance()->systemStatistics()->tEstablishment+=t.elapsed();
+        }
+        { DebugTimer t("sapling growth");
+        setCurrentTask("sapling growth");
+
+
+        executePerResourceUnit( nc_sapling_growth, false / * true: force single threaded operation * /);
         GlobalSettings::instance()->systemStatistics()->tSapling+=t.elapsed();
         }
+
+        // understory
+        if (settings().understoryEnabled) {
+            DebugTimer t("understory");
+            mUnderstory->run();
+        }
+        */
 
         mGrassCover->executeAfterRegeneration(); // evaluate ground vegetation
 
@@ -961,15 +1033,11 @@ void Model::runYear()
 
     }
 
-    // understory
-    if (settings().understoryEnabled) {
-        DebugTimer t("understory");
-        mUnderstory->run();
-    }
+
 
     // external modules/disturbances
-    setCurrentTask("BITE");
     if (mBiteEngine) {
+        setCurrentTask("BITE");
         mBiteEngine->setYear(GlobalSettings::instance()->currentYear());
         mBiteEngine->run();
     }
