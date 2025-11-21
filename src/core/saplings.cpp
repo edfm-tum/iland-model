@@ -292,7 +292,7 @@ void Saplings::calculateLightProfile(const ResourceUnit *ru, const UnderstoryRU 
     HeightGrid *height_grid = GlobalSettings::instance()->model()->heightGrid();
     FloatGrid *lif_grid = GlobalSettings::instance()->model()->grid();
     auto *species_set = GlobalSettings::instance()->model()->speciesSet();
-    const auto &states = Understory::instance().states();
+    const auto *states = understory ? &Understory::instance().states() : nullptr;
     QPoint imap = ru->cornerPointOffset();
     SaplingCell *sap_cells = ru->saplingCellArray();
 
@@ -330,8 +330,8 @@ void Saplings::calculateLightProfile(const ResourceUnit *ru, const UnderstoryRU 
                 if (us_cell->isValid() && !us_cell->isEmpty()) {
                     for (auto &p : us_cell->plants()) {
                         if (p.isLiving()) {
-                            const double focus_height = states[p.stateId()]->height();
-                            profile.lai[cell_index][profile.getBinIndex(focus_height)] += states[p.stateId()]->LAI();
+                            const double focus_height = (*states)[p.stateId()]->height();
+                            profile.lai[cell_index][profile.getBinIndex(focus_height)] += (*states)[p.stateId()]->LAI();
                         }
                     }
                 }

@@ -156,8 +156,6 @@ int SpeciesSet::setup()
     mLRICorrection.linearize2d(0., 1., 0., 1., 64, 32);
 
     createRandomSpeciesOrder();
-    // fast lookup for species. NOTE: this assumes a single species set in a simulation!
-    SaplingTree::setupSpeciesLookup();
 
     return mSpecies.count();
 

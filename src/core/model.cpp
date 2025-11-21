@@ -395,6 +395,9 @@ void Model::setupSpace()
 
         }
 
+        // fast lookup for species. NOTE: this assumes a single species set in a simulation!
+        SaplingTree::setupSpeciesLookup();
+
         // list of "valid" resource units
         QList<ResourceUnit*> valid_rus;
         foreach(ResourceUnit* ru, mRU)
