@@ -57,7 +57,7 @@ private:
     static QVector<Species*> mSpecies; ///< fast lookup table for species by index
 };
 
-struct SaplingCell {
+struct alignas(64) SaplingCell {
     static constexpr int NSapCells = 5;
     enum class ECellState : uint8_t { CellInvalid=0, ///< not stockable (outside project area)
                       CellEmpty=1,   ///< the cell has no slots occupied (no saplings on the cell)

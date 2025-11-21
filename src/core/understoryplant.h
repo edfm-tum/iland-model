@@ -96,7 +96,7 @@ class UnderstoryRU; // forward
  * is container for all UnderstoryPlant on a cell.
  * It manages occupation and stores the individual UnderstoryPlant objects
  */
-class UnderstoryCell
+class alignas(64) UnderstoryCell
 {
 public:
     /// number of slots per cell
