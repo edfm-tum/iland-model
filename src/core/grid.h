@@ -133,7 +133,11 @@ public:
     bool coordValid(const float x, const float y) const { return x>=mRect.left() && x<mRect.right()  && y>=mRect.top() && y<mRect.bottom(); }
     bool coordValid(const QPointF &pos) const { return coordValid(pos.x(), pos.y()); }
 
-    QPoint indexAt(const QPointF& pos) const { return QPoint(int((pos.x()-mRect.left()) / mCellsize),  int((pos.y()-mRect.top())/mCellsize)); } ///< get index of value at position pos (metric)
+    /// get index of value at position pos (metric)
+    QPoint indexAt(const QPointF& pos) const {
+    return QPoint(int((pos.x()-mRect.left()) * mInverseCellsize),
+                  int((pos.y()-mRect.top()) * mInverseCellsize));
+    }
     /// get index (x/y) of the (linear) index 'index' (0..count-1)
     QPoint indexOf(const int index) const {return QPoint(index % mSizeX,  index / mSizeX); }
     bool isIndexValid(const QPoint& pos) const { return (pos.x()>=0 && pos.x()<mSizeX && pos.y()>=0 && pos.y()<mSizeY); } ///< return true, if position is within the grid
@@ -199,6 +203,7 @@ private:
     T* mEnd; ///< pointer to 1 element behind the last
     QRectF mRect;
     float mCellsize; ///< size of a cell in meter
+    float mInverseCellsize; ///< 1/cellsize (for performance)
     int mSizeX; ///< count of cells in x-direction
     int mSizeY; ///< count of cells in y-direction
     int mCount; ///< total number of cells in the grid
@@ -254,8 +259,8 @@ private:
     T* mFirst; // points to the first element of the grid
     T* mLast; // points to the last element of the grid
     T* mCurrent;
-    size_t mLineLength;
-    size_t mCols;
+    int mLineLength;
+    int mCols;
     int mCurrentCol;
 };
 
@@ -379,6 +384,7 @@ bool Grid<T>::setup(const float cellsize, const int sizex, const int sizey)
         }
     }
     mCellsize=cellsize;
+    mInverseCellsize = 1./cellsize;
     mCount = mSizeX*mSizeY;
     if (mCount<=0)
         return false;
@@ -496,14 +502,7 @@ void  Grid<T>::wipe()
 template <class T>
 void  Grid<T>::wipe(const T value)
 {
-    /* this does not work properly !!! */
-    if (sizeof(T)==sizeof(int)) {
-        float temp = value;
-        float *pf = &temp;
-
-        memset(mData, *((int*)pf), mCount*sizeof(T));
-    } else
-        initialize(value);
+    std::fill_n(mData, mCount, value);
 }
 
 template <class T>
@@ -606,14 +605,14 @@ T* GridRunner<T>::next()
     mCurrent++;
     mCurrentCol++;
 
-    if (mCurrentCol >= int(mCols)) {
+    if (mCurrentCol >= mCols) {
         mCurrent += mLineLength; // skip to next line
         mCurrentCol = 0;
     }
     if (mCurrent>mLast)
         return NULL;
-    else
-        return mCurrent;
+
+    return mCurrent;
 }
 
 template <class T>
@@ -623,12 +622,12 @@ template <class T>
 void GridRunner<T>::neighbors4(T** rArray)
 {
     // north:
-    rArray[0] = mCurrent + mCols + mLineLength > mLast?0: mCurrent + mCols + mLineLength;
+    rArray[0] = mCurrent + mCols + mLineLength > mLast? nullptr: mCurrent + mCols + mLineLength;
     // south:
-    rArray[3] = mCurrent - (mCols + mLineLength) < mFirst?0: mCurrent -  (mCols + mLineLength);
+    rArray[3] = mCurrent - (mCols + mLineLength) < mFirst? nullptr : mCurrent -  (mCols + mLineLength);
     // east / west
-    rArray[1] = mCurrentCol+1<int(mCols)? mCurrent + 1 : 0;
-    rArray[2] = mCurrentCol>0? mCurrent-1 : 0;
+    rArray[1] = mCurrentCol+1<int(mCols)? mCurrent + 1 : nullptr;
+    rArray[2] = mCurrentCol>0? mCurrent-1 : nullptr;
 }
 
 /// get pointers to the 8-neighbor-hood
@@ -639,13 +638,13 @@ void GridRunner<T>::neighbors8(T** rArray)
 {
     neighbors4(rArray);
     // north-east
-    rArray[4] = rArray[0] && rArray[1]? rArray[0]+1: 0;
+    rArray[4] = rArray[0] && rArray[1]? rArray[0]+1: nullptr;
     // north-west
-    rArray[5] = rArray[0] && rArray[2]? rArray[0]-1: 0;
+    rArray[5] = rArray[0] && rArray[2]? rArray[0]-1: nullptr;
     // south-east
-    rArray[6] = rArray[3] && rArray[1]? rArray[3]+1: 0;
+    rArray[6] = rArray[3] && rArray[1]? rArray[3]+1: nullptr;
     // south-west
-    rArray[7] = rArray[3] && rArray[2]? rArray[3]-1: 0;
+    rArray[7] = rArray[3] && rArray[2]? rArray[3]-1: nullptr;
 
 }
 

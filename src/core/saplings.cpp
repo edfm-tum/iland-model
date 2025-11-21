@@ -199,45 +199,26 @@ void Saplings::establishment(const ResourceUnit *ru)
 
 }
 
-void Saplings::saplingGrowth(const ResourceUnit *ru)
+void Saplings::saplingGrowth(const ResourceUnit *ru, const LightProfile &profile)
 {
-    HeightGrid *height_grid = GlobalSettings::instance()->model()->heightGrid();
-    FloatGrid *lif_grid = GlobalSettings::instance()->model()->grid();
-
-    QPoint imap = ru->cornerPointOffset();
     bool need_check=false;
     SaplingCell *sap_cells = ru->saplingCellArray();
 
+    int cell_index = 0;
     for (int iy=0; iy<cPxPerRU; ++iy) {
         SaplingCell *s = &sap_cells[iy*cPxPerRU]; // ptr to row
-        int isc = lif_grid->index(imap.x(), imap.y()+iy);
 
-        HeightGridValue *hgv = &height_grid->valueAtIndex(lif_grid->index5(isc));
-        int offset5 = 0;
-        for (int ix=0;ix<cPxPerRU; ++ix, ++s, ++isc) {
+        for (int ix=0;ix<cPxPerRU; ++ix, ++s, ++cell_index) {
             if (s->state() != SaplingCell::ECellState::CellInvalid) {
                 need_check=false;
-                int n_on_px = s->n_occupied();
                 for (int i=0;i<SaplingCell::NSapCells;++i) {
                     if (s->saplings[i].is_occupied()) {
-                        // growth of this sapling tree
-                        //HeightGridValue &hgv = height_grid->valueAtIndex(lif_grid->index5(isc));
-                        float lif_value = (*lif_grid)[isc];
-
-                        need_check |= growSapling(ru, *s, s->saplings[i], isc, *hgv, lif_value, n_on_px);
+                        // call the detailed growth function for the individual sapling
+                        need_check |= growSapling(ru, profile, *s, s->saplings[i], cell_index);
                     }
                 }
                 if (need_check)
                     s->checkState();
-
-            }
-
-            ++offset5;
-            if (offset5 == 5) {
-                // advances the pointer to height-grid every five steps.
-                // Height grid is guaranteed to be aligned with ix=0
-                offset5 = 0;
-                ++hgv;
             }
         }
     }
@@ -446,8 +427,7 @@ QPoint Saplings::coordOfCellLIF(const ResourceUnit *ru, int cell_index)
     QPoint imap = ru->cornerPointOffset();
     int x = imap.x() + cell_index % cPxPerRU;
     int y = imap.y() + cell_index/cPxPerRU;
-    QPointF coord = GlobalSettings::instance()->model()->grid()->cellCenterPoint(QPoint(x,y));
-    return GlobalSettings::instance()->model()->grid()->indexAt(coord);
+    return QPoint(x,y);
 }
 
 
@@ -591,7 +571,7 @@ void Saplings::updateBrowsingPressure()
         Saplings::mBrowsingPressure = 0.;
 }
 
-bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTree &tree, int isc, HeightGridValue &hgv, float lif_value, int cohorts_on_px)
+bool Saplings::growSapling(const ResourceUnit *ru, const LightProfile &profile, SaplingCell &scell, SaplingTree &tree, int cell_index)
 {
     ResourceUnitSpecies *rus = tree.resourceUnitSpecies(ru);
     if (!rus) {
@@ -602,27 +582,24 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTr
         return false;
     }
 
+    // get coordinates of the cell
+    QPoint tree_lif_location = coordOfCellLIF(ru, cell_index);
 
-    // (1) calculate height growth potential for the tree
+
+    // (1) calculate height growth potential for the tree (uses linerization of expressions...)
     double h_pot = species->saplingGrowthParameters().heightGrowthPotential.calculate(tree.height);
     double delta_h_pot = h_pot - tree.height;
 
-    // (2) reduce height growth potential with species growth response f_env_yr and with light state (i.e. LIF-value) of home-pixel.
-    if (hgv.height==0.f)
-        throw IException(QString("growSapling: height grid at %1/%2 has value 0").arg(isc));
-
-    double rel_height = tree.height / hgv.height;
-
-    double lif_corrected = species->speciesSet()->LRIcorrection(lif_value, rel_height); // correction based on height
-
-    double lr = species->lightResponse(lif_corrected); // species specific light response (LUI, light utilization index)
+    // (2) light response
+    double lif = profile.relativeLightAt(tree.height, cell_index);
+    double lr = species->lightResponse(lif); // species specific light response (LUI, light utilization index)
 
     rus->calculate(true); // calculate the 3pg module (this is done only once per RU); true: call comes from regeneration
     double f_env_yr = rus->prod3PG().fEnvYear();
 
     double delta_h_factor = f_env_yr * lr; // relative growth
 
-    if (h_pot<0. || delta_h_pot<0. || lif_corrected<0. || lif_corrected>1. || delta_h_factor<0. || delta_h_factor>1. )
+    if (h_pot<0. || delta_h_pot<0. || lif<0. || lif>1. || delta_h_factor<0. || delta_h_factor>1. )
         qDebug() << "invalid values in Sapling::growSapling";
 
     // sprouts grow faster. Sprouts therefore are less prone to stress (threshold), and can grow higher than the growth potential.
@@ -693,7 +670,8 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTr
         for (int i=0;i<to_establish;i++) {
             Tree &bigtree = const_cast<ResourceUnit*>(ru)->newTree();
 
-            bigtree.setPosition(GlobalSettings::instance()->model()->grid()->indexOf(isc));
+            bigtree.setPosition(tree_lif_location);
+
             // add variation: add +/-N% to dbh and *independently* to height.
             bigtree.setDbh(static_cast<float>(dbh * nrandom(1. - mRecruitmentVariation, 1. + mRecruitmentVariation)));
             bigtree.setHeight(static_cast<float>(tree.height * nrandom(1. - mRecruitmentVariation, 1. + mRecruitmentVariation)));
@@ -727,7 +705,8 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTr
     }
     // book keeping (only for survivors) for the sapling of the resource unit / species
     SaplingStat &ss = rus->saplingStat();
-    float n_repr = static_cast<float>( species->saplingGrowthParameters().representedStemNumberH(tree.height) / static_cast<double>(cohorts_on_px) );
+
+    float n_repr = static_cast<float>( species->saplingGrowthParameters().representedStemNumberH(tree.height) / static_cast<double>(scell.n_occupied()) );
     if (tree.height>1.3f) {
         ss.mLivingSaplings += n_repr;
         ss.mCohortsWithDbh++;
@@ -747,17 +726,20 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTr
         float dbh = tree.height / species->saplingGrowthParameters().hdSapling * 100.f;
         double foliage = species->biomassFoliage(dbh);
         leaf_area = static_cast<float>( foliage * n_repr );
-        species->seedDispersal()->setSaplingTree(GlobalSettings::instance()->model()->grid()->indexOf(isc), leaf_area);
+        species->seedDispersal()->setSaplingTree(tree_lif_location, leaf_area);
     }
 
     // sprouting from regeneration: this requires a minimum height (and lateral sprouting being enabled)
     if (species->saplingGrowthParameters().adultSproutProbability > 0. && tree.age > species->maturityAge()) {
-        vegetativeSprouting(species, scell, GlobalSettings::instance()->model()->grid()->indexOf(isc));
+        vegetativeSprouting(species, scell, tree_lif_location);
     }
 
 
     // update stem height
     //float sh_before = hgv.stemHeight();
+    QPoint height_grid_index(tree_lif_location.x()/cPxPerHeight, tree_lif_location.y()/cPxPerHeight);
+    HeightGridValue &hgv = (*GlobalSettings::instance()->model()->heightGrid())[height_grid_index];
+
     if (tree.height > hgv.stemHeight()) {
         hgv.setStemHeight(tree.height);
         //qDebug()<< "sapheihgt:updated at:"<<GlobalSettings::instance()->model()->heightGrid()->cellCenterPoint(GlobalSettings::instance()->model()->heightGrid()->indexOf(&hgv));

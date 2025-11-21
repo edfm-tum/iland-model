@@ -278,7 +278,7 @@ public:
     void calculateInitialStatistics(const ResourceUnit *ru);
     // main functions
     void establishment(const ResourceUnit *ru);
-    void saplingGrowth(const ResourceUnit *ru);
+    void saplingGrowth(const ResourceUnit *ru, const LightProfile &profile);
 
     /// run the simplified grass cover for a RU
     void simplifiedGrassCover(const ResourceUnit *ru);
@@ -326,9 +326,8 @@ public:
     static void updateBrowsingPressure();
 
 private:
-    bool growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTree &tree, int isc, HeightGridValue &hgv, float lif_value, int cohorts_on_px);
+    bool growSapling(const ResourceUnit *ru, const LightProfile &profile, SaplingCell &scell, SaplingTree &tree, int isc);
     void vegetativeSprouting(const Species *species, SaplingCell &scell, QPoint tree_pos);
-    //Grid<SaplingCell> mGrid;
     static double mRecruitmentVariation;
     static double mBrowsingPressure;
 };
