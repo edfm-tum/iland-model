@@ -848,11 +848,11 @@ void Tests::testEstablishment()
     Model *model = GlobalSettings::instance()->model();
     //model->saplings()->clearStats();
 
-    {
-    DebugTimer test("test establishment");
-    foreach (ResourceUnit *ru, model->ruList())
-        model->saplings()->establishment(ru);
-    }
+    // {
+    // DebugTimer test("test establishment");
+    // foreach (ResourceUnit *ru, model->ruList())
+    //     model->saplings()->establishment(ru);
+    // }
     //qDebug() << "pixel tested" << model->saplings()->pixelTested() << "saplings added" << model->saplings()->saplingsAdded();
 
     //{

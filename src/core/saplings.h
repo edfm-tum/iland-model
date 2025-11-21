@@ -277,7 +277,7 @@ public:
     void setup();
     void calculateInitialStatistics(const ResourceUnit *ru);
     // main functions
-    void establishment(const ResourceUnit *ru);
+    void establishment(const ResourceUnit *ru, const LightProfile &profile);
     void saplingGrowth(const ResourceUnit *ru, const LightProfile &profile);
 
     /// run the simplified grass cover for a RU

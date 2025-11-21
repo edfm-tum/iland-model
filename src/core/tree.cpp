@@ -196,11 +196,12 @@ void Tree::applyLIP()
 
         float *grid_value_ptr = mGrid->ptr(pos.x(), grid_y);
         int grid_x = pos.x();
+        const int hg_y = grid_y / cPxPerHeight;
         for (x=0;x<gr_stamp;++x, ++grid_x, ++grid_value_ptr) {
             // suppose there is no stamping outside
             value = (*mStamp)(x,y); // stampvalue
             //if (value>0.f) {
-                local_dom = (*mHeightGrid)(grid_x/cPxPerHeight, grid_y/cPxPerHeight).height;
+                local_dom = (*mHeightGrid)(grid_x/cPxPerHeight, hg_y).height;
                 z = std::max(mHeight - (*mStamp).distanceToCenter(x,y), 0.f); // distance to center = height (45 degree line)
                 z_zstar = (z>=local_dom)?1.f:z/local_dom;
                 value = 1.f - value*mOpacity * z_zstar; // calculated value
@@ -256,12 +257,13 @@ void Tree::applyLIP_torus()
     for (y=0;y<gr_stamp; ++y) {
         grid_y = pos.y() + y;
         yt = torusIndex(grid_y, cPxPerRU,bufferOffset, ru_offset.y()); // 50 cells per 100m
+        const int hg_y = yt / cPxPerHeight;
         for (x=0;x<gr_stamp;++x) {
             // suppose there is no stamping outside
             grid_x = pos.x() + x;
             xt = torusIndex(grid_x,cPxPerRU,bufferOffset, ru_offset.x());
 
-            local_dom = mHeightGrid->valueAtIndex(xt/cPxPerHeight,yt/cPxPerHeight).height;
+            local_dom = mHeightGrid->valueAtIndex(xt/cPxPerHeight,hg_y).height;
 
             z = std::max(mHeight - (*mStamp).distanceToCenter(x,y), 0.f); // distance to center = height (45 degree line)
             z_zstar = (z>=local_dom)?1.f:z/local_dom;
@@ -489,9 +491,10 @@ void Tree::readLIF()
     int ry = pos_reader.y();
     for (y=0;y<reader_size; ++y, ++ry) {
         grid_value = mGrid->ptr(rx, ry);
+        const int hg_y = ry / cPxPerHeight;
         for (x=0;x<reader_size;++x) {
 
-            const HeightGridValue &hgv = mHeightGrid->constValueAtIndex((rx+x)/cPxPerHeight, ry/cPxPerHeight); // the height grid value, ry: gets ++ed in outer loop, rx not
+            const HeightGridValue &hgv = mHeightGrid->constValueAtIndex((rx+x)/cPxPerHeight, hg_y);
             local_dom = hgv.height;
             z = std::max(mHeight - reader->distanceToCenter(x,y), 0.f); // distance to center = height (45 degree line)
             z_zstar = (z>=local_dom)?1.f:z/local_dom;
@@ -559,11 +562,12 @@ void Tree::readLIF_torus()
 
     for (y=0;y<reader_size; ++y) {
         yt = torusIndex(ry+y,cPxPerRU, bufferOffset, ru_offset.y());
+        const int hg_y = yt / cPxPerHeight;
         for (x=0;x<reader_size;++x) {
             xt = torusIndex(rx+x,cPxPerRU, bufferOffset, ru_offset.x());
             grid_value = mGrid->ptr(xt,yt);
 
-            local_dom = mHeightGrid->valueAtIndex(xt/cPxPerHeight, yt/cPxPerHeight).height; // ry: gets ++ed in outer loop, rx not
+            local_dom = mHeightGrid->valueAtIndex(xt/cPxPerHeight, hg_y).height;
             z = std::max(mHeight - reader->distanceToCenter(x,y), 0.f); // distance to center = height (45 degree line)
             z_zstar = (z>=local_dom)?1.f:z/local_dom;
 

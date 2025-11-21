@@ -741,7 +741,7 @@ static void nc_full_regeneration_phase(ResourceUnit *unit)
         s->calculateLightProfile(unit, us_ru, profile);
 
         // 1. Run establishment
-        s->establishment(unit);
+        s->establishment(unit, profile);
 
         elapsed.establishment = t.elapsed();
 

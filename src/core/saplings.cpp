@@ -94,22 +94,17 @@ void Saplings::calculateInitialStatistics(const ResourceUnit *ru)
 
 /// establishment of saplings from seeds
 /// see https://iland-model.org/seed+kernel+and+seed+distribution and https://iland-model.org/establishment
-void Saplings::establishment(const ResourceUnit *ru)
+void Saplings::establishment(const ResourceUnit *ru, const LightProfile &profile)
 {
-    FloatGrid *lif_grid = GlobalSettings::instance()->model()->grid();
-
     QPoint imap = ru->cornerPointOffset(); // offset on LIF/saplings grid
-    QPoint iseedmap = QPoint(imap.x()/10, imap.y()/10); // seed-map has 20m resolution, LIF 2m -> factor 10
+    constexpr int lif_to_seedmap_factor = SeedDispersal::cellSize() / cPxSize; // seed-map has 20m resolution, LIF 2m -> factor 10
+    QPoint iseedmap = QPoint(imap.x()/lif_to_seedmap_factor, imap.y()/lif_to_seedmap_factor);
 
     for (QList<ResourceUnitSpecies*>::const_iterator i=ru->ruSpecies().constBegin(); i!=ru->ruSpecies().constEnd(); ++i) {
         float la = (*i)->saplingStat().leafArea();
         (*i)->saplingStat().clearStatistics();
         (*i)->saplingStat().setLeafArea(la); // retain the leaf area just in case the water cycle is executed during regeneration
     }
-
-    double lif_corr[cPxPerHectare];
-    for (int i=0;i<cPxPerHectare;++i)
-        lif_corr[i]=-1.;
 
 
     int species_idx;
@@ -126,9 +121,10 @@ void Saplings::establishment(const ResourceUnit *ru)
         // check if there are seeds of the given species on the resource unit
         float seeds = 0.f;
         Grid<float> &seedmap =  const_cast<Grid<float>& >(rus->species()->seedDispersal()->seedMap());
-        for (int iy=0;iy<5;++iy) {
+        constexpr int n_steps = cRUSize / SeedDispersal::cellSize();
+        for (int iy=0;iy<n_steps;++iy) {
             float *p = seedmap.ptr(iseedmap.x(), iseedmap.y());
-            for (int ix=0;ix<5;++ix)
+            for (int ix=0;ix<n_steps;++ix)
                 seeds += *p++;
         }
         // if there are no seeds: no need to do more
@@ -145,13 +141,11 @@ void Saplings::establishment(const ResourceUnit *ru)
 
         // loop over all 2m cells on this resource unit
         SaplingCell *sap_cells = ru->saplingCellArray();
-        SaplingCell *s;
-        int isc = 0; // index on 2m cell
+        SaplingCell *s = sap_cells;
+        int cell_index = 0; // index within the sapling cells
         for (int iy=0; iy<cPxPerRU; ++iy) {
-            s = &sap_cells[iy*cPxPerRU]; // pointer to a row
-            isc = lif_grid->index(imap.x(), imap.y()+iy);
 
-            for (int ix=0;ix<cPxPerRU; ++ix, ++s, ++isc) {
+            for (int ix=0;ix<cPxPerRU; ++ix, ++s, ++cell_index) {
                 if (s->hasFreeSlots()) {
                     // is a sapling of the current species already on the pixel?
                     // * test for sapling height already in cell state
@@ -168,19 +162,20 @@ void Saplings::establishment(const ResourceUnit *ru)
                     }
 
                     if (stree) {
-                        // grass cover?
-                        float seed_map_value = seedmap[lif_grid->index10(isc)];
+                        // potential slot found!
+
+                        // (1) check if we have seeds on the seedmap
+                        float seed_map_value = seedmap(iseedmap.x() + ix/lif_to_seedmap_factor,
+                                                       iseedmap.y() + iy/lif_to_seedmap_factor);
+
                         if (seed_map_value==0.f)
                             continue;
-                        float lif_value = (*lif_grid)[isc];
 
-                        double &lif_corrected = lif_corr[iy*cPxPerRU+ix];
-                        // calculate the LIFcorrected only once per pixel; the relative height is 0 (light level on the forest floor)
-                        if (lif_corrected<0.)
-                            lif_corrected = rus->species()->speciesSet()->LRIcorrection(lif_value, 0.);
+                        // (2) get light on the forest floor
+                        float ground_light = profile.ground_light[cell_index];
 
-                        // check for the combination of seed availability and light on the forest floor
-                        if (drandom() < seed_map_value*lif_corrected*abiotic_env ) {
+                        // (3) check for the combination of seed availability and light on the forest floor
+                        if (drandom() < seed_map_value*ground_light*abiotic_env ) {
                             // ok, lets add a sapling at the given position (age is incremented later)
                             stree->setSapling(0.05f, 0, species_idx);
                             s->checkState();

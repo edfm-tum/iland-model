@@ -63,30 +63,34 @@ void SeedDispersal::setup()
         || !mSpecies)
         return;
 
-    const float seedmap_size = 20.f;
     // setup of seed map
     mSeedMap.clear();
-    mSeedMap.setup(GlobalSettings::instance()->model()->heightGrid()->metricRect(), seedmap_size );
+    mSeedMap.setup(GlobalSettings::instance()->model()->heightGrid()->metricRect(), cellSize() );
     mSeedMap.initialize(0.);
+
+    // safety check: grid() should be 20/2=10x larger in x and y than seed map
+    if (mSeedMap.sizeX() * cellSize() != GlobalSettings::instance()->model()->grid()->sizeX()*cPxSize ||
+        mSeedMap.sizeY() * cellSize() != GlobalSettings::instance()->model()->grid()->sizeY()*cPxSize )
+        throw IException("size of seed map not as expected! (internal error)");
 
     mSourceMap.setup(mSeedMap);
     mSourceMap.initialize(0.);
 
     mExternalSeedMap.clear();
-    mIndexFactor = int(seedmap_size) / cPxSize; // ratio seed grid / lip-grid:
+    mIndexFactor = int(cellSize()) / cPxSize; // ratio seed grid / lip-grid:
     if (logLevelInfo()) qDebug() << "Seed map setup. Species:"<< mSpecies->id() << "kernel-size: " << mSeedMap.sizeX() << "x" << mSeedMap.sizeY() << "pixels.";
 
     if (mSpecies==0)
         throw IException("Setup of SeedDispersal: Species not defined.");
 
-    if (fmod(GlobalSettings::instance()->settings().valueDouble("model.world.buffer",0),seedmap_size) != 0.)
+    if (fmod(GlobalSettings::instance()->settings().valueDouble("model.world.buffer",0),cellSize()) != 0.)
         throw IException("SeedDispersal:setup(): The buffer (model.world.buffer) must be a integer multiple of the seed pixel size (currently 20m, e.g. 20,40,60,...)).");
 
     // settings
     mTM_occupancy = 1.; // is currently constant
     // copy values for the species parameters:
     mSpecies->treeMigKernel(mTM_as1, mTM_as2, mTM_ks);
-    mTM_fecundity_cell = mSpecies->fecundity_m2() * seedmap_size*seedmap_size * mTM_occupancy; // scale to production for the whole cell
+    mTM_fecundity_cell = mSpecies->fecundity_m2() * cellSize()*cellSize() * mTM_occupancy; // scale to production for the whole cell
     mNonSeedYearFraction = mSpecies->nonSeedYearFraction();
     XmlHelper xml(GlobalSettings::instance()->settings().node("model.settings.seedDispersal"));
     mKernelThresholdArea = xml.valueDouble(".longDistanceDispersal.thresholdArea", 0.0001);
@@ -109,7 +113,7 @@ void SeedDispersal::setup()
     if (mSpecies->fecunditySerotiny()>0.) {
         // an extra seed map is used for storing information related to post-fire seed rain
         mSeedMapSerotiny.clear();
-        mSeedMapSerotiny.setup(GlobalSettings::instance()->model()->heightGrid()->metricRect(), seedmap_size );
+        mSeedMapSerotiny.setup(GlobalSettings::instance()->model()->heightGrid()->metricRect(), cellSize() );
         mSeedMapSerotiny.initialize(0.);
 
         // set up the special seed kernel for post fire seed rain

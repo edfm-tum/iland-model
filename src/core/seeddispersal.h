@@ -29,6 +29,8 @@ class SeedDispersal
 public:
     SeedDispersal(Species *species=0): mIndexFactor(10), mSaplingMapCreated(false), mSetup(false), mSpecies(species)  {}
     ~SeedDispersal();
+    /// the cell size of seed dispersal is 20m
+    static constexpr int cellSize() { return 20; }
     bool isSetup() const { return mSetup; }
     void setup();
     //
