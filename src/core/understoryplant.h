@@ -5,18 +5,15 @@
 #include <QPointF>
 
 #include "globalsettings.h"
+#include "saplings.h"
 
 using UStateId = short int;
 
 class ResourceUnit; // forward
-struct SaplingCell; // forward
 class UnderstoryPFT; // forward
 struct UnderstoryCellParams {
     ResourceUnit *RU; ///< pointer to resource unit
     SaplingCell *saplingCell; ///< corresponding sapling cell
-    float lif_corr; ///< corrected LIF value at the 2m cell
-    float lif_plant; ///< lif value corrected for taller plants on the same cell
-    float lif_ground; ///< light value corrected for all understory plants
     double availableNitrogen; ///< kg/ha*yr nitrogen
     //double SWCgrowingSeason; ///< relative soil water content
     double psiGrowingSeason; /// mean psi over the growing season
@@ -25,6 +22,11 @@ struct UnderstoryCellParams {
     double nitrogenResponse;
     double waterResponse;
     double tempResponse;
+    const LightProfile *lightProfile; ///< pre-calculated light profile for resource unit
+    // cached variables
+    float height; /// height of the state (m)
+    int cell_index; ///< currently processed cell
+    float ground_light; ///< light on the forest floor
 };
 
 
@@ -94,7 +96,7 @@ class UnderstoryRU; // forward
  * is container for all UnderstoryPlant on a cell.
  * It manages occupation and stores the individual UnderstoryPlant objects
  */
-class UnderstoryCell
+class alignas(64) UnderstoryCell
 {
 public:
     /// number of slots per cell
@@ -128,9 +130,6 @@ public:
     const std::array<UnderstoryPlant, NSlots> &plants() const { return mPlants; }
     std::array<UnderstoryPlant, NSlots> &mod_plants() { return mPlants; }
 
-    float groundLightEffect() const { return mGroundLightEffect; }
-    void resetGroundLight() { mGroundLightEffect = 1.; }
-
     /// summary stats for the cell
     UnderstoryStatsCell stats() const;
     /// get stats only for a given PFT
@@ -138,19 +137,11 @@ public:
 
     void addStats(QVector<UnderstoryRUStats> &pfts);
 private:
-    /// return an array with the proportion of light
-    /// reaching the plant (within understory). E.g., a value
-    /// of 0.9 means that 10% of the light reaching understory is
-    /// intercepted by competing vegetation
-    /// same sequence as mPlants array (i.e., mPlants[i] <-> lightProfile()[i] )
-    std::array<double, UnderstoryCell::NSlots> lightProfile();
-
     /// sum of occupation points on cell
     uint8_t mOccupied {0};
     /// current state of the cell
     ECellState mState { ECellState::CellInvalid };
     std::array<UnderstoryPlant, NSlots> mPlants;
-    float mGroundLightEffect; ///< effect of cumulative LAI of plants on light at the ground
 };
 
 /**
@@ -166,8 +157,8 @@ public:
     void setRU(ResourceUnit* ru) {mRU = ru; }
 
     // actions
-    void establishment();
-    void growth();
+    void establishment(const LightProfile &profile);
+    void growth(const LightProfile &profile);
 
     // functions for statistics
     /// get pointers to the stats object for the PFT (on RU) and RU for a given plant-cell
@@ -186,6 +177,9 @@ public:
     /// Note that selecting the right RU is
     /// done by Understory::cell()!
     const UnderstoryCell *cell(QPointF metric_coord) const;
+    /// cet cell by index
+    const UnderstoryCell *cell(int index) const { return &mCells[index]; }
+
     /// RU totals across all PFTs
     const UnderstoryRUStats &stats() const { return mStats; }
     /// stats for a single PFT

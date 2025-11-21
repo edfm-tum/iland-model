@@ -206,6 +206,9 @@ void Model::setupSpace()
     mHeightGrid->wipe(); // set all to zero
     Tree::setGrid(mGrid, mHeightGrid);
 
+    if (mHeightGrid->sizeX()*cPxPerHeight != mGrid->sizeX() || mHeightGrid->sizeY()*cPxPerHeight != mGrid->sizeY())
+        throw IException("setup of the world: height grid and LIF grid have not expected sizes! (should not happen :()!");
+
     // setup the spatial location of the project area
     if (xml.hasNode("location")) {
         // setup of spatial location
@@ -731,21 +734,26 @@ static void nc_full_regeneration_phase(ResourceUnit *unit)
         double us_establishment {0};
     } elapsed;
 
+    LightProfile profile;
+
     try {
+        // determine light profiles for resource unit
+        s->calculateLightProfile(unit, us_ru, profile);
+
         // 1. Run establishment
-        s->establishment(unit);
+        s->establishment(unit, profile);
 
         elapsed.establishment = t.elapsed();
 
         // 2. growth (and mortality) of saplings
-        s->saplingGrowth(unit);
+        s->saplingGrowth(unit, profile);
         elapsed.sapling_growth = t.elapsed() - elapsed.establishment;
 
         if (us_ru) {
-            us_ru->growth();
+            us_ru->growth(profile);
             elapsed.us_growth = t.elapsed() - elapsed.sapling_growth;
 
-            us_ru->establishment();
+            us_ru->establishment(profile);
             elapsed.us_establishment = t.elapsed() - elapsed.us_growth;
         }
 
@@ -764,29 +772,29 @@ static void nc_full_regeneration_phase(ResourceUnit *unit)
 
 
 /// multithreaded run function for resource unit level establishment
-static void nc_establishment(ResourceUnit *unit)
-{
-    Saplings *s = GlobalSettings::instance()->model()->saplings();
-    try {
-        s->establishment(unit);
+// static void nc_establishment(ResourceUnit *unit)
+// {
+//     Saplings *s = GlobalSettings::instance()->model()->saplings();
+//     try {
+//         s->establishment(unit);
 
-    } catch (const IException& e) {
-        GlobalSettings::instance()->model()->threadExec().throwError(e.message());
-    }
+//     } catch (const IException& e) {
+//         GlobalSettings::instance()->model()->threadExec().throwError(e.message());
+//     }
 
-}
+// }
 
 /// multithreaded run function for resource unit level establishment
-static void nc_sapling_growth(ResourceUnit *unit)
-{
-    Saplings *s = GlobalSettings::instance()->model()->saplings();
-    try {
-        s->saplingGrowth(unit);
+// static void nc_sapling_growth(ResourceUnit *unit)
+// {
+//     Saplings *s = GlobalSettings::instance()->model()->saplings();
+//     try {
+//         s->saplingGrowth(unit);
 
-    } catch (const IException& e) {
-        GlobalSettings::instance()->model()->threadExec().throwError(e.message());
-    }
-}
+//     } catch (const IException& e) {
+//         GlobalSettings::instance()->model()->threadExec().throwError(e.message());
+//     }
+// }
 
 
 

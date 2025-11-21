@@ -58,6 +58,7 @@
 #include "management.h"
 #include "outputmanager.h"
 #include "saplings.h"
+#include "understory.h"
 
 #include "tests.h"
 #include "mapgrid.h"
@@ -1914,7 +1915,24 @@ void MainWindow::showRegenDetails(const QPointF &coord)
             }
         }
     }
+    // Light profile
+    items.append(new QTreeWidgetItem(QStringList() << "light profile" << "(effective)"));
+    QTreeWidgetItem *parent = items.back();
+    int cell_index = GlobalSettings::instance()->model()->saplings()->cell_index(lif_p, &rRU);
+    if (cell_index >= 0) {
+        LightProfile profile;
+        UnderstoryRU *us_ru = nullptr;
+        if (GlobalSettings::instance()->model()->settings().understoryEnabled )
+            us_ru = GlobalSettings::instance()->model()->understory()->understoryRU(rRU->index());
+        GlobalSettings::instance()->model()->saplings()->calculateLightProfile(rRU, us_ru, profile);
+        items.append(new QTreeWidgetItem(parent, QStringList() << "ground" << QString::number(  profile.relativeLightAt(0., cell_index), 'f') ));
+        items.append(new QTreeWidgetItem(parent, QStringList() << "0.0-0.5m" << QString::number( profile.relativeLightAt(0.25, cell_index), 'f') ));
+        items.append(new QTreeWidgetItem(parent, QStringList() << "0.5-1.3m" << QString::number( profile.relativeLightAt(1., cell_index), 'f') ));
+        items.append(new QTreeWidgetItem(parent, QStringList() << "1.3-2.0m" << QString::number( profile.relativeLightAt(1.5, cell_index), 'f') ));
+        items.append(new QTreeWidgetItem(parent, QStringList() << ">2.0m" << QString::number( profile.relativeLightAt(3.5, cell_index), 'f') ));
+    }
     ui->dataTree->addTopLevelItems(items);
+    ui->dataTree->expandItem(parent);
 }
 
 

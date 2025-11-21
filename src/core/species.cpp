@@ -214,7 +214,7 @@ void Species::setup()
     if (mSaplingGrowthParams.sproutGrowth>0.)
         if (mSaplingGrowthParams.sproutGrowth<1. || mSaplingGrowthParams.sproutGrowth>10)
             qWarning() << "Value of 'sapSproutGrowth' dubious for species" << name() << "(value: " << mSaplingGrowthParams.sproutGrowth << ", expected range: 1-10)";
-    mSaplingGrowthParams.setupReinekeLookup();
+    mSaplingGrowthParams.setupReinekeLookup(this);
 
     mSaplingGrowthParams.adultSproutProbability = 0.;
     QString adult_sprout = GlobalSettings::instance()->settings().value("model.species.sprouting.adultSproutProbability");
@@ -320,7 +320,7 @@ void Species::newYear()
 }
 
 
-void SaplingGrowthParameters::setupReinekeLookup()
+void SaplingGrowthParameters::setupReinekeLookup(const Species* species)
 {
     mRepresentedClasses.clear();
     for (int i=0;i<401;i++) {
@@ -333,4 +333,12 @@ void SaplingGrowthParameters::setupReinekeLookup()
             dbh = 0.25;
         mRepresentedClasses.push_back(representedStemNumber(dbh));
     }
+
+    // calculate LAI4m - using biomass allometries, hd-ratios and stem-number from species parameters
+    double dbh4m = cSapHeight / hdSapling * 100.;
+    double N = representedStemNumber(dbh4m); // N per cell (4m2)
+    double leaf_area = species->biomassFoliage(dbh4m) * species->specificLeafArea();
+    LAI4m = leaf_area * N / (cPxSize*cPxSize);
+
+
 }

@@ -29,6 +29,7 @@
 #include "seeddispersal.h"
 #include "modelsettings.h"
 #include "debugtimer.h"
+#include "saplings.h"
 
 /** @class SpeciesSet
     A SpeciesSet acts as a container for individual Species objects. In iLand, theoretically,
@@ -155,6 +156,9 @@ int SpeciesSet::setup()
     mLRICorrection.linearize2d(0., 1., 0., 1., 64, 32);
 
     createRandomSpeciesOrder();
+    // fast lookup for species. NOTE: this assumes a single species set in a simulation!
+    SaplingTree::setupSpeciesLookup();
+
     return mSpecies.count();
 
 }

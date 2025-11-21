@@ -134,9 +134,8 @@ void SaplingDetailsOut::exec()
             if (n_on_px>0) {
                 for (int i=0;i<SaplingCell::NSapCells;++i) {
                     if (s->saplings[i].is_occupied()) {
-                        ResourceUnitSpecies *rus = s->saplings[i].resourceUnitSpecies(ru);
-                        const Species *species = rus->species();
-                        double dbh = s->saplings[i].height / species->saplingGrowthParameters().hdSapling  * 100.;
+                        const auto &sap_tree = s->saplings[i];
+                        double dbh = sap_tree.height / sap_tree.species()->saplingGrowthParameters().hdSapling  * 100.;
                         // check minimum dbh
                         if (dbh<mMinDbh)
                             continue;
@@ -147,10 +146,10 @@ void SaplingDetailsOut::exec()
                                 continue;
                         }
 
-                        double n_repr = species->saplingGrowthParameters().representedStemNumberH(s->saplings[i].height) / static_cast<double>(n_on_px);
+                        double n_repr = sap_tree.species()->saplingGrowthParameters().representedStemNumberH(s->saplings[i].height) / static_cast<double>(n_on_px);
 
-                        *this <<  currentYear() << ru->index() << ru->id() << rus->species()->id() << px;
-                        *this << n_repr << dbh << s->saplings[i].height << s->saplings[i].age;
+                        *this <<  currentYear() << ru->index() << ru->id() << sap_tree.species()->id() << px;
+                        *this << n_repr << dbh << sap_tree.height << sap_tree.age;
                         writeRow();
                     }
                 }

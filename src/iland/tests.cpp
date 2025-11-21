@@ -848,18 +848,18 @@ void Tests::testEstablishment()
     Model *model = GlobalSettings::instance()->model();
     //model->saplings()->clearStats();
 
-    {
-    DebugTimer test("test establishment");
-    foreach (ResourceUnit *ru, model->ruList())
-        model->saplings()->establishment(ru);
-    }
+    // {
+    // DebugTimer test("test establishment");
+    // foreach (ResourceUnit *ru, model->ruList())
+    //     model->saplings()->establishment(ru);
+    // }
     //qDebug() << "pixel tested" << model->saplings()->pixelTested() << "saplings added" << model->saplings()->saplingsAdded();
 
-    {
-    DebugTimer test("test sapling growth");
-    foreach (ResourceUnit *ru, model->ruList())
-        model->saplings()->saplingGrowth(ru);
-    }
+    //{
+    // DebugTimer test("test sapling growth");
+    // foreach (ResourceUnit *ru, model->ruList())
+    //     model->saplings()->saplingGrowth(ru);
+    // }
     //qDebug() << "pixel tested" << model->saplings()->pixelTested() << "saplings added" << model->saplings()->saplingsAdded();
 
     //model->ru(0)

@@ -223,9 +223,9 @@ double SaplingWrapper::value(const int variableIndex)
     case 0: return mSapling->species_index; // Note: this is the numeric value that is also used for the constant species names in expressions!
     case 1: return static_cast<double>(mSapling->height);
     case 2: return mSapling->age;
-    case 3: return mSapling->resourceUnitSpecies(mRU)->species()->saplingGrowthParameters().representedStemNumberH(mSapling->height);
-    case 4: return mSapling->height /  mSapling->resourceUnitSpecies(mRU)->species()->saplingGrowthParameters().hdSapling * 100.;
-    case 5: { const Species *sp = mSapling->resourceUnitSpecies(mRU)->species();
+    case 3: return mSapling->species()->saplingGrowthParameters().representedStemNumberH(mSapling->height);
+    case 4: return mSapling->height /  mSapling->species()->saplingGrowthParameters().hdSapling * 100.;
+    case 5: { const Species *sp = mSapling->species();
               double dbh = mSapling->height / sp->saplingGrowthParameters().hdSapling * 100.;
               return sp->biomassFoliage(dbh); }
     case 6:  { size_t diff = (int*)(mSapling) - (int*)( mRU->saplingCellArray() ); // difference in int* ptr (64bit, usually)

@@ -66,16 +66,12 @@ void UnderstoryCell::growth(UnderstoryCellParams &ucp, UnderstoryRU &us_ru)
 
     const auto &us = Understory::instance();
 
-    auto light_ext = lightProfile();
-
     bool states_changed = false;
-    size_t i = 0;
     for (auto &p : mPlants) {
         if (p.isLiving()) {
             const auto * state = us.state(p.stateId());
             const auto * pft = us.pft(state->pftIndex());
-
-            ucp.lif_plant = ucp.lif_corr * light_ext[i];
+            ucp.height = state->height();
 
             UStateId new_id = pft->stateTransition(p, ucp, us_ru);
             if (p.stateId() != new_id) {
@@ -85,7 +81,6 @@ void UnderstoryCell::growth(UnderstoryCellParams &ucp, UnderstoryRU &us_ru)
             }
 
         }
-        ++i;
     }
     if (states_changed) {
         update(us_ru);
@@ -165,55 +160,6 @@ void UnderstoryCell::addStats(QVector<UnderstoryRUStats> &pfts)
 
 }
 
-std::array<double, UnderstoryCell::NSlots> UnderstoryCell::lightProfile()
-{
-    const auto &states = Understory::instance().states();
-    std::array<double, NSlots> result{}; // Use {} to zero-initialize
-    const double k = 0.5;
-
-    // 1. Collect pointers to living plants on the stack to avoid heap allocation.
-    const UnderstoryPlant* living_plants[NSlots];
-    int living_count = 0;
-    for (const auto& plant : mPlants) {
-        if (plant.isLiving()) {
-            living_plants[living_count++] = &plant;
-        }
-    }
-
-    if (living_count == 0) {
-        return result; // Early exit if no plants
-    }
-
-    // 2. Use an O(M^2) approach, where M is the number of living plants (M<=N).
-    double total_LAI = 0.;
-    for (int i = 0; i < living_count; ++i) {
-        const auto* focus_plant = living_plants[i];
-        const double focus_height = states[focus_plant->stateId()]->height();
-        double lai_above = 0;
-        total_LAI += states[focus_plant->stateId()]->LAI();
-
-        for (int j = 0; j < living_count; ++j) {
-            if (i == j) continue; // Don't compare a plant to itself
-
-            const auto* other_plant = living_plants[j];
-            const auto* other_state = states[other_plant->stateId()];
-
-            if (other_state->height() >= focus_height) {
-                lai_above += other_state->LAI();
-            }
-        }
-
-        // Calculate the fraction of light absorbed/intercepted by taller plants.
-        // Find original index to place the result. Note: &mPlants[0] is the beginning of the array.
-        size_t original_index = focus_plant - &mPlants[0];
-        result[original_index] = model_exp(-k * lai_above);
-    }
-
-    // calculate multiplier for ground light
-    mGroundLightEffect = model_exp(-k * total_LAI);
-
-    return result;
-}
 
 
 // ****************** UnderstoryRU **************************
@@ -233,13 +179,12 @@ void UnderstoryRU::setup()
     }
 }
 
-void UnderstoryRU::establishment()
+void UnderstoryRU::establishment(const LightProfile &profile)
 {
     FloatGrid *lif_grid = GlobalSettings::instance()->model()->grid();
     QPoint imap = mRU->cornerPointOffset(); // offset on LIF/saplings grid
 
     SaplingCell *sap_cells = mRU->saplingCellArray();
-    const auto &speciesSet = Globals->model()->speciesSet();
 
     const double p_cell = 0.2;
     const double n_cells_represented = 1. / p_cell;
@@ -251,6 +196,7 @@ void UnderstoryRU::establishment()
     ucp.availableNitrogen = mRU->resouceUnitVariables().nitrogenAvailable;
     // TODO: switch to microclimate?
     ucp.meanTemperature = mRU->climate()->meanAnnualTemperature();
+    ucp.lightProfile = &profile;
 
     for (const auto &pft : Understory::instance().PFTs()) {
 
@@ -258,21 +204,21 @@ void UnderstoryRU::establishment()
             // analyze the pft
             ucp.PFTcalc = false;
             int isc = 0; // index on 2m cell on LIF grid
+            int cell_index = 0; // index in the cell array
             for (int iy=0; iy<cPxPerRU; ++iy) {
                 ucp.saplingCell = &sap_cells[iy*cPxPerRU]; // pointer to a row of saplings
 
                 auto *ucell =&mCells[iy*cPxPerRU]; // pointer to a row of understory cells
                 isc = lif_grid->index(imap.x(), imap.y()+iy);
 
-                for (int ix=0;ix<cPxPerRU; ++ix, ++ucp.saplingCell, ++isc, ++ucell) {
+                for (int ix=0;ix<cPxPerRU; ++ix, ++ucp.saplingCell, ++isc, ++ucell, ++cell_index) {
                     if (ucell->isValid() &&
                         !ucell->isFull() &&
                         !ucell->hasPft(pft) &&
                         drandom() < p_cell) {
-                        float lif_value = (*lif_grid)[isc];
-                        // corrected LIF value for a height of 0 (=forest floor)
-                        ucp.lif_corr = speciesSet->LRIcorrection(lif_value, 0.);
-                        ucp.lif_ground = ucp.lif_corr * ucell->groundLightEffect();
+
+                        ucp.cell_index = cell_index;
+                        ucp.ground_light = profile.ground_light[cell_index];
 
                         if (pft->establishment(ucp, n_cells_represented)) {
                             // the PFT establishes on the cell
@@ -294,7 +240,7 @@ void UnderstoryRU::establishment()
 
 }
 
-void UnderstoryRU::growth()
+void UnderstoryRU::growth(const LightProfile &profile)
 {
     // clear stats (will be filled during growth / establishment)
     mStats.clear();
@@ -305,8 +251,6 @@ void UnderstoryRU::growth()
     QPoint imap = mRU->cornerPointOffset(); // offset on LIF/saplings grid
 
     SaplingCell *sap_cells = mRU->saplingCellArray();
-    const auto &speciesSet = Globals->model()->speciesSet();
-
 
     UnderstoryCellParams ucp;
     ucp.RU = mRU;
@@ -315,24 +259,22 @@ void UnderstoryRU::growth()
     ucp.psiGrowingSeason = mRU->waterCycle()->meanPsiGrowingSeason();
     ucp.availableNitrogen = mRU->resouceUnitVariables().nitrogenAvailable;
     ucp.meanTemperature = mRU->climate()->meanAnnualTemperature();
+    ucp.lightProfile = &profile;
 
     int isc = 0; // index on 2m cell on LIF grid
+    int cell_index = 0; // running index 0..2500
     for (int iy=0; iy<cPxPerRU; ++iy) {
         ucp.saplingCell = &sap_cells[iy*cPxPerRU]; // pointer to a row of saplings
 
         auto *ucell =&mCells[iy*cPxPerRU]; // pointer to a row of understory cells
         isc = lif_grid->index(imap.x(), imap.y()+iy);
 
-        for (int ix=0;ix<cPxPerRU; ++ix, ++ucp.saplingCell, ++isc, ++ucell) {
+        for (int ix=0;ix<cPxPerRU; ++ix, ++ucp.saplingCell, ++isc, ++ucell, ++cell_index) {
 
-            ucell->resetGroundLight();
             if (!ucell->isValid() || ucell->isEmpty())
                 continue;
 
-            float lif_value = (*lif_grid)[isc];
-            // corrected LIF value for a height of 0 (=forest floor)
-            ucp.lif_corr = speciesSet->LRIcorrection(lif_value, 0.);
-
+            ucp.cell_index = cell_index;
             // run growth for each plant on the cell
             ucell->growth(ucp, *this);
 
