@@ -48,7 +48,15 @@ struct SaplingTree {
     void set_browsed(const bool browse) {if (browse) flags |= 2; else flags &= (2 ^ 0xffffff ); }
     // get resource unit species of the sapling tree
     ResourceUnitSpecies *resourceUnitSpecies(const ResourceUnit *ru) const;
+    /// get species ptr for a sapling tree
+    const Species* species() const { return species_index>=0 ? mSpecies[species_index] : nullptr; }
+
+    // static setup function for lookup table (call once)
+    static void setupSpeciesLookup();
+private:
+    static QVector<Species*> mSpecies; ///< fast lookup table for species by index
 };
+
 struct SaplingCell {
     static constexpr int NSapCells = 5;
     enum class ECellState : uint8_t { CellInvalid=0, ///< not stockable (outside project area)
@@ -205,6 +213,60 @@ private:
     friend class Saplings;
 
 };
+
+/// holds 2500 (2x2m) cells with a vertical light profile each
+/// bins: 0: 0m - 0.5m
+///       1: 0.5m - 1.3m
+///       2: 1.3m   - 2m
+///       3: 2m   - 4m
+
+struct LightProfile
+{
+    static constexpr int N_BINS = 4;
+
+    // Array of [CellIndex][BinIndex]
+    // Stores the light availablity entering the bin
+    std::array<std::array<float, N_BINS>, cPxPerHectare> light_level;
+    std::array<std::array<float, N_BINS>, cPxPerHectare> lai;
+    std::array<float, cPxPerHectare> lif_4m;
+    std::array<float, cPxPerHectare> ground_light; //
+
+    // Fast reset: Only clear what we accumulate (LAI).
+    // Others are overwritten.
+    void reset_lai() {
+        // std::memset is safe for std::array of POD (floats)
+        // This translates to a highly optimized vectorized zeroing instruction
+        std::memset(lai.data(), 0, sizeof(lai));
+    }
+
+    /// map height to internal bin
+    inline int getBinIndex(float height) const {
+        if (height<0.5) return 0;
+        if (height<1.3) return 1;
+        if (height<2.) return 2;
+        return 3;
+    }
+
+    /// get the relevant relative light for height "height" and cell "cell_index"
+    /// we follow gap model tradition, and count only leaf area
+    /// above the bin of current height. For establishment (height = 0), it is light at ground level.
+    inline float relativeLightAt(float height, int cell_index) const {
+
+        // ground level for height = 0
+        if (height == 0.)
+            return ground_light[cell_index];
+
+        int bin = getBinIndex(height);
+        // return value for the bin above the focal height
+        if (bin<N_BINS-1)
+            return light_level[cell_index][bin];
+
+        // for the last bin, this is effectively the light above the sapling zone
+        return lif_4m[cell_index];
+    }
+};
+class UnderstoryRU; // forward
+
 /** The Saplings class the container for the establishment and sapling growth in iLand.
  *
 */
@@ -224,11 +286,19 @@ public:
     /// calculate the top height of the sapling layer
     double topHeight(const ResourceUnit *ru) const;
 
+    /// calculate temporary very detailed light profile for a resource unit
+    void calculateLightProfile(const ResourceUnit *ru, const UnderstoryRU* understory, LightProfile &profile);
+
     // access
     /// return the SaplingCell (i.e. container for the ind. saplings) for the given 2x2m coordinates
     /// if 'only_valid' is true, then 0 is returned if no living saplings are on the cell
     /// 'rRUPtr' is a pointer to a RU-ptr: if provided, a pointer to the resource unit is stored
     SaplingCell *cell(QPoint lif_coords, bool only_valid=true, ResourceUnit **rRUPtr=nullptr);
+
+    /// return the cell_index and resource unit for a given coordinate (lif_coords)
+    /// if rRUPtr is not null, it is used as the RU (saves some logic)
+    /// returns the index, or -1 if not valid
+    int cell_index(QPoint lif_coords, ResourceUnit **rRUPtr=nullptr);
 
     /// return the metric coordinates of a given cell
     /// at resource unit `ru` and at the internal index `cell_index`

@@ -124,20 +124,19 @@ bool EcoVizOut::writePDBFile(QString fileName, int n_trees, int n_cohorts, int y
 
                     for (int i=0;i<SaplingCell::NSapCells;++i) {
                         if (s->saplings[i].is_occupied()) {
-                            ResourceUnitSpecies *rus = s->saplings[i].resourceUnitSpecies(ru);
-                            const Species *species = rus->species();
-                            double dbh = s->saplings[i].height / species->saplingGrowthParameters().hdSapling  * 100.;
+                            const auto &sap_tree = s->saplings[i];
+                            double dbh = sap_tree.height / sap_tree.species()->saplingGrowthParameters().hdSapling  * 100.;
                             // check minimum dbh
                             if (dbh < 0.1)
                                 continue;
 
-                            double n_repr = species->saplingGrowthParameters().representedStemNumberH(s->saplings[i].height) / static_cast<double>(n_on_px);
+                            double n_repr = sap_tree.species()->saplingGrowthParameters().representedStemNumberH(s->saplings[i].height) / static_cast<double>(n_on_px);
 
 
                             stream << coord.x() << ws << coord.y() << ws <<
-                                      rus->species()->id() << ws <<
+                                      sap_tree.species()->id() << ws <<
                                       dbh << ws <<
-                                      s->saplings[i].height << ws <<
+                                      sap_tree.height << ws <<
                                       n_repr << Qt::endl;
                             ++n_cohorts;
 
@@ -285,9 +284,8 @@ bool EcoVizOut::writePDBBinaryFile(QString fileName, int n_trees, int n_cohorts,
             if (n_on_px>0) {
                 for (int i=0;i<SaplingCell::NSapCells;++i) {
                     if (s->saplings[i].is_occupied()) {
-                        ResourceUnitSpecies *rus = s->saplings[i].resourceUnitSpecies(ru);
-                        const Species *species = rus->species();
-                        double dbh = s->saplings[i].height / species->saplingGrowthParameters().hdSapling  * 100.;
+                        const auto &sap_tree = s->saplings[i];
+                        double dbh = sap_tree.height / sap_tree.species()->saplingGrowthParameters().hdSapling  * 100.;
                         // check minimum dbh
                         if (dbh >= 0.1)
                             ++n_cohorts;
@@ -315,16 +313,15 @@ bool EcoVizOut::writePDBBinaryFile(QString fileName, int n_trees, int n_cohorts,
 
                 for (int i=0;i<SaplingCell::NSapCells;++i) {
                     if (s->saplings[i].is_occupied()) {
-                        ResourceUnitSpecies *rus = s->saplings[i].resourceUnitSpecies(ru);
-                        const Species *species = rus->species();
-                        double dbh = s->saplings[i].height / species->saplingGrowthParameters().hdSapling  * 100.;
+                        const auto &sap_tree = s->saplings[i];
+                        double dbh = sap_tree.height / sap_tree.species()->saplingGrowthParameters().hdSapling  * 100.;
                         // check minimum dbh
                         if (dbh < 0.1)
                             continue;
 
-                        double n_repr = species->saplingGrowthParameters().representedStemNumberH(s->saplings[i].height) / static_cast<double>(n_on_px);
+                        double n_repr = sap_tree.species()->saplingGrowthParameters().representedStemNumberH(s->saplings[i].height) / static_cast<double>(n_on_px);
 
-                        auto *species_char = &species_names[rus->species()->index()];
+                        auto *species_char = &species_names[sap_tree.species()->index()];
                         if (species_char->front() == '\0')
                             throw IException("Ecoviz export - invalid species");
                         cb->xs = coord.x();

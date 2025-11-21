@@ -731,7 +731,12 @@ static void nc_full_regeneration_phase(ResourceUnit *unit)
         double us_establishment {0};
     } elapsed;
 
+    LightProfile profile;
+
     try {
+        // determine light profiles for resource unit
+        s->calculateLightProfile(unit, us_ru, profile);
+
         // 1. Run establishment
         s->establishment(unit);
 
@@ -742,10 +747,10 @@ static void nc_full_regeneration_phase(ResourceUnit *unit)
         elapsed.sapling_growth = t.elapsed() - elapsed.establishment;
 
         if (us_ru) {
-            us_ru->growth();
+            us_ru->growth(profile);
             elapsed.us_growth = t.elapsed() - elapsed.sapling_growth;
 
-            us_ru->establishment();
+            us_ru->establishment(profile);
             elapsed.us_establishment = t.elapsed() - elapsed.us_growth;
         }
 

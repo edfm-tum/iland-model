@@ -847,7 +847,7 @@ bool ActThinning::runTending(FMStand* stand)
             for (int i=0;i<SaplingCell::NSapCells;++i) {
                 if (sc->saplings[i].is_occupied()) {
 
-                    double selectivity = mSpeciesSelectivity[sc->saplings[i].resourceUnitSpecies(scr.ru())->species()];
+                    double selectivity = mSpeciesSelectivity[sc->saplings[i].species()];
                     double eff_selectivity = selectivity / (1. + exp(-20*(sc->saplings[i].height / 4. - (1.-selectivity))));
 
                     if (selectivity > 0.5 && eff_selectivity > max_sel) {
@@ -860,7 +860,7 @@ bool ActThinning::runTending(FMStand* stand)
             if (which_max > -1) {
                 // sapling to save found!
                 STendingIndex *ti = reinterpret_cast<STendingIndex *>(p);
-                double selectivity = mSpeciesSelectivity[sc->saplings[which_max].resourceUnitSpecies(scr.ru())->species()];
+                double selectivity = mSpeciesSelectivity[sc->saplings[which_max].species()];
                 ti->set(false, selectivity, which_max);
                 ++saps_to_tend;
             }
@@ -961,7 +961,7 @@ bool ActThinning::runTending(FMStand* stand)
             // neighborhood of favored cells.
             for (int i=0;i<SaplingCell::NSapCells;++i) {
                 if (sc->saplings[i].is_occupied()) {
-                    double selectivity = mSpeciesSelectivity[sc->saplings[i].resourceUnitSpecies(scr.ru())->species()];
+                    double selectivity = mSpeciesSelectivity[sc->saplings[i].species()];
                     // calculate how much we want to favor this spot: higher (closer to 1): higher likelyhood to clear
                     double favor =  (1. - selectivity) * ti->selectivity();
                     // we translate the favor rating (0..1)

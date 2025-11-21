@@ -56,8 +56,6 @@ public:
     /// setup the understory module
     void setup();
 
-    /// run the understory calculations
-    void run();
 
 
 private:

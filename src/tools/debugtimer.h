@@ -50,7 +50,7 @@ The class writes the elapsed time to qDebug() when either destructed, or when ex
 class DebugTimer
 {
 public:
-    DebugTimer() { m_hideShort=false; m_silent=false; start();  ++m_count; }
+    DebugTimer() { m_hideShort=true; m_silent=true; start();  ++m_count; }
     DebugTimer(const QString &caption, bool silent=false);
     void setSilent() { m_silent=true; }
     void setHideShort(bool hide_short_messages) { m_hideShort = hide_short_messages; }

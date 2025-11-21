@@ -150,7 +150,8 @@ UStateId UnderstoryPFT::stateTransition(const UnderstoryPlant &plant,
                                         UnderstoryCellParams &ucp,
                                         UnderstoryRU &us_ru) const
 {
-    double light_response = mExprLight.calculate(ucp.lif_plant);
+    double light_available = ucp.lightProfile->relativeLightAt(ucp.height, ucp.cell_index);
+    double light_response = mExprLight.calculate(light_available);
     double nitrogen_response = mExprNutrients.calculate(ucp.availableNitrogen);
     double water_response = mExprWater.calculate(ucp.psiGrowingSeason);
     double temp_response = mExprTemp.calculate(ucp.meanTemperature);
@@ -211,7 +212,7 @@ bool UnderstoryPFT::establishment(UnderstoryCellParams &ucp,
         ucp.PFTcalc = true;
     }
 
-    double light_response = mExprLight.calculate(ucp.lif_ground);
+    double light_response = mExprLight.calculate(ucp.ground_light);
 
     // the total response combines all sub-responses multiplicatively
     double total_response = light_response * ucp.nitrogenResponse  * ucp.waterResponse * ucp.tempResponse;

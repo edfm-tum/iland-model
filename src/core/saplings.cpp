@@ -28,10 +28,12 @@
 #include "seeddispersal.h"
 #include "mapgrid.h"
 #include "grasscover.h"
+#include "understoryplant.h"
+#include "understory.h"
 
 double Saplings::mRecruitmentVariation = 0.1; // +/- 10%
 double Saplings::mBrowsingPressure = 0.;
-
+QVector<Species*> SaplingTree::mSpecies;
 
 Saplings::Saplings()
 {
@@ -305,6 +307,90 @@ double Saplings::topHeight(const ResourceUnit *ru) const
 
 }
 
+void Saplings::calculateLightProfile(const ResourceUnit *ru, const UnderstoryRU *understory, LightProfile &profile)
+{
+    // reset profile
+    profile.reset_lai();
+
+
+    HeightGrid *height_grid = GlobalSettings::instance()->model()->heightGrid();
+    FloatGrid *lif_grid = GlobalSettings::instance()->model()->grid();
+    auto *species_set = GlobalSettings::instance()->model()->speciesSet();
+    const auto &states = Understory::instance().states();
+    QPoint imap = ru->cornerPointOffset();
+    SaplingCell *sap_cells = ru->saplingCellArray();
+
+    int cell_index = 0;
+
+    // pass 1: collect LAI for saplings and understory
+
+    for (int iy=0; iy<cPxPerRU; ++iy) {
+        SaplingCell *s = &sap_cells[iy*cPxPerRU]; // ptr to row
+        int isc = lif_grid->index(imap.x(), imap.y()+iy);
+
+        HeightGridValue *hgv = &height_grid->valueAtIndex(lif_grid->index5(isc));
+
+
+        for (int ix=0;ix<cPxPerRU; ++ix, ++s, ++isc, ++cell_index) {
+
+            // per cell:
+            double lif_value = (*lif_grid)[isc]; // use hgv here?
+            double lif_corrected = hgv->height > cSapHeight ? species_set->LRIcorrection(lif_value, cSapHeight / hgv->height) : lif_value ;
+            profile.lif_4m[cell_index] = lif_corrected;
+
+            // 1) check sapling on the cell and fill LAI bins for saplings
+            if (s->state() != SaplingCell::ECellState::CellInvalid) {
+                for (int i=0;i<SaplingCell::NSapCells;++i) {
+                    if (s->saplings[i].is_occupied()) {
+                        double LAI4m = s->saplings[i].species()->saplingGrowthParameters().LAI4m;
+                        profile.lai[cell_index][profile.getBinIndex(s->saplings[i].height)] += LAI4m * s->saplings[i].height / cSapHeight;
+                    }
+                }
+            }
+
+            // 2) fill LAI of understory in the bins
+            if (understory) {
+                auto us_cell = understory->cell(cell_index);
+                if (us_cell->isValid() && !us_cell->isEmpty()) {
+                    for (auto &p : us_cell->plants()) {
+                        if (p.isLiving()) {
+                            const double focus_height = states[p.stateId()]->height();
+                            profile.lai[cell_index][profile.getBinIndex(focus_height)] += states[p.stateId()]->LAI();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // pass 2: calculate actual light profile
+    const float k = 0.5f;
+
+    for (cell_index = 0; cell_index < cPxPerHectare; ++cell_index) {
+        float current_light = profile.lif_4m[cell_index];
+
+        // Process from Top (Bin 3) down to Bottom (Bin 0)
+        for (int b = LightProfile::N_BINS - 1; b >= 0; --b) {
+            // Save the light ENTERING this layer
+            profile.light_level[cell_index][b] = current_light;
+
+            // Attenuate
+            float lai_in_layer = profile.lai[cell_index][b];
+
+            // Skip exp() if LAI is zero (very common for empty cells/bins)
+            if (lai_in_layer > 0.0f) {
+                current_light *= model_exp(-k * lai_in_layer);
+            }
+
+        }
+
+        // Store ground light separately
+        profile.ground_light[cell_index] = current_light;
+    }
+
+}
+
+
 SaplingCell *Saplings::cell(QPoint lif_coords, bool only_valid, ResourceUnit **rRUPtr)
 {
     FloatGrid *lif_grid = GlobalSettings::instance()->model()->grid();
@@ -326,6 +412,25 @@ SaplingCell *Saplings::cell(QPoint lif_coords, bool only_valid, ResourceUnit **r
             return s;
     }
     return nullptr;
+}
+
+int Saplings::cell_index(QPoint lif_coords, ResourceUnit **rRUPtr)
+{
+    ResourceUnit *ru = nullptr;
+    if (rRUPtr == nullptr || *rRUPtr == nullptr) {
+        FloatGrid *lif_grid = GlobalSettings::instance()->model()->grid();
+        ru = GlobalSettings::instance()->model()->ru(lif_grid->cellCenterPoint(lif_coords));
+        if (rRUPtr)
+            *rRUPtr = ru;
+    } else {
+        ru = *rRUPtr;
+    }
+    if (ru) {
+        QPoint local_coords = lif_coords - ru->cornerPointOffset();
+        int idx = local_coords.y() * cPxPerRU + local_coords.x();
+        return idx;
+    }
+    return -1;
 }
 
 QPointF Saplings::coordOfCell(const ResourceUnit *ru, int cell_index)
@@ -832,31 +937,6 @@ double SaplingStat::livingStemNumber(const Species *species, double &rAvgDbh, do
      rAvgAge = averageAge();
      double n= species->saplingGrowthParameters().representedStemNumber(rAvgDbh);
      return n;
-// *** old code (sapling.cpp) ***
-//    double total = 0.;
-//    double dbh_sum = 0.;
-//    double h_sum = 0.;
-//    double age_sum = 0.;
-//    const SaplingGrowthParameters &p = mRUS->species()->saplingGrowthParameters();
-//    for (QVector<SaplingTreeOld>::const_iterator it = mSaplingTrees.constBegin(); it!=mSaplingTrees.constEnd(); ++it) {
-//        float dbh = it->height / p.hdSapling * 100.f;
-//        if (dbh<1.) // minimum size: 1cm
-//            continue;
-//        double n = p.representedStemNumber(dbh); // one cohort on the pixel represents that number of trees
-//        dbh_sum += n*dbh;
-//        h_sum += n*it->height;
-//        age_sum += n*it->age.age;
-//        total += n;
-//    }
-//    if (total>0.) {
-//        dbh_sum /= total;
-//        h_sum /= total;
-//        age_sum /= total;
-//    }
-//    rAvgDbh = dbh_sum;
-//    rAvgHeight = h_sum;
-//    rAvgAge = age_sum;
-//    return total;
 }
 
 ResourceUnitSpecies *SaplingTree::resourceUnitSpecies(const ResourceUnit *ru) const
@@ -867,6 +947,15 @@ ResourceUnitSpecies *SaplingTree::resourceUnitSpecies(const ResourceUnit *ru) co
         return nullptr;
     ResourceUnitSpecies *rus = ru->resourceUnitSpecies(species_index);
     return rus;
+}
+
+void SaplingTree::setupSpeciesLookup()
+{
+    auto &species = GlobalSettings::instance()->model()->speciesSet()->activeSpecies();
+    mSpecies.clear();
+    for (auto s : species)
+        mSpecies.push_back(s);
+
 }
 
 SaplingCellRunner::SaplingCellRunner(const int stand_id, const MapGrid *stand_grid)

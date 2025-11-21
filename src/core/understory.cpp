@@ -116,18 +116,6 @@ void Understory::setup()
 }
 
 
-void Understory::run()
-{
-    // run the growth for all resource units
-    DebugTimer t1("Understory - grow");
-    Globals->model()->threadExec().run(&UnderstoryRU::growth, mUnderstoryRU, true);
-
-    // run the establishment routine for understory for all resource units
-    DebugTimer t2("Understory - establishment");
-    Globals->model()->threadExec().run(&UnderstoryRU::establishment, mUnderstoryRU, true);
-
-
-}
 
 void Understory::checkStateSequence()
 {
@@ -277,7 +265,7 @@ Grid<double> *UnderstoryVisualizer::paintGrid(QString what, QStringList &names, 
             case 2: value = cell_stats.biomass; break;
             case 3: value = cell_stats.LAI; break;
             case 4: value = cell_stats.height; break;
-            case 5: value = cell->groundLightEffect(); break;
+            case 5: value = 0.; break;
             default: value = 0.;
             }
 

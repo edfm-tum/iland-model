@@ -66,7 +66,7 @@ DebugTimer::~DebugTimer()
         mTimingList[m_caption]+=t;
 
     // show message if timer is not set to silent, and if time > 100ms (if timer is set to hideShort (which is the default))
-    if (!m_silent && (!m_hideShort || t>100.))
+    if (!m_silent && (!m_hideShort || t>1000.))
         showElapsed();
 }
 

@@ -519,7 +519,7 @@ void CustomAggOutLevel::processSaplingCell(const SaplingCell *sc, const Resource
             }
             processSapling(&sc->saplings[i],
                            ru,
-                           sc->saplings[i].resourceUnitSpecies(ru)->species()->id(), //
+                           sc->saplings[i].species()->id(), //
                            data);
 
         }
@@ -671,7 +671,7 @@ void CustomAggOutLevel::populateSaplingData(QMap<QString, QVector<QPair<SaplingT
                 // store a pointer to the sapling tree in the data structure
                 if (by_species) {
 
-                    data[ sapcell->saplings[i].resourceUnitSpecies(sapcell->ru())->species()->id() ].push_back( QPair<SaplingTree*, ResourceUnit*> (&sapcell->saplings[i], sapcell->ru()) );
+                    data[ sapcell->saplings[i].species()->id() ].push_back( QPair<SaplingTree*, ResourceUnit*> (&sapcell->saplings[i], sapcell->ru()) );
                 } else {
                     data[ "" ].push_back( QPair<SaplingTree*, ResourceUnit*> (&sapcell->saplings[i], sapcell->ru()) );
                 }
