@@ -724,7 +724,7 @@ bool ScriptGlobal::gridToFile(QString grid_type, QString file_name, double hleve
 
 }
 
-QJSValue ScriptGlobal::grid(QString type)
+QJSValue ScriptGlobal::grid(QString type, double param)
 {
     int index = -1;
     // height grid options
@@ -742,6 +742,8 @@ QJSValue ScriptGlobal::grid(QString type)
     if (type=="swc") index=12;
     if (type=="swc_gs") index=13;
     if (type=="swc_pot") index=14;
+    if (type=="lif") index=20;
+    if (type=="groundlight") index=21;
     if (index<0) {
         throwError("ScriptGlobal::grid(): error: invalid grid specified: '" + type + "'.");
         return QJSValue();
@@ -776,7 +778,8 @@ QJSValue ScriptGlobal::grid(QString type)
 
         QJSValue g = ScriptGrid::createGrid(dgrid, type);
         return g;
-    } else {
+    };
+    if (index < 20) {
         // resource unit level
         const Grid<ResourceUnit*> &rg = GlobalSettings::instance()->model()->RUgrid();
         Grid<double> *dgrid=new Grid<double>(rg.cellsize(), rg.sizeX(), rg.sizeY());
@@ -793,6 +796,30 @@ QJSValue ScriptGlobal::grid(QString type)
         QJSValue g = ScriptGrid::createGrid(dgrid, type);
         return g;
     }
+    if (index < 30) {
+        // 2m grids
+        Grid<float> *rg = GlobalSettings::instance()->model()->grid();
+        Grid<double> *dbl_grid = nullptr;
+
+        switch (index) {
+        case 20: { // LIF
+            dbl_grid = rg->toDouble();
+            break;
+        }
+        case 21: { // ground light
+            Grid<float> *fgrid=new Grid<float>(rg->cellsize(), rg->sizeX(), rg->sizeY());
+            // fill the float-grid...
+            GlobalSettings::instance()->model()->saplings()->generateLightMap(param, *fgrid);
+            dbl_grid = fgrid->toDouble();
+            break;
+        }
+        }
+        if (dbl_grid) {
+            QJSValue g = ScriptGrid::createGrid(dbl_grid, type);
+            return g;
+        }
+    }
+    return QJSValue();
 
 }
 

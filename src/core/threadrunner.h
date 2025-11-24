@@ -56,6 +56,53 @@ public:
     template <class T>
     void run(void (T::*funcptr)(), QVector<T>& container, const bool forceSingleThreaded) const;
 
+    /// run using a lambda function
+    // T: The type of element in the container (e.g., ResourceUnit*)
+    // Func: The type of the lambda/functor
+    template <class T, class Func>
+    void run(Func f, const QVector<T>& container, const bool forceSingleThreaded) const
+    {
+        if (mMultithreaded && container.count() > 3 && !forceSingleThreaded) {
+            mState = MultiThreaded;
+            // QtConcurrent::blockingMap accepts lambdas directly.
+            // It will distribute the execution of 'f(element)' across threads.
+            QtConcurrent::blockingMap(container, f);
+        }
+        else {
+            mState = SingleThreaded;
+            // Serialized execution
+            for (const auto& element : container) {
+                f(element);
+            }
+        }
+        mState = Inactive;
+    }
+
+    /// run using a lambda function for each resource unit
+    /// Func: The type of the lambda/functor
+    template <class Func>
+    void run(Func f,  const bool forceSingleThreaded) const
+    {
+        if (mMultithreaded && mMap1.count() > 3 && !forceSingleThreaded) {
+            mState = MultiThreaded;
+            // QtConcurrent::blockingMap accepts lambdas directly.
+            QtConcurrent::blockingMap(mMap1, f);
+            QtConcurrent::blockingMap(mMap2, f);
+        }
+        else {
+            mState = SingleThreaded;
+            // Serialized execution
+            for (const auto& element : mMap1) {
+                f(element);
+            }
+            for (const auto& element : mMap2) {
+                f(element);
+            }
+
+        }
+        mState = Inactive;
+    }
+
 
     // run over chunks of a larger array (or grid)
     template<class T> void runGrid(void (*funcptr)(T*, T*), T* begin, T* end, const bool forceSingleThreaded=false, int minsize=10000, int maxchunks=10000) const;

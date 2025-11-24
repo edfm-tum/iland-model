@@ -558,6 +558,38 @@ int Saplings::addSprout(const Tree *t, bool tree_is_removed)
     return 1;
 }
 
+void Saplings::generateLightMap(float height_at, Grid<float> &rGrid)
+{
+    //GlobalSettings::instance()->model()->executePerResourceUnit(my_func);
+    // Lambda captures context.
+    // Note: 'ru' is inferred as ResourceUnit* because mResourceUnits holds pointers.
+    auto calc = [height_at, &rGrid](ResourceUnit* ru) {
+        LightProfile profile;
+        UnderstoryRU *us_ru = nullptr;
+        if (GlobalSettings::instance()->model()->settings().understoryEnabled )
+            us_ru = GlobalSettings::instance()->model()->understory()->understoryRU(ru->index());
+
+        // run the detailed light calculations and fill lightprofile for the resource unit
+        GlobalSettings::instance()->model()->saplings()->calculateLightProfile(ru, us_ru, profile);
+
+        // copy back the results to rGrid
+        // this is the lower left corner:
+        int cell_index = 0;
+        QPoint imap = ru->cornerPointOffset();
+        for (int iy=0; iy<cPxPerRU; ++iy) {
+            for (int ix=0;ix<cPxPerRU; ++ix, ++cell_index) {
+                float rel_light = profile.relativeLightAt(height_at, cell_index);
+                rGrid[QPoint(imap.x() + ix, imap.y() + iy)] = rel_light;
+            }
+
+        }
+    };
+
+    // run multi-threaded extraction function
+    GlobalSettings::instance()->model()->executePerResourceUnit(calc);
+}
+
+
 void Saplings::updateBrowsingPressure()
 {
     if (GlobalSettings::instance()->settings().valueBool("model.settings.browsing.enabled"))

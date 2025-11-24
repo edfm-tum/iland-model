@@ -183,8 +183,8 @@ public slots:
     void repaint(); ///< force a repainting of the GUI visualization (if available)
     bool gridToFile(QString grid_type, QString file_name, double hlevel=0); ///< create a "ESRI-grid" text file 'grid_type' is one of a fixed list of names, 'file_name' the ouptut file location
 
-    /// return Javascript grid for given type
-    QJSValue grid(QString type);
+    /// return Javascript grid for given type (provided as string). Some grids allow a single parameter.
+    QJSValue grid(QString type, double param=0.);
     /// return a grid with the basal area of the given species (resource unit resolution)
     QJSValue speciesShareGrid(QString species);
     /// return a grid (level of resource units) with the result of an expression evaluated in the context of the resource unit.

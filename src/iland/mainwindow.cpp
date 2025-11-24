@@ -900,6 +900,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     bool species_color = ui->visSpeciesColor->isChecked();
     bool show_ru = ui->visResourceUnits->isChecked();
     bool show_regeneration = ui->visRegeneration->isChecked();
+    bool show_forest_floor = ui->visGroundLight->isChecked();
     bool show_seedmaps = ui->visSeeds->isChecked();
     bool other_grid = ui->visOtherGrid->isChecked();
     bool shading = ui->visShading->isChecked();
@@ -1160,6 +1161,47 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                     img.setPixel(x,y,col);
                 }
             }
+    }
+
+    if (show_forest_floor) {
+        // re-use the regeneration grid
+        if (mRegenerationGrid.isEmpty())
+            mRegenerationGrid.setup(*model->grid()); // copy
+        if (!GlobalSettings::instance()->model()->saplings())
+            return;
+
+        bool is_num = true;
+        float height_at = QString(ui->lTreeExpr->text()).toDouble(&is_num);
+
+        mRulerColors->setCaption("Light at Forest Floor", QString("relative light at forest floor (or given height as expression). Height: %1").arg(height_at));
+
+        // generate forest floor light map
+        GlobalSettings::instance()->model()->saplings()->generateLightMap(height_at, mRegenerationGrid);
+
+        // draw map
+        mRulerColors->setPalette(GridViewTurbo,0., 1.); // ruler
+        int sizex = rect.width();
+        int sizey = rect.height();
+        QPointF world;
+        QRgb col;
+        QImage &img = ui->PaintWidget->drawImage();
+
+        for (int x=0;x<sizex;x++)
+            for (int y=0;y<sizey;y++) {
+                world = vp.toWorld(QPoint(x,y));
+                if (mRegenerationGrid.coordValid(world)) {
+                    value = mRegenerationGrid.valueAt(world);
+                    col = Colors::colorFromValue(value, 0., 1., false).rgb(); // 0..4m
+                    if (shading)
+                        col = Colors::shadeColor(col, world, mRemoteControl.model()->dem()).rgb();
+                    if (clip_with_stand_grid && !GlobalSettings::instance()->model()->heightGrid()->valueAt(world).isValid())
+                        col = Qt::white;
+
+                    img.setPixel(x,y,col);
+                }
+            }
+
+
     }
 
     if (show_dom) {
@@ -2028,6 +2070,9 @@ void MainWindow::mouseMove(const QPoint& pos)
         }
         if( ui->visRegeneration->isChecked() && !mRegenerationGrid.isEmpty())
             location += QString("\n %1").arg(mRegenerationGrid.valueAt(p));
+        if( ui->visGroundLight->isChecked() && !mRegenerationGrid.isEmpty())
+            location += QString("\n %1").arg(mRegenerationGrid.valueAt(p));
+
         if (ui->visSeeds->isChecked() && ui->speciesFilterBox->currentIndex()>-1) {
             Species *s=GlobalSettings::instance()->model()->speciesSet()->species(ui->speciesFilterBox->itemData(ui->speciesFilterBox->currentIndex()).toString());
             if (s && s->seedDispersal())

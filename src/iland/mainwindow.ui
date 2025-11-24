@@ -601,19 +601,6 @@ QProgressBar::chunk {
           </property>
          </widget>
         </item>
-        <item row="0" column="0" colspan="3">
-         <widget class="QRadioButton" name="visFon">
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show the value of the light influence grid at 2m resolution. Drawn is actually 1-LFI, with blue indicating high and red low light availability.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <property name="text">
-           <string>Light influence field</string>
-          </property>
-          <property name="checked">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
         <item row="1" column="0">
          <widget class="QRadioButton" name="visDomGrid">
           <property name="toolTip">
@@ -694,13 +681,36 @@ QProgressBar::chunk {
           </property>
          </widget>
         </item>
-        <item row="5" column="0">
+        <item row="4" column="1">
          <widget class="QRadioButton" name="visSnags">
           <property name="toolTip">
            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show standing / lying deadwood (stems) above threshold. Standing: circles, downed: squares.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
            <string>Snags</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QRadioButton" name="visFon">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show the value of the light influence grid at 2m resolution. Drawn is actually 1-LFI, with blue indicating high and red low light availability.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>Light infl. field</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QRadioButton" name="visGroundLight">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;relative light on the forest floor (height 0). &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>Light on ground</string>
           </property>
          </widget>
         </item>

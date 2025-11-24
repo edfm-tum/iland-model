@@ -568,7 +568,11 @@ Seed maps are only saved once, i.e. if a time series of seed maps is needed, `se
 extract a grid of type `type` from iLand. The extracted grid is a floating point grid (double precision) and
 a copy of the current state in iLand (memory is freed automatically during Javascript garbage collection).
 
-The grid has a cell size of 10m or 100m (depending on the type) and covers the full extent of the model.
+The grid has a cell size of 2m, 10m or 100m (depending on the type) and covers the full extent of the model.
+
+The available grid types with 20m resolution are:
++ `lif`: The light influence field (as provided by the iLand visualiztation)
++ `groundlight`: relative light level on the forest floor (default). Set `parameter` to a height for which to retrive the ground light (>=0m, <=4m).
 
 The available grid types with 10m resolution are:
 + `height`: dominant tree height (m)
@@ -585,10 +589,12 @@ The available grid types with 100m resolution are:
 + `swc_pot`: field water capacity (mm) of the resource unit (potential water content)
 
 
+
 See also: {{#crossLink "Globals/gridToFile:method"}}{{/crossLink}}
 
 @method grid
 @param {string} type select the type of grid to return
+@param {double} parameter some grids allow a single parameter (see above). Can be omitted.
 @return {Grid} a Javascript object encapsulating the {{#crossLink "Grid"}}{{/crossLink}}
 
 */

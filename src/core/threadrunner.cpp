@@ -47,14 +47,14 @@ void ThreadRunner::print()
 void ThreadRunner::setup(const QList<ResourceUnit*> &resourceUnitList)
 {
     mMap1.clear(); mMap2.clear();
-    bool map=true;
+    bool map_to_list1=true;
     foreach(ResourceUnit *unit, resourceUnitList) {
-        if (map)
+        if (map_to_list1)
             mMap1.append(unit);
         else
             mMap2.append(unit);
 
-        map = !map;
+        map_to_list1 = !map_to_list1;
     }
 
 }

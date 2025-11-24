@@ -151,6 +151,17 @@ public:
     void cleanTreeLists(bool recalculate_stats);
     /// execute a function for each resource unit using multiple threads. "funcptr" is a ptr to a simple function
     void executePerResourceUnit(void (*funcptr)(ResourceUnit*), const bool forceSingleThreaded=false) { threadRunner.run(funcptr, forceSingleThreaded);}
+    template <class Obj>
+    void executePerResourceUnit(void (Obj::*funcptr)(ResourceUnit*), Obj* obj, const bool forceSingleThreaded = false) {
+
+        threadRunner.run(funcptr, obj, forceSingleThreaded);
+    }
+    /// execute using a lamda
+    template <typename Func>
+    void executePerResourceUnit(Func func, const bool forceSingleThreaded = false) {
+        // The compiler deduces T=ResourceUnit* and Func=LambdaType automatically
+        threadRunner.run(func, forceSingleThreaded);
+    }
 
 private:
     void initialize(); ///< basic startup without creating a simulation
