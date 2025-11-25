@@ -742,6 +742,10 @@ static void nc_full_regeneration_phase(ResourceUnit *unit)
     try {
         // determine light profiles for resource unit
         s->calculateLightProfile(unit, us_ru, profile);
+        // store in water-cycle
+        auto &lais = const_cast<WaterCycle*>(unit->waterCycle())->lai_details();
+        lais.lai_saplings = profile.LAI_saplings;
+        lais.lai_understory = profile.LAI_understory;
 
         // 1. Run establishment
         s->establishment(unit, profile);

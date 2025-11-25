@@ -230,10 +230,15 @@ struct LightProfile
     std::array<std::array<float, N_BINS>, cPxPerHectare> light_level;
     std::array<std::array<float, N_BINS>, cPxPerHectare> lai;
     std::array<float, cPxPerHectare> lif_4m;
-    std::array<float, cPxPerHectare> ground_light; //
+    std::array<float, cPxPerHectare> ground_light;
+
+    // resource unit averages
+    /// mean LAI of saplings over all cells (m2/m2, for stockable area)
+    double LAI_saplings;
+    /// mean LAI of understory over all cells (m2/m2, for stockable area)
+    double LAI_understory;
 
     // Fast reset: Only clear what we accumulate (LAI).
-    // Others are overwritten.
     void reset_lai() {
         // std::memset is safe for std::array of POD (floats)
         // This translates to a highly optimized vectorized zeroing instruction

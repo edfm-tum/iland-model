@@ -807,7 +807,8 @@ QJSValue ScriptGlobal::grid(QString type, double param)
             break;
         }
         case 21: { // ground light
-            Grid<float> *fgrid=new Grid<float>(rg->cellsize(), rg->sizeX(), rg->sizeY());
+            //Grid<float> *fgrid=new Grid<float>(rg->cellsize(), rg->sizeX(), rg->sizeY());
+            Grid<float> *fgrid=new Grid<float>(rg->metricRect(), rg->cellsize());
             // fill the float-grid...
             GlobalSettings::instance()->model()->saplings()->generateLightMap(param, *fgrid);
             dbl_grid = fgrid->toDouble();

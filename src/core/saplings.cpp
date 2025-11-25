@@ -298,6 +298,8 @@ void Saplings::calculateLightProfile(const ResourceUnit *ru, const UnderstoryRU 
 
     int cell_index = 0;
 
+    float total_lai_saplings = 0.0;
+    float total_lai_understory = 0.0;
     // pass 1: collect LAI for saplings and understory
 
     for (int iy=0; iy<cPxPerRU; ++iy) {
@@ -319,7 +321,10 @@ void Saplings::calculateLightProfile(const ResourceUnit *ru, const UnderstoryRU 
                 for (int i=0;i<SaplingCell::NSapCells;++i) {
                     if (s->saplings[i].is_occupied()) {
                         double LAI4m = s->saplings[i].species()->saplingGrowthParameters().LAI4m;
-                        profile.lai[cell_index][profile.getBinIndex(s->saplings[i].height)] += LAI4m * s->saplings[i].height / cSapHeight;
+                        // scale linearly between 0 and 4m
+                        double LAI_sap = LAI4m * s->saplings[i].height / cSapHeight;
+                        total_lai_saplings+=LAI_sap;
+                        profile.lai[cell_index][profile.getBinIndex(s->saplings[i].height)] += LAI_sap;
                     }
                 }
             }
@@ -331,13 +336,19 @@ void Saplings::calculateLightProfile(const ResourceUnit *ru, const UnderstoryRU 
                     for (auto &p : us_cell->plants()) {
                         if (p.isLiving()) {
                             const double focus_height = (*states)[p.stateId()]->height();
-                            profile.lai[cell_index][profile.getBinIndex(focus_height)] += (*states)[p.stateId()]->LAI();
+                            double LAI_us = (*states)[p.stateId()]->LAI();
+                            total_lai_understory += LAI_us;
+                            profile.lai[cell_index][profile.getBinIndex(focus_height)] += LAI_us;
                         }
                     }
                 }
             }
         }
     }
+
+    // to calculate mean LAI: sum(cell LAIs (m/m)) / 2500
+    profile.LAI_saplings = ru->stockableArea()>0. ? total_lai_saplings / cPxPerHectare * cRUArea / ru->stockableArea() : 0.;
+    profile.LAI_understory = ru->stockableArea()>0. ? total_lai_understory / cPxPerHectare * cRUArea / ru->stockableArea() : 0.;
 
     // pass 2: calculate actual light profile
     const float k = 0.5f;

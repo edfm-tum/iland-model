@@ -70,7 +70,7 @@ public:
     bool setup(const Grid<T>& source) { clear();  mRect = source.mRect; return setup(source.mRect, source.mCellsize); }
     void initialize(const T& value) {for( T *p = begin();p!=end(); ++p) *p=value; }
     void wipe(); ///< write 0-bytes with memcpy to the whole area
-    void wipe(const T value); ///< overwrite the whole area with "value" size of T must be the size of "int" ERRORNOUS!!!
+    void wipe(const T value); ///< overwrite the whole area with "value"
     /// copies the content of the source grid to this grid.
     /// no operation, if the grids are not of the same size.
     void copy(const Grid<T> &source) { if (source.count()==count()) memcpy(mData, source.mData, count()*sizeof(T)); }

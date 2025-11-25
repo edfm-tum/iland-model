@@ -173,11 +173,13 @@ void WaterCycle::getStandValues(RUSpeciesShares &species_shares)
     mCanopyConductance=0.;
     const double ground_vegetationCC = 0.02;
     double lai;
+    double total_sapling_lai = 0.;
     QList<ResourceUnitSpecies*>::const_iterator rus;
     int i=0;
     for (rus=mRU->ruSpecies().constBegin();rus!=mRU->ruSpecies().constEnd();++rus, ++i) {
         lai = (*rus)->leafAreaIndex();
         double lai_sap = (*rus)->leafAreaIndexSaplings();
+        total_sapling_lai += lai_sap;
         // add leaf area from saplings
         lai += lai_sap;
         species_shares.lai_share[i] = lai; // store LAI for now
@@ -190,6 +192,14 @@ void WaterCycle::getStandValues(RUSpeciesShares &species_shares)
         }
     }
     double total_lai = mLAIBroadleaved+mLAINeedle;
+    mLAIs.lai_saplings_rus = total_sapling_lai;
+    // ok, this is messy: the LAIs on species level are only accounted for saplings >1.3m (and calculated slightly different).
+    // the more correct LAI is aggregated during light profile calculations for *all* saplings.
+    // note: saplings <1.3m do not contribute to crown water storage
+    total_lai = total_lai
+                - mLAIs.lai_saplings_rus // remove again
+                + mLAIs.lai_saplings // add "real" sapling LAI
+                + mLAIs.lai_understory; // add understory
 
 
 

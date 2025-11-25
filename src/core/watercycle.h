@@ -131,6 +131,16 @@ public:
     double estPsiMin(int phenologyGroup) const;
     // elements
     const Water::Permafrost *permafrost() const { return mPermafrost; }
+    struct SLAIs {
+        float lai_saplings {0.};
+        float lai_saplings_rus {0.};
+        float lai_understory {0.};
+        SLAIs & operator+=(const SLAIs &s) {
+            lai_saplings+=s.lai_saplings; lai_saplings_rus+=s.lai_saplings_rus; lai_understory+=s.lai_understory;
+            return *this;
+        }
+    };
+    SLAIs &lai_details() { return mLAIs; }
 
 private:
     struct RUSpeciesShares {
@@ -168,6 +178,8 @@ private:
     double mLAIBroadleaved;
     double mCanopyConductance; ///< m/s
     double mEffectiveLAI; ///< effective LAI for transpiration: includes ground vegetation, saplings and adult trees
+    SLAIs mLAIs; ///< for book-keeping of leaf area index on the resource unit
+
     // ground vegetation
     double mGroundVegetationLAI; ///< LAI of the ground vegetation (parameter)
     double mGroundVegetationPsiMin; ///< Psi Min (MPa) that is assumed for ground vegetation (parameter)

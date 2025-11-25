@@ -48,6 +48,9 @@ WaterOut::WaterOut()
               << OutputColumn("total_radiation", "total incoming radiation over the year (MJ/m2), sum of data in climate input)", OutDouble)
               << OutputColumn("radiation_snowcover", "sum of radiation input (MJ/m2) for days with snow cover", OutInteger)
               << OutputColumn("effective_lai", "effective LAI (m2/m2) including LAI of adult trees, saplings, and ground cover", OutDouble)
+              << OutputColumn("lai_saplings", "LAI (m2/m2) of saplings, calc. from pixels", OutDouble)
+              << OutputColumn("lai_saplings_rus", "LAI (m2/m2) of saplings, calc. from RUS average", OutDouble)
+              << OutputColumn("lai_understory", "LAI (m2/m2) of understory layer", OutDouble)
               << OutputColumn("mean_swc_mm", "mean soil water content of the year (mm)", OutDouble)
               << OutputColumn("mean_swc_gs_mm", "mean soil water content in the growing season (fixed: April - September) (mm)", OutDouble)
               << OutputColumn("maxDepthFrozen", "Permafrost: maximum depth of freezing (m). The value is 2m when soil is fully frozen in a year.", OutDouble)
@@ -77,6 +80,7 @@ void WaterOut::exec()
     int snow_days = 0;
     double et=0., excess=0., rad=0., snow_rad=0., p=0., mat=0.;
     double stockable=0., stocked=0., lai_effective=0.;
+    WaterCycle::SLAIs total_lais;
     double swc_mean=0., swc_gs_mean=0.;
     double mfd=0., mtd=0., msd=0.;
     foreach(ResourceUnit *ru, m->ruList()) {
@@ -93,6 +97,7 @@ void WaterOut::exec()
             *this << wc->mSnowDays;
             *this << ru->climate()->totalRadiation() << wc->mSnowRad;
             *this << wc->effectiveLAI();
+            *this << wc->mLAIs.lai_saplings << wc->mLAIs.lai_saplings_rus << wc->mLAIs.lai_understory;
             *this << wc->meanSoilWaterContent() << wc->meanGrowingSeasonSWC();
             if (wc->permafrost()) {
                 *this << wc->permafrost()->stats.maxFreezeDepth
@@ -113,6 +118,7 @@ void WaterOut::exec()
         rad+=ru->climate()->totalRadiation();
         snow_rad+=wc->mSnowRad;
         lai_effective+=wc->effectiveLAI();
+        total_lais += wc->mLAIs;
         swc_mean+=wc->meanSoilWaterContent(); swc_gs_mean+=wc->meanGrowingSeasonSWC();
         if (wc->permafrost()) {
             mfd += wc->permafrost()->stats.maxFreezeDepth;
@@ -135,6 +141,7 @@ void WaterOut::exec()
     *this << snow_days / ru_count;
     *this << rad / ru_count << snow_rad / ru_count;
     *this << lai_effective / ru_count;
+    *this << total_lais.lai_saplings / ru_count << total_lais.lai_saplings_rus / ru_count << total_lais.lai_understory / ru_count;
     *this << swc_mean / ru_count << swc_gs_mean / ru_count;
     *this << mfd / ru_count << mtd / ru_count << msd / ru_count;
     writeRow();
