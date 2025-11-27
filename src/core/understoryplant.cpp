@@ -6,6 +6,7 @@
 #include "watercycle.h"
 #include "microclimate.h"
 #include "climate.h"
+#include "soil.h"
 
 UnderstoryPlant::UnderstoryPlant() {}
 
@@ -139,7 +140,7 @@ UnderstoryStatsCell UnderstoryCell::stats(const UnderstoryPFT *pft) const
     return stats;
 }
 
-void UnderstoryCell::addStats(QVector<UnderstoryRUStats> &pfts)
+void UnderstoryCell::addStats(QVector<UnderstoryStats> &pfts)
 {
     const auto &states = Understory::instance().states();
     for (const auto& plant : mPlants) {
@@ -147,12 +148,12 @@ void UnderstoryCell::addStats(QVector<UnderstoryRUStats> &pfts)
             const auto state = states[ plant.stateId() ];
             auto &stats = pfts[state->pftIndex()];
 
-            stats.ru_stats.LAI += state->LAI();
-            stats.ru_stats.biomass += state->biomass();
-            stats.ru_stats.height += state->height();
-            stats.ru_stats.cover += state->cover();
-            stats.ru_stats.slotsOccupied += state->NSlots();
-            stats.ru_stats.cellsOccupied++;
+            stats.stats.LAI += state->LAI();
+            stats.stats.biomass += state->biomass();
+            stats.stats.height += state->height();
+            stats.stats.cover += state->cover();
+            stats.stats.slotsOccupied += state->NSlots();
+            stats.stats.cellsOccupied++;
 
         }
     }
@@ -235,8 +236,6 @@ void UnderstoryRU::establishment(const LightProfile &profile)
         }
     }
 
-    // as final step of a year: collect statistics
-    updateStats();
 
 }
 
@@ -284,46 +283,67 @@ void UnderstoryRU::growth(const LightProfile &profile)
 
 }
 
-void UnderstoryRU::statsRef(const UnderstoryPlant *p,
-                            UnderstoryRUStats **rPFTStat,
-                            UnderstoryRUStats **rRUStat)
+void UnderstoryRU::yearEnd()
 {
-    int pft_index = Understory::instance().states()[p->stateId()]->pftIndex();
-    *rPFTStat = &mPFTStats[pft_index];
-    *rRUStat = &mStats;
+    // collect statistics
+    updateStats();
+
+    // carbon fluxes
+    if (mRU->soil()) {
+        // a) turnover
+        int i=0;
+        double turnover_ha = 0.;
+        double mortality_ha = 0.;
+        for (auto &pft_stat: mPFTStats) {
+            double rate = Understory::instance().state(Understory::instance().PFTs()[i]->firstState())->turnoverRate();
+            turnover_ha += pft_stat.stats.biomass * rate;
+            mortality_ha += pft_stat.biomass_died;
+            ++i;
+        }
+        //
+        const double understory_r_decomp = 0.14; // value of moss for permafrost
+        const double understory_CNratio = 30; // same value as for moss
+
+        double total_c_flux = turnover_ha + mortality_ha;
+
+        CNPool litter_input( total_c_flux * biomassCFraction,
+                             total_c_flux * biomassCFraction / understory_CNratio,
+                            understory_r_decomp);
+        mRU->snag()->addBiomassToSoil(CNPool(), litter_input);
+
+    }
+
+
 }
+
 
 void UnderstoryRU::statsPlantDied(const UnderstoryPlant *p)
 {
-    UnderstoryRUStats *pftstat=nullptr, *rustat=nullptr;
-    statsRef(p, &pftstat, &rustat);
-    Q_ASSERT(pftstat != nullptr && rustat != nullptr);
-    ++pftstat->died;
-    ++rustat->died;
+    auto *state= Understory::instance().states()[p->stateId()];
+    auto &pft_stat = mPFTStats[state->pftIndex()];
+    double biomass_died = state->biomass();
+
+    pft_stat.biomass_died += biomass_died;
+    ++pft_stat.died;
 }
 
 void UnderstoryRU::statsPlantEstablished(const UnderstoryPlant *p)
 {
-    UnderstoryRUStats *pftstat=nullptr, *rustat=nullptr;
-    statsRef(p, &pftstat, &rustat);
-    Q_ASSERT(pftstat != nullptr && rustat != nullptr);
-    ++pftstat->established;
-    ++rustat->established;
+    auto *state= Understory::instance().states()[p->stateId()];
+    auto &pft_stat = mPFTStats[state->pftIndex()];
+    ++pft_stat.established;
 
 }
 
 void UnderstoryRU::statsPlantTransition(const UnderstoryPlant *p, bool growth)
 {
-    UnderstoryRUStats *pftstat=nullptr, *rustat=nullptr;
-    statsRef(p, &pftstat, &rustat);
-    Q_ASSERT(pftstat != nullptr && rustat != nullptr);
+    auto *state= Understory::instance().states()[p->stateId()];
+    auto &pft_stat = mPFTStats[state->pftIndex()];
 
     if (growth) {
-        ++pftstat->transitionUp;
-        ++rustat->transitionUp;
+        ++pft_stat.transitionUp;
     } else {
-        ++pftstat->transitionDown;
-        ++rustat->transitionDown;
+        ++pft_stat.transitionDown;
     }
 
 }
@@ -348,17 +368,17 @@ const UnderstoryCell *UnderstoryRU::cell(QPointF metric_coord) const
     return &mCells[index];
 }
 
-UnderstoryRUStats UnderstoryRU::stats(const UnderstoryPFT *pft) const
+UnderstoryStats UnderstoryRU::stats(const UnderstoryPFT *pft) const
 {
-    UnderstoryRUStats stats;
+    UnderstoryStats stats;
     int n_valid = 0;
     for (auto &cell : mCells) {
         if (cell.isValid()) {
-            stats.ru_stats += cell.stats(pft);
+            stats.stats += cell.stats(pft);
             ++n_valid;
         }
     }
-    stats.ru_stats.calcPerRU(n_valid);
+    stats.stats.calcPerRU(n_valid);
     return stats;
 }
 
@@ -376,10 +396,12 @@ void UnderstoryRU::updateStats()
     for (auto &cell : mCells) {
 
         if (cell.isValid()) {
-            if (cell.isOccupied())
+            if (cell.isOccupied()) {
                 ++n_occupied;
+                cell.addStats(mPFTStats);
+            }
             ++n_valid;
-            cell.addStats(mPFTStats);
+
         }
     }
 
@@ -389,32 +411,35 @@ void UnderstoryRU::updateStats()
     float area_factor_ha = n_valid > 0 ? cPxPerHectare / (float)n_valid : 0;
 
     // summarize over all PFTs
-    mStats.ru_stats.clear();
-    for (auto &stat : mPFTStats) {
+    mStats.stats.clear();
+    for (auto &pft_stat : mPFTStats) {
         // calculate values per PFT and resource unit
-        stat.died *= area_factor * 100.;
-        stat.established *= area_factor * 100.;
-        stat.transitionDown *= area_factor * 100.;
-        stat.transitionUp *= area_factor * 100.;
+        pft_stat.died *= area_factor * 100.;
+        pft_stat.established *= area_factor * 100.;
+        pft_stat.transitionDown *= area_factor * 100.;
+        pft_stat.transitionUp *= area_factor * 100.;
+        pft_stat.biomass_died *= area_factor * 100.;
         // the values now are summed over all cells
-        stat.ru_stats.LAI *= area_factor; // m2/m2 on stockable area
-        stat.ru_stats.biomass *= area_factor_ha; // kg / (stockable) ha
-        stat.ru_stats.cover *= area_factor * 100; // % cover (relative to stockable area)
-        stat.ru_stats.height *= area_factor; // mean height
-        stat.ru_stats.cellsOccupied *= area_factor * 100; // % area occupied by PFT
-        stat.ru_stats.slotsOccupied *= area_factor * 100 / UnderstoryCell::MaxOccupied; // %occupation
+        pft_stat.stats.LAI *= area_factor; // m2/m2 on stockable area
+        pft_stat.stats.biomass *= area_factor_ha; // kg / (stockable) ha
+        pft_stat.stats.cover *= area_factor * 100; // % cover (relative to stockable area)
+        pft_stat.stats.height *= area_factor; // mean height
+        pft_stat.stats.cellsOccupied *= area_factor * 100; // % area occupied by PFT
+        pft_stat.stats.slotsOccupied *= area_factor * 100 / UnderstoryCell::MaxOccupied; // %occupation
+
 
         // summarise over all PFTs:
-        mStats.ru_stats += stat.ru_stats;
-        mStats.died += stat.died;
-        mStats.established += stat.established;
-        mStats.transitionDown += stat.transitionDown;
-        mStats.transitionUp += stat.transitionUp;
+        mStats.stats += pft_stat.stats;
+        mStats.died += pft_stat.died;
+        mStats.established += pft_stat.established;
+        mStats.transitionDown += pft_stat.transitionDown;
+        mStats.transitionUp += pft_stat.transitionUp;
+        mStats.biomass_died += pft_stat.biomass_died;
     }
     // special case: cells occupied is the proportion of
     // non-empty cells
     if (n_valid > 0)
-        mStats.ru_stats.cellsOccupied = 100 * n_occupied / (float)n_valid;
+        mStats.stats.cellsOccupied = 100 * n_occupied / (float)n_valid;
 
 
 
@@ -424,11 +449,11 @@ void UnderstoryRU::updateStats()
                               .arg(mStats.transitionDown).arg(mStats.died);
     //qDebug() << stat_string;
     stat_string = QString("(area/slots): %1 %, %2 %, LAI: %3, biomass: %4, height: %5")
-                      .arg(mStats.ru_stats.cellsOccupied)
-                      .arg(mStats.ru_stats.slotsOccupied)
-                      .arg(mStats.ru_stats.LAI)
-                      .arg(mStats.ru_stats.biomass)
-                      .arg(mStats.ru_stats.height);
+                      .arg(mStats.stats.cellsOccupied)
+                      .arg(mStats.stats.slotsOccupied)
+                      .arg(mStats.stats.LAI)
+                      .arg(mStats.stats.biomass)
+                      .arg(mStats.stats.height);
     //qDebug() << stat_string;
 
 }

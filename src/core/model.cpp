@@ -761,6 +761,8 @@ static void nc_full_regeneration_phase(ResourceUnit *unit)
             elapsed.us_growth = t.elapsed() - elapsed.sapling_growth;
 
             us_ru->establishment(profile);
+
+            us_ru->yearEnd(); // collect stats
             elapsed.us_establishment = t.elapsed() - elapsed.us_growth;
         }
 

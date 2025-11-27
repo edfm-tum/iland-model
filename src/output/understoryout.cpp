@@ -19,10 +19,12 @@ UnderstoryOut::UnderstoryOut()
     columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::id()
               << OutputColumn("area_ha", "total stockable area of the resource unit (ha)", OutDouble)
               << OutputColumn("pft", "Name of the plant functional type", OutString)
-              << OutputColumn("area", "total area where the PFT is present (based on 2m cells) (prop. stockable area)", OutDouble)
-              << OutputColumn("cover", "total area covered by PFT (area x state-specific cover) (prop. stockable area)", OutDouble)
-              << OutputColumn("areaGain", "total area where PFT regenerated (based on 2m cells, prop. stockable area)", OutDouble)
-              << OutputColumn("areaLoss", "total area with PFT mortality (based on 2m cells, prop. stockable area)", OutDouble);
+              << OutputColumn("area", "total area where the PFT is present (based on 2m cells) (% of stockable area)", OutDouble)
+              << OutputColumn("cover", "total area covered by PFT (area x state-specific cover) (% of stockable area)", OutDouble)
+              << OutputColumn("areaGain", "total area where PFT regenerated (based on 2m cells, % of stockable area)", OutDouble)
+              << OutputColumn("areaLoss", "total area with PFT mortality (based on 2m cells, % of stockable area)", OutDouble)
+              << OutputColumn("LAI", "leaf area index of PFT (m2/m2)", OutDouble)
+              << OutputColumn("biomass", "biomass of PFT (kg/ha)", OutDouble);
 
 }
 
@@ -41,7 +43,7 @@ void UnderstoryOut::exec()
     if (!mConditionDetails.isEmpty() && mConditionDetails.calculate(GlobalSettings::instance()->currentYear())==0.)
         ru_level = false;
 
-    QVector<UnderstoryRUStats> lscp_ru_stats;
+    QVector<UnderstoryStats> lscp_ru_stats;
     lscp_ru_stats.resize(m->understory()->PFTs().size());
 
     double total_area = 0;
@@ -54,16 +56,17 @@ void UnderstoryOut::exec()
 
         int pft_index = 0;
         for (const auto &stat : us_ru->pftStats()) {
-            if (stat.ru_stats.cellsOccupied > 0)  {
+            if (stat.stats.cellsOccupied > 0)  {
                 if (ru_level) {
                     const auto *pft = m->understory()->pft(pft_index);
                     *this << currentYear() << ru->index() << ru->id() << area_factor; // keys
                     *this << pft->name();
-                    *this << stat.ru_stats.cellsOccupied << stat.ru_stats.slotsOccupied;
+                    *this << stat.stats.cellsOccupied << stat.stats.slotsOccupied;
                     *this << stat.established << stat.died;
+                    *this << stat.stats.LAI << stat.stats.biomass;
                     writeRow();
                 }
-                lscp_ru_stats[pft_index].ru_stats += stat.ru_stats;
+                lscp_ru_stats[pft_index].stats += stat.stats;
                 lscp_ru_stats[pft_index].established += stat.established * area_factor;
                 lscp_ru_stats[pft_index].died += stat.died * area_factor;
             }
@@ -75,13 +78,14 @@ void UnderstoryOut::exec()
     int pft_index = 0;
     for (const auto &stat : lscp_ru_stats) {
 
-        if (stat.ru_stats.cellsOccupied > 0)  {
+        if (stat.stats.cellsOccupied > 0)  {
 
                 const auto *pft = m->understory()->pft(pft_index);
                 *this << currentYear() << -1 << -1 << total_area; // keys
                 *this << pft->name();
-                *this << stat.ru_stats.cellsOccupied / total_area << stat.ru_stats.slotsOccupied / total_area;
+                *this << stat.stats.cellsOccupied / total_area << stat.stats.slotsOccupied / total_area;
                 *this << stat.established / total_area << stat.died / total_area;
+                *this << stat.stats.LAI / total_area << stat.stats.biomass / total_area;
                 writeRow();
                 ++pft_index;
 

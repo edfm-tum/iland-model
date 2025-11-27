@@ -190,7 +190,8 @@ UStateId UnderstoryPFT::stateTransition(const UnderstoryPlant &plant,
     if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dUnderstory)) {
         DebugList &out = GlobalSettings::instance()->debugList(us_ru.ru()->index(), GlobalSettings::dUnderstory );
         out << us_ru.ru()->index() << 0 <<
-            state->pft()->name() << state->id() << light_response << nitrogen_response << water_response << temp_response << total_response <<
+            state->pft()->name() << state->id() << light_response << nitrogen_response <<
+            water_response << temp_response << total_response <<
             p_mort << p_previous << p_next << next_state;
         //"ruindex", "cellindex",
         //    "pft", "stateId", "lightResponse", "nitrogenResponse", "waterResponse", "tempResponse", "totalResponse",

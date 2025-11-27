@@ -26,15 +26,16 @@ public:
     const QVector<UnderstoryPFT*> &PFTs() { return mPFTs; }
     const QVector<UnderstoryState*> &states() { return mStates; }
 
-    /// get a state by its index
-    const UnderstoryState *state(int index) const { Q_ASSERT(index>=0 && index <mStates.size()); return mStates[index]; }
+    /// get a state by its index/Id. plant->StateId works (0-based)
+    const UnderstoryState *state(int state_id) const { Q_ASSERT(state_id>=0 && state_id <mStates.size()); return mStates[state_id]; }
     /// get a PFT by its index
     const UnderstoryPFT *pft(int index) const { Q_ASSERT(index>=0 && index <mPFTs.size()); return mPFTs[index]; }
 
     /// get PFT by its name, or a nullptr if not found (slow!)
     const UnderstoryPFT* pftByName(const QString &name) const;
-    /// get a state by its id, or a nullptr if not found (slow!)
-    const UnderstoryState *stateById(UStateId id) const;
+
+    // get a state by its id, or a nullptr if not found (slow!)
+    //const UnderstoryState *stateById(UStateId id) const;
 
     /// get the state representing the next size class of a state (or nullptr if it is the last)
     const UnderstoryState *nextState(const UStateId current_state) const { return state(current_state)->isFinalState() ? nullptr : state(current_state + 1); }

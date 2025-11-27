@@ -78,16 +78,21 @@ struct UnderstoryStatsCell {
     float slotsOccupied {0}; ///< Cell: N Slots, RU: % slots covered
 };
 
-
-struct UnderstoryRUStats {
-    void clear() { established = died = transitionDown = transitionUp = 0; ru_stats.clear(); }
+/** @class UnderstoryStats is a containter for understory statistics on different aggregation levels.
+    Used for sums per PFT (on RU), sums per RU, and total value (landscape).
+    Values on RU are always expressed as per ha stockable area (i.e., half-stockable RUs are scaled up) (see UnterstoryRU::updateStats())
+ */
+struct UnderstoryStats {
+    void clear() { established = died = transitionDown = transitionUp = 0; biomass_died=0.; stats.clear(); }
     // changes
     float established { 0 }; // # of plants / cells established
     float died {0 }; // # of plants that died
     float transitionUp {0}; // # of plants with state transition to next / taller state
     float transitionDown {0}; // # of plants with state transition to previous / smaller state
     // state
-    UnderstoryStatsCell ru_stats;
+    UnderstoryStatsCell stats;
+    // carbon flux
+    float biomass_died {0.}; // total biomass
 };
 
 class UnderstoryRU; // forward
@@ -135,7 +140,7 @@ public:
     /// get stats only for a given PFT
     UnderstoryStatsCell stats(const UnderstoryPFT *pft) const;
 
-    void addStats(QVector<UnderstoryRUStats> &pfts);
+    void addStats(QVector<UnderstoryStats> &pfts);
 private:
     /// sum of occupation points on cell
     uint8_t mOccupied {0};
@@ -144,6 +149,7 @@ private:
     std::array<UnderstoryPlant, NSlots> mPlants;
 };
 
+class UnderstoryState; // forward
 /**
  * @brief The UnderstoryRU class
  * holds the actual understory per resource unit (an array of UnderstoryCell).
@@ -157,12 +163,16 @@ public:
     void setRU(ResourceUnit* ru) {mRU = ru; }
 
     // actions
+
+    /// establishment of understory plants on the RU
     void establishment(const LightProfile &profile);
+    /// growth (and death) of understory on the RU
     void growth(const LightProfile &profile);
+    /// finalize year, carbon fluxes
+    void yearEnd();
 
     // functions for statistics
     /// get pointers to the stats object for the PFT (on RU) and RU for a given plant-cell
-    void statsRef(const UnderstoryPlant *p, UnderstoryRUStats **rPFTStat, UnderstoryRUStats **rRUStat);
     void statsPlantDied(const UnderstoryPlant *p);
     void statsPlantEstablished(const UnderstoryPlant *p);
     void statsPlantTransition(const UnderstoryPlant *p, bool growth);
@@ -181,15 +191,16 @@ public:
     const UnderstoryCell *cell(int index) const { return &mCells[index]; }
 
     /// RU totals across all PFTs
-    const UnderstoryRUStats &stats() const { return mStats; }
+    const UnderstoryStats &stats() const { return mStats; }
     /// stats for a single PFT
-    UnderstoryRUStats stats(const UnderstoryPFT *pft) const;
+    UnderstoryStats stats(const UnderstoryPFT *pft) const;
     /// vector of states for all PFTs
-    const QVector<UnderstoryRUStats> pftStats() const { return mPFTStats; }
+    const QVector<UnderstoryStats> pftStats() const { return mPFTStats; }
 private:
+    /// accumulate data for RU level, scale to stockable area
     void updateStats();
-    UnderstoryRUStats mStats;
-    QVector<UnderstoryRUStats> mPFTStats; ///< stats per PFT
+    UnderstoryStats mStats;
+    QVector<UnderstoryStats> mPFTStats; ///< stats per PFT
     ResourceUnit *mRU {0};
     std::array<UnderstoryCell, cPxPerHectare> mCells;
 };

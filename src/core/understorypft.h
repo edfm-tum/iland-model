@@ -112,6 +112,8 @@ public:
     double height() const { return mHeight; }
     /// proportion of cover on the cell (0..1)
     double cover() const { return mCover; }
+    /// carbon turnover rate / yr (i.e. percentage of carbon flux to ground w/o growth, mortality)
+    double turnoverRate() const { return 0.5; } // TODO: make editable
 
 
 private:

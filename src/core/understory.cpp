@@ -33,13 +33,13 @@ const UnderstoryPFT *Understory::pftByName(const QString &name) const
 
 }
 
-const UnderstoryState *Understory::stateById(UStateId id) const
-{
-    for (int i=0;i<mStates.size();++i)
-        if (mStates[i]->id() == id)
-            return mStates[i];
-    return nullptr;
-}
+// const UnderstoryState *Understory::stateById(UStateId id) const
+// {
+//     for (int i=0;i<mStates.size();++i)
+//         if (mStates[i]->id() == id)
+//             return mStates[i];
+//     return nullptr;
+// }
 
 
 
@@ -279,9 +279,9 @@ Grid<double> *UnderstoryVisualizer::paintGrid(QString what, QStringList &names, 
             const auto us_ru = us->understoryRU(mRUGrid.cellCenterPoint(p));
             if (us_ru) {
                 auto &stats = us_ru->stats();
-                const UnderstoryStatsCell *s = &stats.ru_stats;
+                const UnderstoryStatsCell *s = &stats.stats;
                 if (mPFTFilter) {
-                    s = &us_ru->pftStats()[mPFTFilter->index()].ru_stats;
+                    s = &us_ru->pftStats()[mPFTFilter->index()].stats;
                 }
 
                 switch (index - min_idx_ru) {
