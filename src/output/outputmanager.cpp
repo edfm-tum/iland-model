@@ -26,6 +26,7 @@
 #include "outputmanager.h"
 #include "debugtimer.h"
 #include <QtCore>
+#include <QtConcurrent>
 #include "outputwriterthread.h"
 
 // tree outputs
@@ -163,8 +164,55 @@ Output *OutputManager::find(const QString& tableName)
     foreach(Output* p,mOutputs)
         if (p->tableName()==tableName)
             return p;
+
     return nullptr;
 }
+
+
+
+void runOutput(Output *p)
+{
+    if (!p->isRowEmpty()) {
+         qWarning() << "Output" << p->name() << "invalid (not at new row)!!!";
+         return;
+    }
+
+    p->exec();
+    p->flush();
+}
+
+
+
+void OutputManager::executeParallel(const QStringList &tableNames)
+{
+    DebugTimer t("OutputManager::executeParallel()");
+    t.setSilent();
+
+    QList<Output*> parallel_list;
+
+    // Separate serial and parallel outputs
+    foreach(const QString &name, tableNames) {
+        Output *p = find(name);
+        if (!p || !p->isEnabled()) continue;
+
+        if (p->isBuffered()) {
+            // Verify thread is running for buffered outputs
+            if (!mThread->isRunning())
+                 throw IException("OutputManager: Output Writer Thread is not running! Cannot save data.");
+
+            parallel_list.append(p);
+        } else {
+             execute(name); // Execute non-buffered immediately (serial)
+        }
+    }
+
+    // Execute parallel outputs
+    if (!parallel_list.isEmpty()) {
+        QtConcurrent::blockingMap(parallel_list, runOutput);
+    }
+}
+
+
 
 void OutputManager::save()
 {

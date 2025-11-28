@@ -900,17 +900,11 @@ void Model::beforeRun()
     // outputs to create with inital state (without any growth) are called here:
     GlobalSettings::instance()->setCurrentYear(0); // set clock to "0" (for outputs with initial state)
 
-    GlobalSettings::instance()->outputManager()->execute("stand"); // year=0
-    GlobalSettings::instance()->outputManager()->execute("landscape"); // year=0
-    GlobalSettings::instance()->outputManager()->execute("sapling"); // year=0
-    GlobalSettings::instance()->outputManager()->execute("saplingdetail"); // year=0
-    GlobalSettings::instance()->outputManager()->execute("tree"); // year=0
-    GlobalSettings::instance()->outputManager()->execute("dynamicstand"); // year=0
-    GlobalSettings::instance()->outputManager()->execute("carbon"); // year=0
-    GlobalSettings::instance()->outputManager()->execute("svdstate"); // year=0
-    GlobalSettings::instance()->outputManager()->execute("devstage"); // year=0
-    GlobalSettings::instance()->outputManager()->execute("ecoviz"); // tree output for visualization, year 0
-    GlobalSettings::instance()->outputManager()->execute("customagg"); // custom aggregation, much like dynamic stand, year 0
+    QStringList startup_outputs;
+    startup_outputs << "stand" << "landscape" << "sapling" << "saplingdetail" << "tree" << "dynamicstand"
+                    << "carbon" << "svdstate" << "devstage" << "ecoviz" << "customagg";
+    GlobalSettings::instance()->outputManager()->executeParallel(startup_outputs);
+
     GlobalSettings::instance()->outputManager()->save(); // commit database changes
 
 
@@ -1092,29 +1086,14 @@ void Model::runYear()
     // create outputs
     setCurrentTask("Write outputs");
     OutputManager *om = GlobalSettings::instance()->outputManager();
-    om->execute("tree"); // single tree output
-    om->execute("treeremoved"); // single removed tree output
-    om->execute("stand"); //resource unit level x species
-    om->execute("landscape"); //landscape x species
-    om->execute("landscape_removed"); //removed trees on landscape x species
-    om->execute("sapling"); // sapling layer per RU x species
-    om->execute("saplingdetail"); // individual sapling cohorts (per RU)
-    om->execute("production_month"); // 3pg responses growth per species x RU x month
-    om->execute("dynamicstand"); // output with user-defined columns (based on species x RU)
-    om->execute("standdead"); // resource unit level x species
-    om->execute("management"); // resource unit level x species
-    om->execute("carbon"); // resource unit level, carbon pools above and belowground
-    om->execute("carbonflow"); // resource unit level, GPP, NPP and total carbon flows (atmosphere, harvest, ...)
-    om->execute("soilinput"); // resource unit level carbon input to the soil
-    om->execute("water"); // resource unit/landscape level water output (ET, rad, snow cover, ...)
-    om->execute("svdgpp"); // pot. gpp per m2 and for a number of species (SVD related)
-    om->execute("svdstate"); // forest state information (SVD related)
-    om->execute("svdindicator"); // forest indicators on RU level (SVD related)
-    om->execute("svduniquestate"); // list of forest vegetation states (SVD related)
-    om->execute("devstage"); // spatial analysis of developement stages
-    om->execute("ecoviz"); // tree output for visualization
-    om->execute("customagg"); // custom aggregation, much like dynamic stand
-    om->execute("understory"); // understory cover per PFT
+
+    QStringList outputs;
+    outputs << "tree" << "treeremoved" << "stand" << "landscape" << "landscape_removed" << "sapling" << "saplingdetail"
+            << "production_month" << "dynamicstand" << "standdead" << "management" << "carbon" << "carbonflow"
+            << "soilinput" << "water" << "svdgpp" << "svdstate" << "svdindicator" << "svduniquestate"
+            << "devstage" << "ecoviz" << "customagg" << "understory";
+
+    om->executeParallel(outputs);
 
     GlobalSettings::instance()->systemStatistics()->tWriteOutput+=toutput.elapsed();
     GlobalSettings::instance()->systemStatistics()->tTotalYear+=t_all.elapsed();
