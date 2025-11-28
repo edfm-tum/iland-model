@@ -60,6 +60,7 @@ public:
     // debug and helpers
     void loadFromImage(const QString &fileName); ///< debug function...
     void dumpMapNextYear(QString file_name) { mDumpNextYearFileName = file_name; }
+    void runTest(int which_one, int times);
 private:
     void createKernel(Grid<float> &kernel, const float scale_area); ///< initializes / creates the kernel
     double setupLDD(); ///< initialize long distance seed dispersal
@@ -70,6 +71,7 @@ private:
 
     /// do the actual seed distribution processing
     void distributeSeeds(Grid<float> *seed_map=0);
+    void distributeSeedsFast(Grid<float> *seed_map=0);
 
     /// external seeds on full area (in case of low probability)
     void addExternalBackgroundSeeds(Grid<float> &map, double background_value);

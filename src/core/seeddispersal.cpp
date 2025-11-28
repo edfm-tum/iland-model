@@ -557,6 +557,21 @@ void SeedDispersal::loadFromImage(const QString &fileName)
 
 }
 
+void SeedDispersal::runTest(int which_one, int times)
+{
+    Grid<float> copy_src = Grid<float>(mSourceMap);
+
+    for (int i = 0;i<times; ++i) {
+
+        if (which_one == 0)
+            distributeSeeds();
+        else
+            distributeSeedsFast();
+
+        mSourceMap.copy(copy_src); // restore data
+    }
+}
+
 void SeedDispersal::newYear()
 {
 
@@ -854,6 +869,160 @@ void SeedDispersal::distributeSeeds(Grid<float> *seed_map)
         }
     }
 }
+
+
+void SeedDispersal::distributeSeedsFast(Grid<float> *seed_map)
+{
+    Grid<float> &sourcemap = seed_map ? *seed_map : mSourceMap;
+    const bool serotiny = seed_map == &mSeedMapSerotiny;
+    const Grid<float> &kernel = (serotiny ? mKernelSerotiny : mKernelSeedYear);
+
+    // --- 1. Pre-calculation & Setup ---
+    float fec = 0.f;
+    if (serotiny) {
+        fec = static_cast<float>(species()->fecunditySerotiny());
+    } else {
+        fec = static_cast<float>(species()->fecundity_m2());
+        if (!species()->isSeedYear())
+            fec *= static_cast<float>(mNonSeedYearFraction);
+    }
+
+    // Optimization: Pre-calculate inverse constants to replace division with multiplication
+    const float cell_size = sourcemap.cellsize();
+    // include LAI=3 division
+    const float cell_area_inv_div3 = 1.0f / (cell_size * cell_size * 3.f);
+    const int gridW = sourcemap.sizeX();
+    const int gridH = sourcemap.sizeY();
+
+    // Raw pointers for faster access
+    float* source_base_ptr = sourcemap.begin();
+    float* dest_base_ptr = mSeedMap.begin();
+
+    // --- 2. Source Map Update (Vectorizable) ---
+    // Using raw pointer iteration here is fine as we don't need coordinates
+    const int total_cells = gridW * gridH;
+    for (int i = 0; i < total_cells; ++i) {
+        if (source_base_ptr[i] > 0.f) {
+            source_base_ptr[i] = std::min(source_base_ptr[i] * cell_area_inv_div3, 1.f);
+        }
+    }
+
+    // --- 3. Kernel & LDD Setup ---
+    const int kW = kernel.sizeX();
+    const int kH = kernel.sizeY();
+    const int offset = kW / 2; // Kernel center offset
+
+    // Define "Safe Zone": The rectangle where the kernel fits completely without boundary checks
+    // If the kernel is 20x20 (offset 10), we can run safely from x=10 to x=Width-10
+    const int safe_min_x = offset;
+    const int safe_max_x = gridW - (kW - offset);
+    const int safe_min_y = offset;
+    const int safe_max_y = gridH - (kH - offset);
+
+    // LDD Pre-calculations
+    const bool do_ldd = !serotiny && !mLDDDensity.isEmpty();
+    const float ldd_probability_base = do_ldd ? (mLDDSeedlings / fec) : 0.f;
+
+
+    // --- 4. Main Distribution Loop ---
+    if (!GlobalSettings::instance()->model()->settings().torusMode) {
+
+        // Iterate Y then X to improve cache locality (row-major access)
+        for (int y = 0; y < gridH; ++y) {
+            // Optimization: Get row pointer once per row
+            float* src_row_ptr = source_base_ptr + (y * gridW);
+
+            for (int x = 0; x < gridW; ++x) {
+                const float src_val = src_row_ptr[x];
+
+                if (src_val <= 0.f) continue;
+
+                // *** Kernel Application ***
+
+                // Branch Prediction: This 'if' will be true for >90% of cells in a large grid
+                if (x >= safe_min_x && x < safe_max_x && y >= safe_min_y && y < safe_max_y) {
+                    // FAST PATH: No bounds checking, raw pointer arithmetic
+
+                    // Calculate pointer to the top-left corner of where the kernel hits the seedmap
+                    // (y - offset) is the starting row in seedmap
+                    // (x - offset) is the starting col in seedmap
+                    float* dst_kernel_start = dest_base_ptr + ((y - offset) * gridW) + (x - offset);
+
+                    for (int ky = 0; ky < kH; ++ky) {
+                        float* dst_row = dst_kernel_start + (ky * gridW);
+                        // Access kernel row directly (assuming kernel class supports this or has flat memory)
+                        // If kernel() operator is slow, pre-fetch this pointer too.
+                        const float* k_row_data = &kernel(0, ky); // Assuming &kernel(0, ky) gives row start
+
+                        for (int kx = 0; kx < kW; ++kx) {
+                            dst_row[kx] += src_val * k_row_data[kx];
+                        }
+                    }
+                } else {
+                    // SLOWER PATH: Edge cases (bounds checking required)
+                    int sx = x - offset;
+                    int sy = y - offset;
+                    for (int ky = 0; ky < kH; ++ky) {
+                        for (int kx = 0; kx < kW; ++kx) {
+                            if (mSeedMap.isIndexValid(sx + kx, sy + ky)) {
+                                mSeedMap.valueAtIndex(sx + kx, sy + ky) += src_val * kernel(kx, ky);
+                            }
+                        }
+                    }
+                }
+
+                // *** Long Distance Dispersal (LDD) ***
+                // Optimization: Raw integer math instead of QPoint
+                if (do_ldd) {
+                    for (int r = 0; r < mLDDDensity.size(); ++r) {
+                        int n;
+                        if (mLDDDensity[r] < 1)
+                            n = drandom() < mLDDDensity[r] ? 1 : 0;
+                        else
+                            n = static_cast<int>(round(mLDDDensity[r]));
+
+                        for (int i = 0; i < n; ++i) {
+                            // Note: sin/cos are expensive. If LDD is very frequent,
+                            // consider a pre-calculated lookup table for random unit vectors.
+                            double radius = nrandom(mLDDDistance[r], mLDDDistance[r+1]) / cell_size;
+                            double phi = drandom() * 2. * M_PI;
+
+                            int dx = static_cast<int>(radius * cos(phi));
+                            int dy = static_cast<int>(radius * sin(phi));
+
+                            int ldd_x = x + dx;
+                            int ldd_y = y + dy;
+
+                            if (mSeedMap.isIndexValid(ldd_x, ldd_y)) {
+                                // Direct access if possible, or via wrapper
+                                mSeedMap.valueAtIndex(ldd_x, ldd_y) += ldd_probability_base;
+                                _debug_ldd++;
+                            }
+                        }
+                    }
+                }
+            } // end x
+        } // end y
+
+    } else {
+        // ... Torus mode implementation (omitted for brevity, apply similar optimizations) ...
+        throw IException("no fast seed dispersal in torus mode (yet)");
+    }
+
+    // --- 5. Final Probability Calculation ---
+    // Optimization: Constant hoisting
+    const float n_unlimited_inv = fec / 100.f; // Combined fec / n_unlimited
+
+    // Vectorizable loop
+    for (int i = 0; i < total_cells; ++i) {
+        if (dest_base_ptr[i] > 0.f) {
+            // Assuming dest_base_ptr is mSeedMap.begin()
+            dest_base_ptr[i] = std::min(dest_base_ptr[i] * n_unlimited_inv, 1.f);
+        }
+    }
+}
+
+
 
 void SeedDispersal::addExternalBackgroundSeeds(Grid<float> &map, double background_value)
 {

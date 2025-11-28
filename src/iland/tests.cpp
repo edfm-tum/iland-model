@@ -727,17 +727,44 @@ void Tests::testGridRunner()
 
 void Tests::testSeedDispersal()
 {
-    SeedDispersal sd;
-    sd.setup();
-    sd.loadFromImage("e:\\temp\\test.jpg");
-    QImage img = gridToImage(sd.seedMap(), true, -1., 1.);
-    img.save("e:\\temp\\seedmap.png");
-    sd.execute();
-//    sd.edgeDetection();
-//    gridToImage(sd.seedMap(), true, -1., 1.).save("seedmap_edge.png");
-//    sd.distribute();
-    img = gridToImage(sd.seedMap(), true, -1., 1.);
-    img.save("e:\\temp\\seedmap_e.png");
+//     SeedDispersal sd;
+//     sd.setup();
+//     sd.loadFromImage("e:\\temp\\test.jpg");
+//     QImage img = gridToImage(sd.seedMap(), true, -1., 1.);
+//     img.save("e:\\temp\\seedmap.png");
+//     sd.execute();
+// //    sd.edgeDetection();
+// //    gridToImage(sd.seedMap(), true, -1., 1.).save("seedmap_edge.png");
+// //    sd.distribute();
+//     img = gridToImage(sd.seedMap(), true, -1., 1.);
+//     img.save("e:\\temp\\seedmap_e.png");
+
+    Species *spec = GlobalSettings::instance()->model()->speciesSet()->species("piab");
+    if (!spec) return;
+
+    spec->seedDispersal()->runTest(0, 1);
+    // copy the seedmap
+    Grid<float> result1 = Grid<float>(spec->seedDispersal()->seedMap());
+
+    spec->seedDispersal()->runTest(1, 1);
+    // compare seed maps
+    qDebug() << "original-code" << result1.avg() << "updated code:" << spec->seedDispersal()->seedMap().avg();
+
+    DebugTimer t;
+    for (int i=0;i<10;++i) {
+        spec->seedDispersal()->runTest(0, 1);
+        qDebug() << "result:" << spec->seedDispersal()->seedMap().avg();
+    }
+    qDebug() << "old: " << t.elapsed();
+
+
+    DebugTimer t2;
+    for (int i=0;i<10;++i) {
+        spec->seedDispersal()->runTest(1, 1);
+        qDebug() << "result:" << spec->seedDispersal()->seedMap().avg();
+
+    }
+    qDebug() << "new: " << t2.elapsed();
 
 }
 
