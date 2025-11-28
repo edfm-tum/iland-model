@@ -183,12 +183,13 @@ void SpeciesSet::regeneration()
     if (!GlobalSettings::instance()->model()->settings().regenerationEnabled)
         return;
     DebugTimer t("seed dispersal (all species)");
+    QElapsedTimer manual_timer; manual_timer.start();
 
     ThreadRunner runner(mActiveSpecies); // initialize a thread runner object with all active species
     runner.run(nc_seed_distribution);
 
     if (logLevelDebug())
-        qDebug() << "seed dispersal finished.";
+        qDebug() << "seed dispersal finished. Manual timer:" << manual_timer.elapsed() << "ms";
 }
 
 void SpeciesSet::clearSaplingSeedMap()

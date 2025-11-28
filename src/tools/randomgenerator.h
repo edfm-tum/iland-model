@@ -1,113 +1,139 @@
-/********************************************************************************************
-**    iLand - an individual based forest landscape and disturbance model
-**    https://iland-model.org
-**    Copyright (C) 2009-  Werner Rammer, Rupert Seidl
-**
-**    This program is free software: you can redistribute it and/or modify
-**    it under the terms of the GNU General Public License as published by
-**    the Free Software Foundation, either version 3 of the License, or
-**    (at your option) any later version.
-**
-**    This program is distributed in the hope that it will be useful,
-**    but WITHOUT ANY WARRANTY; without even the implied warranty of
-**    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-**    GNU General Public License for more details.
-**
-**    You should have received a copy of the GNU General Public License
-**    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-********************************************************************************************/
-
 #ifndef RANDOMGENERATOR_H
 #define RANDOMGENERATOR_H
-#include <cstdlib>
-#include <math.h>
-#include <time.h>
 
+#include <cstdlib>
+#include <cmath>
+#include <vector>
+#include <random> // Used for initial seeding only
+
+// MEMORY WARNING: 2,000,000 ints * 32 threads = ~256 MB RAM.
+// In this thread-local design, a size of 65536 (256KB) would actually be faster
+// due to L2 cache locality, but 2M is safe if RAM is plentiful.
 #define RANDOMGENERATORSIZE 2000000
 #define RANDOMGENERATORROTATIONS 10
-// a new set of numbers is generated for every 5*500000 = 2.500.000 numbers
+
 class RandomGenerator
 {
 public:
     enum ERandomGenerators { ergMersenneTwister, ergWellRNG512, ergXORShift96, ergFastRandom };
-    RandomGenerator() { seed(0); setGeneratorType(ergMersenneTwister); }
-    /// set the type of the random generator that should be used.
-    static void setGeneratorType(const ERandomGenerators gen) { mGeneratorType = gen; mRotationCount=RANDOMGENERATORROTATIONS+1;mIndex=0;mRefillCounter=0; }
-    static void debugState(int &rIndex, int &rGeneration, int &rRefillCount) { rIndex = mIndex; rGeneration = mRotationCount; rRefillCount = mRefillCounter; }
-    static int debugNRandomNumbers() { return mIndex + RANDOMGENERATORSIZE*mRotationCount + (RANDOMGENERATORROTATIONS+1)*RANDOMGENERATORSIZE*mRefillCounter; }
-    /// call this function to check if we need to create new random numbers.
-    /// this function is not reentrant! (e.g. call every year in the model)
-    static void checkGenerator() { if (mRotationCount>RANDOMGENERATORROTATIONS) { refill();  } }
-    static void setup(const ERandomGenerators gen, const unsigned oneSeed) { setGeneratorType(gen); seed(oneSeed); checkGenerator(); }
-    /// set a random generator seed. If oneSeed is 0, then a random number (provided by system time) is used as initial seed.
-    static void seed(const unsigned oneSeed);
-    /// get a random value from [0., 1.]
-    static inline double rand() { return next() * (1.0/4294967295.0); }
-    static inline double rand(const double max_value) { return max_value * rand(); }
-    /// get a random integer in [0,2^32-1]
-    static inline unsigned long randInt(){ return next(); }
-    static inline unsigned long randInt(const int max_value) { return max_value>0?randInt()%max_value:0; }
-    /// Access to nonuniform random number distributions
-    static inline double randNorm( const double mean, const double stddev );
+
+    // --- Constructor (Runs once per thread) ---
+    RandomGenerator();
+
+    // --- Static API (Backward Compatibility) ---
+    // These functions now forward calls to the thread-local instance.
+
+    static void setGeneratorType(const ERandomGenerators gen) {
+        // Note: This only sets the type for the CURRENT thread.
+        // Ideally, set this in a global config before threads start.
+        instance().mGeneratorType = gen;
+        instance().mRotationCount = RANDOMGENERATORROTATIONS + 1;
+        instance().mIndex = 0;
+        instance().mRefillCounter = 0;
+    }
+
+    static void debugState(int &rIndex, int &rGeneration, int &rRefillCount) {
+        rIndex = instance().mIndex;
+        rGeneration = instance().mRotationCount;
+        rRefillCount = instance().mRefillCounter;
+    }
+
+    static int debugNRandomNumbers() {
+        return instance().mIndex +
+               RANDOMGENERATORSIZE * instance().mRotationCount +
+               (RANDOMGENERATORROTATIONS + 1) * RANDOMGENERATORSIZE * instance().mRefillCounter;
+    }
+
+    static void checkGenerator() {
+        if (instance().mRotationCount > RANDOMGENERATORROTATIONS) {
+            instance().refill();
+        }
+    }
+
+    static void setup(const ERandomGenerators gen, const unsigned oneSeed) {
+        instance().mGeneratorType = gen;
+        instance().seed(oneSeed); // Seeds THIS thread's generator
+        instance().checkGenerator();
+    }
+
+    static void seed(const unsigned oneSeed); // Implementation in .cpp
+
+    // --- Inlined Hot Paths (Now Lock-Free) ---
+
+    static inline double rand() {
+        return instance().next() * (1.0 / 4294967295.0);
+    }
+
+    static inline double rand(const double max_value) {
+        return max_value * rand();
+    }
+
+    static inline unsigned long randInt() {
+        return instance().next();
+    }
+
+    static inline unsigned long randInt(const int max_value) {
+        return max_value > 0 ? randInt() % max_value : 0;
+    }
+
+    static inline double randNorm(const double mean, const double stddev);
 
 private:
-    static inline unsigned long next() { ++mIndex; if (mIndex>RANDOMGENERATORSIZE) { mRotationCount++; mIndex=0; checkGenerator(); }  return mBuffer[mIndex]; }
-    static unsigned int mBuffer[RANDOMGENERATORSIZE+5];
-    static int mIndex;
-    static int mRotationCount;
-    static int mRefillCounter;
-    static ERandomGenerators mGeneratorType;
-    static void refill();
+    // --- Instance Members (No longer static) ---
+    // Each thread has its own buffer and state.
+    unsigned int mBuffer[RANDOMGENERATORSIZE + 5];
+    int mIndex = RANDOMGENERATORSIZE + 1; // Force refill on first use
+    int mRotationCount = 0;
+    int mRefillCounter = 0;
+    ERandomGenerators mGeneratorType = ergMersenneTwister;
+
+    // --- Instance Helper ---
+    // This is the magic. It creates one RandomGenerator per thread.
+    static RandomGenerator& instance() {
+        static thread_local RandomGenerator rng;
+        return rng;
+    }
+
+    // Internal next() function acting on the instance
+    inline unsigned long next() {
+        ++mIndex;
+        // Branch prediction handles this well; it's false 99.999% of the time.
+        if (mIndex > RANDOMGENERATORSIZE) {
+            mRotationCount++;
+            mIndex = 0;
+            checkGenerator();
+        }
+        return mBuffer[mIndex];
+    }
+
+    // Must be implemented in .cpp as a member function now.
+    // REMOVE LOCKS from the implementation!
+    void refill();
 };
 
-/// ******************************************
-/// Global access functions for random numbers
-/// ******************************************
+// --- Global Access Functions (Unchanged) ---
 
-
-/// nrandom returns a random number from [p1, p2] -> p2 is a possible result!
-inline double nrandom(const double& p1, const double& p2)
-{
-    return p1 + RandomGenerator::rand(p2-p1);
-    //return p1 + (p2-p1)*(rand()/double(RAND_MAX));
+inline double nrandom(const double& p1, const double& p2) {
+    return p1 + RandomGenerator::rand(p2 - p1);
 }
-/// returns a random number in [0,1] (i.e.="1" is a possible result!)
-inline double drandom()
-{
+
+inline double drandom() {
     return RandomGenerator::rand();
-    //return rand()/double(RAND_MAX);
-}
-/// return a random number from "from" to "to" (excluding 'to'.), i.e. irandom(3,6) results in 3, 4 or 5.
-inline int irandom(int from, int to)
-{
-    return from + RandomGenerator::randInt(to-from);
-    //return from +  rand()%(to-from);
 }
 
-
-
-
-inline double RandomGenerator::randNorm( const double mean, const double stddev )
-{
-        // Return a real number from a normal (Gaussian) distribution with given
-        // mean and standard deviation by polar form of Box-Muller transformation
-        double x, y, r;
-        do
-        {
-                x = 2.0 * rand() - 1.0;
-                y = 2.0 * rand() - 1.0;
-                r = x * x + y * y;
-        }
-        while ( r >= 1.0 || r == 0.0 );
-        double s = sqrt( -2.0 * log(r) / r );
-        return mean + x * s * stddev;
+inline int irandom(int from, int to) {
+    return from + RandomGenerator::randInt(to - from);
 }
 
-
-
-
-
-
-
+inline double RandomGenerator::randNorm(const double mean, const double stddev) {
+    double x, y, r;
+    do {
+        x = 2.0 * rand() - 1.0;
+        y = 2.0 * rand() - 1.0;
+        r = x * x + y * y;
+    } while (r >= 1.0 || r == 0.0);
+    double s = std::sqrt(-2.0 * std::log(r) / r);
+    return mean + x * s * stddev;
+}
 
 #endif // RANDOMGENERATOR_H

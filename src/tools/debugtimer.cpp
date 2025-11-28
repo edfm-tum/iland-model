@@ -26,6 +26,9 @@
 QHash<QString, double> DebugTimer::mTimingList;
  bool DebugTimer::m_responsive_mode = false;
  qint64 DebugTimer::ms_since_epoch = 0;
+
+ QMutex timer_mutex;
+
 /*
 double DebugTimer::m_tick_p_s=0.;
 
@@ -62,15 +65,16 @@ DebugTimer::~DebugTimer()
     }
 
     double t = elapsed();
-    if (!m_caption.isEmpty())
+    if (!m_caption.isEmpty()) {
+        QMutexLocker locker(&timer_mutex);
         mTimingList[m_caption]+=t;
+    }
 
     // show message if timer is not set to silent, and if time > 100ms (if timer is set to hideShort (which is the default))
     if (!m_silent && (!m_hideShort || t>1000.))
         showElapsed();
 }
 
-QMutex timer_mutex;
 DebugTimer::DebugTimer(const QString &caption, bool silent)
 {
     ++m_count;
