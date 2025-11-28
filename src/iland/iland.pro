@@ -188,6 +188,7 @@ SOURCES += main.cpp \
     ../output/output.cpp \
     ../output/treeout.cpp \
     ../output/outputmanager.cpp \
+    ../output/outputwriterthread.cpp \
     ../output/standout.cpp \
     ../core/standstatistics.cpp \
     ../output/dynamicstandout.cpp \
@@ -331,6 +332,7 @@ HEADERS += mainwindow.h \
     ../output/output.h \
     ../output/treeout.h \
     ../output/outputmanager.h \
+    ../output/outputwriterthread.h \
     ../output/standout.h \
     ../core/standstatistics.h \
     ../output/dynamicstandout.h \

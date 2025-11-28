@@ -21,6 +21,8 @@
 #define OUTPUTMANAGER_H
 #include "output.h"
 
+class OutputWriterThread;
+
 class OutputManager
 {
 public:
@@ -34,8 +36,10 @@ public:
     void save(); ///< save transactions of all outputs
     void close(); ///< close all outputs
     QString wikiFormat(); ///< wiki-format of all outputs
+    OutputWriterThread *thread() { return mThread; }
 private:
     QList<Output*> mOutputs; ///< list of outputs in system
+    OutputWriterThread *mThread;
     // transactions
     void startTransaction(); ///< start database transaction  (if output database is open, i.e. >0 DB outputs are active)
     void endTransaction(); ///< ends database transaction

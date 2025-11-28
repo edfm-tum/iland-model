@@ -75,6 +75,9 @@ public:
     const QString description() const { return mDescription; } ///< description of output
     const QString tableName() const { return mTableName; } ///< internal output name (no spaces allowed)
     QString wikiFormat() const; ///< return output description in a (tiki)-wiki format
+    void setBuffered(const bool buffered) { mBuffered = buffered; }
+    bool isBuffered() const { return mBuffered; }
+    void flush(); // write the buffer to the output thread
 
     // save data
     Output & operator<< ( const double& value ) { add(value); return *this; }
@@ -115,11 +118,13 @@ private:
     OutputMode mMode;
     bool mOpen;
     bool mEnabled;
+    bool mBuffered;
     QString mName; ///< name of the output
     QString mTableName; ///< name of the table/output file
     QString mDescription; ///< textual description of the content
     QList<OutputColumn> mColumns; ///< list of columns of output
     QVector<QVariant> mRow; ///< current row
+    QVector<QVariant> mFlatBuffer; ///< buffer for data
     QSqlQuery *mInserter;
     QFile mOutputFile;
     QTextStream mFileStream; ///< for file based output

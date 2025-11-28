@@ -26,6 +26,7 @@
 #include "outputmanager.h"
 #include "debugtimer.h"
 #include <QtCore>
+#include "outputwriterthread.h"
 
 // tree outputs
 #include "treeout.h"
@@ -54,6 +55,7 @@
 OutputManager::OutputManager()
 {
     mTransactionOpen = false;
+    mThread = new OutputWriterThread();
     // add all the outputs
     mOutputs.append(new TreeOut);
     mOutputs.append(new TreeRemovedOut);
@@ -97,6 +99,10 @@ void OutputManager::removeOutput(const QString &tableName)
 
 OutputManager::~OutputManager()
 {
+    if (mThread) {
+        mThread->stop();
+        delete mThread;
+    }
     qDeleteAll(mOutputs);
 }
 
@@ -104,6 +110,25 @@ void OutputManager::setup()
 {
     //close();
     qDebug() << "Setting up outputs...";
+    bool buffered = GlobalSettings::instance()->settings().valueBool("system.settings.bufferOutput", false);
+    if (buffered) {
+        qDebug() << "Output buffering enabled. Starting background thread.";
+        // If the thread is already running (e.g. from a previous run), stop and wait for it
+        // to ensure all old data is written and we can cleanly switch the database file.
+        if (mThread->isRunning()) {
+            mThread->stop();
+            mThread->wait();
+        }
+        mThread->setDatabaseName(GlobalSettings::instance()->dbout().databaseName());
+        mThread->resetAbort(); // Reset the abort flag
+        mThread->start();
+    }
+
+    // Ensure we are not in a transaction when creating tables (DDL)
+    if (mTransactionOpen) {
+        endTransaction();
+    }
+
     QStringList output_names;
     XmlHelper &xml = const_cast<XmlHelper&>(GlobalSettings::instance()->settings());
     QString nodepath;
@@ -119,11 +144,17 @@ void OutputManager::setup()
         if (file_mode)
             o->setMode(OutFile);
         o->setEnabled(enabled);
+        o->setBuffered(buffered);
         if (enabled)
             o->open();
     }
     qDebug() << "processed" << output_names.size() << "outputs: " << output_names;
     qDebug() << "Setup of outputs completed.";
+    
+    // Force a commit of the schema changes so the background thread can see the new tables
+    if (GlobalSettings::instance()->dbout().transaction()) {
+        GlobalSettings::instance()->dbout().commit();
+    }
     endTransaction(); // just to be sure
 }
 
@@ -145,6 +176,8 @@ void OutputManager::close()
     qDebug() << "outputs closed";
     foreach(Output *p, mOutputs)
         p->close();
+    if (mThread->isRunning())
+        mThread->stop();
 }
 
 /** start a database transaction.
@@ -185,8 +218,16 @@ bool OutputManager::execute(const QString& tableName)
             return false;
         }
 
-        startTransaction(); // just assure a transaction is open.... nothing happens if already inside a transaction
+        if (!p->isBuffered())
+            startTransaction(); // just assure a transaction is open.... nothing happens if already inside a transaction
+        
         p->exec();
+
+        if (p->isBuffered()) {
+            if (!mThread->isRunning())
+                 throw IException("OutputManager: Output Writer Thread is not running! Cannot save data.");
+            p->flush();
+        }
 
         return true;
     }

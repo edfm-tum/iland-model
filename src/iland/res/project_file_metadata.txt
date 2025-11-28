@@ -280,6 +280,7 @@ gui.layout = tab|tabSystemSettings|Settings|Settings for multithreading, debug o
 gui.layout = group|Multithreading
 system.settings.multithreading = boolean|true|Multithreading|If checked, iLand will use several threads to perform its calculations (if more than 10 RessourceUnits are defined).|simple
 system.settings.threadCount = numeric|-1|ThreadCount|Number of used threads if multithreading is enabled. -1 uses all available CPU cores.|simple
+system.settings.bufferOutput = boolean|false|Buffered Output|If true, output data is first buffered in memory and then written to disk by a separate thread. This can improve simulation performance by decoupling I/O from the main simulation thread.|simple
 gui.layout = group|Debug outputs https://iland-model.org/Debug+Outputs
 system.settings.debugOutput = numeric|1|Debug Output|Defines the active debug outputs. Each output is coded by a single bit. Find a list of currently available outputs under the debug data menu of the iLand application. e.g: a value of 17 (=16+1) would enable the water output (16) and the Tree NPP output (1).|simple
 system.settings.debugOutputAutoSave = boolean|true|Debug output autosave|If checked, csv-output files are created for each active debug output and saved to the temp directory (see Path-section).|simple

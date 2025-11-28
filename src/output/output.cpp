@@ -21,6 +21,8 @@
 #include "output.h"
 #include <QtCore>
 #include <QtSql>
+#include "outputmanager.h"
+#include "outputwriterthread.h"
 
 
 /** @class Output
@@ -102,6 +104,7 @@ Output::Output()
     mMode = OutDatabase;
     mOpen = false;
     mEnabled = false;
+    mBuffered = false;
     mInserter = nullptr;
     newRow();
 }
@@ -177,6 +180,10 @@ void Output::openFile()
     }
     mFileStream << line << Qt::endl;
 
+    if (mBuffered) {
+        mOutputFile.close();
+    }
+
 }
 
 void Output::newRow()
@@ -191,6 +198,15 @@ void Output::writeRow()
     DBG_IF(mIndex!=mCount, "Output::save()", "received invalid number of values!");
     if (!isOpen())
         open();
+    
+    if (mBuffered) {
+        // buffering mode: append to flat buffer
+        for (int i=0;i<mCount; ++i)
+            mFlatBuffer.append(mRow[i]);
+        newRow();
+        return;
+    }
+
     switch(mMode) {
         case OutDatabase:
             saveDatabase(); break;
@@ -200,6 +216,39 @@ void Output::writeRow()
     }
 
 }
+
+void Output::flush()
+{
+    if (!mBuffered || mFlatBuffer.isEmpty())
+        return;
+
+    OutputBatch batch;
+    batch.tableName = mTableName;
+    batch.columnCount = mColumns.count();
+    batch.startTransaction = true;
+    batch.data.swap(mFlatBuffer); // move data to batch
+
+    if (mMode == OutFile) {
+        batch.mode = OutputBatch::File;
+        batch.filePath = mOutputFile.fileName();
+    } else {
+        batch.mode = OutputBatch::Database;
+        // reconstruct insert statement
+        QString insert="insert into " + mTableName + " (";
+        QString values;
+        foreach(const OutputColumn &col, columns()) {
+            insert+=col.mName+",";
+            values+="?,";
+        }
+        insert[insert.length()-1]=')';
+        values[values.length()-1]=')';
+        insert += QString(" values (") + values;
+        batch.insertSql = insert;
+    }
+
+    GlobalSettings::instance()->outputManager()->thread()->addBatch(batch);
+}
+
 
 static QMutex __protectWriteRow;
 void Output::singleThreadedWriteRow()

@@ -169,6 +169,7 @@ SOURCES += main.cpp \
     ../output/output.cpp \
     ../output/treeout.cpp \
     ../output/outputmanager.cpp \
+    ../output/outputwriterthread.cpp \
     ../output/standout.cpp \
     ../output/landscapeout.cpp \
     ../core/standstatistics.cpp \
@@ -294,6 +295,7 @@ HEADERS += \
     ../output/output.h \
     ../output/treeout.h \
     ../output/outputmanager.h \
+    ../output/outputwriterthread.h \
     ../output/standout.h \
     ../output/landscapeout.h \
     ../output/devstageout.h \
