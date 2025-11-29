@@ -875,6 +875,7 @@ void Model::runYear()
     foreach(SpeciesSet *set, mSpeciesSets)
         set->newYear();
 
+    GlobalSettings::instance()->systemStatistics()->tClimate+=t_all.elapsed();
     // management classic
     if (mManagement) {
         setCurrentTask("Management");

@@ -38,6 +38,7 @@
 #include "speciesset.h"
 #include "mapgrid.h"
 #include "statdata.h"
+#include "standstatistics.h"
 
 
 #include "biteengine.h"
@@ -304,6 +305,8 @@ void ModelController::internalStop()
     if (mRunning) {
         GlobalSettings::instance()->outputManager()->save();
         DebugTimer::printAllTimers();
+        GlobalSettings::instance()->systemStatistics()->printPerformanceStats();
+
         saveDebugOutputs(true);
         //if (GlobalSettings::instance()->dbout().isOpen())
         //    GlobalSettings::instance()->dbout().close();

@@ -259,4 +259,41 @@ void SystemStatistics::writeOutput()
     }
 }
 
+void SystemStatistics::printPerformanceStats()
+{
+    /*    double tManagement;
+    double tApplyPattern;
+    double tReadPattern;
+    double tTreeGrowth;
+    // regeneration
+    double tEstablishment;
+    double tSeedDistribution;
+    double tSapling;
+    double tUnderstoryGrowth;
+    double tUnderstoryEstablishment;
+    double tCarbonCycle;
+    double tWriteOutput;
+    double tTotalYear;*/
+    double total_growth = (tApplyPattern + tReadPattern + tTreeGrowth + tCarbonCycle) ;
+    qWarning() << "*** Runtime stats ***";
+    qWarning() << "(values in seconds, values for est./sapling growth. are sums over threads; BITE in dist.modules; Climate includes new year stuff)";
+    qWarning() << "Climate + prep:      " << tClimate /10.;
+    qWarning() << "Seed dispersal:      " << tSeedDistribution /10.;
+    qWarning() << "Total regeneration:  " << tTotalRegeneration /10.;
+    qWarning() << " - establishment:    " << tEstablishment /10.;
+    qWarning() << " - sapling growth:   " << tSapling /10.;
+    //qWarning() << " - understory:       " << tUnderstoryEstablishment /1000.;
+    //qWarning() << " - understory:       " << tUnderstoryGrowth /1000.;
+    qWarning() << "Growth:              " << total_growth /10.;
+    qWarning() << " - Apply LIP:        " << tApplyPattern /10.;
+    qWarning() << " - Read LIP:         " << tReadPattern /10.;
+    qWarning() << " - tree growth:      " << tTreeGrowth /10.;
+    qWarning() << " - carbon cycle:     " << tCarbonCycle /10.;
+    qWarning() << "Disturbance modules: " << tDisturbanceModules /10.;
+    qWarning() << "Management (+ ABE):  " << tManagement / 10.;
+    qWarning() << "Outputs:             " << tWriteOutput/ 10.;
+    qWarning() << "======================================";
+    qWarning() << "TOTAL:               " << tTotalYear / 10.;
+    qWarning() << "======================================";
 
+}
