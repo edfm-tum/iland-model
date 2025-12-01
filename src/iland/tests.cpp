@@ -1470,6 +1470,63 @@ void Tests::testGridIndexHack()
 
 }
 
+void Tests::testUpdateLIF()
+{
+    // copy input grids
+    Grid<float> lif_copy = Grid<float>(*GlobalSettings::instance()->model()->grid());
+    Grid<HeightGridValue> h_copy = Grid<HeightGridValue>(*GlobalSettings::instance()->model()->heightGrid());
+    qDebug() << "LIF-value before start:" << lif_copy.sum();
+    // run original code
+    for (auto *ru : GlobalSettings::instance()->model()->ruList()) {
+        for (auto &t : ru->trees()) {
+            t.heightGrid_orig();
+        }
+        for (auto &t : ru->trees()) {
+            t.applyLIP_orig();
+        }
+    }
+
+    // copy results and reset input data
+    Grid<float> lif_result = Grid<float>(*GlobalSettings::instance()->model()->grid());
+    Grid<HeightGridValue> height_result = Grid<HeightGridValue>(*GlobalSettings::instance()->model()->heightGrid());
+    qDebug() << "LIF-result (sum):" << lif_result.sum();
+
+    GlobalSettings::instance()->model()->grid()->copy(lif_copy);
+    GlobalSettings::instance()->model()->heightGrid()->copy(h_copy);
+
+    // run updated code
+    for (auto *ru : GlobalSettings::instance()->model()->ruList()) {
+        for (auto &t : ru->trees()) {
+            t.heightGrid();
+        }
+        for (auto &t : ru->trees()) {
+            t.applyLIP();
+        }
+    }
+
+    // compare results
+    auto *lif = GlobalSettings::instance()->model()->grid();
+    auto *height = GlobalSettings::instance()->model()->heightGrid();
+    qDebug() << "LIF-result nwe (sum):" << lif->sum();
+
+    bool lif_identical = *lif == lif_result;
+    bool height_identical = true;
+    for (int i=0;i<height_result.count();++i)
+        if (height_result[i].height != (*height)[i].height)
+            height_identical = false;
+
+    qDebug() << "Result: LIF identical" << lif_identical << "height identical: " << height_identical;
+
+    if (!lif_identical) {
+        gridToFile(*lif, GlobalSettings::instance()->path("lif_new.asc"));
+        gridToFile(lif_result, GlobalSettings::instance()->path("lif_orig.asc"));
+    }
+    if (!height_identical) {
+        gridToFile<HeightGridValue, float>(*height, "height_new.asc", [](const HeightGridValue &hgv){ return hgv.height; } );
+        gridToFile<HeightGridValue, float>(height_result, "height_orig.asc", [](const HeightGridValue &hgv){ return hgv.height; } );
+    }
+}
+
 
 
 /* expression tests */

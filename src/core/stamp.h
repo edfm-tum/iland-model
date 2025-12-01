@@ -49,6 +49,7 @@ public:
     const float *end() const { return &m_data[m_size*m_size]; }
     /// get pointer to data item with indices x and y
     inline float *data(const int x, const int y) const { return m_data + index(x,y); }
+    inline float *rowPtr(const int row) const { return m_data + row*m_size; }
     void setData(const int x, const int y, const float value) { *data(x,y) = value; }
     /// get index (e.g. for data()[index]) for indices x and y
     inline int index(const int x, const int y) const {  Q_ASSERT(y*m_size + x < m_size*m_size); return y*m_size + x; }

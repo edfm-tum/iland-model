@@ -60,6 +60,7 @@ public:
     void testFOMEstep();
     void testDbgEstablishment();
     void testGridIndexHack();
+    void testUpdateLIF();
     private:
     QString dumpTreeList();
     QObject *mParent;

@@ -143,9 +143,16 @@ public:
     bool isHarvested() const { return flag(Tree::TreeHarvested);}
 
     // grid based light-concurrency functions
-    void applyLIP(); ///< apply LightInfluencePattern onto the global grid
-    void readLIF(); ///< calculate the lightResourceIndex with multiplicative approach
+    /// apply LightInfluencePattern of the focal tree onto the global grid
+    void applyLIP();
+    void applyLIP_orig();
+
+    /// calculate the lightResourceIndex of a tree by
+    /// analyzing the LIF across the tree crown
+    void readLIF();
+
     void heightGrid(); ///< calculate the height grid
+    void heightGrid_orig(); ///< calculate the height grid
 
     void applyLIP_torus(); ///< apply LightInfluencePattern on a closed 1ha area
     void readLIF_torus(); ///< calculate LRI from a closed 1ha area

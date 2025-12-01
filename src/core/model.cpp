@@ -1135,6 +1135,7 @@ static void nc_applyPattern(ResourceUnit *unit)
                 (*tit).applyLIP(); // just do it ;)
 
         } else {
+            // Calculations in TORUS mode:
             // height dominance grid
             for (tit=unit->trees().begin(); tit!=tend; ++tit)
                 (*tit).heightGrid_torus(); // just do it ;)

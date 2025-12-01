@@ -2779,7 +2779,8 @@ void MainWindow::on_actionTest_triggered()
                                      "21: test FOME setup\n" \
                                      "22: test FOME step\n" \
                                      "23: test debug establishment\n" \
-                                     "24: test grid special index hack",-1);
+                                     "24: test grid special index hack\n" \
+                                     "25: update LIF calc",-1);
     switch (which) {
     case 0: t.speedOfExpression();break;
     case 1: t.clearTrees(); break;
@@ -2806,6 +2807,7 @@ void MainWindow::on_actionTest_triggered()
     case 22: t.testFOMEstep(); break;
     case 23: t.testDbgEstablishment(); break;
     case 24: t.testGridIndexHack(); break;
+    case 25: t.testUpdateLIF(); break;
     }
 
 }

@@ -110,6 +110,20 @@ public:
     inline T& operator[] (const QPointF &p) { return valueAt(p); }
     /// use the square bracket to access by QPoint
     inline T& operator[] (const QPoint &p) { return valueAtIndex(p); }
+    /// compare grid content element-wise, return true if grids are identical
+    inline bool operator==(const Grid<T> &source) {
+        if (source.count() != count()) return false;
+        T* src = source.mData;
+        T* cmp = mData;
+        while (cmp!=end()) {
+            if (*src != *cmp)
+                return false;
+            ++src; ++cmp;
+        }
+        return true;
+    }
+    /// return true of grids differ
+    inline bool operator!=(const Grid<T> &source) { return !(source == *this); }
 
     inline T& valueAtIndex(const QPoint& pos) {return valueAtIndex(pos.x(), pos.y());}  ///< value at position defined by a QPoint defining the two indices (x,y)
     T& valueAtIndex(const int ix, const int iy) { return mData[iy*mSizeX + ix];  } ///< const value at position defined by indices (x,y)
@@ -171,7 +185,8 @@ public:
     inline  T* begin() const { return mData; } ///< get "iterator" pointer
     inline  T* end() const { return mEnd; } ///< get iterator end-pointer
     inline QPoint indexOf(const T* element) const; ///< retrieve index (x/y) of the pointer element. returns -1/-1 if element is not valid.
-    // special queries
+
+        // special function
     T max() const; ///< retrieve the maximum value of a grid
     T min() const; ///< retrieve the minimum value of a grid
     T sum() const; ///< retrieve the sum of the grid
@@ -190,15 +205,26 @@ public:
     /// normalized returns a normalized grid, in a way that the sum()  = @param targetvalue.
     /// if the grid is empty or the sum is 0, no modifications are performed.
     Grid<T> normalized(const T targetvalue) const;
-    T* ptr(int x, int y) { return &(mData[y*mSizeX + x]); } ///< get a pointer to the element indexed by "x" and "y"
-    inline double distance(const QPoint &p1, const QPoint &p2); ///< distance (metric) between p1 and p2
-    const QPoint randomPosition() const; ///< returns a (valid) random position within the grid
+
+
+    /// get a pointer to the element indexed by "x" and "y"
+    T* ptr(int x, int y) { return &(mData[y*mSizeX + x]); }
+
+    /// get a pointer to the row "row"
+    T* rowPtr(int row) { return &(mData[row*mSizeX]); }
+
+    /// distance (metric) between p1 and p2
+    inline double distance(const QPoint &p1, const QPoint &p2);
+
+    /// returns a (valid) random position within the grid
+    const QPoint randomPosition() const;
+
     /// applies a flood fill algorithm to the grid starting at 'start'
     /// fills the contingent area with value 'old_color' with 'color' (or stops when 'max_fill' pixels have been filled)
     /// returns the number of filled pixels
     int floodFill(QPoint start, T old_color, T color, int max_fill=-1);
-private:
 
+private:
     T* mData;
     T* mEnd; ///< pointer to 1 element behind the last
     QRectF mRect;

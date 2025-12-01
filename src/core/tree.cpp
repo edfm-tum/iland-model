@@ -173,7 +173,7 @@ void Tree::setAge(const int age, const float treeheight)
 //#define NOFULLOPT
 
 
-void Tree::applyLIP()
+void Tree::applyLIP_orig()
 {
     if (!mStamp)
         return;
@@ -215,6 +215,116 @@ void Tree::applyLIP()
     }
 
     m_statPrint++; // count # of stamp applications...
+}
+
+
+void Tree::applyLIP()
+{
+    if (!mStamp) return;
+
+    // --- Setup Raw Pointers & Dimensions ---
+    const int gr_stamp = mStamp->size();
+    const int offset = mStamp->offset();
+
+    // Top-left corner in the 2m Grid
+    int start_x = mPositionIndex.x() - offset;
+    int start_y = mPositionIndex.y() - offset;
+
+    // Safety check (Early exit)
+    if (!mGrid->isIndexValid(start_x, start_y) ||
+        !mGrid->isIndexValid(start_x + gr_stamp, start_y + gr_stamp)) {
+        return;
+    }
+
+    // Prepare Height Grid Access
+    // We assume cPxPerHeight is constant (e.g., 5).
+    // Calculate starting coordinates in the coarser HeightGrid.
+    int h_x = start_x / cPxPerHeight;
+    int h_y = start_y / cPxPerHeight;
+
+    // Offset within the first HeightGrid cell (e.g., 0..4)
+    int offset_in_h_x = start_x % cPxPerHeight;
+    int offset_in_h_y = start_y % cPxPerHeight;
+
+    // Optimization: Cache constant float variables
+    const float tree_height = mHeight;
+    const float opacity = mOpacity;
+
+    // Iterate Y
+    for (int y = 0; y < gr_stamp; ++y) {
+
+        // 1. Get linear pointers for this row
+        float* grid_ptr = mGrid->ptr(start_x, start_y + y);
+
+        // Optimization: Raw row access for stamp
+        // Ensure mStamp implements rowPtr(y) or similar raw access
+        const float* stamp_ptr = mStamp->rowPtr(y);
+
+        // 2. Manage HeightGrid Y-axis
+        // Optimization: Get pointer to the current row in HeightGrid to avoid Y-multiplication in inner loop
+        const auto* h_row_ptr = mHeightGrid->rowPtr(h_y);
+
+        // Current X position in HeightGrid logic
+        int current_h_x = h_x;
+        int current_offset_x = offset_in_h_x;
+
+        // Fetch initial local_dom for the start of the row
+        // Access directly via row pointer
+        float local_dom = h_row_ptr[current_h_x].height;
+        // Safety: Guard against division by zero if local_dom is 0 (bare ground)
+        // If local_dom is 0, inv is Inf, but logic below (z >= local_dom) handles it.
+        // However, 0.001f safety avoids FP exceptions.
+        float local_dom_inv = (local_dom > 0.f) ? (1.f / local_dom) : 1.f;
+
+        for (int x = 0; x < gr_stamp; ++x) {
+
+            // --- The Hot Loop ---
+
+            // A. Fetch Stamp Value
+            float stamp_val = *stamp_ptr++;
+
+            // B. Main calculations
+            // Optimization: distanceToCenter is a lookup.
+            float dist = mStamp->distanceToCenter(x, y);
+            float z = std::max(tree_height - dist, 0.f);
+
+            // Branchless z_zstar:
+            // If local_dom == 0, z >= 0 is true, returns 1.f. Inf inv is not used.
+            float z_zstar = (z >= local_dom) ? 1.f : z * local_dom_inv;
+
+            // Calculate multiplier
+            float multiplier = 1.f - stamp_val * opacity * z_zstar;
+            multiplier = std::max(multiplier, 0.02f);
+
+            // C. Apply to Grid (RMW)
+            *grid_ptr *= multiplier;
+            grid_ptr++;
+
+            // D. Update HeightGrid context
+            // Increment the step within the 10m cell
+            current_offset_x++;
+
+            // If we hit the boundary (e.g., 5 pixels), move to next height cell
+            if (current_offset_x == cPxPerHeight) {
+                current_offset_x = 0;
+                current_h_x++;
+
+                // Fetch new local_dom (Only once every 5 pixels!)
+                // Use raw pointer access
+                local_dom = h_row_ptr[current_h_x].height;
+                local_dom_inv = (local_dom > 0.f) ? (1.f / local_dom) : 1.f;
+            }
+        }
+
+        // Advance HeightGrid Y context
+        offset_in_h_y++;
+        if (offset_in_h_y == cPxPerHeight) {
+            offset_in_h_y = 0;
+            h_y++;
+        }
+    }
+
+    m_statPrint++;
 }
 
 /// helper function for gluing the edges together
@@ -281,9 +391,10 @@ void Tree::applyLIP_torus()
 }
 
 /** heightGrid()
-  This function calculates the "dominant height field". This grid is coarser as the fine-scaled light-grid.
+  This function calculates the "dominant height field".
+  This grid is coarser as the fine-scaled light-grid.
 */
-void Tree::heightGrid()
+void Tree::heightGrid_orig()
 {
 
     QPoint p = QPoint(mPositionIndex.x()/cPxPerHeight, mPositionIndex.y()/cPxPerHeight); // pos of tree on height grid
@@ -317,51 +428,79 @@ void Tree::heightGrid()
         mHeightGrid->valueAtIndex(p.x(), p.y()+1).height=qMax(mHeightGrid->valueAtIndex(p.x(), p.y()+1).height,mHeight);
     }
 
+}
 
-    // without spread of the height grid
 
-//    // height of Z*
-//    const float cellsize = mHeightGrid->cellsize();
-//
-//    int index_eastwest = mPositionIndex.x() % cPxPerHeight; // 4: very west, 0 east edge
-//    int index_northsouth = mPositionIndex.y() % cPxPerHeight; // 4: northern edge, 0: southern edge
-//    int dist[9];
-//    dist[3] = index_northsouth * 2 + 1; // south
-//    dist[1] = index_eastwest * 2 + 1; // west
-//    dist[5] = 10 - dist[3]; // north
-//    dist[7] = 10 - dist[1]; // east
-//    dist[8] = qMax(dist[5], dist[7]); // north-east
-//    dist[6] = qMax(dist[3], dist[7]); // south-east
-//    dist[0] = qMax(dist[3], dist[1]); // south-west
-//    dist[2] = qMax(dist[5], dist[1]); // north-west
-//    dist[4] = 0; // center cell
-//    /* the scheme of indices is as follows:  if sign(ix)= -1, if ix<0, 0 for ix=0, 1 for ix>0 (detto iy), then:
-//       index = 4 + 3*sign(ix) + sign(iy) transforms combinations of directions to unique ids (0..8), which are used above.
-//        e.g.: sign(ix) = -1, sign(iy) = 1 (=north-west) -> index = 4 + -3 + 1 = 2
-//    */
-//
-//
-//    int ringcount = int(floor(mHeight / cellsize)) + 1;
-//    int ix, iy;
-//    int ring;
-//    float hdom;
-//
-//    for (ix=-ringcount;ix<=ringcount;ix++)
-//        for (iy=-ringcount; iy<=+ringcount; iy++) {
-//        ring = qMax(abs(ix), abs(iy));
-//        QPoint pos(ix+p.x(), iy+p.y());
-//        if (mHeightGrid->isIndexValid(pos)) {
-//            float &rHGrid = mHeightGrid->valueAtIndex(pos).height;
-//            if (rHGrid > mHeight) // skip calculation if grid is higher than tree
-//                continue;
-//            int direction = 4 + (ix?(ix<0?-3:3):0) + (iy?(iy<0?-1:1):0); // 4 + 3*sgn(x) + sgn(y)
-//            hdom = mHeight - dist[direction];
-//            if (ring>1)
-//                hdom -= (ring-1)*10;
-//
-//            rHGrid = qMax(rHGrid, hdom); // write value
-//        } // is valid
-//    } // for (y)
+void Tree::heightGrid()
+{
+    // --- Setup ---
+    // Cache constants to registers
+    const float height = mHeight;
+    const int px_per_height = cPxPerHeight;
+
+    // Calculate 10m grid coordinates
+    const int px = mPositionIndex.x();
+    const int py = mPositionIndex.y();
+
+    // Integer division/modulo: height grid indices
+    const int h_x = px / px_per_height;
+    const int h_y = py / px_per_height;
+    // relative position within height grid cell
+    const int index_ew = px % px_per_height; // 0=eastern edge, 4=western edge
+    const int index_ns = py % px_per_height; // 0=southern edge, 4=northern edge
+
+
+    // Get pointer to the center 10m cell.
+    HeightGridValue* center_ptr = mHeightGrid->ptr(h_x, h_y);
+
+    // 1. Update Center Cell
+    center_ptr->increaseCount();
+    center_ptr->height = std::max(center_ptr->height, height);
+
+    // Inlined stemHeight logic (assuming simple comparison)
+    if (height > center_ptr->stemHeight()) {
+        center_ptr->setStemHeight(height);
+    }
+
+    // update neighbors (when tree crown crosses height grid cell boundaries)
+
+    // Cache stamp radius (distance to the center pixel, e.g. a value of 2 -> 5x5 stamp)
+    const int r = mStamp->reader()->offset();
+
+    // Get Grid Stride (width) for vertical offsets
+    // Assuming mHeightGrid->sizeX() returns the width in cells
+    const int stride = mHeightGrid->sizeX();
+
+    // 2. Update Neighbors using Pointer Offsets
+    // We update neighbors if the crown extends into them.
+
+    // West (Left)
+    if (index_ew - r < 0) {
+        // Pointer arithmetic: -1 is the previous cell in memory
+        HeightGridValue* p = center_ptr - 1;
+        p->height = std::max(p->height, height);
+    }
+
+    // East (Right)
+    if (index_ew + r >= px_per_height) {
+        // Pointer arithmetic: +1 is the next cell
+        HeightGridValue* p = center_ptr + 1;
+        p->height = std::max(p->height, height);
+    }
+
+    // South (Back/Up in memory)
+    if (index_ns - r < 0) {
+        // Pointer arithmetic: -stride moves one row up/back
+        HeightGridValue* p = center_ptr - stride;
+        p->height = std::max(p->height, height);
+    }
+
+    // North (Forward/Down in memory)
+    if (index_ns + r >= px_per_height) {
+        // Pointer arithmetic: +stride moves one row down/forward
+        HeightGridValue* p = center_ptr + stride;
+        p->height = std::max(p->height, height);
+    }
 }
 
 void Tree::heightGrid_torus()
