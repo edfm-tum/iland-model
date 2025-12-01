@@ -235,6 +235,8 @@ void ModelController::runloop()
     mHasError = false;
     if (GlobalSettings::instance()->currentYear()<=1) {
         mStartTime = QTime::currentTime(); // reset clock at the beginning of the simulation
+        GlobalSettings::instance()->systemStatistics()->reset();
+
     }
 
     if (!mCanceled && GlobalSettings::instance()->currentYear() < mYearsToRun) {

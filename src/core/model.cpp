@@ -845,7 +845,6 @@ void Model::beforeRun()
 void Model::runYear()
 {
     DebugTimer t_all("Model::runYear()");
-    GlobalSettings::instance()->systemStatistics()->reset();
     threadRunner.clearErrors();
     RandomGenerator::checkGenerator(); // see if we need to generate new numbers...
     // initalization at start of year for external modules
