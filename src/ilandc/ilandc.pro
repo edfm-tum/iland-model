@@ -262,7 +262,15 @@ SOURCES += main.cpp \
     ../abe/fmsaplinglist.cpp \
     ../bite/biteoutputitem.cpp \
     ../core/permafrost.cpp \
-    ../core/microclimate.cpp
+    ../core/microclimate.cpp \
+    ../core/understory.cpp \
+    ../core/understorypft.cpp \
+    ../core/understoryplant.cpp \
+    ../output/understoryout.cpp \
+    ../abe/fmdeadtreelist.cpp \
+    ../core/deadtree.cpp
+
+
 
 
 HEADERS += \
@@ -394,7 +402,15 @@ HEADERS += \
     ../abe/fmsaplinglist.h \
     ../bite/biteoutputitem.h \
     ../core/permafrost.h \
-    ../core/microclimate.h
+    ../core/microclimate.h \
+    ../core/understory.h \
+    ../core/understorypft.h \
+    ../core/understoryplant.h \
+    ../output/understoryout.h \
+    ../abe/fmdeadtreelist.h \
+    ../core/deadtree.h
+
+
 
 RESOURCES += ../iland/res/iland.qrc
 

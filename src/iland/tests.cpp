@@ -1477,6 +1477,8 @@ void Tests::testUpdateLIF()
     Grid<HeightGridValue> h_copy = Grid<HeightGridValue>(*GlobalSettings::instance()->model()->heightGrid());
     qDebug() << "LIF-value before start:" << lif_copy.sum();
     // run original code
+
+    auto runOrig = []{
     for (auto *ru : GlobalSettings::instance()->model()->ruList()) {
         for (auto &t : ru->trees()) {
             t.heightGrid_orig();
@@ -1485,6 +1487,8 @@ void Tests::testUpdateLIF()
             t.applyLIP_orig();
         }
     }
+    };
+    runOrig();
 
     // copy results and reset input data
     Grid<float> lif_result = Grid<float>(*GlobalSettings::instance()->model()->grid());
@@ -1495,14 +1499,17 @@ void Tests::testUpdateLIF()
     GlobalSettings::instance()->model()->heightGrid()->copy(h_copy);
 
     // run updated code
-    for (auto *ru : GlobalSettings::instance()->model()->ruList()) {
+    auto runNew = []{
+        for (auto *ru : GlobalSettings::instance()->model()->ruList()) {
         for (auto &t : ru->trees()) {
             t.heightGrid();
         }
         for (auto &t : ru->trees()) {
             t.applyLIP();
         }
-    }
+        }
+    };
+    runNew();
 
     // compare results
     auto *lif = GlobalSettings::instance()->model()->grid();
@@ -1525,6 +1532,18 @@ void Tests::testUpdateLIF()
         gridToFile<HeightGridValue, float>(*height, "height_new.asc", [](const HeightGridValue &hgv){ return hgv.height; } );
         gridToFile<HeightGridValue, float>(height_result, "height_orig.asc", [](const HeightGridValue &hgv){ return hgv.height; } );
     }
+
+    // performance tests, single thread
+    const int n=10;
+    {DebugTimer t("orig");
+        for (int i=0;i<n;++i)
+            runOrig();
+    }
+    {DebugTimer t("new");
+        for (int i=0;i<n;++i)
+            runNew();
+    }
+
 }
 
 
