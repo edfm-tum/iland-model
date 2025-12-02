@@ -164,12 +164,17 @@ int SpeciesSet::setup()
 void SpeciesSet::setupRegeneration()
 {
     SeedDispersal::setupExternalSeeds();
+    SeedDispersal *sd_example=nullptr;
     foreach(Species *s, mActiveSpecies) {
         SeedDispersal *sd = new SeedDispersal(s);
         sd->setup(); // setup memory for the seed map (grid)
         s->setSeedDispersal(sd); // establish the link between species and the map
+        sd_example = sd;
     }
+    if (!sd_example)
+        throw IException("No valid species in the model");
     SeedDispersal::finalizeExternalSeeds();
+    SeedDispersal::prepareParallelization(sd_example->seedMap());
     qDebug() << "Setup of seed dispersal maps finished.";
 }
 
@@ -178,15 +183,32 @@ static void nc_seed_distribution(Species *species)
     species->seedDispersal()->execute();
 }
 
-void SpeciesSet::regeneration()
+void SpeciesSet::seedDistribution(QString filter_species)
 {
     if (!GlobalSettings::instance()->model()->settings().regenerationEnabled)
         return;
     DebugTimer t("seed dispersal (all species)");
     QElapsedTimer manual_timer; manual_timer.start();
 
-    ThreadRunner runner(mActiveSpecies); // initialize a thread runner object with all active species
-    runner.run(nc_seed_distribution);
+    if (SeedDispersal::isTiled()) {
+
+        for (auto *species : mActiveSpecies)
+            species->seedDispersal()->mTilesProcessed = 0;
+
+        // lambda
+        auto execute_func = [filter_species](const SeedDispersal::SeedDispTask& task) {
+            if (filter_species.isEmpty() ||task.dispersalObj->species()->id() == filter_species)
+                task.dispersalObj->executeTiled(task);
+        };
+
+        ThreadRunner runner;
+        runner.run(execute_func, SeedDispersal::mSeedDispTasks, false);
+
+    } else {
+        // non-tiles version
+        ThreadRunner runner(mActiveSpecies); // initialize a thread runner object with all active species
+        runner.run(nc_seed_distribution);
+    }
 
     if (logLevelDebug())
         qDebug() << "seed dispersal finished. Manual timer:" << manual_timer.elapsed() << "ms";

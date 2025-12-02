@@ -57,7 +57,7 @@ public:
     void setupRegeneration(); ///< setup of regenartion related data
     // running
     void newYear(); ///< is called at the beginning of a year
-    void regeneration(); ///< run regeneration (after growth)
+    void seedDistribution(QString filter_species=""); ///< run regeneration (after growth)
     void clearSaplingSeedMap(); ///< clear the seed maps that collect leaf area for saplings
 private:
     QString mName;

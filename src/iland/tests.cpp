@@ -748,7 +748,15 @@ void Tests::testSeedDispersal()
 
     spec->seedDispersal()->runTest(1, 1);
     // compare seed maps
-    qDebug() << "original-code" << result1.avg() << "updated code:" << spec->seedDispersal()->seedMap().avg();
+    qDebug() << "original-code" << result1.avg() << "updated code (fast):" << spec->seedDispersal()->seedMap().avg();
+
+    spec->seedDispersal()->runTest(2, 1);
+    // compare seed maps
+    qDebug() << "original-code" << result1.avg() << "updated code (tiles):" << spec->seedDispersal()->seedMap().avg();
+
+    spec->seedDispersal()->runTest(0, 1);
+    // compare seed maps
+    qDebug() << "original-code" << result1.avg() << " orig again:" << spec->seedDispersal()->seedMap().avg();
 
     DebugTimer t;
     for (int i=0;i<10;++i) {

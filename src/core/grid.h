@@ -212,7 +212,8 @@ public:
 
     /// get a pointer to the row "row"
     T* rowPtr(int row) { return &(mData[row*mSizeX]); }
-
+    /// get a const row pointer
+    const T* constRowPtr(int row) const { return &(mData[row*mSizeX]); }
     /// distance (metric) between p1 and p2
     inline double distance(const QPoint &p1, const QPoint &p2);
 

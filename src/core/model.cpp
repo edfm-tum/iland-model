@@ -994,7 +994,7 @@ void Model::runYear()
         setCurrentTask("Seed dispersal");
         DebugTimer tseed("Seed dispersal, establishment, sapling growth");
         foreach(SpeciesSet *set, mSpeciesSets)
-            set->regeneration(); // parallel execution for each species set
+            set->seedDistribution(); // parallel execution for each species set
 
         GlobalSettings::instance()->systemStatistics()->tSeedDistribution+=tseed.elapsed();
 
