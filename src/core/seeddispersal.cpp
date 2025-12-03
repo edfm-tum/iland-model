@@ -346,7 +346,6 @@ void SeedDispersal::prepareParallelization(const Grid<float> &example_seed_map)
 
     // create the tiles on the landsacape
     for (auto* species : GlobalSettings::instance()->model()->speciesSet()->activeSpecies()) {
-        int n_tiles = 0;
         for (int y = 0; y < gridH; y += tileSize) {
             for (int x = 0; x < gridW; x += tileSize) {
                 // check if tile is valid -
@@ -366,11 +365,9 @@ void SeedDispersal::prepareParallelization(const Grid<float> &example_seed_map)
                     t.tileWidth = std::min(tileSize, gridW - x);
                     t.tileHeight = std::min(tileSize, gridH - y);
                     mSeedDispTasks.push_back(t);
-                    ++n_tiles;
                 }
             }
         }
-        species->seedDispersal()->mTotalTiles = n_tiles;
     }
     qDebug() << "Setup of seed dispersion tiles complete. Created" << mSeedDispTasks.size() << " tiles.";
 
@@ -627,6 +624,24 @@ void SeedDispersal::setupExternalSeedsForSpecies(Species *species)
 
 }
 
+// Helper: Thread-safe float accumulation
+inline void atomicAdd(float& target, float value) {
+    // Uses the fact that floats and int32 are usually same size
+    // C++20 has std::atomic_ref<float>, but for older standards:
+    volatile int* target_as_int = reinterpret_cast<volatile int*>(&target);
+
+    union { int i; float f; } old_val, new_val;
+
+    do {
+        old_val.f = target; // Read current float
+        new_val.f = old_val.f + value; // Calculate new
+        // Try to swap. If target changed in meantime, loop again.
+    } while (!std::atomic_compare_exchange_weak(
+        reinterpret_cast<std::atomic<int>*>((int*)target_as_int),
+        &old_val.i,
+        new_val.i));
+}
+
 void SeedDispersal::distributeSeedsTiled(const SeedDispTask &task)
 {
     // Unpack Task
@@ -636,6 +651,13 @@ void SeedDispersal::distributeSeedsTiled(const SeedDispTask &task)
     const int tile_h = task.tileHeight;
 
     // Constants
+    float fec = static_cast<float>(species()->fecundity_m2());
+    if (!species()->isSeedYear())
+        fec *= static_cast<float>(mNonSeedYearFraction);
+
+
+    const float ldd_probability_base = (mLDDSeedlings / fec) ;
+    const bool do_ldd = !mLDDDensity.isEmpty();
 
     // 1. Local Buffer (L1/L2 Cache) allocated on stack
     float buffer[tileSize * tileSize];
@@ -659,6 +681,8 @@ void SeedDispersal::distributeSeedsTiled(const SeedDispTask &task)
     int src_min_y = std::max(0, ty - kRadY);
     int src_max_y = std::min(gridH, ty + tile_h + kRadY);
 
+    const float cell_area_inv_div3 = 1.0f / (cellSize() * cellSize() * 3.f);
+
     bool tile_active = false;
 
     // 3. Iterate Source Window
@@ -666,12 +690,15 @@ void SeedDispersal::distributeSeedsTiled(const SeedDispTask &task)
         const float* src_row_ptr = sourcemap.ptr(0, sy);
 
         for (int sx = src_min_x; sx < src_max_x; ++sx) {
-            float src_val = src_row_ptr[sx];
+            float raw_val = src_row_ptr[sx];
 
             // Sparsity Check
-            if (src_val <= 0.f) continue;
+            if (raw_val <= 0.f) continue;
 
             tile_active = true;
+
+            // scale: LAI=3 -> 1
+            float src_val = std::min(raw_val * cell_area_inv_div3, 1.f);
 
             // --- Intersection Logic (Kernel vs Tile) ---
 
@@ -712,6 +739,37 @@ void SeedDispersal::distributeSeedsTiled(const SeedDispTask &task)
                 // Inner loop: Vectorizable accumulation
                 for (int kx = 0; kx < copy_w; ++kx) {
                     buf_ptr[kx] += src_val * k_ptr[kx];
+                }
+            }
+
+            // Long distance dispersal
+            // focus on source cells that are within the tile (omit the surrounding area/halo)
+
+            if (do_ldd && sx >= tx && sx < (tx + tile_w) && sy >= ty && sy < (ty + tile_h)) {
+
+                // Iterate LDD Rings
+                for (int r = 0; r < mLDDDensity.size(); ++r) {
+                    int n;
+                    if (mLDDDensity[r] < 1)
+                        n = drandom() < mLDDDensity[r] ? 1 : 0;
+                    else
+                        n = static_cast<int>(round(mLDDDensity[r]));
+
+                    for (int i = 0; i < n; ++i) {
+                        // Math Optimization: Consider a lookup table for sin/cos if this is still slow
+                        double radius = nrandom(mLDDDistance[r], mLDDDistance[r+1]) / cellSize();
+                        double phi = drandom() * 2. * M_PI;
+
+                        int ldd_x = sx + static_cast<int>(radius * cos(phi));
+                        int ldd_y = sy + static_cast<int>(radius * sin(phi));
+
+                        if (mSeedMap.isIndexValid(ldd_x, ldd_y)) {
+                            // GLOBAL WRITE: Must be atomic!
+                            atomicAdd(mSeedMap.valueAtIndex(ldd_x, ldd_y), ldd_probability_base);
+                            //mSeedMap.valueAtIndex(ldd_x, ldd_y) += ldd_probability_base;
+                            // _debug_ldd++; // Atomic increment needed for debug stats
+                        }
+                    }
                 }
             }
         }
@@ -756,8 +814,6 @@ void SeedDispersal::runTest(int which_one, int times)
 
         if (which_one == 0)
             distributeSeeds();
-        if (which_one == 1)
-            distributeSeedsFast();
         if (which_one == 2) {
             // to test with spruce!
             GlobalSettings::instance()->model()->speciesSet()->seedDistribution("piab");
@@ -891,44 +947,51 @@ void SeedDispersal::execute()
 #endif
 }
 
-void SeedDispersal::executeTiled(const SeedDispTask &task)
+
+void SeedDispersal::beforeDispersal()
 {
-    // this is the execution function for tiles.
-    // in tile mode, the grid for each species is partitioned
-    // into tiles (e.g. 64x64px) and then run concurrently.
-    if (mTilesProcessed == 0) {
-
-        // first tile for the species - do some preparation work!
-        // in case of serotiny, we use the standard code to run
-        // the extra seed rain due to serotiny
-        checkSerotiny();
-
-        qDebug() << "first task for " << task.dispersalObj->species()->name();
+    for (auto *species : GlobalSettings::instance()->model()->speciesSet()->activeSpecies()) {
+        auto *sd = species->seedDispersal();
+        sd->checkSerotiny();
     }
+}
 
-    // 2. run the dispersal for the given tile
-    distributeSeedsTiled(task);
+void SeedDispersal::finalizeDispersal()
+{
+    for (auto *species : GlobalSettings::instance()->model()->speciesSet()->activeSpecies()) {
+        auto *sd = species->seedDispersal();
 
+        // final probability calculations / scaling
+        float fec = static_cast<float>(species->fecundity_m2());
+        if (!species->isSeedYear())
+            fec *= static_cast<float>(sd->mNonSeedYearFraction);
 
-    // atomic counter to check when we are done for the species
-    int completed = task.dispersalObj->mTilesProcessed.fetch_add(1) + 1;
+        // now the seed sources (0..1) are spatially distributed by the kernel (and LDD) without altering the magnitude;
+        // now we include the fecundity (=seedling potential per m2 crown area), and convert to the establishment probability p_seed.
+        // The number of (potential) seedlings per m2 on each cell is: cell * fecundity[m2]
+        // We assume that the availability of 100 potential seedlings/m2 is enough for unconstrained establishment;
+        const float n_unlimited = 100.f;
 
+        const float n_unlimited_inv = fec / n_unlimited;
+        float* dest_base_ptr = sd->mSeedMap.begin();
 
-    if (completed == mTotalTiles) {
-        // last tile - run the long distance dispersal
-        // and final probability calculations
-        distributeFinalize();
-
-
-        // check background external seeds
-        float background_value = static_cast<float>(mExternalSeedBackgroundInput); // there is potentitally a background probability <>0 for all pixels.
-        if (background_value>0.f) {
-            // add a constant number of seeds on the map
-            addExternalBackgroundSeeds(mSeedMap, background_value);
+        // Vectorizable loop
+        int total_cells = sd->mSeedMap.sizeX() * sd->mSeedMap.sizeY();
+        for (int i = 0; i < total_cells; ++i) {
+            if (dest_base_ptr[i] > 0.f) {
+                dest_base_ptr[i] = std::min(dest_base_ptr[i] * n_unlimited_inv, 1.f);
+            }
         }
 
-        qDebug() << "last task completed for " << task.dispersalObj->species()->name();
+        // check background external seeds
+        float background_value = static_cast<float>(sd->mExternalSeedBackgroundInput); // there is potentitally a background probability <>0 for all pixels.
+        if (background_value>0.f) {
+            // add a constant number of seeds on the map
+            sd->addExternalBackgroundSeeds(sd->mSeedMap, background_value);
+        }
+
     }
+
 }
 
 
@@ -956,7 +1019,6 @@ void SeedDispersal::distributeSeeds(Grid<float> *seed_map)
         fec = static_cast<float>( species()->fecundity_m2() );
         if (!species()->isSeedYear())
             fec *= static_cast<float>( mNonSeedYearFraction );
-
     }
 
     for (float *p=sourcemap.begin(); p!=sourcemap.end(); ++p){
@@ -1076,180 +1138,6 @@ void SeedDispersal::distributeSeeds(Grid<float> *seed_map)
     for (float *p=mSeedMap.begin(); p!=mSeedMap.end(); ++p){
         if (*p>0.f) {
             *p = std::min(*p*fec / n_unlimited, 1.f);
-        }
-    }
-}
-
-
-void SeedDispersal::distributeSeedsFast()
-{
-
-    if (GlobalSettings::instance()->model()->settings().torusMode) {
-        // use the old code path in torus mode
-        distributeSeeds();
-        return;
-    }
-
-
-    const Grid<float> &kernel = mKernelSeedYear;
-
-    // --- 1. Pre-calculation & Setup ---
-
-    const float cell_size = mSourceMap.cellsize();
-    // include LAI=3 division
-    const float cell_area_inv_div3 = 1.0f / (cell_size * cell_size * 3.f);
-    const int gridW = mSourceMap.sizeX();
-    const int gridH = mSourceMap.sizeY();
-
-    // Raw pointers for faster access
-    float* source_base_ptr = mSourceMap.begin();
-    float* dest_base_ptr = mSeedMap.begin();
-
-    // --- 2. Source Map Update (Vectorizable) ---
-    const int total_cells = gridW * gridH;
-    for (int i = 0; i < total_cells; ++i) {
-        if (source_base_ptr[i] > 0.f) {
-            source_base_ptr[i] = std::min(source_base_ptr[i] * cell_area_inv_div3, 1.f);
-        }
-    }
-
-    // --- 3. Kernel Setup ---
-    const int kW = kernel.sizeX();
-    const int kH = kernel.sizeY();
-    const int offset = kW / 2; // Kernel center offset
-
-    // Define "Safe Zone": The rectangle where the kernel fits completely without boundary checks
-    // If the kernel is 20x20 (offset 10), we can run safely from x=10 to x=Width-10
-    const int safe_min_x = offset;
-    const int safe_max_x = gridW - (kW - offset);
-    const int safe_min_y = offset;
-    const int safe_max_y = gridH - (kH - offset);
-
-
-    // --- 4. Main Distribution Loop ---
-    // Iterate Y then X to improve cache locality (row-major access)
-    for (int y = 0; y < gridH; ++y) {
-        // Optimization: Get row pointer once per row
-        float* src_row_ptr = source_base_ptr + (y * gridW);
-
-        for (int x = 0; x < gridW; ++x) {
-            const float src_val = src_row_ptr[x];
-
-            if (src_val <= 0.f) continue;
-
-            // *** Kernel Application ***
-
-            // Branch Prediction: This 'if' will be true for >90% of cells in a large grid
-            if (x >= safe_min_x && x < safe_max_x && y >= safe_min_y && y < safe_max_y) {
-                // FAST PATH: No bounds checking, raw pointer arithmetic
-
-                // Calculate pointer to the top-left corner of where the kernel hits the seedmap
-                // (y - offset) is the starting row in seedmap
-                // (x - offset) is the starting col in seedmap
-                float* dst_kernel_start = dest_base_ptr + ((y - offset) * gridW) + (x - offset);
-
-                for (int ky = 0; ky < kH; ++ky) {
-                    float* dst_row = dst_kernel_start + (ky * gridW);
-                    // Access kernel row directly (assuming kernel class supports this or has flat memory)
-                    // If kernel() operator is slow, pre-fetch this pointer too.
-                    const float* k_row_data = &kernel(0, ky); // Assuming &kernel(0, ky) gives row start
-
-                    for (int kx = 0; kx < kW; ++kx) {
-                        dst_row[kx] += src_val * k_row_data[kx];
-                    }
-                }
-            } else {
-                // SLOWER PATH: Edge cases (bounds checking required)
-                int sx = x - offset;
-                int sy = y - offset;
-                for (int ky = 0; ky < kH; ++ky) {
-                    for (int kx = 0; kx < kW; ++kx) {
-                        if (mSeedMap.isIndexValid(sx + kx, sy + ky)) {
-                            mSeedMap.valueAtIndex(sx + kx, sy + ky) += src_val * kernel(kx, ky);
-                        }
-                    }
-                }
-            }
-
-        } // end x
-    } // end y
-
-    // long distance dispersal and final calculations for the whole seed map
-    distributeFinalize();
-
-}
-
-void SeedDispersal::distributeFinalize()
-{
-
-    // *** Long Distance Dispersal (LDD) ***
-    const int gridW = mSourceMap.sizeX();
-    const int gridH = mSourceMap.sizeY();
-    const float cell_size = mSourceMap.cellsize();
-
-    float fec = static_cast<float>(species()->fecundity_m2());
-    if (!species()->isSeedYear())
-        fec *= static_cast<float>(mNonSeedYearFraction);
-
-
-    const float ldd_probability_base = (mLDDSeedlings / fec) ;
-
-    float* source_base_ptr = mSourceMap.begin();
-    float* dest_base_ptr = mSeedMap.begin();
-
-    if (!mLDDDensity.empty()) {
-
-        // run Long Distance Distribution
-
-        // Iterate Y then X to improve cache locality (row-major access)
-        for (int y = 0; y < gridH; ++y) {
-            // Optimization: Get row pointer once per row
-            float* src_row_ptr = source_base_ptr + (y * gridW);
-
-            for (int x = 0; x < gridW; ++x) {
-                const float src_val = src_row_ptr[x];
-
-                if (src_val <= 0.f) continue;
-
-                for (int r = 0; r < mLDDDensity.size(); ++r) {
-                    int n;
-                    if (mLDDDensity[r] < 1)
-                        n = drandom() < mLDDDensity[r] ? 1 : 0;
-                    else
-                        n = static_cast<int>(round(mLDDDensity[r]));
-
-                    for (int i = 0; i < n; ++i) {
-                        // Note: sin/cos are expensive. If LDD is very frequent,
-                        // consider a pre-calculated lookup table for random unit vectors.
-                        double radius = nrandom(mLDDDistance[r], mLDDDistance[r+1]) / cell_size;
-                        double phi = drandom() * 2. * M_PI;
-
-                        int dx = static_cast<int>(radius * cos(phi));
-                        int dy = static_cast<int>(radius * sin(phi));
-
-                        int ldd_x = x + dx;
-                        int ldd_y = y + dy;
-
-                        if (mSeedMap.isIndexValid(ldd_x, ldd_y)) {
-                            // Direct access if possible, or via wrapper
-                            mSeedMap.valueAtIndex(ldd_x, ldd_y) += ldd_probability_base;
-                            _debug_ldd++;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-
-    //  Final Probability Calculation
-    const float n_unlimited_inv = fec / 100.f; // Combined fec / n_unlimited
-
-    // Vectorizable loop
-    int total_cells = gridW * gridH;
-    for (int i = 0; i < total_cells; ++i) {
-        if (dest_base_ptr[i] > 0.f) {
-            dest_base_ptr[i] = std::min(dest_base_ptr[i] * n_unlimited_inv, 1.f);
         }
     }
 }

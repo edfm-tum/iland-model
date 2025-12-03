@@ -192,17 +192,18 @@ void SpeciesSet::seedDistribution(QString filter_species)
 
     if (SeedDispersal::isTiled()) {
 
-        for (auto *species : mActiveSpecies)
-            species->seedDispersal()->mTilesProcessed = 0;
-
         // lambda
         auto execute_func = [filter_species](const SeedDispersal::SeedDispTask& task) {
             if (filter_species.isEmpty() ||task.dispersalObj->species()->id() == filter_species)
-                task.dispersalObj->executeTiled(task);
+                task.dispersalObj->distributeSeedsTiled(task);
         };
 
+        SeedDispersal::beforeDispersal();
+
         ThreadRunner runner;
-        runner.run(execute_func, SeedDispersal::mSeedDispTasks, false);
+        runner.run(execute_func, SeedDispersal::distributionTaskList(), false);
+
+        SeedDispersal::finalizeDispersal();
 
     } else {
         // non-tiles version

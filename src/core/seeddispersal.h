@@ -65,11 +65,19 @@ public:
     void newYear(); ///< initial values at the beginning of the year for the grid
     void clearSaplingMap(); ///< clear
 
-    /// Main function - run the seed dispersal
+    /// Main function - run the seed dispersal (non-tiled mode)
     void execute();
 
-    /// run seed dispersal (tiled mode)
-    void executeTiled(const SeedDispTask &task);
+    /// seed dispersal (tiled mode)
+    /// worker function for tiled seed distribution
+    void distributeSeedsTiled(const SeedDispersal::SeedDispTask &task);
+    /// get global list of tiles
+    static const QVector<SeedDispTask> &distributionTaskList()  { return mSeedDispTasks; }
+
+    /// call once before executedTiled
+    static void beforeDispersal();
+    /// call once after executeTiled
+    static void finalizeDispersal();
 
     // debug and helpers
     /// return true if tiles should be used
@@ -91,12 +99,6 @@ private:
 
     /// do the actual seed distribution processing
     void distributeSeeds(Grid<float> *seed_map=0);
-    void distributeSeedsFast();
-    /// worker function for tiled seed distribution
-    void distributeSeedsTiled(const SeedDispersal::SeedDispTask &task);
-
-    /// function for long-distance-dispersal
-    void distributeFinalize();
 
     /// external seeds on full area (in case of low probability)
     void addExternalBackgroundSeeds(Grid<float> &map, double background_value);
@@ -136,14 +138,11 @@ private:
     static QHash<QString, QVector<double> > mExtSeedData; ///< holds definition of species and percentages for external seed input
     static int mExtSeedSizeX, mExtSeedSizeY; ///< size of the sectors used to specify external seed input
     // tiling
-    mutable std::atomic<int> mTilesProcessed; ///< counter to check when a species is finished
-    int mTotalTiles {0}; // number of tiles (for this species)
     static constexpr int tileSize = 64;
 
     static QVector<SeedDispTask> mSeedDispTasks;
 
 
-    friend class SpeciesSet;
 };
 
 #endif // SEEDDISPERSAL_H

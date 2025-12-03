@@ -746,17 +746,17 @@ void Tests::testSeedDispersal()
     // copy the seedmap
     Grid<float> result1 = Grid<float>(spec->seedDispersal()->seedMap());
 
-    spec->seedDispersal()->runTest(1, 1);
-    // compare seed maps
-    qDebug() << "original-code" << result1.avg() << "updated code (fast):" << spec->seedDispersal()->seedMap().avg();
+
 
     spec->seedDispersal()->runTest(2, 1);
     // compare seed maps
     qDebug() << "original-code" << result1.avg() << "updated code (tiles):" << spec->seedDispersal()->seedMap().avg();
+    gridToFile(spec->seedDispersal()->seedMap(), GlobalSettings::instance()->path("seed_tile.asc"));
 
     spec->seedDispersal()->runTest(0, 1);
     // compare seed maps
     qDebug() << "original-code" << result1.avg() << " orig again:" << spec->seedDispersal()->seedMap().avg();
+    gridToFile(spec->seedDispersal()->seedMap(), GlobalSettings::instance()->path("seed_orig.asc"));
 
     DebugTimer t;
     for (int i=0;i<10;++i) {
@@ -768,7 +768,7 @@ void Tests::testSeedDispersal()
 
     DebugTimer t2;
     for (int i=0;i<10;++i) {
-        spec->seedDispersal()->runTest(1, 1);
+        spec->seedDispersal()->runTest(2, 1);
         qDebug() << "result:" << spec->seedDispersal()->seedMap().avg();
 
     }
