@@ -95,6 +95,7 @@ void ConsoleShell::run()
         mParams.clear();
         if (QCoreApplication::arguments().count()>3) {
             qWarning() << "set command line values:";
+            auto &settings = const_cast<XmlHelper&>(GlobalSettings::instance()->settings());
             for (int i=3;i<QCoreApplication::arguments().count();++i) {
                 QString line = QCoreApplication::arguments().at(i);
                 line = line.remove(QChar('"')); // drop quotes
@@ -102,8 +103,15 @@ void ConsoleShell::run()
                 //qDebug() << qPrintable(line);
                 QString key = line.left(line.indexOf('='));
                 QString value = line.mid(line.indexOf('=')+1);
-                const_cast<XmlHelper&>(GlobalSettings::instance()->settings()).setNodeValue(key, value);
-                qWarning() << QString("set '%1' to value '%2'. result: '%3'").arg(key).arg(value).arg(GlobalSettings::instance()->settings().value(key));
+                if (!settings.hasNode(key)) {
+                    qWarning() << "!!!! ERROR !!!!";
+                    qWarning() << "Tried to set the project file key" << key << ", but it was not found (or is empty)!";
+                    qWarning() << "!!!! ERROR !!!!";
+                    QCoreApplication::quit();
+                    return;
+                }
+                settings.setNodeValue(key, value);
+                qWarning() << QString("set '%1' to value '%2'. result: '%3'").arg(key).arg(value).arg(settings.value(key));
             }
         }
         if (!setupLogging()) {

@@ -95,7 +95,8 @@ message("PRE_TARGETDEPS:" $$PRE_TARGETDEPS)
 #
 # Linux:
 #   Install via package manager:
-#     sudo apt-get install libfreeimage3 libfreeimage-dev
+#     sudo apt-get install libfreeimage3 libfreeimage-dev   [Debian/Ubuntu]
+#     sudo dnf install freeimage freeimage-devel  [RHEL/Fedora]
 #
 # macOS:
 #   Install via Homebrew:
@@ -109,18 +110,18 @@ message("PRE_TARGETDEPS:" $$PRE_TARGETDEPS)
 # ===============================================================
 
 linux-g++ {
-    LIBS += -lfreeimage
+# The "FreeImage" library is used for processing GeoTIFF data files.
+# FreeImage on Linux: see https://codeyarns.com/2014/02/11/how-to-install-and-use-freeimage/
+# basically sudo apt-get install libfreeimage3 libfreeimage-dev
+
+LIBS += -lfreeimage
+} else:macx {
+LIBS += -L/opt/homebrew/Cellar/freeimage/3.18.0/lib -lfreeimage
+} else {
+# external freeimage library (geotiff) (Windows)
+LIBS += -L$$THIRDPARTY_PATH\FreeImage -lFreeImage
 }
 
-macx {
-    INCLUDEPATH += /opt/homebrew/opt/freeimage/include
-    LIBS += -L/opt/homebrew/opt/freeimage/lib -lfreeimage
-}
-
-else {
-    # external FreeImage library (Windows / other systems)
-    LIBS += -L$$THIRDPARTY_PATH/FreeImage -lFreeImage
-}
 
 
 # special settings
