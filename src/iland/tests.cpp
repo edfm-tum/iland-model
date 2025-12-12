@@ -1249,7 +1249,7 @@ void Tests::testFOMEsetup()
 
     fome = GlobalSettings::instance()->model()->ABEngine();
     if (!fome)
-        fome = new ABE::ForestManagementEngine();
+        fome = ABE::ForestManagementEngine::instance();
     //fome.test();
     try {
 

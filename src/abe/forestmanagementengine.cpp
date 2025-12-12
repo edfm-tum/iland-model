@@ -82,19 +82,49 @@ int ForestManagementEngine::mMaxStandId = -1;
 ForestManagementEngine::ForestManagementEngine()
 {
     mScriptBridge = nullptr;
-    mCancel = false;
-    mEnabled = true;
-    setupOutputs(); // add ABE output definitions
-    FMStand::clearAllProperties();
+    reset();
 }
 
 ForestManagementEngine::~ForestManagementEngine()
 {
-    clear();
-    // script bridge: script ownership?
-    //if (mScriptBridge)
-    //    delete mScriptBridge;
+    if (mScriptBridge)
+        delete mScriptBridge;
 }
+
+void ForestManagementEngine::reset()
+{
+    // from clear()
+    qDeleteAll(mStands);
+    mStands.clear();
+    qDeleteAll(mUnits);
+    mUnits.clear();
+    mUnitStandMap.clear();
+    qDeleteAll(mAgents);
+    mAgents.clear();
+    qDeleteAll(mAgentTypes);
+    mAgentTypes.clear();
+    qDeleteAll(mSTP);
+    mSTP.clear();
+    mLastErrorMessage = QString();
+    mStandHash.clear();
+    mRepeatStore.clear();
+
+    // from constructor
+    if (mScriptBridge) {
+        delete mScriptBridge;
+        mScriptBridge = nullptr;
+    }
+    mCancel = false;
+    mEnabled = true;
+    mCurrentYear = 0;
+    mRepeatStoreBuffer = nullptr;
+    mStandLayoutChanged = false;
+
+    // These need to be called on a "clean slate" engine
+    setupOutputs();
+    FMStand::clearAllProperties();
+}
+
 
 const MapGrid *ForestManagementEngine::standGrid()
 {
@@ -128,7 +158,7 @@ void ForestManagementEngine::setupScripting()
         for (int i=std::max(0, lineno - 5); i<std::min(lineno+5, static_cast<int>(code_lines.count())); ++i)
             code_part.append(QString("%1: %2 %3\n").arg(i).arg(code_lines[i]).arg(i==lineno?"  <---- [ERROR]":""));
         qCCritical(abeSetup) << "Javascript Error in file" << result.property("fileName").toString() << ":" << result.property("lineNumber").toInt() << ":" << result.toString() << ":\n" << code_part;
-        QString error_message = "Abe Error in Javascript (Please check also the logfile): " + result.toString()+ "\nIn:\n" + code_part + "\n" + result.property("stack").toString();
+        QString error_message = "Abe Error in Javascript (Please check also the logfile): " + result.toString()+ "\nIn:\n" + code_part;
         Helper::msg(error_message);
         ScriptGlobal::throwError(error_message);
 
@@ -223,41 +253,30 @@ void ForestManagementEngine::runRepeatedItems(int stand_id)
     if (it == mRepeatStore.end())
         return;
 
+    // set a temporary buffer to allow new repeats while processing repeats
+    QList<QPair< int, SRepeatItem> > buffer_store; // used to add new items while iterating
+    mRepeatStoreBuffer = &buffer_store; // "install" buffer
 
-    // Use two buffers to avoid concurrent modification issues
-    QList<QPair< int, SRepeatItem> > buffer1;
-    QList<QPair< int, SRepeatItem> > buffer2;
-    QList<QPair< int, SRepeatItem> >* currentBuffer = &buffer1;
-    QList<QPair< int, SRepeatItem> >* nextBuffer = &buffer2;
-
-    // Move initial items from mRepeatStore to buffer1
     while (it != mRepeatStore.end() && it.key() == stand_id) {
-        buffer1.push_back(QPair< int, SRepeatItem>(stand_id, it.value()));
-        it = mRepeatStore.erase(it);
+        // execute (and update!) the current item:
+        bool do_erase = runSingleRepeatedItem(stand_id, *it);
+        if (do_erase)
+            it = mRepeatStore.erase(it);
+        else
+            ++it;
     }
 
-    // process elements
-    int iteration_depth = 0;
-    while (!currentBuffer->empty()) {
-        mRepeatStoreBuffer = nextBuffer; // Allow adding new items to the next buffer
-
-        // Iterate through the items in the current buffer
-        for (auto &p : *currentBuffer) {
+    // process items that were added during the execution
+    // run immediately and add non-single-shot items to the repeat store
+    if (!buffer_store.empty()) {
+        for (auto &p : buffer_store) {
             bool do_erase = runSingleRepeatedItem(stand_id, p.second);
-            if (!do_erase) {
+            if (!do_erase)
                 mRepeatStore.insert(p.first, p.second);
-            }
-        }
-
-        currentBuffer->clear(); // Clear the buffer (all elements are processed)
-
-        std::swap(currentBuffer, nextBuffer); // Swap the buffers
-        mRepeatStoreBuffer = nullptr; // Disable adding while swapping the buffers
-
-        if (++iteration_depth > 99) {
-            throw IException("ABE: Signal handling: infinite loop detected!");
         }
     }
+    mRepeatStoreBuffer = nullptr; // remove again
+
 }
 
 bool ForestManagementEngine::runSingleRepeatedItem(int stand_id, SRepeatItem &item) {
@@ -278,14 +297,8 @@ bool ForestManagementEngine::runSingleRepeatedItem(int stand_id, SRepeatItem &it
             stnd->setSignalParameter(item.parameter);
             stnd->setActivityIndex( item.activity->index() );
             bool res = item.activity->execute(stnd);
-            // special case final harvest: if the activcity is a final harvest, we
-            // need to reset the rotation (onExecuted is called as well)
-            if (stnd->currentFlags().isFinalHarvest()) {
-                stnd->afterExecution(!res);
-            } else {
-                item.activity->runEvent(QStringLiteral("onExecuted"),stnd);
-                stnd->setActivityIndex( old_index );
-            }
+            item.activity->runEvent(QStringLiteral("onExecuted"),stnd);
+            stnd->setActivityIndex( old_index );
             stnd->setSignalParameter(QJSValue());
             qCDebug(abe) << "executed activity (repeated): " << item.activity->name() << ". Result: " << res;
         } else {
@@ -357,8 +370,7 @@ FMUnit *nc_execute_unit(FMUnit *unit)
         int total = 0;
         while (it!=stand_map.constEnd() && it.key()==unit) {
             // execute repeating activities for the stand
-            if (it.value()->stp())
-                it.value()->stp()->executeRepeatingActivities(it.value());
+            it.value()->stp()->executeRepeatingActivities(it.value());
             ForestManagementEngine::instance()->runRepeatedItems(it.value()->id());
 
             // run the "normal" management for the stand
@@ -565,7 +577,6 @@ void ForestManagementEngine::setup()
 
         mUnitStandMap.insert(unit,stand);
         mStands.append(stand);
-        DebugTimer::checkResponsiveness(i, 100);
 
     }
 
@@ -602,7 +613,6 @@ void ForestManagementEngine::setup()
         } else {
             qCDebug(abeSetup) << "Warning while procssing the CSV setup file: for stand '" << s->id() << "' tried to set STP to '" << it.value() << "', but this STP is not available for Agenttype: " << s->unit()->agent()->type()->name();
         }
-        DebugTimer::checkResponsiveness();
     }
     qCDebug(abeSetup) << "ABE setup completed.";
 }
@@ -616,7 +626,6 @@ void ForestManagementEngine::initialize()
     }
     DebugTimer time_setup("ABE:setup");
 
-    int counter=0;
     foreach (FMStand* stand, mStands) {
         if (stand->stp()) {
 
@@ -630,7 +639,6 @@ void ForestManagementEngine::initialize()
                 throw IException(QString("ABE-Error: init of stand %2: %1").arg(mLastErrorMessage).arg(stand->id()));
             }
         }
-        DebugTimer::checkResponsiveness(counter, 100);
     }
 
     // now initialize the agents....
@@ -646,7 +654,7 @@ void ForestManagementEngine::initialize()
 
 
     qCDebug(abeSetup) << "ABE setup complete." << mUnitStandMap.size() << "stands on" << mUnits.count() << "units, managed by" << mAgents.size() << "agents.";
-    DebugTimer::checkResponsiveness();
+
 }
 
 void ForestManagementEngine::clear()

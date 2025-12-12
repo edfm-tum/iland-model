@@ -514,8 +514,9 @@ void Model::clear()
         delete mDEM;
     if (mGrassCover)
         delete mGrassCover;
-    if (mABEManagement)
-        delete mABEManagement;
+    if (mABEManagement) {
+        mABEManagement->reset();
+    }
     if (mSVDStates)
         delete mSVDStates;
     if (mBiteEngine)
@@ -634,7 +635,7 @@ void Model::loadProject()
     bool use_abe = xml.valueBool("model.management.abeEnabled");
     if (use_abe) {
         // use the agent based forest management engine
-        mABEManagement = new ABE::ForestManagementEngine();
+        mABEManagement = ABE::ForestManagementEngine::instance();
         // setup of ABE after loading of trees.
     }
     // use the standard management
@@ -668,10 +669,8 @@ void Model::loadProject()
 
 void Model::reloadABE()
 {
-    // delete firest
-    if (mABEManagement)
-        delete mABEManagement;
-    mABEManagement = new ABE::ForestManagementEngine();
+    mABEManagement = ABE::ForestManagementEngine::instance();
+    mABEManagement->reset();
     // and setup
     mABEManagement->setup();
     mABEManagement->runOnInit(true);

@@ -45,7 +45,6 @@ class ForestManagementEngine
 {
 public:
     // life cycle
-    ForestManagementEngine();
     ~ForestManagementEngine();
     // engine instance (singleton)
     static ForestManagementEngine *instance() {
@@ -59,6 +58,7 @@ public:
     // setup
     void setup(); ///< setup data structures
     void initialize(); ///< run initial stp
+    void reset();     ///< reset the engine to a clean state
     void clear(); ///< delete all objects and free memory
     void abortExecution(const QString &message);
     bool isCancel() const { return mCancel; }
@@ -125,6 +125,10 @@ public:
 
 
 private:
+    ForestManagementEngine();
+    ForestManagementEngine(const ForestManagementEngine&) = delete;
+    ForestManagementEngine& operator=(const ForestManagementEngine&) = delete;
+
     static int mMaxStandId;
     void setupScripting();
     void prepareRun();
