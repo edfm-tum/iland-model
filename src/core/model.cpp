@@ -226,6 +226,7 @@ void Model::setupSpace()
     if (mEnvironment)
         delete mEnvironment;
     mEnvironment = new Environment();
+    DebugTimer::checkResponsiveness();
 
     if (xml.valueBool("environmentEnabled", false)) {
         QString env_file = GlobalSettings::instance()->path(xml.value("environmentFile"));
@@ -258,7 +259,7 @@ void Model::setupSpace()
         mTimeEvents->loadFromFile(GlobalSettings::instance()->path(xml.value("timeEventsFile"), "script"));
     }
 
-
+    DebugTimer::checkResponsiveness();
     // simple case: create ressource units in a regular grid.
     bool has_stand_grid = false;
     if (xml.valueBool("resourceUnitsAsGrid")) {
@@ -309,6 +310,7 @@ void Model::setupSpace()
         int ru_skipped = 0;
         for (p=mRUmap.begin(); p!=mRUmap.end(); ++p) {
             QRectF r = mRUmap.cellRect(mRUmap.indexOf(p));
+            DebugTimer::checkResponsiveness(ru_index, 1000);
             if (!has_stand_grid || *p!=nullptr) {
                 mEnvironment->setPosition( r.center() ); // if environment is 'disabled' default values from the project file are used.
                 if (mEnvironment->currentID() >= 0) {
@@ -408,6 +410,7 @@ void Model::setupSpace()
         QString dem_file = xml.value("DEM");
         if (!dem_file.isEmpty()) {
             mDEM = new DEM(GlobalSettings::instance()->path(dem_file));
+            DebugTimer::checkResponsiveness();
             // add them to the visuals...
             GlobalSettings::instance()->controller()->addGrid(mDEM, "DEM - height", GridViewRainbow, 0, 1000);
             GlobalSettings::instance()->controller()->addGrid(mDEM->slopeGrid(), "DEM - slope", GridViewRainbow, 0, 3);
@@ -442,6 +445,7 @@ void Model::setupSpace()
                 }
             }
         }
+        DebugTimer::checkResponsiveness();
 
         // setup of scripting environment
         ScriptGlobal::setupGlobalScripting();
@@ -466,6 +470,7 @@ void Model::setupSpace()
         throw IException("resourceUnitsAsGrid MUST be set to true - at least currently :)");
     }
     mSetup = true;
+    DebugTimer::checkResponsiveness();
 }
 
 
@@ -570,9 +575,7 @@ void Model::loadProject()
     GlobalSettings::instance()->setupDatabaseConnection("climate", dbPath, true);
 
     mSettings.loadModelSettings();
-    mSettings.print();
-
-    DebugTimer::setResponsiveMode(xml.valueBool("system.settings.responsive"));
+    // mSettings.print();
 
     // random seed: if stored value is <> 0, use this as the random seed (and produce hence always an equal sequence of random numbers)
     uint seed = xml.value("system.settings.randomSeed","0").toUInt();
@@ -606,6 +609,7 @@ void Model::loadProject()
 
     changeSettings().regenerationEnabled = xml.valueBool("model.settings.regenerationEnabled", false);
 
+    DebugTimer::checkResponsiveness();
 
     setupSpace();
     if (mRU.isEmpty())
@@ -619,6 +623,7 @@ void Model::loadProject()
             ss->setupRegeneration();
     }
     Saplings::setRecruitmentVariation(xml.valueDouble("model.settings.seedDispersal.recruitmentDimensionVariation",0.1));
+    DebugTimer::checkResponsiveness();
 
     // (3.2) Understory
     if (settings().understoryEnabled) {
@@ -656,6 +661,7 @@ void Model::loadProject()
         mBiteEngine = BITE::BiteEngine::instance();
         mBiteEngine->setup();
     }
+    DebugTimer::checkResponsiveness();
 
 
 }
@@ -852,13 +858,17 @@ void Model::beforeRun()
     {
         if (logLevelDebug()) qDebug() << "attempting to load climate..." ;
         DebugTimer loadclim("load climate");
+        int counter=0;
         foreach(Climate *c, mClimates) {
+            DebugTimer::checkResponsiveness(counter++, 10);
             if (!c->isSetup())
                 c->setup();
         }
         // load the first year of the climate database
-        foreach(Climate *c, mClimates)
+        foreach(Climate *c, mClimates) {
             c->nextYear();
+            DebugTimer::checkResponsiveness(counter++, 10);
+        }
 
     }
 
@@ -964,6 +974,7 @@ void Model::runYear()
         DebugTimer t("management");
         mManagement->run();
         GlobalSettings::instance()->systemStatistics()->tManagement+=t.elapsed();
+        DebugTimer::checkResponsiveness();
     }
     // ... or ABE (the agent based variant)
     if (mABEManagement) {
@@ -971,6 +982,7 @@ void Model::runYear()
         setCurrentTask("ABE");
         mABEManagement->run();
         GlobalSettings::instance()->systemStatistics()->tManagement+=t.elapsed();
+        DebugTimer::checkResponsiveness();
     }
 
     // if trees are dead/removed because of management, the tree lists

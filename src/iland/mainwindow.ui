@@ -15,7 +15,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="res/iland.qrc">
-    <normaloff>:/icon4.png</normaloff>:/icon4.png</iconset>
+    <normaloff>:/iland_icon.png</normaloff>:/iland_icon.png</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QHBoxLayout" name="horizontalLayout_2">

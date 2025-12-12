@@ -565,6 +565,7 @@ void ForestManagementEngine::setup()
 
         mUnitStandMap.insert(unit,stand);
         mStands.append(stand);
+        DebugTimer::checkResponsiveness(i, 100);
 
     }
 
@@ -601,6 +602,7 @@ void ForestManagementEngine::setup()
         } else {
             qCDebug(abeSetup) << "Warning while procssing the CSV setup file: for stand '" << s->id() << "' tried to set STP to '" << it.value() << "', but this STP is not available for Agenttype: " << s->unit()->agent()->type()->name();
         }
+        DebugTimer::checkResponsiveness();
     }
     qCDebug(abeSetup) << "ABE setup completed.";
 }
@@ -614,6 +616,7 @@ void ForestManagementEngine::initialize()
     }
     DebugTimer time_setup("ABE:setup");
 
+    int counter=0;
     foreach (FMStand* stand, mStands) {
         if (stand->stp()) {
 
@@ -627,6 +630,7 @@ void ForestManagementEngine::initialize()
                 throw IException(QString("ABE-Error: init of stand %2: %1").arg(mLastErrorMessage).arg(stand->id()));
             }
         }
+        DebugTimer::checkResponsiveness(counter, 100);
     }
 
     // now initialize the agents....
@@ -642,7 +646,7 @@ void ForestManagementEngine::initialize()
 
 
     qCDebug(abeSetup) << "ABE setup complete." << mUnitStandMap.size() << "stands on" << mUnits.count() << "units, managed by" << mAgents.size() << "agents.";
-
+    DebugTimer::checkResponsiveness();
 }
 
 void ForestManagementEngine::clear()

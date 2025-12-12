@@ -204,10 +204,12 @@ void StandLoader::processInit()
             //throw IException("StandLoader::processInit: 'mode' is 'standgrid' but the init file is either empty or contains no 'stand_id'-column.");
         }
         QHash<int, QVector<InitFileItem> >::const_iterator it = mStandInitItems.constBegin();
+        int counter = 0;
         while (it!=mStandInitItems.constEnd()) {
             mInitItems = it.value(); // copy the items...
             executeiLandInitStand(it.key());
             ++it;
+            DebugTimer::checkResponsiveness(counter, 100);
         }
         qDebug() << "finished setup of trees.";
         evaluateDebugTrees();
@@ -246,7 +248,7 @@ void StandLoader::processAfterInit()
 
         int stand_id = -99999;
         int ilow = -1, ihigh = 0;
-        int total = 0;
+        int total = 0; int counter=0;
         for (int i=0;i<init_file.rowCount();++i) {
             int row_stand = init_file.value(i, istandid).toInt();
             if (row_stand != stand_id) {
@@ -254,6 +256,7 @@ void StandLoader::processAfterInit()
                     // process stand
                     ihigh = i-1; // up to the last
                     total += loadSaplingsLIF(stand_id, init_file, ilow, ihigh);
+                    DebugTimer::checkResponsiveness(counter++, 100);
                 }
                 ilow = i; // mark beginning of new stand
                 stand_id = row_stand;

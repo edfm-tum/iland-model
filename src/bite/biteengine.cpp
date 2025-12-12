@@ -218,6 +218,7 @@ void BiteEngine::run()
             qCCritical(bite) << "Error in setup of BITE engine:" << mErrorStack.join("\n");
             throw IException("BITE-Error (check also the log): \n" + mErrorStack.join("\n"));
         }
+        DebugTimer::checkResponsiveness();
     }
     // execute bite related outputs
     GlobalSettings::instance()->outputManager()->execute("bite");

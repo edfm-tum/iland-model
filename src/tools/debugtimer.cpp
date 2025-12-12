@@ -24,7 +24,7 @@
 
 // static members
 QHash<QString, double> DebugTimer::mTimingList;
- bool DebugTimer::m_responsive_mode = false;
+
  qint64 DebugTimer::ms_since_epoch = 0;
 
  QMutex timer_mutex;
@@ -53,17 +53,7 @@ void DebugTimer::sampleClock(int ms)
 DebugTimer::~DebugTimer()
 {
     --m_count;
-    if (responsiveMode()) {
-        qint64 diff = QDateTime::currentMSecsSinceEpoch() - ms_since_epoch;
-        if (diff > 100) {
-            ms_since_epoch = QDateTime::currentMSecsSinceEpoch();
-            // qDebug() << "DebugTimer:: process events after 100ms - now" << ms_since_epoch;
-            // process events only if we are currently in the main thread (GUI)
-            if (QThread::currentThread() == QCoreApplication::instance()->thread())
-                QCoreApplication::processEvents();
-        }
-    }
-
+    
     double t = elapsed();
     if (!m_caption.isEmpty()) {
         QMutexLocker locker(&timer_mutex);
@@ -78,11 +68,7 @@ DebugTimer::~DebugTimer()
 DebugTimer::DebugTimer(const QString &caption, bool silent)
 {
     ++m_count;
-    if (responsiveMode() && m_count==1) {
-        // store time of the first call (start of the year)
-        ms_since_epoch = QDateTime::currentMSecsSinceEpoch();
-    }
-
+    
     m_silent=silent;
     m_hideShort=true;
     m_caption = caption;
@@ -95,6 +81,34 @@ DebugTimer::DebugTimer(const QString &caption, bool silent)
     }
     start();
 
+}
+
+
+namespace {
+// These are kept in a private namespace within the .cpp file to hide
+// them completely from the rest of the application.
+QElapsedTimer responsivenessTimer;
+const int CHECK_INTERVAL_MS = 250; // Process events every 250ms
+}
+
+void DebugTimer::checkResponsiveness(qint64 counter, int modulus)
+{
+    // 1. Caller-side throttling (very cheap integer operation)
+    if (counter % modulus != 0) {
+        return;
+    }
+
+    // 2. Thread safety: Do nothing if not on the main GUI thread
+    if (QThread::currentThread() != QCoreApplication::instance()->thread()) {
+        return;
+    }
+
+    // 3. Time-based check: Only proceed if the timer isn't running
+    //    or if enough time has passed.
+    if (!responsivenessTimer.isValid() || responsivenessTimer.elapsed() > CHECK_INTERVAL_MS) {
+        QCoreApplication::processEvents();
+        responsivenessTimer.start();
+    }
 }
 
 void DebugTimer::clearAllTimers()

@@ -57,6 +57,9 @@ OutputManager::OutputManager()
 {
     mTransactionOpen = false;
     mThread = new OutputWriterThread();
+    mGlobalBufferSize = 0;
+    mGlobalBufferCap = 3276800; // default: 100MB (100 * 1024*1024 / 32)
+
     // add all the outputs
     mOutputs.append(new TreeOut);
     mOutputs.append(new TreeRemovedOut);
@@ -113,7 +116,9 @@ void OutputManager::setup()
     qDebug() << "Setting up outputs...";
     bool buffered = GlobalSettings::instance()->settings().valueBool("system.settings.bufferOutput", false);
     if (buffered) {
-        qDebug() << "Output buffering enabled. Starting background thread.";
+        int buffer_size_mb = GlobalSettings::instance()->settings().valueInt("system.settings.bufferSize", 100);
+        mGlobalBufferCap = buffer_size_mb * (1024*1024 / 32); // convert MB to QVariant count
+        qDebug() << "Output buffering enabled. Global buffer size: " << buffer_size_mb << "MB (" << mGlobalBufferCap << " items). Starting background thread.";
         // If the thread is already running (e.g. from a previous run), stop and wait for it
         // to ensure all old data is written and we can cleanly switch the database file.
         if (mThread->isRunning()) {

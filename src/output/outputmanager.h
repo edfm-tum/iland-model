@@ -19,7 +19,9 @@
 
 #ifndef OUTPUTMANAGER_H
 #define OUTPUTMANAGER_H
+
 #include "output.h"
+#include <atomic>
 
 class OutputWriterThread;
 
@@ -38,9 +40,19 @@ public:
     void close(); ///< close all outputs
     QString wikiFormat(); ///< wiki-format of all outputs
     OutputWriterThread *thread() { return mThread; }
+
+    int globalBufferSize() const { return mGlobalBufferSize; }
+    void incrementGlobalBufferSize(int size) { mGlobalBufferSize += size; }
+    void decrementGlobalBufferSize(int size) { mGlobalBufferSize -= size; }
+    int globalBufferCap() const { return mGlobalBufferCap; }
+
 private:
     QList<Output*> mOutputs; ///< list of outputs in system
     OutputWriterThread *mThread;
+
+    std::atomic<int> mGlobalBufferSize;
+    int mGlobalBufferCap;
+
     // transactions
     void startTransaction(); ///< start database transaction  (if output database is open, i.e. >0 DB outputs are active)
     void endTransaction(); ///< ends database transaction

@@ -281,6 +281,7 @@ gui.layout = group|Multithreading
 system.settings.multithreading = boolean|true|Multithreading|If checked, iLand will use several threads to perform its calculations (if more than 10 RessourceUnits are defined).|simple
 system.settings.threadCount = numeric|-1|ThreadCount|Number of used threads if multithreading is enabled. -1 uses all available CPU cores.|simple
 system.settings.bufferOutput = boolean|false|Buffered Output|If true, output data is first buffered in memory and then written to disk by a separate thread. This can improve simulation performance by decoupling I/O from the main simulation thread.|simple
+system.settings.bufferSize = integer|100|Global Buffer Size [MB]|The maximum total memory (in Megabytes) for all buffered outputs combined. If this limit is exceeded, individual outputs will flush their buffers to reduce memory pressure. A conversion of 32 bytes per single value is assumed (i.e. a bufferSize of 100MB allows for ~3.2 million data values in the buffer).|simple
 gui.layout = group|Debug outputs https://iland-model.org/Debug+Outputs
 system.settings.debugOutput = numeric|1|Debug Output|Defines the active debug outputs. Each output is coded by a single bit. Find a list of currently available outputs under the debug data menu of the iLand application. e.g: a value of 17 (=16+1) would enable the water output (16) and the Tree NPP output (1).|simple
 system.settings.debugOutputAutoSave = boolean|true|Debug output autosave|If checked, csv-output files are created for each active debug output and saved to the temp directory (see Path-section).|simple
@@ -288,7 +289,6 @@ gui.layout = group|Random seed
 system.settings.randomSeed = numeric|0|Random seed|Non-zero values are used as the seed for the random number generator. This results in a reproducible series of (pseudo)-random numbers. Empty or 0 causes different random numbers for each run and therefore stochastic variation between runs. Note: this does not work when multi threading is enabled. Default value is 0.|simple
 gui.layout = group|Performance settings
 system.settings.expressionLinearizationEnabled = boolean|false|Expression Linearization|If checked, specific expressions (user defined formulas, e.g. for light response) use a interpolation approach to increase the calculation performance.|advanced
-system.settings.responsive = boolean|true|Responsive|If checked, iLand is more responsive during lengthy calculations (i.e. the user interface freezes less frequently)|advanced
 
 gui.layout = group|Parameter|Other technical parameters (Note: from the section "model.parameter" of the project file)
 model.parameter.torus = boolean|false|Torus landscape|If true, the simulation space is treated as a torus, where any influence (e.g. a light influence pattern) leaving on one side again enters at the opposite site. This is especially useful for small simulated areas to provide a continuous environment without edge effects. https://iland-model.org/simulation+extent?highlight=torus#single_resource_units_and_the_torus|simple

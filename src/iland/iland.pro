@@ -95,6 +95,7 @@ linux-g++ {
 # The "FreeImage" library is used for processing GeoTIFF data files.
 # FreeImage on Linux: see https://codeyarns.com/2014/02/11/how-to-install-and-use-freeimage/
 # basically sudo apt-get install libfreeimage3 libfreeimage-dev
+# or for fedora:  sudo dnf install freeimage freeimage-devel
 
 LIBS += -lfreeimage
 } else:macx {

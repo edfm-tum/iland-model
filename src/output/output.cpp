@@ -200,9 +200,18 @@ void Output::writeRow()
         open();
     
     if (mBuffered) {
+        OutputManager *om = GlobalSettings::instance()->outputManager();
+        if (om->globalBufferSize() > om->globalBufferCap()) {
+            if (!mFlatBuffer.isEmpty()) {
+                qDebug() << "Output:write buffer cap reached. Writing data for" << name() << ", " << mFlatBuffer.size()/mCount << "elements.";
+                flush();
+            }
+        }
         // buffering mode: append to flat buffer
         for (int i=0;i<mCount; ++i)
             mFlatBuffer.append(mRow[i]);
+
+        om->incrementGlobalBufferSize(mCount);
         newRow();
         return;
     }
@@ -221,6 +230,9 @@ void Output::flush()
 {
     if (!mBuffered || mFlatBuffer.isEmpty())
         return;
+
+    OutputManager *om = GlobalSettings::instance()->outputManager();
+    om->decrementGlobalBufferSize(mFlatBuffer.size());
 
     OutputBatch batch;
     batch.tableName = mTableName;

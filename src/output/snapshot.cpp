@@ -776,7 +776,7 @@ void Snapshot::loadTrees()
                      (n<1000000 && n % 100000 == 0) ||   // until 1M every 100k
                      ( n % 1000000 == 0) ) {             // then every M
                     qDebug() << n << "trees loaded...";
-                    QCoreApplication::processEvents();
+                    DebugTimer::checkResponsiveness();
                 }
 
         }
@@ -931,7 +931,7 @@ void Snapshot::loadSoil(QSqlDatabase db)
 
         if (++n % 1000 == 0) {
             qDebug() << n << "soil units loaded...";
-            QCoreApplication::processEvents();
+            DebugTimer::checkResponsiveness();
         }
     }
     qDebug() << "Snapshot: finished soil. N=" << n;
@@ -1000,7 +1000,7 @@ void Snapshot::saveSnagRU(QList<int> stand_ids, bool ridmode)
     }
     if (n % 1000 == 0) {
         qDebug() << n << "snags saved...";
-        QCoreApplication::processEvents();
+        DebugTimer::checkResponsiveness();
 
     }
 
@@ -1122,7 +1122,7 @@ void Snapshot::loadSnags(QSqlDatabase db)
 
         if (++n % 1000 == 0) {
             qDebug() << n << "snags loaded...";
-            QCoreApplication::processEvents();
+            DebugTimer::checkResponsiveness();
         }
     }
     qDebug() << "Snapshot: finished snags. N=" << n;
@@ -1169,11 +1169,11 @@ void Snapshot::saveSaplings()
                         ++n;
                         if (n<10000000 && ++n % 10000 == 0) {
                            qDebug() << n << "saplings saved...";
-                           QCoreApplication::processEvents();
+                           DebugTimer::checkResponsiveness();
                        }
                        if (n>=10000000 && ++n % 1000000 == 0) {
                            qDebug() << n << "saplings saved...";
-                           QCoreApplication::processEvents();
+                           DebugTimer::checkResponsiveness();
                        }
                     }
                 }
@@ -1220,11 +1220,11 @@ void Snapshot::saveDeadTrees()
             ++n;
             if (n<10000000 && ++n % 10000 == 0) {
                 qDebug() << n << "deadtrees saved...";
-                QCoreApplication::processEvents();
+                DebugTimer::checkResponsiveness();
             }
             if (n>=10000000 && ++n % 1000000 == 0) {
                 qDebug() << n << "deadtrees saved...";
-                QCoreApplication::processEvents();
+                DebugTimer::checkResponsiveness();
             }
         }
     }
@@ -1293,7 +1293,7 @@ void Snapshot::loadSaplings()
                  (n<1000000 && n % 100000 == 0) ||   // until 1M every 100k
                  (n % 1000000 == 0) ) {             // then every M
                 qDebug() << n << "saplings loaded...";
-                QCoreApplication::processEvents();
+                DebugTimer::checkResponsiveness();
             }
 
 
@@ -1350,7 +1350,7 @@ void Snapshot::loadDeadTrees()
                 (n<1000000 && n % 100000 == 0) ||   // until 1M every 100k
                 (n % 1000000 == 0) ) {             // then every M
                 qDebug() << n << "dead trees loaded...";
-                QCoreApplication::processEvents();
+                DebugTimer::checkResponsiveness();
             }
     }
     qDebug() << "Snapshot: finished loading dead trees. N=" << n ;

@@ -21,6 +21,10 @@
 #define THREADRUNNER_H
 #include <QList>
 #include <QtConcurrent/QtConcurrent>
+#include <QTimer>
+#include <QEventLoop>
+#include "debugtimer.h"
+
 class ResourceUnit;
 class Species;
 class ThreadRunner
@@ -64,15 +68,15 @@ public:
     {
         if (mMultithreaded && container.count() > 3 && !forceSingleThreaded) {
             mState = MultiThreaded;
-            // QtConcurrent::blockingMap accepts lambdas directly.
-            // It will distribute the execution of 'f(element)' across threads.
-            QtConcurrent::blockingMap(container, f);
+            executeBlocking(container, f);
         }
         else {
             mState = SingleThreaded;
             // Serialized execution
+            long long counter = 0;
             for (const auto& element : container) {
                 f(element);
+                DebugTimer::checkResponsiveness(counter++, 100);
             }
         }
         mState = Inactive;
@@ -85,18 +89,20 @@ public:
     {
         if (mMultithreaded && mMap1.count() > 3 && !forceSingleThreaded) {
             mState = MultiThreaded;
-            // QtConcurrent::blockingMap accepts lambdas directly.
-            QtConcurrent::blockingMap(mMap1, f);
-            QtConcurrent::blockingMap(mMap2, f);
+            executeBlocking(mMap1, f);
+            executeBlocking(mMap2, f);
         }
         else {
             mState = SingleThreaded;
             // Serialized execution
+            long long counter = 0;
             for (const auto& element : mMap1) {
                 f(element);
+                DebugTimer::checkResponsiveness(counter++, 100);
             }
             for (const auto& element : mMap2) {
                 f(element);
+                DebugTimer::checkResponsiveness(counter++, 100);
             }
 
         }
@@ -120,6 +126,60 @@ private:
     QList<Species*> mSpeciesMap;
     static RunState mState;
     static bool mMultithreaded;
+
+private:
+    template <typename Container, typename Func>
+    void executeBlocking(Container& container, Func f) const
+    {
+        QTimer responsivenessTimer;
+        // Only set up the timer if we are on the main GUI thread
+        if (QThread::currentThread() == QCoreApplication::instance()->thread()) {
+            responsivenessTimer.setInterval(100); // Fire every 100ms
+
+            // When the timer fires, process UI events.
+            // NOTE: Using ExcludeUserInputEvents makes this much safer, as it prevents
+            // the user from clicking buttons and starting new operations while this
+            // one is already running. It will still process paint events, etc.
+            QObject::connect(&responsivenessTimer, &QTimer::timeout, []() {
+                QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+            });
+
+            responsivenessTimer.start();
+        }
+
+        // This is your existing blocking call
+        QtConcurrent::blockingMap(container, f);
+
+        // Stop the timer once the blocking call is finished
+        if (responsivenessTimer.isActive()) {
+            responsivenessTimer.stop();
+        }
+    }
+
+    template <typename Container, typename Func>
+    void executeBlocking(const Container& container, Func f) const
+    {
+        QTimer responsivenessTimer;
+        // Only set up the timer if we are on the main GUI thread
+        if (QThread::currentThread() == QCoreApplication::instance()->thread()) {
+            responsivenessTimer.setInterval(100); // Fire every 100ms
+
+            // When the timer fires, process UI events.
+            QObject::connect(&responsivenessTimer, &QTimer::timeout, []() {
+                QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+            });
+
+            responsivenessTimer.start();
+        }
+
+        // This is your existing blocking call
+        QtConcurrent::blockingMap(container, f);
+
+        // Stop the timer once the blocking call is finished
+        if (responsivenessTimer.isActive()) {
+            responsivenessTimer.stop();
+        }
+    }
 };
 
 template<class T>
@@ -155,13 +215,16 @@ void ThreadRunner::run(T *(*funcptr)(T *), const QVector<T *> &container, const 
     if (mMultithreaded && container.count() > 3 && forceSingleThreaded==false) {
         // execute using QtConcurrent for larger amounts of elements
         mState = MultiThreaded;
-        QtConcurrent::blockingMap(container,funcptr);
+        executeBlocking(container,funcptr);
     } else {
         // execute serialized in main thread
         mState = SingleThreaded;
         T *element;
-        foreach(element, container)
+        long long counter = 0;
+        foreach(element, container) {
             (*funcptr)(element);
+            DebugTimer::checkResponsiveness(counter++, 100);
+        }
     }
     mState = Inactive;
 
@@ -174,14 +237,15 @@ void ThreadRunner::run(void (*funcptr)(T &), QVector<T> &container, const bool f
     if (mMultithreaded && container.count() > 3 && forceSingleThreaded==false) {
         // execute using QtConcurrent for larger amounts of elements
         mState = MultiThreaded;
-        QtConcurrent::blockingMap(container,funcptr);
-    } else {
-        // execute serialized in main thread
-        mState = SingleThreaded;
-        for (int i=0;i<container.size();++i)
-            (*funcptr)(container[i]);
-
-    }
+        executeBlocking(container,funcptr);
+        } else {
+            // execute serialized in main thread
+            mState = SingleThreaded;
+            for (int i=0;i<container.size();++i) {
+                (*funcptr)(container[i]);
+                DebugTimer::checkResponsiveness(i, 100);
+            }
+        }
     mState = Inactive;
 }
 
@@ -192,7 +256,7 @@ void ThreadRunner::run(void (Obj::*funcptr)(T*), Obj* obj, const QVector<T*>& co
     if (mMultithreaded && container.count() > 3 && forceSingleThreaded == false) {
         // execute using QtConcurrent for larger amounts of elements
         mState = MultiThreaded;
-        QtConcurrent::blockingMap(container, [obj, funcptr](T* element) {
+        executeBlocking(container, [obj, funcptr](T* element) {
             (obj->*funcptr)(element);
         });
     }
@@ -200,8 +264,10 @@ void ThreadRunner::run(void (Obj::*funcptr)(T*), Obj* obj, const QVector<T*>& co
         // execute serialized in main thread
         mState = SingleThreaded;
         T* element;
+        long long counter = 0;
         foreach(element, container) {
             (obj->*funcptr)(element);
+            DebugTimer::checkResponsiveness(counter++, 100);
         }
     }
     mState = Inactive;
@@ -214,16 +280,17 @@ void ThreadRunner::run(void (Obj::*funcptr)(T&), Obj* obj, const QVector<T>& con
     if (mMultithreaded && container.count() > 3 && forceSingleThreaded == false) {
         // execute using QtConcurrent for larger amounts of elements
         mState = MultiThreaded;
-        QtConcurrent::blockingMap(container, [obj, funcptr](T& element) {
+        executeBlocking(container, [obj, funcptr](T& element) {
             (obj->*funcptr)(element);
         });
     }
     else {
         // execute serialized in main thread
         mState = SingleThreaded;
-        T* element;
-        foreach(element, container) {
+        long long counter = 0;
+        for (const auto& element : container) { // Changed 'foreach' to 'for' to introduce counter more naturally
             (obj->*funcptr)(element);
+            DebugTimer::checkResponsiveness(counter++, 100);
         }
     }
     mState = Inactive;
@@ -236,15 +303,18 @@ void ThreadRunner::run(void (T::*funcptr)(), QVector<T>& container, const bool f
     if (mMultithreaded && container.count() > 3 && forceSingleThreaded == false) {
         // execute using QtConcurrent for larger amounts of elements
         mState = MultiThreaded;
-        QtConcurrent::blockingMap(container, [funcptr](T& element) {
+        executeBlocking(container, [funcptr](T& element) {
             (element.*funcptr)();
         });
     }
     else {
         // execute serialized in main thread
         mState = SingleThreaded;
-        for (T& element : container)
+        long long counter = 0;
+        for (T& element : container) {
             (element.*funcptr)();
+            DebugTimer::checkResponsiveness(counter++, 100);
+        }
     }
     mState = Inactive;
 }

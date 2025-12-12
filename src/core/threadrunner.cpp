@@ -65,17 +65,22 @@ void ThreadRunner::run(void (*funcptr)(ResourceUnit *), const bool forceSingleTh
     if (mMultithreaded && mMap1.count() > 3 && forceSingleThreaded==false) {
         // execute using QtConcurrent for larger amounts of ressource units...
         mState = MultiThreaded;
-        QtConcurrent::blockingMap(mMap1,funcptr);
-        QtConcurrent::blockingMap(mMap2,funcptr);
+        executeBlocking(mMap1,funcptr);
+        executeBlocking(mMap2,funcptr);
     } else {
         // execute serialized in main thread
         mState = SingleThreaded;
         ResourceUnit *unit;
-        foreach(unit, mMap1)
+        long long counter = 0;
+        foreach(unit, mMap1) {
             (*funcptr)(unit);
+            DebugTimer::checkResponsiveness(counter++, 100);
+        }
 
-        foreach(unit, mMap2)
+        foreach(unit, mMap2) {
             (*funcptr)(unit);
+            DebugTimer::checkResponsiveness(counter++, 100);
+        }
     }
     mState = Inactive;
 
@@ -86,13 +91,16 @@ void ThreadRunner::run(void (*funcptr)(Species *), const bool forceSingleThreade
 {
     if (mMultithreaded && mSpeciesMap.count() > 3 && forceSingleThreaded==false) {
         mState = MultiThreaded;
-        QtConcurrent::blockingMap(mSpeciesMap, funcptr);
+        executeBlocking(mSpeciesMap, funcptr);
     } else {
         // single threaded operation
         mState = SingleThreaded;
         Species *species;
-        foreach(species, mSpeciesMap)
+        long long counter = 0;
+        foreach(species, mSpeciesMap) {
             (*funcptr)(species);
+            DebugTimer::checkResponsiveness(counter++, 100);
+        }
     }
     mState = Inactive;
 }
