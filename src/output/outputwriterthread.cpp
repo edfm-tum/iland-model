@@ -1,5 +1,6 @@
 #include "outputwriterthread.h"
 #include "globalsettings.h"
+#include "outputmanager.h"
 #include <QtSql>
 #include <QFile>
 #include <QTextStream>
@@ -24,10 +25,18 @@ void OutputWriterThread::stop()
 
 void OutputWriterThread::addBatch(const OutputBatch &batch)
 {
+    if (OutputManager::debugOutput)
+        qDebug() << "Thread" << QThread::currentThreadId() << "trying to lock for addBatch for" << batch.tableName;
     mSemaphore.acquire();
     QMutexLocker locker(&mMutex);
+    if (OutputManager::debugOutput)
+        qDebug() << "Thread" << QThread::currentThreadId() << "locked for addBatch.";
     mQueue.enqueue(batch);
+    if (OutputManager::debugOutput)
+        qDebug() << "Writer thread queue size is now" << mQueue.size();
     mCondition.wakeOne();
+    if (OutputManager::debugOutput)
+        qDebug() << "Thread" << QThread::currentThreadId() << "unlocked for addBatch.";
 }
 
 void OutputWriterThread::run()
@@ -62,16 +71,27 @@ void OutputWriterThread::run()
                 break;
             }
             if (mQueue.isEmpty()) {
+                if (OutputManager::debugOutput)
+                    qDebug() << "Writer thread" << QThread::currentThreadId() << "is waiting. Queue size:" << mQueue.size();
                 mCondition.wait(&mMutex);
+                if (OutputManager::debugOutput)
+                    qDebug() << "Writer thread" << QThread::currentThreadId() << "woke up. Queue size:" << mQueue.size();
                 if (mQueue.isEmpty() && mAbort)
                     break;
             }
-            if (!mQueue.isEmpty())
+            if (!mQueue.isEmpty()) {
+                if (OutputManager::debugOutput)
+                    qDebug() << "Writer thread" << QThread::currentThreadId() << "dequeued a batch. Queue size:" << mQueue.size();
                 batch = mQueue.dequeue();
+            }
         }
 
         if (!batch.data.isEmpty()) {
+            if (OutputManager::debugOutput)
+                qDebug() << "Writer thread" << QThread::currentThreadId() << "is processing a batch for" << batch.tableName;
             processBatch(batch);
+            if (OutputManager::debugOutput)
+                qDebug() << "Writer thread" << QThread::currentThreadId() << "finished processing a batch for" << batch.tableName;
             mSemaphore.release();
         }
     }
@@ -108,8 +128,15 @@ void OutputWriterThread::writeToDatabase(const OutputBatch &batch)
         mQueries.insert(batch.tableName, query);
     }
 
-    if (batch.startTransaction)
+    if (batch.startTransaction) {
+        if (OutputManager::debugOutput) {
+            qDebug() << "Writer thread" << QThread::currentThreadId() << "starting transaction for" << batch.tableName;
+        }
         mDatabase.transaction();
+        if (OutputManager::debugOutput) {
+            qDebug() << "Writer thread" << QThread::currentThreadId() << "transaction started for" << batch.tableName;
+        }
+    }
 
     int rows = batch.data.size() / batch.columnCount;
     for (int i = 0; i < rows; ++i) {

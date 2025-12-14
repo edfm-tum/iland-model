@@ -174,6 +174,8 @@ private:
     //recent file menu
     void recentFileMenu();
     QList<QString> mRecentFileList;
+    bool mWaitCursorSet;
+    QTimer mStatusTimer;
 
     //Dialog
     void processMetaData(metadata& meta);

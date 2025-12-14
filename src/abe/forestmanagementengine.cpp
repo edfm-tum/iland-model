@@ -244,6 +244,7 @@ void ForestManagementEngine::runJavascript(bool after_processing)
             handler.call(QJSValueList() << mCurrentYear);
         }
     }
+    DebugTimer::checkResponsiveness();
 }
 
 void ForestManagementEngine::runRepeatedItems(int stand_id)
@@ -260,6 +261,7 @@ void ForestManagementEngine::runRepeatedItems(int stand_id)
     while (it != mRepeatStore.end() && it.key() == stand_id) {
         // execute (and update!) the current item:
         bool do_erase = runSingleRepeatedItem(stand_id, *it);
+        DebugTimer::checkResponsiveness();
         if (do_erase)
             it = mRepeatStore.erase(it);
         else
@@ -380,6 +382,8 @@ FMUnit *nc_execute_unit(FMUnit *unit)
             if (ForestManagementEngine::instance()->isCancel())
                 break;
 
+            DebugTimer::checkResponsiveness(total, 10);
+
             ++it;
             ++total;
         }
@@ -417,6 +421,7 @@ FMUnit *nc_plan_update_unit(FMUnit *unit)
     if (ForestManagementEngine::instance()->currentYear()>1)
         unit->updatePlanOfCurrentYear();
 
+    DebugTimer::checkResponsiveness();
     return unit;
 }
 
@@ -626,6 +631,7 @@ void ForestManagementEngine::initialize()
     }
     DebugTimer time_setup("ABE:setup");
 
+    int counter = 0;
     foreach (FMStand* stand, mStands) {
         if (stand->stp()) {
 
@@ -635,6 +641,7 @@ void ForestManagementEngine::initialize()
             stand->setTargetSpeciesIndex( stand->unit()->targetSpeciesIndex() );
 
             stand->initialize();
+            DebugTimer::checkResponsiveness(counter++, 100);
             if (isCancel()) {
                 throw IException(QString("ABE-Error: init of stand %2: %1").arg(mLastErrorMessage).arg(stand->id()));
             }
@@ -644,6 +651,7 @@ void ForestManagementEngine::initialize()
     // now initialize the agents....
     foreach(Agent *ag, mAgents) {
         ag->setup();
+        DebugTimer::checkResponsiveness();
         if (isCancel()) {
             throw IException(QString("ABE-Error: setup of agent '%2': %1").arg(mLastErrorMessage).arg(ag->name()));
         }

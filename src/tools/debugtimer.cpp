@@ -83,11 +83,31 @@ DebugTimer::DebugTimer(const QString &caption, bool silent)
 
 }
 
+namespace {
+// These are kept in a private namespace within the .cpp file to hide
+// them completely from the rest of the application.
+QElapsedTimer responsivenessTimer;
+const int CHECK_INTERVAL_MS = 250; // Process events every 250ms
+}
+
 void DebugTimer::checkResponsiveness(qint64 counter, int modulus)
 {
-    // a no-op, since QCoreApplication::processEvents() may cause deadlocks.
-    Q_UNUSED(counter);
-    Q_UNUSED(modulus);
+    // 1. Caller-side throttling (very cheap integer operation)
+    if (counter % modulus != 0) {
+        return;
+    }
+
+    // 2. Thread safety: Do nothing if not on the main GUI thread
+    if (QThread::currentThread() != QCoreApplication::instance()->thread()) {
+        return;
+    }
+
+    // 3. Time-based check: Only proceed if the timer isn't running
+    //    or if enough time has passed.
+    if (!responsivenessTimer.isValid() || responsivenessTimer.elapsed() > CHECK_INTERVAL_MS) {
+        QCoreApplication::processEvents();
+        responsivenessTimer.start();
+    }
 }
 
 void DebugTimer::clearAllTimers()

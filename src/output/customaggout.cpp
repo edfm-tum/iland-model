@@ -234,7 +234,7 @@ void CustomAggOutLevel::runTrees()
     case CustomAggOut::sLandscape: {
         // loop over all trees in the landsacpe
         AllTreeIterator ati(GlobalSettings::instance()->model());
-        while (Tree *t = ati.next()) {
+        while (const Tree *t = ati.next()) {
             if (do_filter) {
                 tw.setTree(t);
                 if (!mEntityFilter.calculateBool(tw))
@@ -255,7 +255,7 @@ void CustomAggOutLevel::runTrees()
             }
 
             // loop over all trees
-            QVector<Tree> &trees = ru_list[i]->trees();
+            const QVector<Tree> &trees = ru_list[i]->constTrees();
             for (int j=0; j<trees.size();++j) {
                 if (do_filter) {
                     tw.setTree(&trees[j]);
@@ -325,7 +325,7 @@ void CustomAggOutLevel::runSnags()
     switch (mLevel) {
     case CustomAggOut::sLandscape: {
         // loop over all trees in the landsacpe
-        for (const auto &ru : Globals->model()->ruList()) {
+        for (const ResourceUnit *ru : Globals->model()->ruList()) {
             for (const auto &dt : ru->snag()->deadTrees()) {
                 if (do_filter) {
                     tw.setDeadTree(&dt);
@@ -341,7 +341,7 @@ void CustomAggOutLevel::runSnags()
     }
     case CustomAggOut::sRU: {
 
-        for (const auto &ru : Globals->model()->ruList()) {
+        for (const ResourceUnit *ru : Globals->model()->ruList()) {
 
             data.clear();
             if (!mLevelFilter.isEmpty()) {
@@ -414,7 +414,7 @@ void CustomAggOutLevel::runSaplings()
     switch (mLevel) {
     case CustomAggOut::sLandscape: {
         // loop over all trees in the landsacpe
-        foreach (ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
+        foreach (const ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
             SaplingCell *s = ru->saplingCellArray();
             for (int px=0;px<cPxPerHectare;++px, ++s) {
                 int n_on_px = s->n_occupied();
@@ -430,7 +430,7 @@ void CustomAggOutLevel::runSaplings()
 
     case CustomAggOut::sRU: {
         // loop over all trees in the landsacpe
-        foreach (ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
+        foreach (const ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
             if (!mLevelFilter.isEmpty()) {
                 if (!mLevelFilter.calculateBool(ru->id()))
                     continue;
@@ -586,7 +586,7 @@ void CustomAggOutLevel::processSnag(const DeadTree *dt, QMap<QString, QVector<QV
     }
 }
 
-void CustomAggOutLevel::writeResults(QMap<QString, QVector<QVector<double> > > &data, ResourceUnit *ru, int stand_id)
+void CustomAggOutLevel::writeResults(QMap<QString, QVector<QVector<double> > > &data, const ResourceUnit *ru, int stand_id)
 {
 
     foreach( QString species, data.keys()) {
@@ -610,7 +610,7 @@ void CustomAggOutLevel::writeResults(QMap<QString, QVector<QVector<double> > > &
 
 
 
-void CustomAggOutLevel::writeFirstCols(QString &species_id, ResourceUnit *ru, int stand_id)
+void CustomAggOutLevel::writeFirstCols(QString &species_id, const ResourceUnit *ru, int stand_id)
 {
     *this << currentYear(); // year in all outputs
 

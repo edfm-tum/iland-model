@@ -95,7 +95,7 @@ bool EcoVizOut::writePDBFile(QString fileName, int n_trees, int n_cohorts, int y
         // now loop over all trees and write a line for each tree
         AllTreeIterator at(GlobalSettings::instance()->model());
         n_trees = 0;
-        while (Tree *tree = at.next()) {
+        while (const Tree *tree = at.next()) {
             // Tree_ID<int> species_ID<cahr> pos_x<float> pos_y<float> height<float> canopy_radius<float> diameter_at_breast_height<float> status<int>
             stream << tree->id() << ws << tree->species()->id() << ws <<
                       tree->position().x() << ws << tree->position().y() << ws << tree->height() << ws;
@@ -110,7 +110,7 @@ bool EcoVizOut::writePDBFile(QString fileName, int n_trees, int n_cohorts, int y
         stream << "          " << Qt::endl;
         n_cohorts = 0;
         Saplings *saplings = GlobalSettings::instance()->model()->saplings();
-        foreach(ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
+        foreach(const ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
             if (ru->id()==-1)
                 continue; // do not include if out of project area
 
@@ -215,7 +215,7 @@ bool EcoVizOut::writePDBBinaryFile(QString fileName, int n_trees, int n_cohorts,
     // see how many trees we'll have
     AllTreeIterator at(GlobalSettings::instance()->model());
     n_trees = 0;
-    while (Tree *tree = at.next()) {
+    while (const Tree *tree = at.next()) {
         ++n_trees;
     }
 
@@ -226,7 +226,7 @@ bool EcoVizOut::writePDBBinaryFile(QString fileName, int n_trees, int n_cohorts,
 
     AllTreeIterator at2(GlobalSettings::instance()->model());
     int i = 0;
-    while (Tree *tree = at2.next()) {
+    while (const Tree *tree = at2.next()) {
         cohortA &ca = cohortAdata[i];
         // use the lookup table (with 0-padded 4 character strings)
         std::memcpy(ca.code, &species_names[tree->species()->index()], 4);
@@ -275,7 +275,7 @@ bool EcoVizOut::writePDBBinaryFile(QString fileName, int n_trees, int n_cohorts,
     std::vector<cohortB> cohortBdata;
     n_cohorts = 0;
     // count saplings (this means to loop once over all the data....)
-    foreach(ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
+    foreach(const ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
         if (ru->id()==-1)
             continue; // do not include if out of project area
         SaplingCell *s = ru->saplingCellArray();
@@ -300,7 +300,7 @@ bool EcoVizOut::writePDBBinaryFile(QString fileName, int n_trees, int n_cohorts,
     Saplings *saplings = GlobalSettings::instance()->model()->saplings();
     cohortB *cb = &cohortBdata[0];
     int n_filled = 0;
-    foreach(ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
+    foreach(const ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
         if (ru->id()==-1)
             continue; // do not include if out of project area
 

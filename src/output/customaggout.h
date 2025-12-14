@@ -95,8 +95,8 @@ private:
     void processSnag(const DeadTree *dt, QMap<QString, QVector<QVector<double> > > &data);
 
     // aggregation & write outputs functions
-    void writeResults(QMap<QString, QVector<QVector<double> > >  &data, ResourceUnit *ru, int stand_id);
-    void writeFirstCols(QString &species_id, ResourceUnit *ru, int stand_id);
+    void writeResults(QMap<QString, QVector<QVector<double> > >  &data, const ResourceUnit *ru, int stand_id);
+    void writeFirstCols(QString &species_id, const ResourceUnit *ru, int stand_id);
 };
 
 // declare as relocatable: this tells the QVector container

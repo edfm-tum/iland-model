@@ -213,7 +213,25 @@ void OutputManager::executeParallel(const QStringList &tableNames)
 
     // Execute parallel outputs
     if (!parallel_list.isEmpty()) {
+        QTimer responsivenessTimer;
+        // Only set up the timer if we are on the main GUI thread
+        if (QThread::currentThread() == QCoreApplication::instance()->thread()) {
+            responsivenessTimer.setInterval(100); // Fire every 100ms
+
+            // When the timer fires, process UI events.
+            QObject::connect(&responsivenessTimer, &QTimer::timeout, []() {
+                QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+            });
+
+            responsivenessTimer.start();
+        }
+
         QtConcurrent::blockingMap(parallel_list, runOutput);
+
+        // Stop the timer once the blocking call is finished
+        if (responsivenessTimer.isActive()) {
+            responsivenessTimer.stop();
+        }
     }
 }
 

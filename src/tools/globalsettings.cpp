@@ -147,8 +147,10 @@ GlobalSettings::~GlobalSettings()
     delete mOutputManager;
     // clear all databases
     clearDatabaseConnections();
-    if (mScriptEngine)
+    if (mScriptEngine) {
         delete mScriptEngine;
+        mScriptEngine = nullptr;
+    }
 }
 
 QString GlobalSettings::executeJavascript(const QString &command)
@@ -169,8 +171,10 @@ QString GlobalSettings::executeJSFunction(const QString function_name)
 
 void GlobalSettings::resetScriptEngine()
 {
-    if (mScriptEngine)
+    if (mScriptEngine) {
         delete mScriptEngine;
+        mScriptEngine = nullptr;
+    }
 
     mScriptEngine = new QJSEngine();
     // add "console" extension (enabling the Console API)

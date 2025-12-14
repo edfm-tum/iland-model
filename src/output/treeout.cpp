@@ -71,7 +71,7 @@ void TreeOut::exec()
     DebugTimer t("TreeOut::exec()");
     TreeWrapper tw;
     mFilter.setModelObject(&tw);
-    while (Tree *t=at.next()) {
+    while (const Tree *t=at.next()) {
         if (!mFilter.isEmpty()) { // skip fields
             tw.setTree(t);
             if (!mFilter.executeBool())

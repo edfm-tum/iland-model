@@ -167,6 +167,7 @@ void ModelController::create()
     const_cast<XmlHelper&>(GlobalSettings::instance()->settings()).resetWarnings();
     mIsStartingUp = true;
     mIsBusy = true;
+
     qDebug() << "**************************************************";
     qDebug() << "project-file:" << mInitFile;
     qDebug() << "started at: " << QDateTime::currentDateTime().toString("yyyy/MM/dd hh:mm:ss");
@@ -178,6 +179,8 @@ void ModelController::create()
         mHasError = false;
         DebugTimer::clearAllTimers();
         mModel = new Model();
+
+        emit stateChanged();
 
         mModel->loadProject();
         if (!mModel->isSetup()) {
@@ -207,6 +210,7 @@ void ModelController::create()
     qDebug() << "Model created.";
     mIsStartingUp = false;
     mIsBusy = false;
+    emit stateChanged();
 }
 
 void ModelController::destroy()
@@ -325,6 +329,10 @@ void ModelController::run(int years)
 {
     if (!canRun())
         return;
+    if (isRunning()) {
+        qWarning() << "ModelController::run: Model is already running!";
+        return;
+    }
     emit bufferLogs(true); // start buffering
 
     DebugTimer many_runs(QString("Timer for %1 runs").arg(years));

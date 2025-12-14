@@ -54,7 +54,7 @@ private:
     void saveTrees();
     void saveSoil();
     void saveSoilRU(QList<int> stand_ids, bool ridmode);
-    void saveSoilCore(ResourceUnit *ru, Soil *s, QSqlQuery &q);
+    void saveSoilCore(const ResourceUnit *ru, Soil *s, QSqlQuery &q);
     void saveSnags();
     void saveSnagRU(QList<int> stand_ids, bool ridmode);
     void saveSnagCore(Snag *s, QSqlQuery &q);

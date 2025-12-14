@@ -28,6 +28,7 @@ class OutputWriterThread;
 class OutputManager
 {
 public:
+    static constexpr bool debugOutput = true; // enable/disable detailed debug messages
     OutputManager(); ///< create all outputs
     ~OutputManager();
     void addOutput(Output *output); ///< add a (newly created) output category. freeing of memory is done by outputmanager

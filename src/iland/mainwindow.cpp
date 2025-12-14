@@ -412,6 +412,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->initFileName, &QLineEdit::textChanged, this, [=]() {mLinkxqt->setXmlPath(ui->initFileName->text());});
 
+    connect(&mStatusTimer, &QTimer::timeout, this, &MainWindow::updateLabel);
+    mWaitCursorSet = false;
 }
 
 MainWindow::~MainWindow()
@@ -528,7 +530,8 @@ void MainWindow::updateLabel()
     if (mRemoteControl.isRunning()) {
         labelMessage(QString("Running.... year %1 of %2 [%3] %4").arg(mRemoteControl.currentYear()).arg(mRemoteControl.totalYears()).arg(mRemoteControl.model()->currentTask(), mRemoteControl.timeString()));
     } else if (mRemoteControl.isStartingUp()) {
-        labelMessage(QString("Creating model - %3").arg(mRemoteControl.model()->currentTask()));
+        if (mRemoteControl.model())
+            labelMessage(QString("Creating model - %3").arg(mRemoteControl.model()->currentTask()));
     }
 }
 
@@ -560,6 +563,24 @@ void MainWindow::checkModelState()
     ui->actionPause->setEnabled(mRemoteControl.isRunning());
     ui->actionPause->setText(mRemoteControl.isPaused()?"Continue":"Pause");
     dumpMessages();
+
+    // check if we need to show a wait cursor
+    bool busy = mRemoteControl.isBusy() || mRemoteControl.isRunning() || mRemoteControl.isStartingUp();
+    if (busy) {
+        if (!mWaitCursorSet) {
+            QApplication::setOverrideCursor(Qt::WaitCursor);
+            mWaitCursorSet = true;
+        }
+        if (!mStatusTimer.isActive())
+            mStatusTimer.start(250);
+    } else {
+        if (mWaitCursorSet) {
+            QApplication::restoreOverrideCursor();
+            mWaitCursorSet = false;
+        }
+        mStatusTimer.stop();
+    }
+    updateLabel();
 }
 
 
@@ -884,6 +905,8 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     drawtimer.setSilent();
 
     if (!mRemoteControl.canRun())
+        return;
+    if (mRemoteControl.isBusy())
         return;
     Model *model = mRemoteControl.model();
 

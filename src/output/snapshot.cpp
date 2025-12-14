@@ -387,7 +387,7 @@ bool Snapshot::saveStandSnapshot(const int stand_id, const MapGrid *stand_grid, 
     QList<Tree*> tree_list = stand_grid->trees(stand_id);
     QList<Tree*>::const_iterator it;
     for (it = tree_list.constBegin(); it!= tree_list.constEnd(); ++it) {
-        Tree *t = *it;
+        const Tree *t = *it;
         tsn.setTree(t, offset);
         tsn.insertTreeToDataStream(tree_writer); // stream tree information to the buffer
     }
@@ -675,7 +675,7 @@ void Snapshot::saveTrees()
 
     int n = 0;
     db.transaction();
-    while (Tree *t = at.next()) {
+    while (const Tree *t = at.next()) {
         // loop over all trees; the AllTreeIterator returns all trees of the first RU, then all of the next, etc.
         q.addBindValue(t->id());
         q.addBindValue(t->ru()->index());
@@ -799,7 +799,7 @@ void Snapshot::saveSoil()
 
     int n = 0;
     db.transaction();
-    foreach (ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
+    foreach (const ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
         Soil *s = ru->soil();
         if (s) {
 
@@ -839,7 +839,7 @@ void Snapshot::saveSoilRU(QList<int> stand_ids, bool ridmode)
 
 }
 
-void Snapshot::saveSoilCore(ResourceUnit *ru, Soil *s, QSqlQuery &q)
+void Snapshot::saveSoilCore(const ResourceUnit *ru, Soil *s, QSqlQuery &q)
 {
     q.addBindValue(s->mRU->index());
     q.addBindValue(s->mKyl);
@@ -955,7 +955,7 @@ void Snapshot::saveSnags()
 
     int n = 0;
     db.transaction();
-    foreach (ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
+    foreach (const ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
         Snag *s = ru->snag();
         if (!s)
             continue;
@@ -1200,7 +1200,7 @@ void Snapshot::saveDeadTrees()
     int n = 0;
     db.transaction();
 
-    for (const auto &ru : GlobalSettings::instance()->model()->ruList()) {
+    for (const ResourceUnit *ru : GlobalSettings::instance()->model()->ruList()) {
         for (const auto &dt : ru->snag()->deadTrees()) {
             q.addBindValue(ru->index());
             q.addBindValue(dt.x());
