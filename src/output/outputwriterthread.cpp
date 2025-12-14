@@ -5,7 +5,7 @@
 #include <QTextStream>
 
 OutputWriterThread::OutputWriterThread(QObject *parent)
-    : QThread(parent), mAbort(false)
+    : QThread(parent), mSemaphore(MAX_QUEUE_SIZE), mAbort(false)
 {
 }
 
@@ -24,6 +24,7 @@ void OutputWriterThread::stop()
 
 void OutputWriterThread::addBatch(const OutputBatch &batch)
 {
+    mSemaphore.acquire();
     QMutexLocker locker(&mMutex);
     mQueue.enqueue(batch);
     mCondition.wakeOne();
@@ -45,7 +46,7 @@ void OutputWriterThread::run()
         // Optimization pragmas
         QSqlQuery q(db);
         q.exec("PRAGMA synchronous = OFF");
-        q.exec("PRAGMA journal_mode = MEMORY");
+        q.exec("PRAGMA journal_mode = WAL;");
     }
     mDatabase = QSqlDatabase::database(connectionName);
 
@@ -71,6 +72,7 @@ void OutputWriterThread::run()
 
         if (!batch.data.isEmpty()) {
             processBatch(batch);
+            mSemaphore.release();
         }
     }
 

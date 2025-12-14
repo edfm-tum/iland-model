@@ -131,54 +131,13 @@ private:
     template <typename Container, typename Func>
     void executeBlocking(Container& container, Func f) const
     {
-        QTimer responsivenessTimer;
-        // Only set up the timer if we are on the main GUI thread
-        if (QThread::currentThread() == QCoreApplication::instance()->thread()) {
-            responsivenessTimer.setInterval(100); // Fire every 100ms
-
-            // When the timer fires, process UI events.
-            // NOTE: Using ExcludeUserInputEvents makes this much safer, as it prevents
-            // the user from clicking buttons and starting new operations while this
-            // one is already running. It will still process paint events, etc.
-            QObject::connect(&responsivenessTimer, &QTimer::timeout, []() {
-                QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
-            });
-
-            responsivenessTimer.start();
-        }
-
-        // This is your existing blocking call
         QtConcurrent::blockingMap(container, f);
-
-        // Stop the timer once the blocking call is finished
-        if (responsivenessTimer.isActive()) {
-            responsivenessTimer.stop();
-        }
     }
 
     template <typename Container, typename Func>
     void executeBlocking(const Container& container, Func f) const
     {
-        QTimer responsivenessTimer;
-        // Only set up the timer if we are on the main GUI thread
-        if (QThread::currentThread() == QCoreApplication::instance()->thread()) {
-            responsivenessTimer.setInterval(100); // Fire every 100ms
-
-            // When the timer fires, process UI events.
-            QObject::connect(&responsivenessTimer, &QTimer::timeout, []() {
-                QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
-            });
-
-            responsivenessTimer.start();
-        }
-
-        // This is your existing blocking call
         QtConcurrent::blockingMap(container, f);
-
-        // Stop the timer once the blocking call is finished
-        if (responsivenessTimer.isActive()) {
-            responsivenessTimer.stop();
-        }
     }
 };
 

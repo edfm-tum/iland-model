@@ -154,7 +154,7 @@ void DynamicStandOut::exec()
         if (trees.size()==0)
             continue;
         // dynamic calculations
-        foreach (const SDynamicField &field, mFieldList) {
+        for (const SDynamicField &field : mFieldList) {
 
             if (!field.expression.isEmpty()) {
                 // setup dynamic dynamic expression if present
@@ -164,7 +164,7 @@ void DynamicStandOut::exec()
 
             // fetch data values from the trees
             data.clear();
-            foreach(const Tree *t, trees) {
+            for (const Tree *t : trees) {
                 tw.setTree(t);
                 if (field.var_index>=0)
                     data.push_back(tw.value(field.var_index));
@@ -231,7 +231,7 @@ void DynamicStandOut::extractByResourceUnit(const bool by_species)
     Expression custom_expr;
 
 
-    foreach(ResourceUnit *ru, m->ruList()) {
+    for (ResourceUnit *ru : m->ruList()) {
         if (ru->id()==-1)
             continue; // do not include if out of project area
 
@@ -241,13 +241,13 @@ void DynamicStandOut::extractByResourceUnit(const bool by_species)
             if (!mRUFilter.execute())
                 continue;
         }
-        foreach(const ResourceUnitSpecies *rus, ru->ruSpecies()) {
+        for (const ResourceUnitSpecies *rus : ru->ruSpecies()) {
             if (by_species && rus->constStatistics().count()==0)
                 continue;
 
 
             // dynamic calculations
-            foreach (const SDynamicField &field, mFieldList) {
+            for (const SDynamicField &field : mFieldList) {
 
                 if (!field.expression.isEmpty()) {
                     // setup dynamic dynamic expression if present
@@ -256,7 +256,7 @@ void DynamicStandOut::extractByResourceUnit(const bool by_species)
                 }
                 data.clear();
                 bool has_trees = false;
-                foreach(const Tree &tree, ru->trees()) {
+                for (const Tree &tree : ru->constTrees()) {
                     if (by_species && tree.species()->index()!=rus->species()->index())
                         continue;
                     if (tree.isDead())

@@ -9,6 +9,7 @@
 #include <QVariant>
 #include <QSqlDatabase>
 #include <QHash>
+#include <QSemaphore>
 
 class QSqlQuery;
 
@@ -42,9 +43,11 @@ private:
     void writeToDatabase(const OutputBatch &batch);
     void writeToFile(const OutputBatch &batch);
 
+    const int MAX_QUEUE_SIZE = 100;
     QQueue<OutputBatch> mQueue;
     QMutex mMutex;
     QWaitCondition mCondition;
+    QSemaphore mSemaphore;
     bool mAbort;
 
     QString mDatabaseName;

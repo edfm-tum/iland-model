@@ -45,6 +45,7 @@ class ForestManagementEngine
 {
 public:
     // life cycle
+    ForestManagementEngine();
     ~ForestManagementEngine();
     // engine instance (singleton)
     static ForestManagementEngine *instance() {
@@ -125,10 +126,6 @@ public:
 
 
 private:
-    ForestManagementEngine();
-    ForestManagementEngine(const ForestManagementEngine&) = delete;
-    ForestManagementEngine& operator=(const ForestManagementEngine&) = delete;
-
     static int mMaxStandId;
     void setupScripting();
     void prepareRun();

@@ -258,6 +258,8 @@ void Output::flush()
         batch.insertSql = insert;
     }
 
+
+    qDebug() << "Thread" << QThread::currentThreadId() << "flushing" << batch.tableName;
     GlobalSettings::instance()->outputManager()->thread()->addBatch(batch);
 }
 
