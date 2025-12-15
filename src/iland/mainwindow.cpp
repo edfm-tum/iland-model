@@ -2233,7 +2233,7 @@ void MainWindow::setupModel()
     ui->modelRunProgress->setValue(0);
     QSettings().setValue("project/lastxmlfile", ui->initFileName->text());
     // magic debug output number
-    GlobalSettings::instance()->setDebugOutput((int) GlobalSettings::instance()->settings().valueDouble("system.settings.debugOutput"));
+    GlobalSettings::instance()->setDebugOutput(GlobalSettings::instance()->settings().value("system.settings.debugOutput"));
 
     // populate the tree species filter list
     ui->speciesFilterBox->clear();

@@ -23,6 +23,7 @@
 #include <QtCore>
 #include <QtSql>
 #include <QtSql/QSqlDatabase>
+#include <QPointer>
 
 #include "global.h"
 #include "settingmetadata.h"
@@ -41,7 +42,7 @@ class Model;
 class OutputManager;
 class ModelController; // forward
 class SystemStatistics;
-class QJSEngine; // forward
+#include <QJSEngine>
 
 /// General settings and globally available data
 class GlobalSettings
@@ -83,6 +84,7 @@ public:
                         dPerformance=512, dUnderstory=1024}; ///< defines available debug output types.
     void setDebugOutput(const int debug) { mDebugOutputs = GlobalSettings::DebugOutputs(debug); }
     void setDebugOutput(const DebugOutputs dbg, const bool enable=true); ///< enable/disable a specific output type.
+    void setDebugOutput(const QString &debug_list); ///< enable debug outputs by a string list (e.g. "treeGrowth, waterCycle")
     bool isDebugEnabled(const DebugOutputs dbg) {return int(dbg) & mDebugOutputs;} ///< returns true, if a specific debug outut type is enabled.
     int currentDebugOutput() const { return mDebugOutputs; }
     QString debugOutputName(const DebugOutputs d); ///< returns the name attached to 'd' or an empty string if not found
@@ -129,7 +131,7 @@ private:
     Model *mModel;
     ModelController *mModelController;
     OutputManager *mOutputManager;
-    QJSEngine *mScriptEngine;
+    QPointer<QJSEngine> mScriptEngine;
     int mRunYear;
     SystemStatistics *mSystemStatistics;
 

@@ -176,7 +176,7 @@ void GlobalSettings::resetScriptEngine()
         mScriptEngine = nullptr;
     }
 
-    mScriptEngine = new QJSEngine();
+    mScriptEngine = new QJSEngine(QCoreApplication::instance());
     // add "console" extension (enabling the Console API)
     mScriptEngine->installExtensions(QJSEngine::ConsoleExtension);
     // globals object: instatiate here, but ownership goes to script engine
@@ -194,28 +194,65 @@ void GlobalSettings::setDebugOutput(const GlobalSettings::DebugOutputs dbg, cons
         mDebugOutputs &= static_cast<unsigned int>(dbg) ^ 0xffffffff;
 }
 
+void GlobalSettings::setDebugOutput(const QString &debug_list)
+{
+    mDebugOutputs = 0;
+    QStringList parts = debug_list.split(QRegularExpression("[ ,;]+"), Qt::SkipEmptyParts);
+    for (const QString &part : parts) {
+        bool ok;
+        int val = part.toInt(&ok);
+        if (ok) {
+            mDebugOutputs |= val;
+        } else {
+            DebugOutputs dbg = debugOutputId(part);
+            if (dbg != 0)
+                mDebugOutputs |= int(dbg);
+            else
+                qWarning() << "GlobalSettings::setDebugOutput: invalid debug output name:" << part;
+        }
+    }
+    qDebug() << "GlobalSettings::setDebugOutput: enabled debug outputs:" << mDebugOutputs << "(" << debug_list << ")";
+}
+
 // storing the names of debug outputs
 //    enum DebugOutputs { dTreeNPP=1, dTreePartition=2, dTreeGrowth=4,
 // dStandNPP=8, dWaterCycle=16, dDailyResponses=32, dEstablishment=64, dCarbonCycle=128 }; ///< defines available debug output types.
-const QStringList debug_output_names=QStringList() << "treeNPP" << "treePartition" << "treeGrowth" << "waterCycle" << "dailyResponse" << "establishment" << "carbonCycle" << "performance";
+const QStringList debug_output_names=QStringList() << "treeNPP" << "treePartition" << "treeGrowth" << "waterCycle" << "dailyResponse" << "establishment" << "carbonCycle" << "performance" << "understory";
 
 ///< returns the name attached to 'd' or an empty string if not found
 QString GlobalSettings::debugOutputName(const DebugOutputs d)
 {
-    // this is a little hacky...(and never really tried!)
-    for (int i=0;i<debug_output_names.count();++i) {
-        if (d & (2<<i))
-            return debug_output_names[i];
-    }
+    if (d & dTreeNPP) return "treeNPP";
+    if (d & dTreePartition) return "treePartition";
+    if (d & dTreeGrowth) return "treeGrowth";
+    if (d & dStandGPP) return "standGPP";
+    if (d & dWaterCycle) return "waterCycle";
+    if (d & dDailyResponses) return "dailyResponse";
+    if (d & dEstablishment) return "establishment";
+    if (d & dSaplingGrowth) return "saplingGrowth";
+    if (d & dCarbonCycle) return "carbonCycle";
+    if (d & dPerformance) return "performance";
+    if (d & dUnderstory) return "understory";
+
     return QString();
 }
 
 ///< returns the DebugOutputs bit or 0 if not found
 GlobalSettings::DebugOutputs GlobalSettings::debugOutputId(const QString debug_name)
 {
-    int index = debug_output_names.indexOf(debug_name);
-    if (index==-1) return GlobalSettings::DebugOutputs(0);
-    return GlobalSettings::DebugOutputs(2 << index); // 1,2,4,8, ...
+    if (debug_name == "treeNPP") return dTreeNPP;
+    if (debug_name == "treePartition") return dTreePartition;
+    if (debug_name == "treeGrowth") return dTreeGrowth;
+    if (debug_name == "standGPP") return dStandGPP;
+    if (debug_name == "waterCycle") return dWaterCycle;
+    if (debug_name == "dailyResponse") return dDailyResponses;
+    if (debug_name == "establishment") return dEstablishment;
+    if (debug_name == "saplingGrowth") return dSaplingGrowth;
+    if (debug_name == "carbonCycle") return dCarbonCycle;
+    if (debug_name == "performance") return dPerformance;
+    if (debug_name == "understory") return dUnderstory;
+
+    return GlobalSettings::DebugOutputs(0);
 }
 
 
@@ -319,6 +356,7 @@ QStringList GlobalSettings::debugListCaptions(const DebugOutputs dbg)
     case dPerformance: return QStringList() << "id" << "type" << "year" << "treeCount" << "saplingCount" << "newSaplings" << "management"
                                             << "applyPattern" << "readPattern" << "treeGrowth" << "seedDistribution" <<  "establishment"<< "saplingGrowth" << "carbonCycle"
                                             << "writeOutput" << "totalYear";
+    case dUnderstory: return QStringList() << "id" << "type" << "year" << "ruindex" << "cellindex" << "pft" << "stateId" << "lightResponse" << "nitrogenResponse" << "waterResponse" << "tempResponse" << "totalResponse" << "pMortality" << "pDecline" << "pGrowth" << "nextStateId";
 
     }
     return QStringList() << "invalid debug output!";
