@@ -105,7 +105,7 @@ void ConsoleShell::run()
                 QString value = line.mid(line.indexOf('=')+1);
                 if (!settings.hasNode(key)) {
                     qWarning() << "!!!! ERROR !!!!";
-                    qWarning() << "Tried to set the project file key" << key << ", but it was not found (or is empty)!";
+                    qWarning() << "Tried to set the project file key" << key << ", but it was not found (or is empty) in the project file!";
                     qWarning() << "!!!! ERROR !!!!";
                     QCoreApplication::quit();
                     return;

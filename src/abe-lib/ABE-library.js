@@ -60,44 +60,31 @@
 
 
 
-function get_js_file_path() {
-    // A robust way to get the file path of the currently running script.
-    try {
-        throw new Error();
-    } catch (error) {
-        // error.fileName can be:
-        // - "file:///path/to/script.js" (Linux/macOS)
-        // - "file:///C:/path/to/script.js" (Windows)
-        // - "qrc:/path/to/script.js" (Qt Resource)
-
-
-        let filename = error.fileName;
-
-        if (filename.startsWith('file://')) {
-            // Remove the protocol prefix, preserving the leading slash for POSIX
-            // or the drive letter for Windows.
-            filename = filename.replace(/^file:\/\//, '');
-        } else if (filename.startsWith('qrc:')) {
-             filename = filename.replace(/^qrc:\//, ':/'); // convert qrc:/ to :/
-        }
-
-        return {
-            fileName: filename,
-            dir: filename.substring(0, filename.lastIndexOf('/'))
-        };
-    }
-}
-
 var lib = {};
-lib.path = get_js_file_path(); //
 
-console.log("Loading forest management library from '" + lib.path.dir + "' ... ");
+// set lib.path to the root directory of the ABE-library
+// use for includes relative to this folder (e.g., lib.path + '/thinnings/thinnings.js')
+lib.path = (function() {
+    try { throw new Error(); } catch (e) {
+        // 1. Strip protocol (file://)
+        var path = e.fileName.replace(/^(file:\/{2})|(qrc:\/\/)/, "");
 
-Globals.include('/' + lib.path.dir + '/thinning/thinning.js'); //'/' + 
-Globals.include('/' + lib.path.dir + '/planting/planting.js');
-Globals.include('/' + lib.path.dir + '/harvest/harvest.js');
+        // 2. Fix Windows drive letters (/C:/ -> C:/)
+        if (path.match(/^\/[a-zA-Z]:/)) path = path.substring(1);
 
-Globals.include('/' + lib.path.dir + '/lib_helper.js');
+        // 3. Return the directory
+        return path.substring(0, path.lastIndexOf("/"));
+    }
+})();
+
+
+console.log("Loading forest management library from '" + lib.path + "' ... ");
+
+Globals.include(lib.path + '/thinning/thinning.js'); //'/' +
+Globals.include(lib.path + '/planting/planting.js');
+Globals.include(lib.path + '/harvest/harvest.js');
+
+Globals.include(lib.path + '/lib_helper.js');
 
 console.log('Forest management library loaded!');
 
