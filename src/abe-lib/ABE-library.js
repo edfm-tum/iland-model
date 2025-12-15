@@ -61,18 +61,33 @@
 
 
 function get_js_file_path() {
-    // hacky way to get the file name of the currently running script
     try {
         throw new Error("give me the filename!");
-
     } catch (error) {
-        // remove file:/// and remove "qrc" (when loaded from Qt resource files)
-        const filename = error.fileName.replace(/^file:\/\/\//, '').replace(/^qrc:\//, ':\/');
-        return { fileName: filename,
-                 dir: filename.substring(0, filename.lastIndexOf("/")) }
+        let filename = error.fileName;
+
+        // 1. Remove ONLY "file://" (2 slashes).
+        // This preserves the 3rd slash, which is the root on Linux/Mac.
+        // Linux: file:///home -> /home (Absolute path)
+        // Win: file:///C:/ -> /C:/
+        filename = filename.replace(/^file:\/\//, '');
+
+        // 2. Windows specific cleanup:
+        // If the path looks like "/C:/...", strip the leading slash to make it "C:/..."
+        // Regex checks for: Start of string (^), Slash (\/), Letter, Colon (:)
+        if (filename.match(/^\/[a-zA-Z]:/)) {
+            filename = filename.substring(1);
+        }
+
+        // 3. Handle QRC resources
+        filename = filename.replace(/^qrc:\//, ':/');
+
+        return {
+            fileName: filename,
+            dir: filename.substring(0, filename.lastIndexOf("/"))
+        };
     }
 }
-
 var lib = {};
 lib.path = get_js_file_path(); //
 
