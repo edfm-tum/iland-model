@@ -332,13 +332,13 @@ double SVDIndicatorOut::calcIBP(const ResourceUnit *ru)
 
     // factor I and J: aquatic  (I) and rocky biotops (J): not considered
 
-    // this gives a maximum number of points of 7 x 5 = 35
+    // this gives a maximum number of points of 6 x 5 + 2 = 32
     if (logLevelDebug())
         qDebug() << "SVDIndicator:IBP: RID:" << ru->id() <<
                   "IBP: " << IBP << " Details (A B C D E G H):" <<
                     f_species << f_layers << f_swd << f_dwd << f_largetrees << f_ccover << f_continuity;
 
-    double rel_IBP = IBP / 35.;
+    double rel_IBP = IBP / 32.;
 
     return rel_IBP;
 
