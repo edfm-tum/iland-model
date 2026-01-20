@@ -79,8 +79,6 @@ double CNPool::parameter(const CNPool &s) const
 
 void Snag::setupThresholds(const double lower, const double upper, const double single_tree, QString decay_classes)
 {
-    if (mDBHLower == lower)
-        return;
     mDBHLower = lower;
     mDBHHigher = upper;
     mDBHSingle = single_tree;

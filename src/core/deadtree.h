@@ -29,6 +29,8 @@ public:
     bool isStanding() const { return mIsStanding; }
     /// tree volume of the stem at the time of death
     double volume() const { return mVolume; }
+    /// diameter at breast height (cm) at time of death
+    double dbh() const { return mDBH; }
     /// current biomass (kg)
     double biomass() const { return mBiomass; }
     /// crown radius of the living tree
@@ -65,6 +67,7 @@ private:
     float mInititalBiomass {0}; // kg biomass at time of death
     float mBiomass {0}; // kg biomass currently
     float mCrownRadius {0}; // crown radius (m)
+    float mDBH {0}; // DBH (cm)
 
     friend class Snapshot;
 };

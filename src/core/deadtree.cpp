@@ -14,6 +14,7 @@ DeadTree::DeadTree(const Tree *tree)
     mInititalBiomass = tree->biomassStem();
     mBiomass = tree->biomassStem();
     mCrownRadius = tree->crownRadius();
+    mDBH = tree->dbh();
     if (mInititalBiomass <= 0.)
         throw IException("DeadTree: invalid stem biomass of <=0!");
     // death reason:

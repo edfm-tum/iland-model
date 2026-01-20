@@ -23,24 +23,24 @@ SVDIndicatorOut::SVDIndicatorOut()
     setName("SVD forest indicator data", "svdindicator");
     setDescription("Indicator data per resource unit as used by SVD.\n " \
                    "The selection of indicators is triggered by keys in the project file (sub section 'indicators').\n " \
-                   "!!! indicators\n\n" \
+                   "!!!Indicators\n\n" \
                    "The following columns are supported:\n\n" \
                    "||__key__|__description__\n" \
                    "shannonIndex|shannon index (exponential) on the RU (based on basal area of trees >4m)\n" \
                    "abovegroundCarbon|living aboveground carbon (tC/ha) on the RU (trees + regen)\n" \
                    "totalCarbon|all C on the RU (tC/ha), including soil, lying and standing deadwood\n" \
                    "volume|tree volume (trees>4m) m3/ha\n" \
-                   "crownCover|fraction of crown cover (0..1) (see saveCrownCoverGrid() in SpatialAnalysis - not yet implemented)\n" \
+                   "crownCover|fraction of crown cover (0..1) (see saveCrownCoverGrid() in SpatialAnalysis)\n" \
                    "LAI|leaf area index (trees>4m) m2/m2\n" \
                    "basalArea|basal area (trees>4m) m2/ha\n" \
                    "stemDensity|trees per ha (trees>4m) ha-1\n" \
-                   "saplingDensity|density of saplings (represented trees>1.3m) ha-1||\n" \
-                   "IBP|Index of Biodiversity Potential (adapted, Emberger et al 2023)\n\n" \
-                   "!!! species proportions\n" \
+                   "saplingDensity|density of saplings (represented trees>1.3m) ha-1\n" \
+                   "IBP|Index of Biodiversity Potential (adapted, Emberger et al 2023)||\n\n" \
+                   "!!!species proportions\n" \
                    "A special case is the setting 'speciesProportions': this is a list of species (Ids) separated with a comma or white space. When present, the output will " \
                    " include for each species the relative proportion calculated based on basal area (for trees >4m). \n" \
                    " \n" \
-                   "!!! disturbance history\n" \
+                   "!!!disturbance history\n" \
                    "The setting 'disturbanceHistory' indicates if (value > 0) and how many (value>0, maximum=3) disturbance events should be recorded and added to the " \
                    "output. Each __event__ is defined by three columns. 'tsd_x' is number of years since disturbance (0 if the disturbance happended in the current year), 'type_x' encodes the disturbance " \
                    "agent (see below), and 'addinfo_x' is agent-specific additional information (see below), with 'x' the number of event (1,2,3).\n\n" \
@@ -51,7 +51,7 @@ SVDIndicatorOut::SVDIndicatorOut()
                    "3|BITE|NA \n" \
                    "4|ABE|NA \n" \
                    "5|base management|NA|| \n\n" \
-                   "!!! example \n\n" \
+                   "!!!example \n\n" \
                    "An example for the project file node:\n" \
                    "<indicators>\n<shannonIndex>true</shannonIndex>\n<abovegroundCarbon>false</abovegroundCarbon>\n ... \n" \
                    "<speciesProportions>Pico,Abal</speciesProportions>\n" \
@@ -93,6 +93,11 @@ void SVDIndicatorOut::setup()
         qDebug() << "SVDIndicatorOut: setup relative species proportions for" << species_list.count() << "species.";
 
     }
+    // flag for dead tree handling
+    mUseSingleDeadTrees = !indicators.valueBool(".forceDeadWoodPools", false, false);
+    if (!mUseSingleDeadTrees)
+        qDebug() << "forceDeadWoodPools is true! IBP will be calculated with pool-based values!";
+
     // species case disturbance history
     mNDisturbanceHistory = indicators.valueInt(".disturbanceHistory", 0);
     if (mNDisturbanceHistory > 0) {
@@ -262,37 +267,82 @@ double SVDIndicatorOut::calcIBP(const ResourceUnit *ru)
 
     IBP += f_layers;
 
-    // factor C: large standing deadwood
-    double min_dbh, max_dbh;
-    Snag::snagThresholds(min_dbh, max_dbh);
-    if (min_dbh != 17.5 || max_dbh != 37.5)
-        throw IException("SVDIndcator:IBP: this requires the settings of swdDBHClass12 and swdDBHClass23 to be 17.5cm and 37.5cm");
-
-    auto *sn = ru->snag()->numberOfSnags();
     int f_swd = 0;
-    if (sn[2]>= 3.) f_swd = 5;
-    else if(sn[2] >= 1.) f_swd = 2;
-    else if(sn[2] < 1. && sn[1] > 1.) f_swd = 1;
-
-    IBP += f_swd;
-
-    // factor D: downed deadwood
-    // same DBH thresholds
-    // iLand implementation: we have no specific stems in downed deadwood. We therefore estimate
-    // the propoprtion of large trees similar to the prop of large snags
-    double prop_largesnags = 0;
-    if (sn[0] + sn[1] > 0.) prop_largesnags = sn[2] / (sn[0] + sn[1] + sn[2]);
-
-    double bm_deadwood = ru->soil()->youngRefractory().biomass() * ru->soil()->youngRefractoryAbovegroundFraction();
-    double n_large =  (bm_deadwood * prop_largesnags) / 450.; // kg/ha /  450kg/m3 -> m3; I assume 1 m3 per tree
-    double n_medium = (bm_deadwood * (1.-prop_largesnags)) / 450.;
-
     int f_dwd = 0;
-    if (n_large>= 3.) f_dwd = 5;
-    else if(n_large >= 1.) f_dwd = 2;
-    else if(n_large < 1. && n_medium > 1.) f_dwd = 1;
+    if (mUseSingleDeadTrees) {
+        // standing and lying dead wood based on single trees
+        if (Snag::singleTreeThreshold() > 17.5)
+            throw IException("SVDIndicatorOut: calculation of IBP: calculation of IBP requires the threshold for tracking individual snags (model.settings.soil.swdDBHSingle) to be <=17.5cm!");
 
-    IBP += f_dwd;
+        // factor C: large standing deadwood
+        // factor D: large lying deadwood
+
+        int swd_large = 0, swd_medium = 0;
+        int dwd_large = 0, dwd_medium = 0;
+        for (auto &dead_tree : ru->snag()->deadTrees()) {
+            if (dead_tree.isStanding()) {
+                if (dead_tree.dbh() > 37.5)
+                    ++swd_large;
+                else if (dead_tree.dbh() > 17.5)
+                    ++swd_medium;
+            } else {
+                if (dead_tree.dbh() > 37.5)
+                    ++dwd_large;
+                else if (dead_tree.dbh() > 17.5)
+                    ++dwd_medium;
+            }
+
+        }
+        // evaluation logic for SWD
+        if (swd_large >= 3) f_swd = 5;
+        else if (swd_large >= 1) f_swd = 2;
+        else if (swd_large < 1 && swd_medium >= 1) f_swd = 1;
+
+        IBP += f_swd;
+
+        // same logic for DWD
+        if (dwd_large>= 3) f_dwd = 5;
+        else if(dwd_large >= 1) f_dwd = 2;
+        else if(dwd_large < 1 && dwd_medium >= 1.) f_dwd = 1;
+
+        IBP += f_dwd;
+
+    } else {
+        // old way before single dead tree tracking was added
+
+        // factor C: large standing deadwood
+        double min_dbh, max_dbh;
+        Snag::snagThresholds(min_dbh, max_dbh);
+        if (min_dbh != 17.5 || max_dbh != 37.5)
+            throw IException("SVDIndcator:IBP: this requires the settings of swdDBHClass12 and swdDBHClass23 to be 17.5cm and 37.5cm");
+
+        auto *sn = ru->snag()->numberOfSnags();
+        int f_swd = 0;
+        if (sn[2]>= 3.) f_swd = 5;
+        else if(sn[2] >= 1.) f_swd = 2;
+        else if(sn[2] < 1. && sn[1] > 1.) f_swd = 1;
+
+        IBP += f_swd;
+
+        // factor D: downed deadwood
+        // same DBH thresholds
+        // iLand implementation: we have no specific stems in downed deadwood. We therefore estimate
+        // the propoprtion of large trees similar to the prop of large snags
+        double prop_largesnags = 0;
+        if (sn[0] + sn[1] > 0.) prop_largesnags = sn[2] / (sn[0] + sn[1] + sn[2]);
+
+        double bm_deadwood = ru->soil()->youngRefractory().biomass() * ru->soil()->youngRefractoryAbovegroundFraction();
+        double n_large =  (bm_deadwood * prop_largesnags) / 450.; // kg/ha /  450kg/m3 -> m3; I assume 1 m3 per tree
+        double n_medium = (bm_deadwood * (1.-prop_largesnags)) / 450.;
+
+        int f_dwd = 0;
+        if (n_large>= 3.) f_dwd = 5;
+        else if(n_large >= 1.) f_dwd = 2;
+        else if(n_large < 1. && n_medium > 1.) f_dwd = 1;
+
+        IBP += f_dwd;
+    }
+
 
     // factor E: number of very large trees (>67.5cm DBH) and large trees (>47.5cm DBH)
     int f_largetrees = 0;

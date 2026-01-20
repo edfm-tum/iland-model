@@ -396,7 +396,7 @@ model.settings.seedDispersal.longDistanceDispersal.rings = integer|5|Rings|‘Ri
 
 
 ; *************  Soil / Carbon **************
-gui.layout = tab|tabSoil|Soil Settings|This section contains parameters for the ICBM/2N carbon and nitrogen cycling sub model. Find more details on the model and the parameters on the pages soil C and N cycling and soil parametrization and initialization. 
+gui.layout = tab|tabSoil|Soil Settings|This section contains parameters for the ICBM/2N carbon and nitrogen cycling sub model, and snags. <br/> More Details: <ul><li>Carbon and nitrogen cycling: https://iland-model.org/soil+C+and+N+cycling</li><li>Soil parameterization: https://iland-model.org/soil+parametrization+and+initialization</li><li>Individual tracking of dead trees: https://iland-model.org/dead+trees</li></ul>
 gui.layout = layout|hl
 gui.layout = group|Soil Dynamics Settings
 model.settings.soil.useDynamicAvailableNitrogen = boolean|false|Use Dynamic Available Nitrogen|If true, iLand utilizes the plant available N from the soil model to calculate species responses. If false, the static value world.site.availableNitrogen will be used.|simple
@@ -411,6 +411,9 @@ gui.layout = layout|hl
 gui.layout = group|Snag Settings
 model.settings.soil.swdDBHClass12 = numeric|10|Dbh Class break 1-2|class break between classes 1 and 2 for standing snags (dbh, cm)|simple
 model.settings.soil.swdDBHClass23 = numeric|20|Dbh Class break 2-3|class break between classes 2 and 3 for standing snags (dbh, cm)|simple
+model.settings.soil.swdDBHSingle = numeric|1000|Threshold Single trees|Trees with a larger DBH are treated as individual snags (dbh, cm)|simple
+model.settings.soil.decayClassThresholds = string|0.2, 0.4, 0.7, 0.9|Thresholds for decay classes|comma-separated list of 4 values defining the decay thresholds (based on remaining biomass) for the five decay classes for individual SWD/DWD.|simple
+
 
 gui.layout = tab|tabSubmodules|Sub modules
 
@@ -454,6 +457,12 @@ model.settings.grass.maxTimeLag = numeric|2|Cover Time Lag|Number of years neede
 model.settings.grass.grassEffect = function|formula for grass effect|Effect|Formula describing the probability of prohibiting regeneration as a function of grass level. Parameter: the current grass level on the pixel 0..1.|simple
 model.settings.grass.grassDuration = function|string|Duration|string|simple
 model.settings.grass.LIFThreshold = numeric|0.1|LIF Threshold|string|simple
+
+gui.layout = group|SVD|Here are options related to SVD states
+model.settings.svdStates.enabled = boolean|false|Enable SVD States|enable/disable the submodule (necessary for SVDIndicator output!). Default is false.|simple
+model.settings.svdStates.structure = combo|2m;4m|Type|Class width for dominant height classes (m)|simple
+model.settings.svdStates.functioning = combo|3;5|Type|Number of LAI classes (3/5)|simple
+
 
 ; model.species
 gui.layout = tab|tabSpecies|Species Parameters|The species parameter can only be customized in the xml project file.
