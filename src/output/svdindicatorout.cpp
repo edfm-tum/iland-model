@@ -68,6 +68,7 @@ void SVDIndicatorOut::setup()
 {
     // clear extra columns:
     clearColumnsAfter("time");
+    mIndicators.reset();
 
     // use a condition for to control execuation for the current year
     XmlHelper indicators(settings().node(".indicators"));

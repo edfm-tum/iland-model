@@ -1,0 +1,89 @@
+name: Qt qmake Cross-Platform Build
+
+on:
+  # 1. Trigger bei Erstellung eines Releases
+  release:
+    types: [published]
+
+  # 2. Manueller Trigger über das GitHub-Interface
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Grund für den manuellen Build (z.B. Dev-Test)'
+        required: false
+        default: 'Manual Dev Build'
+
+  # 3. Optional: Trigger bei spezifischen Tags (z.B. v1.0, v2.1)
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: '6.8.0'
+
+      # Abhängigkeiten für FreeImage installieren
+      - name: Install FreeImage (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libfreeimage-dev
+
+      - name: Install FreeImage (macOS)
+        if: runner.os == 'macOS'
+        run: brew install freeimage
+
+      - name: Build Project
+        shell: bash
+        run: |
+          mkdir build
+          cd build
+          qmake ../YourProject.pro
+          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            nmake # Oder 'jom' falls konfiguriert
+          else
+            make -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)
+          fi
+
+      - name: Bundle Windows Dependencies
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          # Kopiert die DLL aus Ihrem lib-Verzeichnis zum Executable
+          copy "libs/freeimage/lib/FreeImage.dll" "build/Release/"
+          # Qt-Abhängigkeiten hinzufügen
+          windeployqt --release build/Release/YourApp.exe
+
+      - name: Prepare Deployment Files
+        shell: bash
+        run: |
+          mkdir -p final_upload
+          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            cp build/release/*.exe final_upload/
+            cp libs/freeimage/lib/FreeImage.dll final_upload/
+            # windeployqt muss hier aufgerufen werden (siehe vorheriger Post)
+          elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
+            cp -r build/*.app final_upload/
+            # macdeployqt für Framework-Bundling nutzen
+          else
+            cp build/YourApp final_upload/
+            # Eventuell ldd-Check für Linux-Abhängigkeiten
+          fi
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          # Der Name MUSS die Matrix-Variable enthalten, um eindeutig zu sein
+          name: build-output-${{ matrix.os }}
+          path: final_upload/

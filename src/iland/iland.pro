@@ -475,6 +475,7 @@ OTHER_FILES += maindoc.cpp \
     ../apidoc/abe/abe_context_doc.js
 
 DISTFILES += \
+    ../../.github/workflows/build.yaml \
     ../3rdparty/FreeImage/FreeImage.dll \
     ../3rdparty/FreeImage/FreeImage.lib \
     ../abe-lib/ABE-library.js \
