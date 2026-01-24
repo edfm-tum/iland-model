@@ -30,10 +30,12 @@ jobs:
         uses: jurplel/install-qt-action@v3
         with:
           version: '6.8.0'
-          # Spezifische Architektur für Windows/MSVC sicherstellen
+          # qtcharts necessary to be installed extra
+          modules: 'qtcharts'
+          # specific toolchain for windows
           arch: ${{ matrix.os == 'windows-latest' && 'win64_msvc2022_64' || '' }}
 
-      # --- Abhängigkeiten ---
+      # --- dependencies ---
       - name: Install FreeImage (Linux)
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libfreeimage-dev
@@ -48,7 +50,7 @@ jobs:
         shell: pwsh
         run: |
           # runs windows build script and creates a log file
-          ./build_windows.ps1 2>&1 | Tee-Object -FilePath build_log.txt
+          ./build_iland.ps1 2>&1 | Tee-Object -FilePath build_log.txt
 
       - name: Build Project (Linux/macOS)
         if: matrix.os != 'windows-latest'
