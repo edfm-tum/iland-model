@@ -47,7 +47,8 @@ jobs:
       - name: Build Project
         shell: bash
         run: |
-          mkdir build
+          # run build script
+          ./build_iland.sh
           cd build
           qmake ../YourProject.pro
           if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
@@ -56,30 +57,28 @@ jobs:
             make -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)
           fi
 
-      - name: Bundle Windows Dependencies
+
+      - name: Windows Deployment
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
-          # Kopiert die DLL aus Ihrem lib-Verzeichnis zum Executable
-          copy "libs/freeimage/lib/FreeImage.dll" "build/Release/"
-          # Qt-Abhängigkeiten hinzufügen
-          windeployqt --release build/Release/YourApp.exe
+          # create a directory for release
+          mkdir deploy
+          # copy all executables and FreeImage.dll
+          copy src/iland/build/release/iland.exe deploy/
+          copy src/ilandc/build/release/ilandc.exe deploy/
+          copy src/fonstudio/build/release/fonstudio.exe deploy/
+          copy libs/win/FreeImage.dll deploy/
 
-      - name: Prepare Deployment Files
-        shell: bash
-        run: |
-          mkdir -p final_upload
-          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            cp build/release/*.exe final_upload/
-            cp libs/freeimage/lib/FreeImage.dll final_upload/
-            # windeployqt muss hier aufgerufen werden (siehe vorheriger Post)
-          elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
-            cp -r build/*.app final_upload/
-            # macdeployqt für Framework-Bundling nutzen
-          else
-            cp build/YourApp final_upload/
-            # Eventuell ldd-Check für Linux-Abhängigkeiten
-          fi
+          # 2. run windeployqt to collect
+          windeployqt --release --no-translations --compiler-runtime --qmldir src\iland\qml deploy/iland.exe
+
+      - name: Upload Windows Build
+        if: matrix.os == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Windows-Build-Ready-To-Run
+          path: deploy/
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
