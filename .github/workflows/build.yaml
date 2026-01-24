@@ -44,6 +44,10 @@ jobs:
         if: runner.os == 'macOS'
         run: brew install freeimage
 
+      - name: Set up MSVC
+        if: matrix.os == 'windows-latest'
+        uses: ilammy/msvc-dev-cmd@v1
+
       # --- Build Phase ---
       - name: Build Project (Windows)
         if: matrix.os == 'windows-latest'
@@ -83,7 +87,7 @@ jobs:
           mkdir deploy-linux
           cp src/iland/build/release/iland deploy-linux/
           cp src/ilandc/build/release/ilandc deploy-linux/
-          copy src/fonstudio/build/release/fonstudio.exe deploy-linux/
+          cp src/fonstudio/build/release/fonstudio deploy-linux/
           cp build_log.txt deploy-linux/
 
       # 3. macOS
@@ -92,7 +96,7 @@ jobs:
         run: |
           mkdir deploy-mac
           cp -r src/iland/build/release/iland.app deploy-mac/
-          cp -r src/ilandc/build/release/ilandc.app deploy-mac/
+          cp -r src/ilandc/build/release/ilandc deploy-mac/
           # bundle everything into an app
           macdeployqt deploy-mac/iland.app -qmldir=src/iland/qml
           cp build_log.txt deploy-mac/
