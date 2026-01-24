@@ -114,16 +114,17 @@ message("PRE_TARGETDEPS:" $$PRE_TARGETDEPS)
 # ===============================================================
 
 linux-g++ {
-# The "FreeImage" library is used for processing GeoTIFF data files.
-# FreeImage on Linux: see https://codeyarns.com/2014/02/11/how-to-install-and-use-freeimage/
-# basically sudo apt-get install libfreeimage3 libfreeimage-dev
-
-LIBS += -lfreeimage
+    # The "FreeImage" library is used for processing GeoTIFF data files.
+    # FreeImage on Linux: see https://codeyarns.com/2014/02/11/how-to-install-and-use-freeimage/
+    # basically sudo apt-get install libfreeimage3 libfreeimage-dev
+    LIBS += -lfreeimage
 } else:macx {
-LIBS += -L/opt/homebrew/Cellar/freeimage/3.18.0/lib -lfreeimage
+    INCLUDEPATH += /opt/homebrew/include /usr/local/include
+    LIBS += -L/opt/homebrew/lib -L/usr/local/lib -lfreeimage
+    #LIBS += -L/opt/homebrew/Cellar/freeimage/3.18.0/lib -lfreeimage
 } else {
-# external freeimage library (geotiff) (Windows)
-LIBS += -L$$THIRDPARTY_PATH\FreeImage -lFreeImage
+    # external freeimage library (geotiff) (Windows)
+    LIBS += -L$$THIRDPARTY_PATH\FreeImage -lFreeImage
 }
 # querying git repo
 win32 {

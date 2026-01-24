@@ -63,26 +63,29 @@ jobs:
         shell: pwsh
         run: |
           # create a directory for release
-          mkdir deploy
+          mkdir deploy-win
           # copy all executables and FreeImage.dll
-          copy src/iland/build/release/iland.exe deploy/
-          copy src/ilandc/build/release/ilandc.exe deploy/
-          copy src/fonstudio/build/release/fonstudio.exe deploy/
-          copy libs/win/FreeImage.dll deploy/
+          copy src/iland/build/release/release/iland.exe deploy-win
+          copy src/ilandc/build/release/release/ilandc.exe deploy-win
+          copy src/fonstudio/build/release/release/fonstudio.exe deploy-win
+          copy libs/win/FreeImage.dll deploy-win
 
           # 2. run windeployqt to collect
-          windeployqt --release --no-translations --compiler-runtime --qmldir src\iland\qml deploy/iland.exe
+          windeployqt --release --no-translations --compiler-runtime --qmldir src\iland\qml deploy-win/iland.exe
 
       - name: Upload Windows Build
         if: matrix.os == 'windows-latest'
         uses: actions/upload-artifact@v4
         with:
           name: Windows-Build-Ready-To-Run
-          path: deploy/
+          path: deploy-win/
 
-      - name: Upload Artifact
+
+
+      - name: Upload Windows Build & Logs
+        if: matrix.os == 'windows-latest'
         uses: actions/upload-artifact@v4
         with:
-          # Der Name MUSS die Matrix-Variable enthalten, um eindeutig zu sein
-          name: build-output-${{ matrix.os }}
-          path: final_upload/
+            name: iLand-Windows-Build-and-Logs
+            path: |
+                deploy-win/build_log.txt

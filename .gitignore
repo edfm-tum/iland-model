@@ -1,5 +1,6 @@
 build-iland*
 build-plugins*
+deploy
 *.pro.user*
 *.lib
 *.pdb
