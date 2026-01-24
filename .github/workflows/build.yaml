@@ -1,25 +1,21 @@
 name: Qt qmake Cross-Platform Build
 
 on:
-  # 1. Trigger bei Erstellung eines Releases
   release:
     types: [published]
-
-  # 2. Manueller Trigger über das GitHub-Interface
   workflow_dispatch:
     inputs:
       build_type:
-        description: 'Grund für den manuellen Build (z.B. Dev-Test)'
+        description: 'manual build'
         required: false
         default: 'Manual Dev Build'
-
-  # 3. Optional: Trigger bei spezifischen Tags (z.B. v1.0, v2.1)
   push:
     tags:
       - 'v*'
 
 jobs:
   build:
+    name: Build on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -34,8 +30,10 @@ jobs:
         uses: jurplel/install-qt-action@v3
         with:
           version: '6.8.0'
+          # Spezifische Architektur für Windows/MSVC sicherstellen
+          arch: ${{ matrix.os == 'windows-latest' && 'win64_msvc2022_64' || '' }}
 
-      # Abhängigkeiten für FreeImage installieren
+      # --- Abhängigkeiten ---
       - name: Install FreeImage (Linux)
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libfreeimage-dev
@@ -44,48 +42,65 @@ jobs:
         if: runner.os == 'macOS'
         run: brew install freeimage
 
-      - name: Build Project
+      # --- Build Phase ---
+      - name: Build Project (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          # runs windows build script and creates a log file
+          ./build_windows.ps1 2>&1 | Tee-Object -FilePath build_log.txt
+
+      - name: Build Project (Linux/macOS)
+        if: matrix.os != 'windows-latest'
         shell: bash
         run: |
-          # run build script
-          ./build_iland.sh
-          cd build
-          qmake ../YourProject.pro
-          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            nmake # Oder 'jom' falls konfiguriert
-          else
-            make -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)
-          fi
+          # chmod to make sure it is executable
+          chmod +x ./build_iland.sh
+          ./build_iland.sh 2>&1 | tee build_log.txt
 
+      # --- Deployment Phase ---
 
+      # 1. Windows
       - name: Windows Deployment
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
-          # create a directory for release
           mkdir deploy-win
-          # copy all executables and FreeImage.dll
-          copy src/iland/build/release/release/iland.exe deploy-win
-          copy src/ilandc/build/release/release/ilandc.exe deploy-win
-          copy src/fonstudio/build/release/release/fonstudio.exe deploy-win
-          copy libs/win/FreeImage.dll deploy-win
+          copy src/iland/build/release/release/iland.exe deploy-win/
+          copy src/ilandc/build/release/release/ilandc.exe deploy-win/
+          copy src/fonstudio/build/release/release/fonstudio.exe deploy-win/
+          copy libs/win/FreeImage.dll deploy-win/
+          windeployqt --release --no-translations --compiler-runtime --qmldir src/iland/qml deploy-win/iland.exe
+          # copy log
+          move build_log.txt deploy-win/
 
-          # 2. run windeployqt to collect
-          windeployqt --release --no-translations --compiler-runtime --qmldir src\iland\qml deploy-win/iland.exe
+      # 2. Linux
+      - name: Linux Deployment
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          mkdir deploy-linux
+          cp src/iland/build/release/iland deploy-linux/
+          cp src/ilandc/build/release/ilandc deploy-linux/
+          copy src/fonstudio/build/release/fonstudio.exe deploy-linux/
+          cp build_log.txt deploy-linux/
 
-      - name: Upload Windows Build
-        if: matrix.os == 'windows-latest'
+      # 3. macOS
+      - name: macOS Deployment
+        if: matrix.os == 'macos-latest'
+        run: |
+          mkdir deploy-mac
+          cp -r src/iland/build/release/iland.app deploy-mac/
+          cp -r src/ilandc/build/release/ilandc.app deploy-mac/
+          # bundle everything into an app
+          macdeployqt deploy-mac/iland.app -qmldir=src/iland/qml
+          cp build_log.txt deploy-mac/
+
+      # --- Artifact Upload ---
+      - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Windows-Build-Ready-To-Run
-          path: deploy-win/
-
-
-
-      - name: Upload Windows Build & Logs
-        if: matrix.os == 'windows-latest'
-        uses: actions/upload-artifact@v4
-        with:
-            name: iLand-Windows-Build-and-Logs
-            path: |
-                deploy-win/build_log.txt
+          name: iLand-Build-${{ matrix.os }}
+          path: |
+            deploy-win/
+            deploy-linux/
+            deploy-mac/
