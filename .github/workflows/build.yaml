@@ -80,14 +80,32 @@ jobs:
           # copy log
           move build_log.txt deploy-win/
 
-      # 2. Linux
+      # 2. Linux Deployment (AppImage)
       - name: Linux Deployment
         if: matrix.os == 'ubuntu-latest'
         run: |
-          mkdir deploy-linux
-          cp src/iland/build/release/iland deploy-linux/
-          cp src/ilandc/build/release/ilandc deploy-linux/
-          cp src/fonstudio/build/release/fonstudio deploy-linux/
+          # 1. Verzeichnisse vorbereiten
+          mkdir -p deploy-linux
+
+          # 2. linuxdeploy und das Qt-Plugin herunterladen
+          wget -c https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          wget -c https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
+          chmod +x linuxdeploy*.AppImage
+
+          # 3. Umgebungsvariablen setzen
+          # Wir müssen linuxdeploy sagen, wo qmake liegt und dass wir QML nutzen
+          export QMAKE=$(which qmake)
+          export QML_SOURCES_PATHS=src/iland/qml
+
+          # 4. AppImage erstellen
+          # -e: Pfad zum Executable
+          # --plugin qt: Aktiviert das Qt-Plugin
+          # --output appimage: Erzeugt die finale .AppImage Datei
+          ./linuxdeploy-x86_64.AppImage --appdir AppDir -e src/iland/build/release/iland --plugin qt --output appimage
+
+          # 5. Alles für den Upload einsammeln
+          mv *.AppImage deploy-linux/
+          cp src/ilandc/build/release/ilandc deploy-linux/ # Konsolentool separat
           cp build_log.txt deploy-linux/
 
       # 3. macOS
