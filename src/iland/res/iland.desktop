@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Version=2.1
+Name=iLand
+GenericName=iLand- the individual-based forest landscape and disturbance model
+Comment=Process-based ecosystem simulation model for forest landscapes
+Exec=iland
+Icon=iland4.png
+Terminal=false
+Categories=Science;Education;Biology;
+Keywords=Forest;Simulation;Landscape;Ecology;
+MimeType=application/x-iland-project;
+StartupNotify=true

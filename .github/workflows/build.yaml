@@ -105,7 +105,11 @@ jobs:
           # -e: Pfad zum Executable
           # --plugin qt: Aktiviert das Qt-Plugin
           # --output appimage: Erzeugt die finale .AppImage Datei
-          ./linuxdeploy-x86_64.AppImage --appdir AppDir -e src/iland/build/release/iland --plugin qt --output appimage
+          ./linuxdeploy-x86_64.AppImage --appdir AppDir \
+               -e src/iland/build/release/iland
+               -d res/iland.desktop \
+               -i res/icon4.png \
+               --plugin qt --output appimage
 
           # 5. Alles für den Upload einsammeln
           mv *.AppImage deploy-linux/
