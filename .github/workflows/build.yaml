@@ -38,7 +38,7 @@ jobs:
       # --- dependencies ---
       - name: Install FreeImage (Linux)
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y libfreeimage-dev
+        run: sudo apt-get update && sudo apt-get install -y libfreeimage-dev libxcb-cursor0
 
       - name: Install FreeImage (macOS)
         if: runner.os == 'macOS'
