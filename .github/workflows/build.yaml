@@ -92,10 +92,14 @@ jobs:
           wget -c https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
           chmod +x linuxdeploy*.AppImage
 
+          # 2. cleanup SQL-Plugins (keep only SQLite)
+          find /home/runner/work/iland-model/Qt/6.8.0/gcc_64/plugins/sqldrivers/ -type f ! -name 'libqsqlite.so' -delete
+
           # 3. Umgebungsvariablen setzen
           # Wir müssen linuxdeploy sagen, wo qmake liegt und dass wir QML nutzen
           export QMAKE=$(which qmake)
           export QML_SOURCES_PATHS=src/iland/qml
+          export APPIMAGE_EXTRACT_AND_RUN=1
 
           # 4. AppImage erstellen
           # -e: Pfad zum Executable
