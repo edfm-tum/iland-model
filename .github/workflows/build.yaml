@@ -1,17 +1,16 @@
-name: Qt qmake Cross-Platform Build
+name: Build iLand
+
+# Rechte um Releases zu erstellen (WICHTIG!)
+permissions:
+  contents: write
 
 on:
-  release:
-    types: [published]
-  workflow_dispatch:
-    inputs:
-      build_type:
-        description: 'manual build'
-        required: false
-        default: 'Manual Dev Build'
+  # 1. Automatisch bei neuem Tag (z.B. v2.1.0)
   push:
     tags:
       - 'v*'
+  # 2. Manuell per Button (für Dev Builds)
+  workflow_dispatch:
 
 jobs:
   build:
@@ -30,14 +29,13 @@ jobs:
         uses: jurplel/install-qt-action@v3
         with:
           version: '6.8.0'
-          # qtcharts necessary to be installed extra
           modules: 'qtcharts'
-          # specific toolchain for windows
           arch: ${{ matrix.os == 'windows-latest' && 'win64_msvc2022_64' || '' }}
 
-      # --- dependencies ---
-      - name: Install FreeImage (Linux)
+      # --- Dependencies ---
+      - name: Install FreeImage & XCB (Linux)
         if: runner.os == 'Linux'
+        # libxcb-cursor0 fix added
         run: sudo apt-get update && sudo apt-get install -y libfreeimage-dev libxcb-cursor0
 
       - name: Install FreeImage (macOS)
@@ -53,86 +51,111 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
-          # runs windows build script and creates a log file
           ./build_iland.ps1 2>&1 | Tee-Object -FilePath build_log.txt
 
       - name: Build Project (Linux/macOS)
         if: matrix.os != 'windows-latest'
         shell: bash
         run: |
-          # chmod to make sure it is executable
           chmod +x ./build_iland.sh
           ./build_iland.sh 2>&1 | tee build_log.txt
 
       # --- Deployment Phase ---
 
-      # 1. Windows
+      # 1. Windows Deployment
       - name: Windows Deployment
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
           mkdir deploy-win
+          # Binaries kopieren
           copy src/iland/build/release/release/iland.exe deploy-win/
           copy src/ilandc/build/release/release/ilandc.exe deploy-win/
           copy src/fonstudio/build/release/release/fonstudio.exe deploy-win/
           copy libs/win/FreeImage.dll deploy-win/
+
+          # Qt Abhängigkeiten hinzufügen
           windeployqt --release --no-translations --compiler-runtime --qmldir src/iland/qml deploy-win/iland.exe
-          # copy log
-          move build_log.txt deploy-win/
+
+          # Ordner für das Release zippen (wichtig für den Upload!)
+          Compress-Archive -Path deploy-win/* -DestinationPath iLand-Windows.zip
 
       # 2. Linux Deployment (AppImage)
       - name: Linux Deployment
         if: matrix.os == 'ubuntu-latest'
         run: |
-          # 1. Verzeichnisse vorbereiten
           mkdir -p deploy-linux
 
-          # 2. linuxdeploy und das Qt-Plugin herunterladen
+          # Tools laden
           wget -c https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
           wget -c https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
           chmod +x linuxdeploy*.AppImage
 
-          # 2. cleanup SQL-Plugins (keep only SQLite)
+          # Cleanup SQL-Plugins
           find /home/runner/work/iland-model/Qt/6.8.0/gcc_64/plugins/sqldrivers/ -type f ! -name 'libqsqlite.so' -delete
 
-          # 3. Umgebungsvariablen setzen
-          # Wir müssen linuxdeploy sagen, wo qmake liegt und dass wir QML nutzen
           export QMAKE=$(which qmake)
           export QML_SOURCES_PATHS=src/iland/qml
           export APPIMAGE_EXTRACT_AND_RUN=1
 
-          # 4. AppImage erstellen
-          # -e: Pfad zum Executable
-          # --plugin qt: Aktiviert das Qt-Plugin
-          # --output appimage: Erzeugt die finale .AppImage Datei
+          # AppImage bauen
           ./linuxdeploy-x86_64.AppImage --appdir AppDir \
                -e src/iland/build/release/iland \
                -d src/iland/res/iland.desktop \
                -i src/iland/res/iLand.svg \
                --plugin qt --output appimage
 
-          # 5. Alles für den Upload einsammeln
+          # Dateien einsammeln
           mv *.AppImage deploy-linux/
-          cp src/ilandc/build/release/ilandc deploy-linux/ # Konsolentool separat
-          cp build_log.txt deploy-linux/
 
-      # 3. macOS
+          # HIER WAREN DIE FEHLENDEN TEILE:
+          cp src/ilandc/build/release/ilandc deploy-linux/
+          cp src/fonstudio/build/release/fonstudio deploy-linux/
+
+# 3. macOS Deployment
       - name: macOS Deployment
         if: matrix.os == 'macos-latest'
         run: |
           mkdir deploy-mac
           cp -r src/iland/build/release/iland.app deploy-mac/
-          cp -r src/ilandc/build/release/ilandc deploy-mac/
-          # bundle everything into an app
-          macdeployqt deploy-mac/iland.app -qmldir=src/iland/qml
-          cp build_log.txt deploy-mac/
 
-      # --- Artifact Upload ---
-      - name: Upload Build Artifacts
+          # add ilandc to the folder
+          cp src/ilandc/build/release/ilandc deploy-mac/
+
+          # Bundle GUI into DMG
+          macdeployqt deploy-mac/iland.app -qmldir=src/iland/qml -dmg
+          mv deploy-mac/iland.dmg deploy-mac/iLand-macOS.dmg
+
+
+      # --- Artifact Upload (Für Debugging & History) ---
+      # Lädt ALLES hoch (Logs + Ordner), damit du prüfen kannst, falls was nicht geht.
+      - name: Upload Build Artifacts (Debug)
         uses: actions/upload-artifact@v4
         with:
-          name: iLand-Build-${{ matrix.os }}
+          name: iLand-Build-Artifacts-${{ matrix.os }}
           path: |
+            build_log.txt
             deploy-win/
             deploy-linux/
             deploy-mac/
+            iLand-Windows.zip
+          retention-days: 5
+
+      # --- Release Upload (Nur Clean Binaries) ---
+      # Lädt nur die fertigen Dateien (AppImage, Zip, DMG) ins Release.
+      - name: Publish Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+        with:
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'dev-latest' }}
+          name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'Development Build (Latest)' }}
+          prerelease: ${{ github.event_name == 'workflow_dispatch' }}
+          files: |
+            deploy-linux/*.AppImage
+            deploy-linux/ilandc
+            deploy-linux/fonstudio
+            deploy-mac/*.dmg
+            deploy-mac/ilandc
+            iLand-Windows.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
