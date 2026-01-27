@@ -108,7 +108,7 @@ jobs:
           ./linuxdeploy-x86_64.AppImage --appdir AppDir \
                -e src/iland/build/release/iland \
                -d src/iland/res/iland.desktop \
-               -i src/iland/res/icon4.png \
+               -i src/iland/res/iLand.svg \
                --plugin qt --output appimage
 
           # 5. Alles für den Upload einsammeln

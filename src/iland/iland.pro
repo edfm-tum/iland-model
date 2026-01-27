@@ -148,6 +148,13 @@ DEFINES += GIT_HASH=$$GIT_HASH GIT_BRANCH=$$GIT_BRANCH BUILD_TIMESTAMP=$$BUILD_T
 }
 }
 
+# Handle application icons
+macx {
+    ICON = res/iLand.icns
+}
+win32 {
+    RC_ICONS = res/iLand.ico
+}
 # to enable debug symbols in release code
 # CONFIG += force_debug_info
 # debug information in release-mode executable
