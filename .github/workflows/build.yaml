@@ -98,6 +98,9 @@ jobs:
           export QML_SOURCES_PATHS=src/iland/qml
           export APPIMAGE_EXTRACT_AND_RUN=1
 
+          # force some plugins for better visuals
+          export EXTRA_QT_PLUGINS=platforms/libqwayland-generic.so,platforms/libqwayland-egl.so,platformthemes/libqxdgdesktopportal.so
+
           # AppImage bauen
           ./linuxdeploy-x86_64.AppImage --appdir AppDir \
                -e src/iland/build/release/iland \
