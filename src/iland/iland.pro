@@ -105,23 +105,42 @@ LIBS += -L/opt/homebrew/Cellar/freeimage/3.18.0/lib -lfreeimage
 LIBS += -L$$THIRDPARTY_PATH\FreeImage -lFreeImage
 }
 
-# querying git repo
-win32 {
- !defined(GIT_HASH) {
-GIT_HASH="\\\"$$quote($$system(git rev-parse --short HEAD))\\\""
-GIT_BRANCH="\\\"$$quote($$system(git rev-parse --abbrev-ref HEAD))\\\""
-BUILD_TIMESTAMP="\\\"$$quote($$system(date /t))\\\""
-DEFINES += GIT_HASH=$$GIT_HASH GIT_BRANCH=$$GIT_BRANCH BUILD_TIMESTAMP=$$BUILD_TIMESTAMP
-}
-} else {
-!defined(GIT_HASH) {
-GIT_HASH="\\\"$$system(git -C \""$$_PRO_FILE_PWD_"\" rev-parse --short HEAD)\\\""
-GIT_BRANCH="\\\"$$system(git -C \""$$_PRO_FILE_PWD_"\" rev-parse --abbrev-ref HEAD)\\\""
-BUILD_TIMESTAMP="\\\"$$system(date -u +\""%Y-%m-%dT%H:%M:%SUTC\"")\\\""
-DEFINES += GIT_HASH=$$GIT_HASH GIT_BRANCH=$$GIT_BRANCH BUILD_TIMESTAMP=$$BUILD_TIMESTAMP
-}
+# --- Version & Build Info Generation ---
+
+# Ensure we run git in the source directory
+GIT_DIR = $$_PRO_FILE_PWD_
+
+# Helper function to safely escape strings for C++ preprocessor
+# Converts value into: -DVAR_NAME="value"
+defineReplace(addStringDefine) {
+    VAR_NAME = $$1
+    VAR_VAL  = $$2
+    # Double escaping needed: one for qmake/shell, one for the C++ string literal
+    return($$join(VAR_NAME, "", "", "=\\\"$$VAR_VAL\\\""))
 }
 
+win32 {
+    # Windows: Use PowerShell to get a locale-independent ISO format.
+    BUILD_TIMESTAMP = $$system(powershell -noprofile -command "Get-Date -Format 'yyyy-MM-dd_HH-mm-ss'")
+
+    # Git commands for Windows
+    GIT_HASH = $$system(git -C "$$GIT_DIR" rev-parse --short HEAD)
+    GIT_BRANCH = $$system(git -C "$$GIT_DIR" rev-parse --abbrev-ref HEAD)
+} else {
+    # Unix/macOS: Use standard date command
+    BUILD_TIMESTAMP = $$system(date -u "+%Y-%m-%dT%H:%M:%SUTC")
+
+    # Git commands for Unix
+    GIT_HASH = $$system(git -C "$$GIT_DIR" rev-parse --short HEAD)
+    GIT_BRANCH = $$system(git -C "$$GIT_DIR" rev-parse --abbrev-ref HEAD)
+}
+
+# Apply to DEFINES
+DEFINES += $$addStringDefine(GIT_HASH, $$GIT_HASH)
+DEFINES += $$addStringDefine(GIT_BRANCH, $$GIT_BRANCH)
+DEFINES += $$addStringDefine(BUILD_TIMESTAMP, $$BUILD_TIMESTAMP)
+
+message("BUILD_TIMESTAMP:" $$BUILD_TIMESTAMP "GIT_HASH:" $$GIT_HASH "GIT_BRANCH: " $$GIT_BRANCH)
 # to enable debug symbols in release code
 # CONFIG += force_debug_info
 # debug information in release-mode executable
