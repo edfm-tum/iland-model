@@ -126,27 +126,46 @@ linux-g++ {
     # external freeimage library (geotiff) (Windows)
     LIBS += -L$$THIRDPARTY_PATH\FreeImage -lFreeImage
 }
-# querying git repo
+
+
+# --- Version & Build Info Generation ---
+
+# Ensure we run git in the source directory
+GIT_DIR = $$_PRO_FILE_PWD_
+
+# Helper function to safely escape strings for C++ preprocessor
+# Converts value into: -DVAR_NAME="value"
+defineReplace(addStringDefine) {
+    VAR_NAME = $$1
+    VAR_VAL  = $$2
+    # Double escaping needed: one for qmake/shell, one for the C++ string literal
+    return($$join(VAR_NAME, "", "", "=\\\"$$VAR_VAL\\\""))
+}
+
 win32 {
- !defined(GIT_HASH) {
-    GIT_HASH = $$system(git rev-parse --short HEAD)
-    GIT_BRANCH = $$system(git rev-parse --abbrev-ref HEAD)
+    # Windows: Use PowerShell to get a locale-independent ISO format.
+    BUILD_TIMESTAMP = $$system(powershell -noprofile -command "Get-Date -Format 'yyyy-MM-dd_HH-mm-ss'")
 
-    RAW_DATE = $$_DATE_
-    BUILD_TIMESTAMP = $$replace(RAW_DATE, " ", "_")
-
-    DEFINES += GIT_HASH="\\\"$$GIT_HASH\\\""
-    DEFINES += GIT_BRANCH="\\\"$$GIT_BRANCH\\\""
-    DEFINES += BUILD_TIMESTAMP="\\\"$$BUILD_TIMESTAMP\\\""
-  }
+    # Git commands for Windows
+    GIT_HASH = $$system(git -C "$$GIT_DIR" rev-parse --short HEAD)
+    GIT_BRANCH = $$system(git -C "$$GIT_DIR" rev-parse --abbrev-ref HEAD)
 } else {
-!defined(GIT_HASH) {
-GIT_HASH="\\\"$$system(git -C \""$$_PRO_FILE_PWD_"\" rev-parse --short HEAD)\\\""
-GIT_BRANCH="\\\"$$system(git -C \""$$_PRO_FILE_PWD_"\" rev-parse --abbrev-ref HEAD)\\\""
-BUILD_TIMESTAMP="\\\"$$system(date -u +\""%Y-%m-%dT%H:%M:%SUTC\"")\\\""
-DEFINES += GIT_HASH=$$GIT_HASH GIT_BRANCH=$$GIT_BRANCH BUILD_TIMESTAMP=$$BUILD_TIMESTAMP
+    # Unix/macOS: Use standard date command
+    BUILD_TIMESTAMP = $$system(date -u "+%Y-%m-%dT%H:%M:%SUTC")
+
+    # Git commands for Unix
+    GIT_HASH = $$system(git -C "$$GIT_DIR" rev-parse --short HEAD)
+    GIT_BRANCH = $$system(git -C "$$GIT_DIR" rev-parse --abbrev-ref HEAD)
 }
+
+# Apply to DEFINES
+!defined(GIT_HASH, var) {
+    DEFINES += $$addStringDefine(GIT_HASH, $$GIT_HASH)
+    DEFINES += $$addStringDefine(GIT_BRANCH, $$GIT_BRANCH)
+    DEFINES += $$addStringDefine(BUILD_TIMESTAMP, $$BUILD_TIMESTAMP)
 }
+
+
 
 # Handle application icons
 macx {
