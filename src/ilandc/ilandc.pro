@@ -165,11 +165,9 @@ win32 {
 }
 
 # Apply to DEFINES
-!defined(GIT_HASH, var) {
-    DEFINES += $$addStringDefine(GIT_HASH, $$GIT_HASH)
-    DEFINES += $$addStringDefine(GIT_BRANCH, $$GIT_BRANCH)
-    DEFINES += $$addStringDefine(BUILD_TIMESTAMP, $$BUILD_TIMESTAMP)
-}
+DEFINES += $$addStringDefine(GIT_HASH, $$GIT_HASH)
+DEFINES += $$addStringDefine(GIT_BRANCH, $$GIT_BRANCH)
+DEFINES += $$addStringDefine(BUILD_TIMESTAMP, $$BUILD_TIMESTAMP)
 
 
 #CONFIG += precompile_header
