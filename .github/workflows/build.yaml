@@ -86,32 +86,55 @@ jobs:
         run: |
           mkdir -p deploy-linux
 
-          # Tools laden
+          # 1. Tools herunterladen
           wget -c https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
           wget -c https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
           chmod +x linuxdeploy*.AppImage
 
-          # Cleanup SQL-Plugins
-          find /home/runner/work/iland-model/Qt/6.8.0/gcc_64/plugins/sqldrivers/ -type f ! -name 'libqsqlite.so' -delete
-
+          # 2. Umgebungsvariablen setzen
           export QMAKE=$(which qmake)
+          # Qt-Plugin Pfad ermitteln (normalerweise ../Qt/6.8.0/gcc_64/plugins)
+          export QT_PLUGIN_DIR=$(qmake -query QT_INSTALL_PLUGINS)
           export QML_SOURCES_PATHS=src/iland/qml
           export APPIMAGE_EXTRACT_AND_RUN=1
 
-          # force some plugins for better visuals
-          export EXTRA_QT_PLUGINS=platforms/libqwayland-generic.so,platforms/libqwayland-egl.so,platformthemes/libqxdgdesktopportal.so
+          # 3. Vorbereitung des AppDir
+          # Wir erstellen das Verzeichnis manuell, damit wir Dateien hineinkopieren können
+          mkdir -p AppDir/usr/plugins/platforms
+          mkdir -p AppDir/usr/plugins/platformthemes
+          mkdir -p AppDir/usr/plugins/wayland-shell-integration
+          mkdir -p AppDir/usr/plugins/wayland-decoration-client
 
-          # AppImage bauen
+          # 4. MANUELLES KOPIEREN (Der "Brute Force" Fix)
+          # Wayland Plattform-Treiber erzwingen
+          cp "$QT_PLUGIN_DIR/platforms/libqwayland-generic.so" AppDir/usr/plugins/platforms/
+          cp "$QT_PLUGIN_DIR/platforms/libqwayland-egl.so"     AppDir/usr/plugins/platforms/
+
+          # Wayland Shell Integration (wichtig für Fenster-Management unter Gnome)
+          # Kopiert alles (*), da hier oft mehrere kleine Helper-Libs liegen (xdg-shell, etc.)
+          cp -r "$QT_PLUGIN_DIR/wayland-shell-integration/"* AppDir/usr/plugins/wayland-shell-integration/ || true
+
+          # Wayland Fenster-Dekorationen (optional, aber gut für den Look)
+          cp -r "$QT_PLUGIN_DIR/wayland-decoration-client/"* AppDir/usr/plugins/wayland-decoration-client/ || true
+
+          # Theme-Integration (für Datei-Dialoge und Dark Mode)
+          if [ -f "$QT_PLUGIN_DIR/platformthemes/libqxdgdesktopportal.so" ]; then
+             cp "$QT_PLUGIN_DIR/platformthemes/libqxdgdesktopportal.so" AppDir/usr/plugins/platformthemes/
+          fi
+
+          # SQL Bereinigung (Ihr originaler Schritt)
+          find "$QT_PLUGIN_DIR/sqldrivers/" -type f ! -name 'libqsqlite.so' -delete
+
+          # 5. AppImage bauen
+          # Das Plugin 'qt' wird nun die manuell kopierten Dateien finden und deren Dependencies (libs) bündeln.
           ./linuxdeploy-x86_64.AppImage --appdir AppDir \
                -e src/iland/build/release/iland \
                -d src/iland/res/iland.desktop \
                -i src/iland/res/iLand.svg \
                --plugin qt --output appimage
 
-          # Dateien einsammeln
+          # Aufräumen & Verschieben
           mv *.AppImage deploy-linux/
-
-          # HIER WAREN DIE FEHLENDEN TEILE:
           cp src/ilandc/build/release/ilandc deploy-linux/
           cp src/fonstudio/build/release/fonstudio deploy-linux/
 
