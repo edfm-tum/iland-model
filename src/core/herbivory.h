@@ -91,7 +91,7 @@ struct HerbivorySettings {
 struct HerbivoryEffect {
     // keys
     QString species;
-    HerbivorySettings::EEventType treatment;
+    HerbivorySettings::EEventType treatment { HerbivorySettings::None };
     bool OpenCanopy;
     bool IncreasedTemp;
     // effects
@@ -179,7 +179,8 @@ public:
         if (it != herbivoryData.end()) {
             return it.value(); // Found, return the object
         } else {
-            throw IException("Invalid herbivory settings - no data!");
+            return NoEffect;
+            //throw IException("Invalid herbivory settings - no data!");
         }
 
 
@@ -202,6 +203,8 @@ private:
     static QHash<int, HerbivorySettings> StoreHerbivorySettings;
     // In your class or global scope
     static QHash<HerbivoryEffectKey, HerbivoryEffect> herbivoryData;
+    // empty effect (constructor: no effect)
+    static HerbivoryEffect NoEffect;
 
 
 
