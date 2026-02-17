@@ -555,6 +555,8 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTr
     }
     // check browsing due to winter herbivory (Miguel)
     // Check herbivory in winter
+    double delta_h_factor_original = delta_h_factor;
+
     if (is_snow_removed) {
         if (drandom() < herb_effect.pTreeBrowsed) {
             // new size, somehow related to effect, and done
@@ -575,9 +577,13 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTr
 
         // determine height growth reduction
         // this also has effect on stress mortality
-        // TODO: what if both browsing and drought happen? Now double effect
-        if (herb_effect.factorGrowth < 1.)
-            delta_h_factor = delta_h_factor * herb_effect.factorGrowth;
+
+        // herb_effect.factorGrowth can be >1, but we cap with the original
+        // height growth rate. In other words:
+        // when trees are browsed, there can be compensation, but the browsed tree
+        // cannot grow faster as the unbrowsed
+
+        delta_h_factor = qMin(delta_h_factor * herb_effect.factorGrowth, delta_h_factor_original);
     }
 
 
