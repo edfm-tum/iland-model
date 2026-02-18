@@ -166,8 +166,10 @@ public:
         // The 'loader' variable itself is unused; its only purpose is to trigger the initialization.
         Q_UNUSED(loader)
     }
-    static double isEventYear(const HerbivorySettings &settings, int year) {
+    static bool isEventYear(const HerbivorySettings &settings, int year) {
         ensureHerbivoryDataLoaded();
+        if (year > 10)
+            return false;
         return settings.Sequence.test(year - 1);
     }
 
