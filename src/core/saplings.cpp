@@ -66,7 +66,7 @@ void Saplings::setup()
     Herbivory::ensureHerbivoryDataLoaded();
     for (auto ru : GlobalSettings::instance()->model()->ruList()) {
         auto &settings = Herbivory::herbivorySettings(ru->id());
-        qDebug() << "Init-Herbivory: RU" << ru->id() << "treatment" << settings.EventType << "open" << settings.OpenCanopy << "warm" << settings.IncreasedTemp << "effect year 1" << settings.Sequence[0];
+        //qDebug() << "Init-Herbivory: RU" << ru->id() << "treatment" << settings.EventType << "open" << settings.OpenCanopy << "warm" << settings.IncreasedTemp << "effect year 1" << settings.Sequence[0];
     }
 
 }
@@ -505,12 +505,22 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTr
     // effects based on resource unit settings and only for saplings < 2m height
     auto &herbivory_settings = Herbivory::herbivorySettings( ru->id() );
     bool is_event_year = Herbivory::isEventYear(herbivory_settings, GlobalSettings::instance()->currentYear());
-    bool is_snow_removed = tree.height<2.f &&  is_event_year && (herbivory_settings.EventType == HerbivorySettings::WinterOnly || herbivory_settings.EventType == HerbivorySettings::Both);
-    bool is_drought_year = tree.height<2.f && is_event_year && (herbivory_settings.EventType == HerbivorySettings::SummerOnly || herbivory_settings.EventType == HerbivorySettings::Both);
 
-
-    auto &herb_effect = Herbivory::herbivoryEffect(herbivory_settings, species->id());
-
+    // get browsing probability
+    // prob is in the data for both yes/no: ask first for not browsed
+    const HerbivoryEffect *herb_effect;
+    herb_effect = &Herbivory::herbivoryEffect(herbivory_settings,
+                                              is_event_year,
+                                              species->id(),
+                                              false);
+    double pBrowsed = herb_effect!=nullptr ? herb_effect->pTreeBrowsed : 0.;
+    if (drandom() < pBrowsed) {
+        // it is browsed! fetch new data
+        herb_effect = &Herbivory::herbivoryEffect(herbivory_settings,
+                                                  is_event_year,
+                                                  species->id(),
+                                                  true);
+    }
 
 
     // (1) calculate height growth potential for the tree (uses linerization of expressions...)
@@ -554,27 +564,50 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTr
         delta_h_factor = 0.;
         tree.set_browsed(false);
     }
-    // check browsing due to winter herbivory (Miguel)
-    // Check herbivory in winter
+
+    // **********************************************************
+    // Miguel / Herbivory exercise
+    // **********************************************************
+
+    // save default height growth of iLand
     double delta_h_factor_original = delta_h_factor;
 
-    if (is_snow_removed) {
-        if (drandom() < herb_effect.pTreeBrowsed) {
-            // new size, somehow related to effect, and done
-            // TODO: check
-            //delta_h_factor = herb_effect.factorBrowsingHeightRemoved;
-            // interpret values as cm reduction
-            delta_h_factor = (delta_h_factor * delta_h_pot - herb_effect.factorBrowsingHeightRemoved/100.) / delta_h_pot;
-            // alternative: value is *absolute* growth
 
+    // Browsing in Winter (based on Migus data)
+    if (tree.height < 2.) {
+        // browsing: happens for all trees below 2m
+        // higher probability when winter effect (snow removed)
+        // the right probs are fetched above (based on prob. of browsing)
 
-        }
+        // calculate *effective* height increment when browsing is considered
+        double browsing_loss = tree.height * (1. - herb_effect->factorBrowsingHeightRemoved); // loss due to browsing in m
+        double reduced_increment = delta_h_factor * delta_h_pot - browsing_loss; // net increment including browing in m
+        if (delta_h_pot > 0.)
+            delta_h_factor = reduced_increment / delta_h_pot; // m increment / m increment
+        else
+            tree.height -= browsing_loss; // should never happen as delta_h_pot should be always positive
     }
 
+    // old (?) version of the code?
+    // if (is_snow_removed) {
+    //     if (drandom() < herb_effect.pTreeBrowsed) {
+    //         // new size, somehow related to effect, and done
+    //         // TODO: check
+    //         //delta_h_factor = herb_effect.factorBrowsingHeightRemoved;
+    //         // interpret values as cm reduction
+    //         delta_h_factor = (delta_h_factor * delta_h_pot - herb_effect.factorBrowsingHeightRemoved/100.) / delta_h_pot;
+    //         // alternative: value is *absolute* growth
+
+
+    //     }
+    // }
+
+
+    // drought effect (Miguel)
     double additional_mortality_prob = 0.;
-    if (is_drought_year) {
-        // determine prob of death
-        additional_mortality_prob += herb_effect.pMortality;
+
+    if (tree.height < 2.) {
+        additional_mortality_prob = herb_effect->pMortality;
 
         // determine height growth reduction
         // this also has effect on stress mortality
@@ -583,9 +616,10 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTr
         // height growth rate. In other words:
         // when trees are browsed, there can be compensation, but the browsed tree
         // cannot grow faster as the unbrowsed
+        delta_h_factor = qMin(delta_h_factor * herb_effect->factorGrowth, delta_h_factor_original);
 
-        delta_h_factor = qMin(delta_h_factor * herb_effect.factorGrowth, delta_h_factor_original);
     }
+
 
 
 
@@ -616,6 +650,8 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTr
 
     // grow
     tree.height += static_cast<float>(delta_h_pot * delta_h_factor);
+    if (tree.height < 0.f) tree.height = 0.;
+
     tree.age++; // increase age of sapling by 1
 
     // recruitment?

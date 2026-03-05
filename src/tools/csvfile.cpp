@@ -159,6 +159,7 @@ bool CSVFile::loadFile(const QString &fileName)
     if (content.isEmpty()) {
         qDebug() << "CSVFile::loadFile" << fileName << "does not exist or is empty.";
         mIsEmpty = true;
+        mRowCount = 0; mColCount = 0;
         return false;
     }
     return loadFromStringList(content);

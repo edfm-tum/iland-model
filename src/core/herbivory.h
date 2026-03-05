@@ -19,7 +19,7 @@ and raised temperatere on growth and mortality of saplings.
 struct HerbivorySettings {
     bool OpenCanopy { false };
     bool IncreasedTemp { false };
-    enum EEventType { WinterOnly, SummerOnly, Both, None };
+    enum EEventType { WinterOnly=2, SummerOnly=1, Both=3, None=0 };
     EEventType EventType    { None };
     int Replicate {0};
     std::bitset<10> Sequence;
@@ -104,16 +104,18 @@ struct HerbivoryEffect {
 // Key that uniquely identifies an herbivory effect
 struct HerbivoryEffectKey {
     QString species;
-    HerbivorySettings::EEventType treatment;
-    bool openCanopy;
-    bool increasedTemp;
+    HerbivorySettings::EEventType treatment { HerbivorySettings::None };
+    bool openCanopy { false };
+    bool increasedTemp { false };
+    bool isBrowsed { false };
 
     // Equality operator (required for QHash)
     bool operator==(const HerbivoryEffectKey &other) const {
         return species == other.species &&
                treatment == other.treatment &&
                openCanopy == other.openCanopy &&
-               increasedTemp == other.increasedTemp;
+               increasedTemp == other.increasedTemp &&
+               isBrowsed == other.isBrowsed;
     }
 };
 
@@ -122,7 +124,8 @@ inline uint qHash(const HerbivoryEffectKey &key, uint seed = 0) {
                       key.species,
                       static_cast<int>(key.treatment),
                       key.openCanopy,
-                      key.increasedTemp);
+                      key.increasedTemp,
+                      key.isBrowsed);
 }
 
 
@@ -134,7 +137,7 @@ public:
     static void loadHerbivoryData(QString path) {
         // ... open and parse CSV ...
         CSVFile init_file(path);
-        if (init_file.rowCount() == 0)
+        if (init_file.isEmpty())
             throw IException("Herbivory data file not working!");
 
         for (int i=0;i<init_file.rowCount();++i) {
@@ -142,7 +145,8 @@ public:
             HerbivoryEffectKey key = {init_file.value(i, "species").toString(),
                 treatment,
                 init_file.value(i, "openCanopy").toBool(),
-                init_file.value(i, "increasedTemp").toBool(),};
+                init_file.value(i, "increasedTemp").toBool(),
+                init_file.value(i, "isBrowsed").toBool(),};
             HerbivoryEffect effect = {key.species, key.treatment, key.openCanopy, key.increasedTemp,
                                       init_file.value(i, "pMortality").toDouble(),
                                       init_file.value(i, "factorGrowth").toDouble(),
@@ -173,18 +177,29 @@ public:
         return settings.Sequence.test(year - 1);
     }
 
-    static const HerbivoryEffect &herbivoryEffect(const HerbivorySettings &settings, const QString &species) {
+
+
+    /// retrieve the factual response values
+    /// for a given species, and whether it is an event year or not
+    /// if not an event year, the result is based on "None" event-data (for
+    /// the given species, open/closed canopy, base/increased temperature)
+    static const HerbivoryEffect &herbivoryEffect(const HerbivorySettings &settings,
+                                                  const bool isEvent,
+                                                  const QString &species,
+                                                  bool isBrowsed) {
         ensureHerbivoryDataLoaded();
-        HerbivoryEffectKey key = {species, settings.EventType, settings.OpenCanopy, settings.IncreasedTemp};
+        HerbivoryEffectKey key = {species,
+                                  isEvent ? settings.EventType : HerbivorySettings::None,
+                                  settings.OpenCanopy,
+                                  settings.IncreasedTemp,
+                                  isBrowsed};
 
         auto it = herbivoryData.find(key);
         if (it != herbivoryData.end()) {
             return it.value(); // Found, return the object
         } else {
             return NoEffect;
-            //throw IException("Invalid herbivory settings - no data!");
         }
-
 
     }
 
@@ -196,8 +211,20 @@ public:
             return StoreHerbivorySettings[ruId];
 
         auto &settings = StoreHerbivorySettings[ruId]; // insert new object (default constructed)
-
+        static int callCounter = 0;
+        callCounter++;
+        if (callCounter == 21000)
+            qDebug() << "test";
         settings.parse(ruId); // update in hash
+
+
+        if (callCounter % 1000 == 0)
+            qDebug() << "parse herbivory, element: " << callCounter << ": ID: " << ruId
+                     << "isopen" << settings.OpenCanopy
+                     << "inc.temp" << settings.IncreasedTemp
+                     << "eventtype" << settings.EventType
+                     << "sequence" << settings.Sequence.to_string();
+
         return settings;
     }
 
