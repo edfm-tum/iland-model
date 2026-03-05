@@ -580,7 +580,7 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTr
         // the right probs are fetched above (based on prob. of browsing)
 
         // calculate *effective* height increment when browsing is considered
-        double browsing_loss = tree.height * (1. - herb_effect->factorBrowsingHeightRemoved); // loss due to browsing in m
+        double browsing_loss = tree.height * herb_effect->factorBrowsingHeightRemoved; // loss due to browsing in m
         double reduced_increment = delta_h_factor * delta_h_pot - browsing_loss; // net increment including browing in m
         if (delta_h_pot > 0.)
             delta_h_factor = reduced_increment / delta_h_pot; // m increment / m increment
@@ -615,8 +615,10 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTr
         // herb_effect.factorGrowth can be >1, but we cap with the original
         // height growth rate. In other words:
         // when trees are browsed, there can be compensation, but the browsed tree
-        // cannot grow faster as the unbrowsed
-        delta_h_factor = qMin(delta_h_factor * herb_effect->factorGrowth, delta_h_factor_original);
+        // cannot grow faster as the unbrowsed;
+        // no effect if plant is shrinking already!
+        if (delta_h_factor > 0)
+            delta_h_factor = qMin(delta_h_factor * herb_effect->factorGrowth, delta_h_factor_original);
 
     }
 
@@ -650,7 +652,7 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTr
 
     // grow
     tree.height += static_cast<float>(delta_h_pot * delta_h_factor);
-    if (tree.height < 0.f) tree.height = 0.;
+    if (tree.height < 0.f) tree.height = 0.05;
 
     tree.age++; // increase age of sapling by 1
 
