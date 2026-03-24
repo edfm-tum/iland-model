@@ -30,6 +30,7 @@
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
+    std::setlocale(LC_ALL,"C");
     QString copyright_str = QString("(c) Werner Rammer, Rupert Seidl, 2009-%1").arg(buildYear());
 
     printf("iLand console (%s)\n", currentVersion());
