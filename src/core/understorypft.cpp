@@ -84,10 +84,13 @@ void UnderstoryPFT::setup(UnderstorySetting s, int index)
         expr = s.value(resp).toString();
         if (expr.isEmpty()) {
             expr = QString("min(0.05 + 1.5/(1 + ((lr - (0.15*LightEIV-0.4))/(0.8-0.05*LightEIV))^2),1)");
+        }
+        if (expr.contains("LightEIV")) {
             double value = s.value("LightEIV").toDouble(&ok);
             if (!ok || value < 1. || value > 9.) throw IException("LightEIV required, but not a number or out of range (1..9)!");
             expr.replace("LightEIV", s.value("LightEIV").toString());
         }
+
         mExprLight.setAndParse(expr);
         mExprLight.linearize(0., 1.);
         // water
@@ -95,10 +98,13 @@ void UnderstoryPFT::setup(UnderstorySetting s, int index)
         expr = s.value(resp).toString();
         if (expr.isEmpty()) {
             expr = QString("min(0.05 + 1.3/(1 + ((swpgs + 14 + (10-MoistureEIV)*0.5)/3)^2),1)");
+        }
+        if (expr.contains("MoistureEIV")) {
             double value = s.value("MoistureEIV").toDouble(&ok);
             if (!ok || value < 1. || value > 9.) throw IException("MoistureEIV required, but not a number or out of range (1..9)!");
             expr.replace("MoistureEIV", s.value("MoistureEIV").toString());
         }
+
         mExprWater.setAndParse(expr);
         mExprWater.linearize(0.,1.);
 
@@ -107,10 +113,13 @@ void UnderstoryPFT::setup(UnderstorySetting s, int index)
         expr = s.value(resp).toString();
         if (expr.isEmpty()) {
             expr = QString("min(0.05 + 1.5/(1 + ((PlantAvailN - (5*NutrientEIV+40))/20)^2),1)");
+        }
+        if (expr.contains("MoistureEIV")) {
             double value = s.value("NutrientEIV").toDouble(&ok);
             if (!ok || value < 1. || value > 9.) throw IException("NutrientEIV required, but not a number or out of range (1..9)!");
             expr.replace("NutrientEIV", s.value("NutrientEIV").toString());
         }
+
         mExprNutrients.setAndParse(expr);
         mExprNutrients.linearize(0., 1.);
 
@@ -119,10 +128,13 @@ void UnderstoryPFT::setup(UnderstorySetting s, int index)
         expr = s.value(resp).toString();
         if (expr.isEmpty()) {
             expr = QString("min(0.05 + 1.2/(1 + ((meanTemp - (TemperatureEIV*1.5))/3)^2),1)");
+        }
+        if (expr.contains("MoistureEIV")) {
             double value = s.value("TemperatureEIV").toDouble(&ok);
             if (!ok || value < 1. || value > 9.) throw IException("NutrientEIV required, but not a number or out of range (1..9)!");
             expr.replace("TemperatureEIV", s.value("TemperatureEIV").toString());
         }
+
         mExprTemp.setAndParse(expr);
         mExprTemp.linearize(0., 1.);
 
@@ -131,13 +143,15 @@ void UnderstoryPFT::setup(UnderstorySetting s, int index)
         expr = s.value(resp).toString();
         if (expr.isEmpty()) {
             expr = QString("0.5*exp(-x/stressSensitivity)");
+        }
+        if (expr.contains("stressSensitivity")) {
             double value = s.value("stressSensitivity").toDouble(&ok);
             if (!ok || value < 0. || value > 1.) throw IException("stressSensitivity required, but not a number or out of range (0..1)!");
             expr.replace("stressSensitivity", s.value("stressSensitivity").toString());
         }
+
         mExprStress.setAndParse(expr);
         mExprStress.linearize(0., 1.);
-
 
     } catch (const IException &e) {
         throw IException( s.error(QString("'%1' for PFT '%3': Expression error: %2").arg(resp, e.message(), name()))   );
