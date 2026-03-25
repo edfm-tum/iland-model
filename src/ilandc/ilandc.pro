@@ -117,13 +117,18 @@ GIT_DIR = $$_PRO_FILE_PWD_
 defineReplace(addStringDefine) {
     VAR_NAME = $$1
     VAR_VAL  = $$2
-    # Double escaping needed: one for qmake/shell, one for the C++ string literal
-    return($$join(VAR_NAME, "", "", "=\\\"$$VAR_VAL\\\""))
+    # Ensure the entire define is quoted for the shell to handle spaces,
+    # and provide escaped quotes for the C++ string literal.
+    return($$quote($$VAR_NAME=\\\"$$VAR_VAL\\\"))
 }
 
 win32 {
     # Windows: Use PowerShell to get a locale-independent ISO format.
-    BUILD_TIMESTAMP = $$system(powershell -noprofile -command "Get-Date -Format 'yyyy-MM-dd_HH-mm-ss'")
+    # We use .ToString() as an extra precaution for some PowerShell environments.
+    BUILD_TIMESTAMP = $$system(powershell -noprofile -command "(Get-Date).ToString('yyyy-MM-dd_HH-mm-ss')")
+    
+    # Fallback if powershell failed or returned empty
+    isEmpty(BUILD_TIMESTAMP): BUILD_TIMESTAMP = $$system(echo %DATE%_%TIME% | sed "s/ /_/g" | sed "s/:/-/g")
 
     # Git commands for Windows
     GIT_HASH = $$system(git -C "$$GIT_DIR" rev-parse --short HEAD)
