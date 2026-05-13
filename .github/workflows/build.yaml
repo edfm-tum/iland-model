@@ -112,6 +112,12 @@ jobs:
              cp "$QT_PLUGIN_DIR/platformthemes/libqxdgdesktopportal.so" AppDir/usr/plugins/platformthemes/
           fi
 
+          # go to sqldrivers
+          cd /home/runner/work/iland-model/Qt/6.8.0/gcc_64/plugins/sqldrivers/
+          
+          # delete all .so files, except SQLite-driver
+          find . -maxdepth 1 -name "libqsql*.so" ! -name "libqsqlite.so" -delete
+      
           # 4. AppImage bauen MIT ZUSÄTZLICHER LIBRARY
           # Das '-l' Flag zwingt linuxdeploy, die Wayland-Client Lib einzupacken
           ./linuxdeploy-x86_64.AppImage --appdir AppDir \
