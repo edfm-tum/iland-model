@@ -25,6 +25,7 @@
 #include "version.h"
 #include <QTimer>
 #include <QString>
+#include <locale.h>
 
 #include "consoleshell.h"
 int main(int argc, char *argv[])
