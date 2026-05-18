@@ -21,7 +21,7 @@
 #include <QApplication>
 #include "mainwindow.h"
 
-#include <clocale>
+#include <locale.h>
 
 int main(int argc, char *argv[])
 {
