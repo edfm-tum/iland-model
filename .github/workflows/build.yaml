@@ -136,10 +136,22 @@ jobs:
 
           mkdir -p AppDirConsole
           
-          # Für die Konsole brauchen wir kein Wayland und keine Desktop-Icons, nur das Binary und Qt Core/SQL
+          # Create a minimal desktop file for the console application dynamically
+          echo "[Desktop Entry]
+          Name=ilandc
+          Exec=ilandc
+          Icon=iLand
+          Type=Application
+          Terminal=true
+          Categories=Science;" > ilandc.desktop
+
+          # Run linuxdeploy for the console, passing the new desktop file and reusing the GUI icon
           ./linuxdeploy-x86_64.AppImage --appdir AppDirConsole \
                -e src/ilandc/build/release/ilandc \
+               -d ilandc.desktop \
+               -i src/iland/res/iLand.svg \
                --plugin qt --output appimage
+          
 
           rm linuxdeploy*.AppImage
           mv iLand-*.AppImage deploy-linux/
