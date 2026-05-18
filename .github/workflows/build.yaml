@@ -134,8 +134,16 @@ jobs:
                -i src/iland/res/iLand.svg \
                --plugin qt --output appimage
 
+          mkdir -p AppDirConsole
+          
+          # Für die Konsole brauchen wir kein Wayland und keine Desktop-Icons, nur das Binary und Qt Core/SQL
+          ./linuxdeploy-x86_64.AppImage --appdir AppDirConsole \
+               -e src/ilandc/build/release/ilandc \
+               --plugin qt --output appimage
+
           rm linuxdeploy*.AppImage
           mv iLand-*.AppImage deploy-linux/
+          mv ilandc-*.AppImage deploy-linux/
           #cp src/ilandc/build/release/ilandc deploy-linux/
           #cp src/fonstudio/build/release/fonstudio deploy-linux/
 
