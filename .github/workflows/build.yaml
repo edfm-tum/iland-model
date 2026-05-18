@@ -112,6 +112,9 @@ jobs:
           cp "$QT_PLUGIN_DIR/platforms/libqwayland-egl.so"     AppDir/usr/plugins/platforms/
           cp -r "$QT_PLUGIN_DIR/wayland-shell-integration/"* AppDir/usr/plugins/wayland-shell-integration/ || true
 
+          cp -r "$QT_PLUGIN_DIR/wayland-graphics-integration-client/"* AppDir/usr/plugins/wayland-graphics-integration-client/ || true
+          cp -r "$QT_PLUGIN_DIR/wayland-decoration-client/"* AppDir/usr/plugins/wayland-decoration-client/ || true
+
           if [ -f "$QT_PLUGIN_DIR/platformthemes/libqxdgdesktopportal.so" ]; then
              cp "$QT_PLUGIN_DIR/platformthemes/libqxdgdesktopportal.so" AppDir/usr/plugins/platformthemes/
           fi
