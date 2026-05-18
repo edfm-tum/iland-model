@@ -125,6 +125,7 @@ jobs:
                -i src/iland/res/iLand.svg \
                --plugin qt --output appimage
 
+          rm linuxdeploy*.AppImage
           mv *.AppImage deploy-linux/
           cp src/ilandc/build/release/ilandc deploy-linux/
           cp src/fonstudio/build/release/fonstudio deploy-linux/
