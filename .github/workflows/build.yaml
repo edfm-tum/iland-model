@@ -103,6 +103,10 @@ jobs:
           mkdir -p AppDir/usr/plugins/platforms
           mkdir -p AppDir/usr/plugins/wayland-shell-integration
           mkdir -p AppDir/usr/plugins/platformthemes
+          mkdir -p AppDir/usr/bin
+
+          cp src/ilandc/build/release/ilandc AppDir/usr/bin/
+          cp src/fonstudio/build/release/fonstudio AppDir/usr/bin
 
           cp "$QT_PLUGIN_DIR/platforms/libqwayland-generic.so" AppDir/usr/plugins/platforms/
           cp "$QT_PLUGIN_DIR/platforms/libqwayland-egl.so"     AppDir/usr/plugins/platforms/
@@ -127,8 +131,8 @@ jobs:
 
           rm linuxdeploy*.AppImage
           mv *.AppImage deploy-linux/
-          cp src/ilandc/build/release/ilandc deploy-linux/
-          cp src/fonstudio/build/release/fonstudio deploy-linux/
+          #cp src/ilandc/build/release/ilandc deploy-linux/
+          #cp src/fonstudio/build/release/fonstudio deploy-linux/
 
 # 3. macOS Deployment
       - name: macOS Deployment
