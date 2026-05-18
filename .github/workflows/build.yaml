@@ -130,7 +130,7 @@ jobs:
                --plugin qt --output appimage
 
           rm linuxdeploy*.AppImage
-          mv *.AppImage deploy-linux/
+          mv iLand-*.AppImage deploy-linux/
           #cp src/ilandc/build/release/ilandc deploy-linux/
           #cp src/fonstudio/build/release/fonstudio deploy-linux/
 
