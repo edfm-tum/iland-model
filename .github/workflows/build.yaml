@@ -103,6 +103,7 @@ jobs:
           mkdir -p AppDir/usr/plugins/platforms
           mkdir -p AppDir/usr/plugins/wayland-shell-integration
           mkdir -p AppDir/usr/plugins/platformthemes
+          mkdir -p AppDir/usr/plugins/styles
           mkdir -p AppDir/usr/bin
 
           cp src/ilandc/build/release/ilandc AppDir/usr/bin/
@@ -114,6 +115,7 @@ jobs:
 
           cp -r "$QT_PLUGIN_DIR/wayland-graphics-integration-client/"* AppDir/usr/plugins/wayland-graphics-integration-client/ || true
           cp -r "$QT_PLUGIN_DIR/wayland-decoration-client/"* AppDir/usr/plugins/wayland-decoration-client/ || true
+          cp -r "$QT_PLUGIN_DIR/styles/"* AppDir/usr/plugins/styles/ || true
 
           if [ -f "$QT_PLUGIN_DIR/platformthemes/libqxdgdesktopportal.so" ]; then
              cp "$QT_PLUGIN_DIR/platformthemes/libqxdgdesktopportal.so" AppDir/usr/plugins/platformthemes/
