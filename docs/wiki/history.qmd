@@ -1,0 +1,29 @@
+---
+title: "history"
+---
+
+
+
+# iLand history
+
+
+iLand is work in progress, and our ongoing efforts to evaluate, improve, and further develop the model result in a considerable evolution of the model over time. Consequently some iLand pages are now outdated and only of interest from a historical perspective on the evolution of the model. Since we are of the opinion that the context and evolution of a model are important (but often overlooked) aspects we here maintain a gateway to these outdated entries (rather than simply deleting them). iLand history entries will be clearly marked to avoid confusion with the current state of the model.
+
+
+
+## 2009
+
+
+
+* [abstract](project-abstract.qmd) of the initial project to develop iLand
+* [initial team](project-team.qmd) developing the first iLand version
+* initial ideas for the [iLand model design](model-design.qmd)
+* initial [iLand model development strategy](development-strategy.qmd)
+
+
+
+
+## previous model versions
+
+
+Previous versions of the iLand software will be archived [here](iland-previous-releases.qmd). For the current software version go [here](downloadold.qmd).

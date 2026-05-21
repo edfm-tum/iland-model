@@ -1,0 +1,128 @@
+project:
+  type: website
+  output-dir: _site
+  resources:
+    - img/
+
+website:
+  title: "iLand"
+  navbar:
+    background: primary
+    left:
+      - href: index.qmd
+        text: "Documentation"
+      - href: bite/index.qmd
+        text: "Bite Module"
+      - href: apidoc/index.qmd
+        text: "JavaScript API"
+    right:
+      - icon: github
+        href: https://github.com/edfm-tum/iland-model
+
+  sidebar:
+    - id: wiki
+      title: "Scientific Wiki"
+      style: "docked"
+      collapse-level: 2
+      contents:
+        - wiki/index.qmd
+        - section: "Growth & Allocation"
+          contents:
+            - wiki/growth.qmd
+            - wiki/allocation.qmd
+        - section: "Disturbances"
+          contents:
+            - wiki/fire-module.qmd
+            - wiki/wind-module.qmd
+            - wiki/barkbeetle-module.qmd
+        - section: "Soil & Water"
+          contents:
+            - wiki/soil-dynamics.qmd
+            - wiki/water-cycle.qmd
+        - section: "Forest Management (ABE)"
+          contents:
+            - wiki/abe.qmd
+            - wiki/abe-activities.qmd
+        - section: "Model Niche & Complexity"
+          contents:
+            - wiki/abstract.qmd
+            - wiki/introduction.qmd
+            - wiki/model-design.qmd
+            - wiki/development-strategy.qmd
+            - wiki/iland-model-complexity-and-its-niche-in-the-landscape-of-models.qmd
+            - wiki/ilands-niche-in-the-landscape-of-models-level-of-modeling-dimensions.qmd
+            - wiki/ilands-niche-in-the-landscape-of-models-indicator-level.qmd
+            - wiki/discussion-and-conclusion.qmd
+
+    - id: apidoc
+      title: "Javascript API"
+      style: "docked"
+      contents:
+        - apidoc/index.qmd
+        - section: "iLand Core Classes"
+          contents:
+            - apidoc/classes/grid.qmd
+            - apidoc/classes/tree.qmd
+            - apidoc/classes/treelist.qmd
+            - apidoc/classes/deadtreelist.qmd
+            - apidoc/classes/saplinglist.qmd
+            - apidoc/classes/globals.qmd
+            - apidoc/classes/map.qmd
+        - section: "iLand Tools & Utilities"
+          contents:
+            - apidoc/classes/csvfile.qmd
+            - apidoc/classes/factory.qmd
+            - apidoc/classes/helper.qmd
+            - apidoc/classes/treeexpr.qmd
+            - apidoc/classes/spatialanalysis.qmd
+        - section: "Agent-Based Management (ABE)"
+          contents:
+            - apidoc/classes/fmengine.qmd
+            - apidoc/classes/management.qmd
+            - apidoc/classes/agent.qmd
+            - apidoc/classes/stand.qmd
+            - apidoc/classes/patches.qmd
+            - apidoc/classes/activity.qmd
+            - apidoc/classes/stp.qmd
+            - apidoc/classes/schedule.qmd
+            - apidoc/classes/constraint.qmd
+        - section: "ABE Library (Javascript)"
+          contents:
+            - apidoc/classes/planting.qmd
+            - apidoc/classes/thinning.qmd
+            - apidoc/classes/harvest.qmd
+
+    - id: bite
+      title: "Bite Module"
+      style: "docked"
+      collapse-level: 2
+      contents:
+        - bite/index.qmd
+        - section: "Classes"
+          contents:
+            - bite/biteengine.qmd
+            - bite/biteagent.qmd
+            - bite/bitecell.qmd
+            - bite/variables.qmd
+        - section: "Items"
+          contents:
+            - bite/bitedispersal.qmd
+            - bite/bitedistribution.qmd
+            - bite/bitecolonization.qmd
+            - bite/bitebiomass.qmd
+            - bite/biteimpact.qmd
+            - bite/bitelifecycle.qmd
+            - bite/biteoutput.qmd
+        - bite/codeexamples.qmd
+
+format:
+  html:
+    theme:
+      light: flatly
+      dark: darkly
+    css: custom.css
+    toc: true
+    toc-depth: 3
+    html-math-method: mathjax
+    code-copy: true
+    search: true

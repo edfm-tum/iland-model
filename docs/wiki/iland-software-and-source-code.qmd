@@ -1,0 +1,7 @@
+---
+title: "iLand software and source code"
+---
+
+iLand is a research tool, and is freely available for non-commercial use. We developed the software relying solely on open source components, in order to facilitate its use and further development by others (see [here](http://iland-model.org/blog1) for some ideas on iLand software development). The software is released under the [GNU General Public Licence](http://www.gnu.org/licenses/gpl.html) (GPL).
+
+Here iLand source code and software will be available shortly, after the main portions of the model have been published in the scientific literature. So check back soon, and don't hesitate to [contact us](contact-information.qmd) if you have further questions.

@@ -1,0 +1,63 @@
+---
+title: "download_old"
+---
+
+
+
+## iLand download page
+
+
+
+iLand is a research tool, and is freely available for non-commercial use. We have developed the software relying solely on open source components, in order to facilitate its use and further development by others (see [here](http://iland-model.org/blog1) for some ideas on iLand software development). The software is released under the [GNU General Public Licence](http://www.gnu.org/licenses/gpl.html) (GPL).
+
+This page contains the newest and latest official iLand release. Older releases can be found on the [iLand - previous releases](iland-previous-releases.qmd) page.
+
+
+<script>
+function validateDownloadForm(which_form) {
+var x=document.forms[which_form]["agree"].checked;
+if (x == false) {
+  alert("Error: You must accept our terms and conditions before the download starts!");
+  return false;
+}
+}
+</script>
+<!-- download box -->
+<div class="cbox expandable">
+<div class="cbox-title" style="text-align: left; font-weight: normal"><img src="display4" alt="Image" style="margin: 5px" align="left"/><div style="margin-left: 120px">
+<h3>iLand 0.6.9 for Windows</h3>
+iLand version 0.6.9, i.e. the model version applied for the HJ Andrews study [Seidl et al. (2012b)](.qmd). The download package includes:
+<ul>
+<li>The executable and all required libraries. Just unzip and run, no need for installation</li>
+<li>The full C++ source code of iLand (src.zip).</li>
+</ul>
+</div></div>
+<div class="cbox-data" style="display: none">
+
+
+iLand is a research and software development effort free of charge. The software is GPL-licencsed, which means you can use, modify and redistribute your modifications. See our [terms and conditions](terms-and-conditions.qmd) for more details. Since we are curious as to who is using the model we kindly ask you to fill in the mini-survey below.  The download should start after clicking the "submit" button.
+<form action="/get_iland/iland_download.php" name="downloadform069" onsubmit="return validateDownloadForm('downloadform069');" method="post">
+<input type="hidden" name="file" value="iLandPackage0.69.zip">
+<table>
+<tr><td>Name:</td><td><input type="text" name="name" size="60"></input></td></tr>
+<tr><td>Country:</td><td><input type="text" name="country" size="60"></input></td></tr>
+<tr><td>e-Mail:</td><td><input type="text" name="email" size="60"></input></br><small>(Optional; if you provide an e-mail address, we'll notify you when new major releases come out.)</small></td></tr>
+<tr><td></td><td><input type="checkbox" name="agree" value="Bike" /> I accept the [terms and conditions](terms-and-conditions.qmd) for downloading and using iLand.</td></tr>
+<tr><td></td><td><input type="submit" style="padding: 0px 50px; font-size: 1em; "></td></tr>
+</table>
+</form>
+
+</form>
+
+
+</div>
+</div>
+</br>
+<div class="cbox expandable">
+<div class="cbox-title" style="text-align: left; font-weight: normal"><img src="display12" alt="Image" style="margin: 5px" align="left"/><div style="margin-left: 120px">
+<h3>current iLand development version</h3>
+We are currently working on improvements and new features for iLand. We plan on releasing new versions periodically once the new developments have undergone peer review and are published in the scientific literature.
+In case you want more information on these ongoing developments, or want to use the latest version of iLand, please [contact us](contact-information.qmd).
+</div>
+</div>
+<!-- download end -->

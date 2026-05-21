@@ -1,0 +1,33 @@
+---
+title: "temperature response"
+---
+
+The daily growth response to temperature is modeled by a means of a state acclimation approach in iLand (cf. [Mäkelä et al. 2004](http://treephys.oxfordjournals.org/cgi/reprint/24/4/369)). A first order dynamic delay model is used to calculate the effective temperature *TE* from daily ambient air temperatures *T* (Eq. 1)
+
+$$
+TE_{d}=TE_{d-1}+\frac{T_{d}-TE_{d-1}}{\tau }
+$$
+
+where the index *d* represents a respective day of the year, and *τ* the time constant of the delay process. The state of temperature acclimation *TA *is derived accounting for a threshold value of delayed temperature *TE<sub>0</sub> *(Eq. 2)
+
+$$
+TA_{d}=max(TE_{d}-TE_{0}\: ;\: 0)
+$$
+
+The temperature modifier *f<sub>temp</sub>* is finally derived as (Eq. 3)
+
+$$
+f_{temp}=min(\frac{TA_{d}}{TA_{max}}\: ;\: 1)
+$$
+
+where the parameter *TA<sub>max</sub>* determines the value of *TA<sub>d</sub>* at which the temperature modifier attains its saturating level.
+
+This approach to model temperature response to growth has successfully been applied in a RUE-model by [Mäkelä et al. (2008)](http://dx.doi.org/10.1111/j.1365-2486.2007.01463.x) recently. Compared to the frequently used parabolic response function (e.g., [Landsberg et al. 2003](http://dx.doi.org/10.1016/S0378-1127(01)00804-0)) this approach does not simulate temperature-related growth reductions at high temperatures. It furthermore prevents an unrealistic immediate response to mild temperatures in winter month due to the implemented delay process. In an empirical analysis for plots across Europe [Mäkelä et al. (2008)](http://dx.doi.org/10.1111/j.1365-2486.2007.01463.x) found *τ* to vary between 1.8 and 11.1 days with a significant negative trend over latitude. Due to its daily resolution a frost modifier as introduced by [Landsberg and Waring (1997)](http://dx.doi.org/10.1016/S0378-1127(97)00026-1) is obsolete in iLand.
+
+
+
+
+::: {.callout-note title="citation"}
+[Seidl, R., Rammer, W., Scheller, R.M., Spies, T.A. 2012](http://dx.doi.org/10.1016/j.ecolmodel.2012.02.015). An individual-based process model to simulate landscape-scale forest ecosystem dynamics. Ecol. Model. 231, 87-100.
+:::
+

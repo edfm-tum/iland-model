@@ -1,0 +1,191 @@
+---
+title: "initialize trees"
+---
+
+iLand supports various ways to initialize trees in the model. Tree initialization can be based on single trees, on dbh-distributions, provided for resource unit cells or for given stand polygons.
+
+
+The main switch in the [project file](project-file.qmd) is *world.initialization.mode*. Possible parameters are given in the following table:
+
+
+| **mode** | **Description** |
+| --- | --- |
+| single | load single trees from a single file for the whole landscape. The coordinates of trees are relative to the local project reference system (i.e., 0/0 is the lower left corner of the project area) |
+| unit | load from an initialization file for each resource unit; this uses the "environment file" approach described [here](simulation-extent.qmd). |
+| map | the landscape is divided in "stands" using a stand-grid. For each stand a initialization file is loaded. This approach is described [here](landscape-setup.qmd). The mode used for individual stands can be either "single" or "distribution" |
+| standgrid | as in *map* mode, the landscape is divided in stands - see [landscape setup](landscape-setup.qmd). But instead of loading many small files, one large init file is loaded. The init file needs to have a column named *stand_id*. For each stand the respective section of the init file is processed. |
+| snapshot | The whole landscape is loaded from a *vegetation snapshot* (see also [Object Globals](../apidoc/classes/globals.qmd), and the section [## supported initializataion files
+
+
+Currently, iLand supports two text file based input formats. One handles a list of tree individuals with defined locations and properties. The 2nd format deals with tree distributions and describes a stand using a couple of simple properties.
+iLand is able to load single tree files directly in Picus format.
+The type of data is determined by the key *world.initialization.type*. The following table gives an overview over the available options.
+
+| **Type** | **Description** |
+| --- | --- |
+| single | This specifies a single tree list. Each row of the data file defines one tree. |
+| distribution | Here the data is provided for dbh-classes. |
+| picus | This can be used to load Picus single tree files. Almost equal to *single* (note the different column names) |
+| iland | equivalent to *distribution* |
+
+
+
+
+## Single tree input files
+
+
+These mode is used, when the key *world.initialization.type* is set to *picus* or *single*. Not all possible columns of the picus init files are used. The following table provides an overview:
+
+| **Column** | **Required** | **Description** |
+| --- | --- | --- |
+| id | no | unique tree id. if omitted, a consecutive number is generated. |
+| x | yes | x-coordinate (metric) within the resource unit / landscape |
+| y | yes | y-coordinate (metric) within the resource unit / landscape |
+| bhdfrom or dbh | yes | dbh (cm) of the tree. Specify column either as *bhdfrom* or as *dbh*. |
+| treeheight or height | yes | height of tree. Provide in cm if column is named *treeheight* or in meter if column name is *height*. |
+| species | yes | tree species. Use the iLand-species-keys (e.g. piab, fasy, ...), for compatibility reasons also a subset of Picus-Species-Ids can be used (currenty: 0,1,17) |
+| age | no | age of tree in years. If column is omitted or individual values are either blank or zero, the age is estimated using ratio of current height to maximum height of the species. If no initial age is specified, also only the height component of the [#respiration_and_aging |
+
+For compatibility reasons, the datalines may be enclosed by an opening and closing tree tag. Comment lines begin with '#' and can occur everywhere in the input file.
+
+
+### Example I - Picus style:
+
+
+
+```
+<trees>
+x;y;bhdfrom;treeheight;species
+31.11;8.01;42.2;2970;0
+21.11;15.11;52.8;3350;0
+11.51;25.11;55;3500;0
+</trees>
+```
+
+
+
+
+### Example II - alternative style:
+
+
+
+```
+# this is a sample tree input file
+# note that the height is given in meter
+# the 2nd tree has no age
+x;y;species;dbh;height;age
+31.11;8.01;piab;42.2;29.7;120
+21.11;15.11;piab;52.8;33.5;0
+11.51;25.11;fasy;55;35;100
+```
+
+
+
+
+## Tree distributions
+
+
+These mode is used, when the key *world.initialization.type* is set to *iland*. Each line in the input file describes a number of trees (*count*) of a certain *species*. The diameter is randomly chosen from the range *dbh_from* and *dbh_to*. The height is calculated using the defined height/diameter ratio (*hd*). All trees of this class have the same *age*.
+The tree species is described by the alphanumeric code used for defining the tree species (e.g. 'piab' for picea abies).
+An example:
+
+```
+# testfile for iLand - initialization.
+# Lines starting with '#' are considered as comments.
+# columns are: count, species (strings), dbh_from, dbh_to, hd, age
+species;count;dbh_from;dbh_to;hd;age
+piab;50;50;60;50;120
+piab;100;40;44;70;100
+piab;200;30;40;80;50
+```
+
+The table gives an overview over the available columns:
+
+| **column** | **description** |
+| --- | --- |
+| count | number of trees per hectare |
+| species | the alphanumeric code of the tree species (e.g. piab, fasy) |
+| dbh_from, dbh_to | the range of diameters (cm) for the trees. For each tree, the actual diameter is choosen from a uniform random distribution. |
+| hd | height-diameter relation (m/m). The height of each tree is calculated as dbh*hd |
+| age | age of the trees in years, has to be an integer value. |
+| density | (optional)density value ranging from -1..1 (see description below). Default=0. |
+| stand_id | indicates the *stand* in *standgrid* mode. |
+
+
+
+
+### Tree locations
+
+
+The positions of the individual trees are derived by applying an pseudo-random approach. This includes two steps:
+First, trees are distributed to 10x10 m patches by executing the following statements in a loop:
+
+* The input file is processed in strict sequential order, i.e. line by line
+* In *unit* mode, the space of the resource unit (1ha) is virtually divided in 100 cells with 10x10m size, or (in *map* or *standgrid* mode) the area is divided in the 10x10m cells defined by the stand grid. This cells are sorted according to the sum of the basal area of trees that are **already** on the respective cell.
+* for each tree a random number is drawn from a custom probability distribution (defined by the function provided by *model.initialization.randomFunction*), which decides the target 10x10m cell. A random number of 0 means the cell with the lowest accumulated basal area, a value of 1 selects the cell with the highest basal area. The default function is '1-x^2'. In that case approx. 40% of the trees are moved to the 20% of cells with the lowest basal areas.
+* the *density* parameter defines how this value is applied:
+
+
+$$
+p_{pdf}=\left\{\begin{matrix}
+density>=0: p_{pdf}
+\\ density<0: 1-p_{pdf}
+
+\end{matrix}\right.
+$$
+
+
+$$
+p=p_{pdf}\cdot abs(density)+P_{uniform}\cdot(1-abs(density))
+$$
+
+A density values greater than zero tells iLand to place trees on cells with lower basal area (i.e., the model tends to fill gaps). Contrary, negative values lead to a more clustered tree distribution. Lower absolute values of *density* weakens the spreading/clumping (using a density value of zero falls back to a uniform random distribution).
+
+* the list of the 100 10x10m cells is resorted. This is done for every 2nd tree (if total count of trees is below 20), every 10th tree (totalcount<100) or every 30th tree (for tree counts greater than 100)
+
+The second phase of the process is to determine tree locations within each 10x10m cell. The basic resolution of the light grid is 2x2m, thus each 10x10 cell contains 25 possible locations. Note that this does not limit the possible number of trees - if initializing more than 25 trees on a cell, locations are simply reused.
+A predefined sequence of tree positions is defined for even and uneven resource units (based on the resource unit index, thus neighboring cells produce slightly different patterns reducing edge-effects). Trees are assigned to locations following that scheme. Some variability is introduced by some random noise during that process.
+
+
+
+## Using LIDAR based maximum tree heights
+
+
+A *heightGrid* can be provided to force iLand to respect a grid of maximum tree heights during the initialization of trees. Such a grid is usually derived from LIDAR and holds for each pixel the maximum tree height, i.e. the top canopy height. The format of the grids are ESRI ASCII text files (see also [landscape setup](landscape-setup.qmd)). Internally, the maximum tree height is used at a 10m resolution (providing the input grid with the same 10m resolution as the stand grid is recommended). Note, that the height grid mechanism is only available when also a grid with stand polygons is used (see [landscape setup](landscape-setup.qmd)). The grid file is defined by the *fileName* setting in the *initialization.heightGrid* section of the [project file](project-file.qmd).
+The general approach of selecting suitable tree locations [#Tree_locations](initialize-trees.qmd)) is extended, when a *heightGrid* is enabled. The equation given by the *fitFormula* setting is used to estimate the probability that the focal tree (with height *h*) is suitable for the 10m cell that is selected by the density-based algorithm (with maximum canopy height *h<sub>max</sub>*). A uniform random number between 0 and 1 decides then whether the tree is placed on that cell, or not. In the latter case, the algorithm repeats the process *maxTries* times. In case no suitable 10m cell is found even after *maxTries* times, the tree is placed to the next proposed cell (in this case iLand produces a log message). The variable of the user-defined *fitFormula* equation is the relative height of the tree (i.e., *h/h<sub>max</sub>*). The default value *polygon(x, 0,0, 0.8,1, 1.1, 1, 1.25,0)* uses the polygon() function of the iLand [expression engine](expression.qmd) and may be interpreted as follows: the suitability of a cell increases linearly from 0 to 1 if the tree is between 0% and 80% of the top canopy height, keeps a high value up to 110% of the canopy height (usually LIDAR top heights are a somewhat lower than the top tree heights), and goes back to a suitability of 0 at 125%. Thus, trees are more likely placed on cells that have a similar canopy top height. However, trees can be placed with some probability below the top canopy layer.
+
+
+
+## Snapshots
+
+
+A *snapshot* is a full representation of the internal vegetation and soil state and is stored in a database. This *snapshot* can later be used to restore a previous vegetation state. The snapshot includes all state variables of trees, saplings, snags and soil-pools.
+A *snapshot* is created by using the Javascript function [saveModelSnapshot(](../apidoc/classes/globals.qmd)). This function creates a SQLite database file (which can be quite large) and an additional resource-unit map as a ESRI raster-file with the same name (and .asc as file extension).
+To load a snapshot, one can use either the Javascript function [loadModelSnapshot(](../apidoc/classes/globals.qmd)), or use the mode *snapshot* in the project-file for the tree initialization (see top of this page).
+It is also possible to restore only a part of a stored snapshot (e.g., to set up a smaller part of a larger landscape for testing purposes): this is automatically done when the extent of the simulated landscape is smaller than the landscape used for creating the snapshot.
+When regeneration is disabled (*model.settings.regenerationEnabled*), then saplings are not loaded, which can speed up the process of initializing the model remarkably.
+
+
+
+## Initialize saplings
+
+
+iLand simulates *saplings* (trees<4m height) using a cohort approach on a 2x2m resolution. This approach reduces the number of individual trees that need to be handled (per hectare, the maximum number of cohorts of a species is 2500, but the number of represented trees can be higher).
+The model provides a mechanism to initialize saplings from an input file. The input file is specified with the key *world.initialization.saplingFile*. The sapling input file is a text file with the following columns:
+
+
+| **Column** | **Required** | **Description** |
+| --- | --- | --- |
+| stand_id | yes | the ID of the stand polygon |
+| species | yes | the alphanumeric key of the species (e.g. 'piab') |
+| count | yes | the number of represented trees per ha that should be occupied. Note that the number of cohorts is smaller (since each cell represents multiple individuals, see ((sapling growth and competition), see below for details). |
+| height | (yes) | height of the sapling cohorts in m. Specify either *height* or *height_from* AND *height_to*. |
+| height_from | (yes) | for each pixel, the height (in m) is randomly selected between *height_from* and *height_to*. See also "height". |
+| age | no | specifies the age (in years) of the cohort. If not specified, a linear relationship between age and height is used to estimate age (see *age4m*). |
+| age4m | no | specify the age of the cohort at the height of 4m. The actual age is calculated by assuming a linear relationship between age and height (min: 0.05m, max: 4m). If no age is specified, a *age4m* of 10 years is assumed. |
+| min_lif | no | this specifies a minimum value for the LIF (light influence field, see [competition for light](.qmd#snapshots)(competition-for-light.qmd) 0: no light available at the ground, 1: full exposure, no shading). If provided, only pixels with a LIF value above that threshold are used for initializing saplings. (If there are not enough pixels in the stand that meet that criterion, the *count* brightest pixels are used). |
+
+
+Note, that currently iLand only supports initializing saplings when the [#standgrid mode|standgrid](initialize-trees.qmd) mode is used.
+The algorithm adds cohorts on random positions of the stand (potentially limited to cells with enough light) and stops when either the number of represented trees is reached, or when the number of misses (failed attempts, e.g. because a cohort of the species is already on the position) reaches the number of target trees.
+

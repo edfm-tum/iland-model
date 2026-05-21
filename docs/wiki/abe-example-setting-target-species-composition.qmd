@@ -1,0 +1,118 @@
+---
+title: "ABE Example - setting target species composition"
+---
+
+During tending phases, one of the major goals of forest management is to modify the species composition to better comply to the target species composition. In reality, this process is quite complex and includes many detailed decisions (which trees to keep and/or liberate, should extra trees be planted, and if so, where, ...). An approach to mimic this in iLand is given in this example.
+
+The target species composition can be set for the [custom thinning](abe-activity-thinning.qmd) activities. It works as follows:
+
+* *onEvaluate*-handler: the handler function is expected to return a Javascript object that define  removal probability per species. For example, this could look like:
+
+-+{ piab: 0.3, fasy: 0.5, rest: 0.9}+-
+
+* if such an object is provided, the algorithm does its selection of trees according to these probabilities; in the example, a spruce would be selected with p=0.3 (i.e. 70% chance of not being taken). The probability for ‘rest’ is used for all species not explicitly addressed.
+* Those probabilities are derived from (i) the current state of the forest stand, and (ii) the target species composition as defined e.g. for the STP (see the -+options+- property of STPs):
+
+The following code snipped illustrates the approach:
+
+
+```javascript
+// add target species shares in the options of STPs
+fmengine.addManagement({ … <other stuffs>,
+		options: { plan: {piab: 0.5, fasy: 0.3, lade: 0.2}}}, 'stp04');
+
+// use this in the activities of the STP: call a JS function with the plan
+// defined for the STP and other parameters
+var a_thinning2 = { … <other stuff>,
+       thinning: 'custom',
+	   onEvaluate: function(){ var t=
+                 calculateSpeciesProbabilities(stp.options.plan,
+                                              this.targetValue, 5);
+			if (stand.trace) { console.log("plan"); print(t);}
+			return t; },
+       targetValue: 30, …
+    };
+```
+
+
+* The stand treatment program includes the target composition as part of the  -+options+-.
+* In the -+custom+- thinning activity, the -+stp.options.plan+- is used in calling a javascript function (see below). Using this approach, the same activity (-+a_thinning2+-) can be used from different programs (with different target species compositions).
+* the -+onEvaluate+- handler returns the species-specific removal probabilities given in -+t+-
+
+Below is this custom Javascript code, that acutally calculates the probabilties:
+
+
+
+```javascript
+// the custom-javascript function:
+// plan_rel: object with target species composition (fractions)
+// pct_reduction: % of basal area to remove in the operation
+// min_value_remaining: minimum basal area (m2/ha) that should remain
+// Return: object with removal probabilities pers species
+function calculateSpeciesProbabilities(plan_rel, pct_reduction, min_value_remaining)
+{
+	// collect basal areas (current state)
+	var state_abs = {};
+	var total = 0;
+	for (var i=0;i<stand.nspecies;++i) {
+		state_abs[stand.speciesId(i)] = stand.basalArea(i);
+		total += stand.basalArea(i);
+	}
+
+	var target = Math.max(total * (100-pct_reduction)/100, min_value_remaining );
+	if (target == min_value_remaining)
+		return false; // in this case: cancel the thinning
+
+  // call the ‘magic’ function that does the calculation
+  var plan = alignTarget(state_abs, plan_rel, target);
+  return plan;
+}
+
+function alignTarget(full_state_abs, plan_rel, target_abs)
+{
+	var plan = {}; // empty object
+	var state_abs = {rest: 0}; //
+
+	var plan_sum = 0;
+	var state_sum = 0;
+	var s;
+	for (s in full_state_abs) {
+		if (s in plan_rel)
+			state_abs[s] = full_state_abs[s];
+		else
+			state_abs['rest'] += full_state_abs[s];
+	}
+	if (!('rest' in plan_rel))
+		plan_rel['rest'] = 0;
+	//print(state_abs);
+
+	for (s in state_abs) {
+		//fmengine.log(s + ": " + target_abs * plan_rel[s] + ": " + state_abs[s] );
+		plan[s] = Math.min(target_abs * plan_rel[s], state_abs[s] );
+		//fmengine.log(Math.min(target_abs * plan_rel[s], state_abs[s] ));
+		plan_sum += plan[s];
+		state_sum += state_abs[s];
+	}
+	//print(plan);
+	//fmengine.log(plan_sum); fmengine.log(state_sum);
+	if (plan_sum==0)
+		return false;
+	plan_sum = 0;
+	for (s in state_abs) {
+		plan[s] = state_abs[s]- plan[s];
+		plan_sum += plan[s];
+	}
+	for (s in state_abs) {
+		plan[s] = ( plan[s] * (state_sum-target_abs) / plan_sum);
+		if (state_abs[s]>0)
+			plan[s] /= state_abs[s];
+		else
+			plan[s] = 1; // do nothing when nothing is in state
+	}
+	return plan;
+}
+```
+
+
+* The -+calculateSpeciesProbabilities()+- function determines first the basal area of each species on the stand ([using the -+stand+- object of the API](http://iland-model.org/apidoc/classes/Stand.html))
+* If there are enough trees (basal area) on the stand, the function -+alignTarget()+-  actually does the calculation of species removal probabilities.

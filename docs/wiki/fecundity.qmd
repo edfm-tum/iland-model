@@ -1,0 +1,72 @@
+---
+title: "fecundity"
+---
+
+
+
+
+
+# Background
+
+
+There is a clear inverse relationship between seed size and seed production ([Henery and Westoby 2001](http://www.jstor.org/stable/3547165)) and consequently survival during seedling establishment ([Westoby et al. 2002](http://dx.doi.org/10.1146/annurev.ecolsys.33.010802.150452)).
+
+However, for the overall reproductive success of a population, and consequently also for its ability to colonize new areas or migrate in response to environmental changes, not only seed production, dispersal and germination rate have been found to be important but also the overall life-historic strategy, i.e. the seed mass, age to maturity, mortality rate and maximum age need to be considered. [Moles et al. (2004a)](http://www.jstor.org/stable/3599497), for instance, showed that the advantages of seedling-rich species are not fully compensated by higher germination and survival rates of species with higher seed mass. If life-historic traits such as species-specific longevity and crown coverage are taken into account, these regenerative advantages of seedling-rich species diminish. [Moles et al. (2004b)](http://www.jstor.org/stable/3599498) found no significant relationship of seed production with seed size, if the former is integrated over the lifetime of individuals. The importance of a full inclusion of life historic traits is furthermore underlined by the work of [Clark et al. (2001)](http://www.jstor.org/stable/3078967) and [Clark et al. (2003)](http://dx.doi.org/10.1890/01-0618), who demonstrated that not only the shape of the dispersal kernel but also its scaling, for which the authors use the net reproductive rate (i.e. seed production minus mortality until and after maturity), has strong impacts on long-distance dispersal.
+
+The approach to scale [dispersal](dispersal.qmd) probability kernels in iLand basically follows the concept of [Clark et al. (2001)](http://www.jstor.org/stable/3078967). However, while these authors solve the problem analytically, most processes contributing to the net reproductive rate *sensu *Clark et al. are explicitly simulated in iLand (e.g., [establishment](establishment.qmd), [mortality of saplings](sapling-growth-and-competition.qmd), [mortality of adult trees](mortality.qmd)). To additionally account for seed production potential and short-term seed survival rate we employ a fecundity factor to scale the dispersal probability kernel.
+
+        *
+
+
+
+
+# Deriving iLand fecundity
+
+
+This section describes an approach to determine the fecundity input parameter in iLand from published literature sources. Note that computing fecundity (*R*) is not actually part of the iLand code and needs to be provided as species-specific input parameter. Since *R* is an [input parameter](species-parameter.qmd) it can easily be modified from the generic derivation outlined here if better data are available.
+
+Fecundity *R* is defined as seedling potential per m² crown area. Based on recent work on regeneration ecology we explicitly take species differences in seed mass into account in its derivation. [Moles et al. (2004b)](http://www.jstor.org/stable/3599498) found a strong relationship between seed production per year and m² canopy area and seed mass (*sm*), i.e. *R* can be calculated from widely available seed mass data by Eq. 1.
+
+$$
+log(R)=b0+b1\cdot log(sm)
+$$
+
+with b0 and b1 empirical parameters determined from data by [Moles et al. (2004b)](http://www.jstor.org/stable/3599498). Species-specific seed mass *sm* is for instance compiled by [Burns and Honkala (1990)](http://tinyurl.com/yjf5cam) for a large number of species.
+
+The species-specific germination rate (*p<sub>g</sub>*) modifies fecundity. In addition, [Moles et al. (2004a)](http://www.jstor.org/stable/3599497) showed that, while not fully compensating for the difference in seed production, seedlings of species with higher seed mass have higher survival probabilities over the first weeks and months after germination. Although the unexplained variance in the data of [Moles et al. (2004a)](http://www.jstor.org/stable/3599497) is high, this factor can be taken into account by means of Eq. 2, estimating short term seedling survival probability. Fecundity *R* is consequently the result of these processes(Eq. 3).
+
+$$
+log(p_{s})=k0+k1\cdot log(sm)
+$$
+
+with *k0* and *k1* empirical coefficients parameterized from data in [Moles et al. (2004a)](http://www.jstor.org/stable/3599497). Note that while the fecunditiy-related aspects of reproductive rate can be calculated as Eq. 3, other aspects such as [envrionmental influence on establishment](establishment.qmd) and [mortality of saplings](sapling-growth-and-competition.qmd) are explicitly considered in further steps of the iLand regeneration module.
+
+$$
+R=R\cdot p_{s}\cdot p_{g}
+$$
+
+
+        *
+
+
+
+
+# Applying fecundity to calculate a probability of seed availability
+
+
+The probability of seed availability is calculated for cells of *r* x *r* in iLand (currently: *r*=20m). Consequently, *R* is scaled with *r*² in cells that are occupied by a species above maturity age. Considering a homogeneous, mono-specific stand over time, this means that the seed production potential per cell stays constant, while the number of mature individuals per cell decreases as the trees grow bigger. In other words, this scaling with occupied area ([Moles et al. 2004b](http://www.jstor.org/stable/3599498)) assumes an increasing seed production with individual tree size, and is thus in line with previous approaches using tree size as predictor of seed production (e.g., [Price et al. 2001](http://dx.doi.org/10.1023/A:1012579107129), [Garman 2004](http://dx.doi.org/10.1016/j.ecolmodel.2003.10.015)). It is furthermore consistent with the close relationship between seed production and leaf area, since leaf area fluctuates around a plateau in mature stands with closed canopy.
+The dispersal kernel (*P*, scaled to an integral probability of 1) is used to distribute seeds (i.e. *R*) over the landscape, and probabilities are calculated for the resolution of a *LIF* cell (i.e. *l*=2m), which is the grain the regeneration module operates on, by Eq.4. In other words, the seed availability probability (*p<sub>seed</sub>*) for a cell *l* is 1 if at least one seed survives its first weeks.
+
+$$
+p_{seed}=P\cdot R\cdot \frac{l^{2}}{r^{2}}
+$$
+
+
+Note that for cells *r* that are occupied with trees > maturity *p<sub>seed</sub>* is set to 1 (see [He and Mladenoff 1999](http://www.jstor.org/pss/3659024)).
+
+
+
+
+::: {.callout-note title="citation"}
+[Seidl, R., Spies, T.A., Rammer, W., Steel, E.A., Pabst, R.J., Olsen, K. 2012](http://dx.doi.org/10.1007/s10021-012-9587-2). Multi-scale drivers of spatial variation in old-growth forest carbon density disentangled with Lidar and an individual-based landscape model. Ecosystems, DOI: 10.1007/s10021-012-9587-2.
+:::

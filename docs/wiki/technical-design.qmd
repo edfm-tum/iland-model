@@ -1,0 +1,36 @@
+---
+title: "technical design"
+---
+
+
+
+### Principles
+
+
+The basic principles of iLand, the ecosystem model, and iLand, the software implementation, were developed in a joint effort. While model design decisions clearly were influenced by implementation considerations, the impact exerted by the general modeling task on the technical design was even larger. On that end, the goal of simulating a large number of individual objects (i.e. trees), accompanied with the need for flexibility in application (which seems to be a general need for models in the scientific world), led to the actual software.
+Main principles are:
+
+* Performance
+* low RAM footprint (iLand loads everything into the RAM, therefore better RAM usage means larger landscapes)
+* easy use of multiple CPU cores/multi threading
+* potential use of the extensive calculation power of graphics devices (GPGPUs)
+* potential to use iLand on high performance computing clusters
+* a graphical user interface
+* open source / cross platform
+
+
+
+### Technolgies
+
+
+
+* Qt - the basic development framework: <http://qt.io>
+* SQLite - the lightweight database component: <http://www.sqlite.org>
+
+
+
+### 3rd party components
+
+
+
+* MersenneTwister.h - a implementation of a high-quality random number generator under a BSD licence: <http://www-personal.umich.edu/~wagnerr/MersenneTwister.html> - works great!

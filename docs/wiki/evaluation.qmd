@@ -1,0 +1,8 @@
+---
+title: "evaluation"
+---
+
+Model evaluation is an important task in the model development cycle, and a continuous effort of the iLand team. We aim at evaluating iLand against a variety of data sources (from growth and yield data to Lidar data) and ecosystem characteristics (from forest composition to the ecosystem C budget). Besides the evaluation studies presented in iLand publications in the peer-reviewed literature (see e.g., [Seidl et al. 2012](http://dx.doi.org/10.1016/j.ecolmodel.2012.02.015)), here in-depth evaluation studies of particular model processes will be presented.
+
+* [evaluation of light competition](evaluation-of-light-competition.qmd)
+* [evaluation of the fire module](fire-module-evaluation.qmd)

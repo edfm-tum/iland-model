@@ -1,0 +1,51 @@
+---
+title: "Software Tools"
+---
+
+
+
+# Useful tools in the iLand world
+
+
+
+
+
+## Programming
+
+
+
+
+### Qt toolkit
+
+
+iLand uses the cross platform C++ toolkit [Qt](http://qt-project.org). Qt is available for Windows, Linux and Mac platforms (along several mobile platforms like Symbian, Maemo, and others) - so you are not locked in with regard to operating systems. The [Qt framework](http://en.wikipedia.org/wiki/Qt_(framework)) is open source and offers lots of functionality beyond the graphical user interface.
+
+
+## Database
+
+
+iLand uses the SQLite (<http://www.sqlite.org/>) database. This is a leight-weight open source database that requires no installation, is cross platform and has the reputation to be very fast.
+SQLite stores the all tables of a database within one single file. This approach could get quite handy for the storage of model outputs.
+
+
+### Database management
+
+
+There are several open source tools available that help the developer / user with the handling of data. Especially important are the import / export features.
+Over time, I tested a number of packages:
+
+1. Sqliteman (<http://sqliteman.com/>). This is my favorite: It is written in Qt, and seems to offer all which is needed.
+1. SqlLite Studio (<http://sqlitestudio.one.pl>). This tool is nice, because it requires no installation (just a single Exe-File of ca. 2.5MB), but lacks the ability to import data (and has a slightly old-fashioned look and feel). One advantage is the convenient editing of table rows (dubbed as Form view).
+1. [DB Browser for SQLite](http://sqlitebrowser.org/): a nice and actively maintained tool available for Mac/Windows. Functionality is on par with Sqliteman.
+1. a new addition to the list: a [Firefox-plugin](https://addons.mozilla.org/en-US/firefox/addon/5817) to edit SQLite databases(!). It supports renaming of columns, export to CSV and much more. Though originally designed to view/edit Firefox related data (yes, Firefox stores all its stuff (bookmars, history, ...) in a SQLite database), it does a good job for iLand data as well. This is a nice example of the open source biotop...
+
+A ODBC driver for the DB is also available: <http://www.ch-werner.de/sqliteodbc/>, some discussion on <http://www.sqlite.org/cvstrac/wiki?p=SqliteOdbc>. This should allow access from other tools  e.g. R (statistics package).
+Just recently, I stubled upon the [RSQLite Package for R](http://cran.r-project.org/web/packages/RSQLite/index.html) - this should allow direct access from R...
+
+
+
+### Database performance
+
+
+The SQLite database used through the QSqlDatabase abstraction layer of Qt shows awesome performance. It is very fast when writing large output tables (a test table with just 3 or 4 columns is filled with 100000 rows/sec), but also fast at reading. Here the test logical test case is [climate data](climatedata.qmd) - due to iLand's use of daily data. Here a query of 100 years (i.e. approx. 36000 rows) takes about 0.5 seconds.
+One performance issue, though, is the use of transactions. If DML statements (insert, update) are not explicitly surrounded by a transaction (i.e. *begin transaction* and *end transaction*), the execution is suspended until the data is actually written back to disk.

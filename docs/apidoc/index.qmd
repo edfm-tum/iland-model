@@ -1,0 +1,17 @@
+---
+title: "iLand Javascript API"
+sidebar: apidoc
+---
+
+iLand includes an embedded Javascript scripting engine that allows you to automate tasks, script custom disturbances, evaluate stand state, and configure the Agent-Based Management Engine (ABE).
+
+This section provides a unified API documentation for classes exposed from C++ to the Javascript environment.
+
+### Core Javascript Classes:
+
+*   **[Grid](classes/grid.qmd)**: High-performance 2D floating-point spatial grid access (e.g. canopy heights, forest cover, values from disturbance layers).
+*   **[Tree](classes/tree.qmd)**: Introspection of individual tree-level states (species, DBH, height, crown status).
+*   **[Globals](classes/globals.qmd)**: Main helper utilities (paths, simulation year, alerts, grid utilities).
+
+### Automation:
+The pages in this API section are automatically parsed from comments inside the C++ source files (bridging Javascript to Qt), ensuring documentation remains in sync with the codebase.

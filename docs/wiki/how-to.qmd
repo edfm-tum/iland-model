@@ -1,0 +1,13 @@
+---
+title: "how to"
+---
+
+
+
+## resources for hands-on iLand applications
+
+
+
+* estimating site parameters
+* evaluating iLand
+ 

@@ -1,0 +1,598 @@
+---
+title: "Class: TreeList"
+sidebar: apidoc
+---
+
+# TreeList Class
+
+The TreeList class (**`stand.trees`** variable) represents a list of trees that can be manipulated (e.g., harvested) with functions of the class.
+When javascript code is executed in the context of an Activity, a variable 'trees' is available as a property of the `stand` variable (`stand.trees`).
+This TreeList is "linked" to the stand, for example a call to `loadAll()` loads all trees of the stand (and not of the whole landscape).
+Note that a TreeList can created using `new TreeList` - in this
+case the TreeList is not linked automatically to a forest stand (but see also loadFromList()).
+
+## Overview
+### initializing the list
+The main function for loading (i.e. making available for manipulation) trees of a forest stand is `loadAll()` or `load()`. `loadAll()` can be used to load either
+all trees, and `load()` to load only a subset of trees (based on filter criteria).
+### manipulating the content of the list
+The trees in a list (loaded by `load()`) may be manipulated using functions such as `filter()` or `sort()`. There are functions helping to get aggregate values
+(`mean()`, `sum()`), or to get the value of a given `percentile()`.
+### manipulationg trees
+Trees present in the tree list may be harvested or simply cut down. Main functions are `kill()`, `harvest()`. If `simulate` is true, harvested/killed trees
+are only marked for removal. At a later point in time, all marked trees can be removed using `removeMarkedTrees()`.
+### general notes
+The tree list heavily used the expression engine of iLand https://iland-model.org/Expression. Expressions are provided as strings to the
+respective Javascript functions (e.g.,`filter`) and evaluated by iLand. Note that tree species names are treated as a special case (https://iland-model.org/Expression#Constants).
+
+
+## Examples
+```javascript
+// 'trees' variable is available as a property of "stand"
+// this loads *all* trees of the current forest stand (i.e. trees>4m)
+stand.trees.loadAll();
+stand.trees.simulate = true; // enable simulation mode (this is the default)
+// keep only spruce trees with a dbh>20cm in the list:
+stand.trees.filter("species = piab and dbh>20"); // note: piab is a constant and not a string
+// now harvest all trees (since simulate=true, the trees are only marked for harvesting)
+stand.trees.harvest();
+...
+// later: remove all trees from the system that are marked for removal (harvest/kill)
+stand.trees.removeMarkedTrees();
+```
+
+## Properties Overview
+
+| Name | Type | Description |
+| :--- | :--- | :--- |
+| [`count`](#count) | `Integer` *(read-only)* | the number of trees that are currently loaded in the list. |
+| [`simulate`](#simulate) | `Boolean` | When `simulate` is true, harvest operations are not actually executed, but affected trees are marked as either for harvest or killing. Calling `removeMarkedTrees()` then |
+| [`standId`](#standid) | `Integer` *(read-only)* | the ID of the currently active stand (or -1). |
+
+## Methods Overview
+
+| Method | Return Type | Description |
+| :--- | :--- | :--- |
+| [`clear()`](#clear) | `void` | Clear the list without affecting the trees in the list. Note that explcitly clearing the list is usually not necessary (e.g. when using load() ) |
+| [`filter(filter)`](#filter) | `Integer` | Apply a filter on the list. Only trees for which the filter condition `filter` is true, remain in the list. |
+| [`filterRandom(n_trees)`](#filterrandom) | `int` | `filterRandom()` selects randomly `n_trees` from the list and removes all other trees. |
+| [`filterRandomExclude(n_trees)`](#filterrandomexclude) | `int` | `filterRandomExclude()` excludes randomly `n_trees` trees from the list, i.e. the number of trees *after* execution in the list is |
+| [`harvest(filter, fraction)`](#harvest) | `Integer` | Remove the `fraction` of all trees [0..1] for which `filter` evalulates to `true`. Return number of removed trees. |
+| [`kill(filter)`](#kill) | `Integer` | Kill (i.e., cut down and do not remove from the forest) the trees in the list, filtered with `filter`. |
+| [`killSaplings(filter)`](#killsaplings) | `int` | `killSaplings()` provides an access to the cohorts of the sapling layer in iLand https://iland-model.org/sapling+growth+and+competition . |
+| [`load(filter)`](#load) | `Integer` | The `load()` method is the main means to get all the trees of a forest stand into the list. |
+| [`loadAll()`](#loadall) | `Integer` | Load all trees (living trees, >4m height) of the current `stand` into the internal list. |
+| [`loadFromList(other_list, filter)`](#loadfromlist) | `Integer` | The `loadFromList()` method is a way to copy tree list data from a different TreeList object. A typical use case is when you |
+| [`mean(expr, filter)`](#mean) | `double` | Calculates the mean value of a given `expr` that can contain any of the available tree variables. The optional `filter` is another expression |
+| [`percentile(perc)`](#percentile) | `double` | Return the `perc` th percentile (0..100) value from the list of trees. The function requires that a [sort()](treelist.qmd#sort) operation |
+| [`randomize()`](#randomize) | `void` | Randomly shuffles the list of trees. Trees in a newly refreshed list (e.g., `loadAll()`) have a non-random spatial pattern. When |
+| [`removeMarkedTrees()`](#removemarkedtrees) | `Integer` | Check all trees of the stand and either kill or harvest those trees that are marked for that operation. |
+| [`setFlag(value)`](#setflag) | `void` | Set a given `flag` for all trees in the list to `value`. Note that not all possible flags are allowed to be changed. |
+| [`sort(sort_expr)`](#sort) | `void` | `sort()` sorts the tree list according to the numeric value of the expression `sort_expr`. The sort order is ascending, i.e., after sorting the tree with the smallest |
+| [`spatialFilter(grid, filter)`](#spatialfilter) | `int` | `spatialFilter()` filters the tree that are currently in the list based on their spatial location and the content |
+| [`sum(expr, filter)`](#sum) | `double` | Calculates the sum of a given `expr` that can contain any of the available tree variables. The optional `filter` is another expression |
+| [`tree()`](#tree) | `Tree` | `tree(index)` returns the tree with index `index` (index is 0-based) from the current list. The returned Javascript object |
+| [`treeObject()`](#treeobject) | `Tree` | `treeObject(index)` returns the tree with index `index` (index is 0-based) from the current list. A new Javascript object |
+
+## Properties Details
+
+### `count` {#count}
+
+<span class="api-tag tag-type">Integer</span> <span class="api-tag tag-readonly">ReadOnly</span>
+
+the number of trees that are currently loaded in the list.
+
+---
+
+### `simulate` {#simulate}
+
+<span class="api-tag tag-type">Boolean</span>
+
+When `simulate` is true, harvest operations are not actually executed, but affected trees are marked as either for harvest or killing. Calling `removeMarkedTrees()` then
+executes the harvest operation.
+Note: tree variables `markharvest`, `markcut`, `markcrop` are available for use in `filter()` or for visualization in iLand.
+
+---
+
+### `standId` {#standid}
+
+<span class="api-tag tag-type">Integer</span> <span class="api-tag tag-readonly">ReadOnly</span>
+
+the ID of the currently active stand (or -1).
+
+---
+
+## Methods Details
+
+### `clear()` {#clear}
+
+**Returns:** `void`
+
+Clear the list without affecting the trees in the list. Note that explcitly clearing the list is usually not necessary (e.g. when using load() )
+
+**Example:**
+
+```javascript
+stand.trees.clear(); // empty lsit
+    stand.trees.log(stand.trees.count); // -> 0
+```
+
+---
+
+### `filter(filter)` {#filter}
+
+**Returns:** `Integer`
+
+Apply a filter on the list. Only trees for which the filter condition `filter` is true, remain in the list.
+
+See also: [simulate](treelist.qmd#simulate)
+
+**Parameters:**
+
+*   **`filter`** (`String`): A valid filter Expression.
+
+**Return Value Description:** the number of trees that remain in the list.
+
+**Example:**
+
+```javascript
+stand.trees.loadAll();
+    stand.trees.filter('dbh>10'); // only trees with dbh>10 remain in the list
+    stand.trees.filter('incsum(volume)<100'); // keep trees with a total of 100m3 in the list
+```
+
+---
+
+### `filterRandom(n_trees)` {#filterrandom}
+
+**Returns:** `int`
+
+`filterRandom()` selects randomly `n_trees` from the list and removes all other trees.
+
+See also: [filterRandomExclude()](treelist.qmd#filterrandomexclude)
+
+**Parameters:**
+
+*   **`n_trees`** (`int`): the number of trees to select randomly from the list
+
+**Return Value Description:** the number of trees that were selected.
+
+**Example:**
+
+```javascript
+stand.trees.loadAll(); // load all trees
+    // filter so, that only 100 trees remain in the list:
+    stand.trees.filterRandom(100);
+    // do something, e.g.,
+    stand.trees.harvest(); // remove those 100 trees
+```
+
+---
+
+### `filterRandomExclude(n_trees)` {#filterrandomexclude}
+
+**Returns:** `int`
+
+`filterRandomExclude()` excludes randomly `n_trees` trees from the list, i.e. the number of trees *after* execution in the list is
+`n_trees_before - n_trees` (the number of trees before the call minus the trees excluded). This is useful when you want to
+keep a number of trees *remaining* on the stand (i.e., not harvested). Note that the exclusion is relative to the current content of the list (e.g., filtered).
+
+A typical use is to reduce the number of trees on a stand to a given number of stems (e.g., from a yield table).
+
+See also: [filterRandom()](treelist.qmd#filterrandom)
+
+**Parameters:**
+
+*   **`n_trees`** (`int`): the number of trees to select randomly from the list
+
+**Return Value Description:** the number of trees that were selected.
+
+**Example:**
+
+```javascript
+stand.trees.loadAll(); // load all trees, e.g. 1500 trees
+    let yield_table_target = 1200;
+    stand.trees.filterRandomExclude(yield_table_target); // 300 trees remain in the lsit
+    // do something, e.g.,
+    stand.trees.harvest(); // remove trees in the list (n=300), i.e. 1200 will remain on the stand
+
+    // using a subset of trees:
+    stand.trees.load('species = fasy'); // load all beech trees
+    stand.trees.filterRandomExclude(50); // 50 beech trees should not remain in the list (i.e. excluded from harvest)
+    stand.trees.harvest(); // remove all but 50 beech trees from the stand
+```
+
+---
+
+### `harvest(filter, fraction)` {#harvest}
+
+**Returns:** `Integer`
+
+Remove the `fraction` of all trees [0..1] for which `filter` evalulates to `true`. Return number of removed trees.
+When trees are harvested, the biomass is removed from the system (compare kill/cut).
+When `harvest()` is called without parameters, then all trees that are currently in the list are removed (see also `load()`).
+
+
+See also: [simulate](treelist.qmd#simulate), [kill()](treelist.qmd#kill)
+
+**Parameters:**
+
+*   **`filter`** (`string`): A valid filter Expression.
+*   **`fraction`** (`double`): The fraction [0..1] of trees that should be harvested. Default value is 1.
+
+**Return Value Description:** the number of trees that have been removed.
+
+**Example:**
+
+```javascript
+stand.trees.loadAll();
+    stand.trees.harvest('species=piab', 0.2); // remove 20% (selected randomly) from all spruce
+    stand.trees.harvest('dbh>30'); // harvest all trees with dbh>30cm
+```
+
+---
+
+### `kill(filter)` {#kill}
+
+**Returns:** `Integer`
+
+Kill (i.e., cut down and do not remove from the forest) the trees in the list, filtered with `filter`.
+
+See also: [simulate](treelist.qmd#simulate)
+
+**Parameters:**
+
+*   **`filter`** (`String`): A valid filter Expression.
+
+**Return Value Description:** the number of trees that have been removed.
+
+**Example:**
+
+```javascript
+stand.trees.loadAll();
+    stand.trees.kill('dbh<10'); // kill all trees with a dbh<10cm
+```
+
+---
+
+### `killSaplings(filter)` {#killsaplings}
+
+**Returns:** `int`
+
+`killSaplings()` provides an access to the cohorts of the sapling layer in iLand https://iland-model.org/sapling+growth+and+competition .
+https://iland-model.org/sapling+variables provides a list of available variables.
+The function removes all sapling cohorts for which `expr` returns `true`.
+
+Note: The interface to saplings currrently much simpler compared to the interface for trees >4m.
+
+**Parameters:**
+
+*   **`filter`** (`string`): a filter expression to select the saplings that should be removed
+
+**Return Value Description:** the number of sapling cohorts that have been removed.
+
+**Example:**
+
+```javascript
+stand.trees.killSaplings('species=piab and age<5'); // kill spruce saplings younger than 5yrs
+```
+
+---
+
+### `load(filter)` {#load}
+
+**Returns:** `Integer`
+
+The `load()` method is the main means to get all the trees of a forest stand into the list.
+Per default, all trees (i.e. trees>4m height) that are located on the forest stand are loaded. If `filter` is provided, only a subset
+of the trees are loaded. `filter` can either be a probability (between 0..1) for selecting individual trees, or an Expression using tree
+variables.
+
+```javascript
+stand.trees.load(0.2); // load (randomly selected) 20% of all trees
+stand.trees.load("rnd(0,1)<0.2)"); // the same as above, but using an Expression
+// load a subset of trees (for which the given Expression evalulates to true):
+stand.trees.load("species=piab and dbh>20");
+```
+
+**Parameters:**
+
+*   **`filter`** (`String`): optional filter criterion (see above).
+
+**Return Value Description:** the number of trees loaded.
+
+---
+
+### `loadAll()` {#loadall}
+
+**Returns:** `Integer`
+
+Load all trees (living trees, >4m height) of the current `stand` into the internal list.
+
+**Return Value Description:** the number of loaded harvested.
+
+---
+
+### `loadFromList(other_list, filter)` {#loadfromlist}
+
+**Returns:** `Integer`
+
+The `loadFromList()` method is a way to copy tree list data from a different TreeList object. A typical use case is when you
+need to process parts of a tree lists (e.g., based on location).
+Per default, all trees (i.e. trees>4m height) that are located in `other_list`are loaded. If `filter` is provided, only a subset
+of the trees are loaded. `filter` can either be a probability (between 0..1) for selecting individual trees, or an Expression using tree
+variables. Note also, that the linked forest stand is copied as well, i.e. a later call to `loadAll()` would load all trees of that stand.
+
+
+```javascript
+var my_list = new TreeList;
+stand.trees.load('dbh > 20');
+// loop over three species and count for each species the number of trees >20cm
+// (note that this would have been also possible with the sum() function)
+for (s of ['piab', 'fasy', 'lade']) {
+   const n = my_list.loadFromList(stand.trees, 'species=' + s);
+   console.log(`Species '${s}' has ${n} trees >20cm.`);
+}
+```
+
+**Parameters:**
+
+*   **`other_list`** (`TreeList`): TreeList object to copy tree information from
+*   **`filter`** (`String`): optional filter criterion (see above).
+
+**Return Value Description:** the number of trees loaded.
+
+---
+
+### `mean(expr, filter)` {#mean}
+
+**Returns:** `double`
+
+Calculates the mean value of a given `expr` that can contain any of the available tree variables. The optional `filter` is another expression
+that filters the trees that are processed.
+Return the mean value.
+
+See also: [sum()](treelist.qmd#sum)
+
+**Parameters:**
+
+*   **`expr`** (`string`): a valid expression that should be processed
+*   **`filter`** (`string`): only trees that pass the filter are processed
+
+**Return Value Description:** the mean value of the population
+
+**Example:**
+
+```javascript
+stand.trees.loadAll();
+    console.log('mean dbh: ' + stand.trees.mean('dbh') );
+    var tdbh = stand.trees.mean('height', 'dbh>=30'); // mean height of all trees >30cm
+    var ldbh = stand.trees.mean('height', 'dbh<30'); // mean height of all belwo 30cm - note that the list is not altered
+```
+
+---
+
+### `percentile(perc)` {#percentile}
+
+**Returns:** `double`
+
+Return the `perc` th percentile (0..100) value from the list of trees. The function requires that a [sort()](treelist.qmd#sort) operation
+has been executed before this function is called. The `sort()` function assigns to each tree in the list a value (e.g., the `dbh`). The `percentile` function
+accesses those value. Without a call to `sort` the function returns 0 for all values. The percentile 100 returns the maximum value within the list (i.e., the value last
+attached to the last tree in the list).
+
+See also:[sort()](treelist.qmd#sort)
+
+**Parameters:**
+
+*   **`perc`** (`int`): a number between 0 and 100 that should be returned.
+
+**Return Value Description:** the value at the given percentile (see details)
+
+**Example:**
+
+```javascript
+stand.trees.loadAll();
+    stand.trees.sort('dbh'); // smallest trees in front of the list
+    console.log("IQR: " + stand.trees.percentile(75) - stand.trees.percentile(25) );
+    console.log("min: " + stand.trees.percentile(0) + ", median: " + stand.trees.percentile(50) + ", max: " + stand.trees.percentile(100) );
+```
+
+---
+
+### `randomize()` {#randomize}
+
+**Returns:** `void`
+
+Randomly shuffles the list of trees. Trees in a newly refreshed list (e.g., `loadAll()`) have a non-random spatial pattern. When
+randomness is wanted (e.g., to select randomly N trees), then `randomize` should be used.
+
+Note: `randomize` overwrites the values of a [sort()](treelist.qmd#sort) call.
+
+See also: [loadAll()](treelist.qmd#loadall)
+
+**Example:**
+
+```javascript
+stand.trees.loadAll();
+    stand.trees.sort('dbh');
+    stand.trees.filter('dbh<' + stand.trees.percentile(50) ); // only the population with dbh < median(dbh) remains
+    // to randomly select from this population:
+    stand.trees.randomize();
+    stand.trees.filter('incsum(1) < 100'); // select 100 trees from the population
+```
+
+---
+
+### `removeMarkedTrees()` {#removemarkedtrees}
+
+**Returns:** `Integer`
+
+Check all trees of the stand and either kill or harvest those trees that are marked for that operation.
+
+See also: [simulate](treelist.qmd#simulate), [harvest()](treelist.qmd#harvest)
+
+**Return Value Description:** the number of trees that have been removed.
+
+---
+
+### `setFlag(value)` {#setflag}
+
+**Returns:** `void`
+
+Set a given `flag` for all trees in the list to `value`. Note that not all possible flags are allowed to be changed.
+Trying to alter such a flag yields an exception.
+
+See also: [setFlag()](tree.qmd#setflag)
+
+**Parameters:**
+
+*   **`value`** (`bool`): value to set the flag, defaults to true.
+
+**Example:**
+
+```javascript
+stand.trees.loadAll();
+    stand.trees.filter('dbh>10'); // only trees with dbh>10 remain in the list
+    stand.trees.filter('incsum(volume)<100'); // keep trees with a total of 100m3 in the list
+```
+
+---
+
+### `sort(sort_expr)` {#sort}
+
+**Returns:** `void`
+
+`sort()` sorts the tree list according to the numeric value of the expression `sort_expr`. The sort order is ascending, i.e., after sorting the tree with the smallest
+value is at the beginning of the list. Descending order can be achieved by inverting the sign of the expression. A sorted list is useful
+for extracting [percentile()](treelist.qmd#percentile) values or for using the `incsum` function of expressions [iland-model.org/Expression].
+
+See also: [percentile()](treelist.qmd#percentile)
+
+**Parameters:**
+
+*   **`sort_expr`** (`string`): a valid expression used for sorting
+
+**Example:**
+
+```javascript
+stand.trees.loadAll();
+    stand.trees.sort('volume'); // small trees in front of the list
+    stand.trees.filter('incsum(volume) < 100'); // keep 100m3 of the trees with the lowest volume
+    stand.trees.loadAll();
+    stand.trees.sort('-x'); // x-coordinate, descending, trees start from the 'right'
+    stand.trees.filter('incsum(1)<=100'); // filter 100 trees on the right edge of the area
+```
+
+---
+
+### `spatialFilter(grid, filter)` {#spatialfilter}
+
+**Returns:** `int`
+
+`spatialFilter()` filters the tree that are currently in the list based on their spatial location and the content
+of the `grid`. The function checks for every tree the corresponding pixel of `grid` and evaluates the `filter` function. If the
+function returns true, the tree is kept (if the tree is outside of the `grid` the tree is removed).
+
+Note that when not otherwise altered, the default name of a grid is simply 'x', so filtering for a certain value could be achieved
+by using 'x=1' as a `filter`.
+
+See also: [create()](grid.qmd#create), [setOrigin()](grid.qmd#setorigin)
+
+**Parameters:**
+
+*   **`grid`** (`Grid`): a [Grid](grid.qmd)Grid object
+*   **`filter`** (`string`): A expression that is evaluated for every pixel of the `grid`.
+
+**Return Value Description:** the number of trees still remaining in the list, or -1 if an error occurs.
+
+**Example:**
+
+```javascript
+// create a grid
+    var g = new Grid();
+    g.create(10,10,5); // 50x50m, default name is 'x'
+    g.setOrigin(30,20); // set lower left corner to 30/20
+    // in the context of ABE:
+    stand.trees.loadAll(); // load all trees
+    // filter so, that only trees that are located on a pixel in g with the value 1 remain:
+    stand.trees.spatialFilter(g, 'x=1');
+    // do something, e.g.,
+    stand.trees.harvest();
+```
+
+---
+
+### `sum(expr, filter)` {#sum}
+
+**Returns:** `double`
+
+Calculates the sum of a given `expr` that can contain any of the available tree variables. The optional `filter` is another expression
+that filters the trees that are processed. Returns the sum of `expr`.
+
+Note: counting trees that fulfill the `filter` expression can be expressed as: `sum('1', '<filter-expr>')`.
+
+See also:[mean()](treelist.qmd#mean)
+
+**Parameters:**
+
+*   **`expr`** (`string`): a valid expression that should be processed
+*   **`filter`** (`string`): only trees that pass the filter are processed
+
+**Return Value Description:** the sum over the value of `expr`of the population
+
+**Example:**
+
+```javascript
+stand.trees.loadAll();
+    console.log('total basal area: ' + stand.trees.sum('basalarea') );
+    console.log('N trees >30cm: ' + stand.trees.sum('1', 'dbh>30') ); // note that '1' is a string (and parsed by the expression engine)
+```
+
+---
+
+### `tree()` {#tree}
+
+**Returns:** `Tree`
+
+`tree(index)` returns the tree with index `index` (index is 0-based) from the current list. The returned Javascript object
+is a reference to the represented tree in iLand. See [Tree](tree.qmd) for more details.
+
+See also: [treeObject()](treelist.qmd#treeobject)
+
+**Return Value Description:** a reference to the tree with index `index` (see above). If the index is out of range, the `valid` property of the returned object is `false`.
+
+**Example:**
+
+```javascript
+stand.trees.loadAll(); // fill the tree list
+    // loop over all trees
+    for (var i=0;i<stand.trees.count;++i)
+       console.log( stand.trees.tree(i).dbh );
+```
+
+---
+
+### `treeObject()` {#treeobject}
+
+**Returns:** `Tree`
+
+`treeObject(index)` returns the tree with index `index` (index is 0-based) from the current list. A new Javascript object
+is created for the tree. See [Tree](tree.qmd) for more details.
+
+See also: [tree()](treelist.qmd#tree)
+
+**Return Value Description:** a object representing the tree with index `index` (see above), or an invalid Tree object (if index is out of range).
+
+**Example:**
+
+```javascript
+stand.trees.loadAll(); // fill the tree list
+    var x = stand.trees.treeObject(7); // 8th tree in the list
+    // access the tree
+    if (x.valid == true)
+       console.log(x.dbh);
+```
+
+---
+

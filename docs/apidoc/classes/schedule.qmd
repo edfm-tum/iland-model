@@ -1,0 +1,103 @@
+---
+title: "Class: Schedule"
+sidebar: apidoc
+---
+
+# Schedule Class
+
+Schedule object.
+
+## Properties Overview
+
+| Name | Type | Description |
+| :--- | :--- | :--- |
+| [`harvestIntensity`](#harvestintensity) | `any` | The 'harvestIntensity' is a multiplier for the "sustainable" harvest level; values > 1 cause the harvesting being |
+| [`maxAbsoluteHarvest`](#maxabsoluteharvest) | `any` | The 'maxAbsoluteHarvest' is a cutoff for the annual harvest. If a a value is given (default is no cap), then |
+| [`maxHarvestLevel`](#maxharvestlevel) | `any` | The 'maxHarvestLevel' property is a multiplier to define the maximum overshoot over the planned volume that the scheduler is willing to take (e.g. 1.2 -> 20% max. overshoot). |
+| [`stp`](#stp) | `object` | Description of stp |
+| [`useSustainableHarvest`](#usesustainableharvest) | `any` | 'useSustainableHarvest' is a scaling factor (0..1) that allows gradually switching between bottom-up harvest planning (i.e., stands are always processed at their optimal dates), |
+| [`verbose`](#verbose) | `any` | If 'verbose' is set to true, much more log messages are generated from the scheduling algorithms. |
+
+## Methods Overview
+
+| Method | Return Type | Description |
+| :--- | :--- | :--- |
+| [`dump()`](#dump) | `void` | The 'dump' method prints the contents of the scheduler (i.e., the list of stands with the estimated harvests and execution dates to the console. |
+
+## Properties Details
+
+### `harvestIntensity` {#harvestintensity}
+
+<span class="api-tag tag-type">any</span>
+
+The 'harvestIntensity' is a multiplier for the "sustainable" harvest level; values > 1 cause the harvesting being
+```javascript
+  above the level of sustainable yield (as it is estimated by the scheduler).
+```
+
+---
+
+### `maxAbsoluteHarvest` {#maxabsoluteharvest}
+
+<span class="api-tag tag-type">any</span>
+
+The 'maxAbsoluteHarvest' is a cutoff for the annual harvest. If a a value is given (default is no cap), then
+  the scheduler stops when the cap is reached.
+
+  Notes:
+the value is only effective when the increment based scheduling is off ('enabled: false')
+to calculate the running sum of harvest the scheduler uses the value provided as the return value
+```javascript
+  of the onEvaluate() handler of the activities. This defaults to the volume (per ha) of planned harvests
+  but can be used differently. For example, an area limit can be established by using
+  stand area as return value in the handler.
+```
+
+---
+
+### `maxHarvestLevel` {#maxharvestlevel}
+
+<span class="api-tag tag-type">any</span>
+
+The 'maxHarvestLevel' property is a multiplier to define the maximum overshoot over the planned volume that the scheduler is willing to take (e.g. 1.2 -> 20% max. overshoot).
+
+---
+
+### `stp` {#stp}
+
+<span class="api-tag tag-type">object</span>
+
+Description of stp
+
+---
+
+### `useSustainableHarvest` {#usesustainableharvest}
+
+<span class="api-tag tag-type">any</span>
+
+'useSustainableHarvest' is a scaling factor (0..1) that allows gradually switching between bottom-up harvest planning (i.e., stands are always processed at their optimal dates),
+and a top-down approach (i.e, the scheduling algorithm decides when a stand should be processed). A value of 1 means
+ that the scheduler (assigned to the agent) is used exclusively, and 0 means a strict bottom up approach. Between 0 and 1 the harvest is scaled in between.
+
+ still used????
+
+---
+
+### `verbose` {#verbose}
+
+<span class="api-tag tag-type">any</span>
+
+If 'verbose' is set to true, much more log messages are generated from the scheduling algorithms.
+
+---
+
+## Methods Details
+
+### `dump()` {#dump}
+
+**Returns:** `void`
+
+The 'dump' method prints the contents of the scheduler (i.e., the list of stands with the estimated harvests and execution dates to the console.
+
+---
+

@@ -1,0 +1,281 @@
+---
+title: "Class: harvest"
+sidebar: apidoc
+---
+
+# harvest Class
+
+The harvest library includes management operations related to harvesting.
+
+## Methods Overview
+
+| Method | Return Type | Description |
+| :--- | :--- | :--- |
+| [`CoppiceWithStandard(options)`](#coppicewithstandard) | `object` | Coppice with standards management system |
+| [`HarvestAllBigTrees(options)`](#harvestallbigtrees) | `object` | Harvest all trees above a certain height threshold |
+| [`clearcut(options)`](#clearcut) | `object` | Clearcut operation, that removes all trees above a minimum diameter |
+| [`noManagement()`](#nomanagement) | `object` | No harvest management |
+| [`salvage(options)`](#salvage) | `object` | Disturbance response and salvaging |
+| [`shelterwood(options)`](#shelterwood) | `object` | Shelterwood harvest system |
+| [`stripCut(options)`](#stripcut) | `object` | Strip cut system |
+| [`targetDBH(options)`](#targetdbh) | `object` | Target diameter harvesting system |
+| [`targetDBHforNo3(options)`](#targetdbhforno3) | `object` | Target diameter harvesting system for Norway Spruce (No) |
+
+## Methods Details
+
+### `CoppiceWithStandard(options)` {#coppicewithstandard}
+
+**Returns:** `object`
+
+Coppice with standards management system
+
+**Parameters:**
+
+*   **`options`** (`object`): @param {number} options.targetDBH target DBH for harvesting (default: 80).
+   @param {number} options.nStandards number of remaining trees per hectare (default: 30).
+   @param {number} options.interval time interval between harvests (default: 20).
+   @param {string} options.preferenceFunction ranking string for selecting standards, e.g. 'dbh+100*species=quro' (default: 'dbh').
+   @param {string|undefined} options.sendSignal signal send out after each activity (default: undefined).
+   @param {string|undefined} options.constraint constraint (default: undefined).
+
+**Return Value Description:** act - An object describing the harvest activity
+
+**Example:**
+
+```javascript
+lib.harvest.CoppiceWithStandard({
+        targetDBH: 70,
+        nStandards: 40,
+        species: 'fasy'
+    });
+```
+
+---
+
+### `HarvestAllBigTrees(options)` {#harvestallbigtrees}
+
+**Returns:** `object`
+
+Harvest all trees above a certain height threshold
+
+**Parameters:**
+
+*   **`options`** (`object`): @param {string} options.id A unique identifier for the harvest activity (default: 'HarvestAllBigTrees').
+   @param {object} options.schedule schedule of the harvest (default: {absolute: true, opt: 3}).
+   @param {string} options.preferenceFunction ranking string for filtering trees, e.g. 'height > 10' (default: 'height > 10').
+   @param {string|undefined} options.sendSignal signal send out after activity (default: undefined).
+   @param {string|undefined} options.constraint constraint (default: undefined).
+
+**Return Value Description:** act - An object describing the harvest activity
+
+**Example:**
+
+```javascript
+lib.harvest.HarvestAllBigTrees({
+        schedule: {absolute: true, opt: 5},
+        preferenceFunction: 'height > 15'
+    });
+```
+
+---
+
+### `clearcut(options)` {#clearcut}
+
+**Returns:** `object`
+
+Clearcut operation, that removes all trees above a minimum diameter
+
+**Parameters:**
+
+*   **`options`** (`object`): @param {string} options.id A unique identifier for the harvest activity (default: 'Clearcut').
+   @param {object} options.schedule schedule of the harvest (default: { minRel: 0.8, optRel: 1, maxRel: 1.2, force: true }).
+   @param {string} options.preferenceFunction ranking string for filtering trees, e.g. 'dbh > 10' (default: 'dbh > 0').
+   @param {string|undefined} options.finalHarvest boolean variable to indeicate, if the activity should be interpreted as final harvest (default: true).
+   @param {string|undefined} options.sendSignal signal send out after activity (default: undefined).
+   @param {string|undefined} options.constraint constraint (default: undefined).
+
+**Return Value Description:** act - An object describing the harvest activity
+
+**Example:**
+
+```javascript
+lib.harvest.clearcut({
+        schedule: { minRel: 0.7, optRel: 0.9, maxRel: 1.1, force: true },
+        preferenceFunction: `dbh > 5`
+    });
+```
+
+---
+
+### `noManagement()` {#nomanagement}
+
+**Returns:** `object`
+
+No harvest management
+
+**Return Value Description:** act - An object describing the harvest activity
+
+**Example:**
+
+```javascript
+lib.harvest.noManagement();
+```
+
+---
+
+### `salvage(options)` {#salvage}
+
+**Returns:** `object`
+
+Disturbance response and salvaging
+
+**Parameters:**
+
+*   **`options`** (`object`): @param {string} options.id A unique identifier for the salvage activity (default: 'Salvage').
+   @param {object} options.schedule default is simply repeating operation, but can be overwritten.
+   @param {expression|undefined} options.salvageCondition expression that evaluates for each disturbed tree whether to salvage or not.
+                                            If empty, no salvaging of trees takes place. Default: undefined.
+   @param {number} options.thresholdReset Value between 0 and 1 indicating a disturbance severity threshold. If disturbance is above
+                                           the threhold, the stand is reset (see other options). What happens depends
+											  on the options `clearAll`, `onClear` and `sendSignal`. Default: 0.5
+   @param {boolean|undefined} options.clearAll  If a stand is reset, a simple clearcut is executed when `clearAll` is `true`. Default: false
+   @param {function|undefined} options.onClear  If a stand is reset, this custom function is executed (if provided). Default: undefined
+   @param {number} options.thresholdIgnoreDamage  threshold m3 volume/ha. if disturbance below, no further tests are executed. Default: 50
+   @param {string|undefined} options.sendSignal  If a stand is reset, then this signal is sent if a value is provided. Default: undefined
+
+**Return Value Description:** - An object describing the salvage activity
+
+**Example:**
+
+```javascript
+lib.harvest.salvage({ salvageCondition: 'dbh>10',
+							 thresholdReset: 0.5,
+							 clearAll: true });
+```
+
+---
+
+### `shelterwood(options)` {#shelterwood}
+
+**Returns:** `object`
+
+Shelterwood harvest system
+
+**Parameters:**
+
+*   **`options`** (`object`): @param {string} options.id A unique identifier for the harvest activity (default: 'Shelterwood').
+   @param {object} options.schedule schedule of the harvest (default: { minRel: 0.7, optRel: 0.8, maxRel: 0.9, force: true }).
+   @param {number} options.nTrees Number of seed trees to select (default: 40).
+   @param {number} options.nCompetitors Number of other trees to select - should be all remaining trees and thus really high (default: 1000).
+   @param {object} options.speciesSelectivity species selectivity object (default: {}).
+   @param {string} options.preferenceFunction ranking string for selecting seed trees, e.g. 'height' (default: 'height').
+   @param {number} options.interval interval between repeated harvests (default: 5).
+   @param {number} options.times number of repeated harvests (default: 3).
+   @param {string|undefined} options.finalHarvest boolean variable to indeicate, if the activity should be interpreted as final harvest (default: true).
+   @param {string|undefined} options.internalSignal internal signal to start each shelterwood activity (default: 'Shelterwood_remove').
+   @param {string|undefined} options.sendSignal signal send out after last shelterwood activity (default: undefined).
+   @param {string|undefined} options.constraint constraint (default: undefined).
+
+**Return Value Description:** program - An object describing the harvest program
+
+**Example:**
+
+```javascript
+lib.harvest.shelterwood({
+        schedule: { minRel: 0.6, optRel: 0.7, maxRel: 0.8, force: true },
+        nTrees: 50,
+        speciesSelectivity: { 'pisy': 1, 'abal': 0.5 }
+    });
+```
+
+---
+
+### `stripCut(options)` {#stripcut}
+
+**Returns:** `object`
+
+Strip cut system
+
+**Parameters:**
+
+*   **`options`** (`object`): @param {string} options.id A unique identifier for the harvest activity (default: 'StripCut').
+   @param {number} options.harvestDirection direction of the strips in degrees (not working yet) (default: 120).
+   @param {number} options.stripWidth width of each strip in meters (default: 30).
+   @param {number} options.nStrips number of strips before the next strip is a "first" strip again (default: 5).
+   @param {number[]} options.harvestIntensities array of harvest intensities for each harvest on the strip (default: [0.7, 0.5, 1]).
+   @param {number} options.interval number of years between each harvest activity (default: 5).
+   @param {string|undefined} options.sendSignal signal send out after each activity (default: undefined).
+   @param {string} options.constraint constraint, which strips should be harvested e.g. "topHeight>30" (default: "stand.topHeight>30").
+
+**Return Value Description:** act - An object describing the harvest activity
+
+**Example:**
+
+```javascript
+lib.harvest.stripCut2({
+        harvestDirection: 180,
+        stripWidth: 25,
+        harvestIntensities: [0.5, 0.7, 1],
+        constraint: "stand.basalArea>30"
+    });
+```
+
+---
+
+### `targetDBH(options)` {#targetdbh}
+
+**Returns:** `object`
+
+Target diameter harvesting system
+
+**Parameters:**
+
+*   **`options`** (`object`): @param {object|undefined} options.schedule schedule for the harvest (default: undefined).
+   @param {number} options.targetDBH target DBH for harvesting (default: 50).
+   @param {number} options.times time interval between harvests (default: 5).
+   @param {object} options.dbhList object with DBH thresholds per species (default: {}).
+   @param {string|undefined} options.sendSignal signal send out after each activity (default: undefined).
+   @param {string|undefined} options.constraint constraint (default: undefined).
+
+**Return Value Description:** act - An object describing the harvest activity
+
+**Example:**
+
+```javascript
+lib.harvest.targetDBH({
+        targetDBH: 60,
+        times: 10,
+        dbhList: { 'fasy': 50, 'abal': 55 }
+    });
+```
+
+---
+
+### `targetDBHforNo3(options)` {#targetdbhforno3}
+
+**Returns:** `object`
+
+Target diameter harvesting system for Norway Spruce (No)
+
+**Parameters:**
+
+*   **`options`** (`object`): @param {number} options.targetDBH target DBH for harvesting (default: 50).
+   @param {number} options.times time interval between harvests (default: 5).
+   @param {object} options.dbhList object with DBH thresholds per species (default: {}).
+   @param {string|undefined} options.sendSignal signal send out after each activity (default: undefined).
+   @param {string|undefined} options.constraint constraint (default: undefined).
+
+**Return Value Description:** act - An object describing the harvest activity
+
+**Example:**
+
+```javascript
+lib.harvest.targetDBHforNo3({
+        targetDBH: 55,
+        times: 8,
+        dbhList: { 'fasy': 45, 'abal': 60 }
+    });
+```
+
+---
+

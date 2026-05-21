@@ -1,0 +1,68 @@
+---
+title: "ABE debugging"
+---
+
+ This page describes some tipps and tricks of using ABE, and some hints on efficient debugging of the ABE system.
+
+
+
+## Logging
+
+
+You can control the amount of log messages that is created by ABE, and you can add user-defined debug messages. All log messages end in the iLand log file.
+The log function -+[fmengine.log](../apidoc/classes/fmengine.qmd#method-log)+- adds to each log message the current stand and the current year. This allows efficient filtering of messages for stands and/or years.
+The -+[fmengine.verbose](../apidoc/classes/fmengine.qmd#property-verbose)+- property controls the level of details for system generated messages. Note, that -+verbose+- can be enabled also only for a short time.
+The level of detail of log messages can also be increased for individual stands by using the -+[stand.trace](../apidoc/classes/stand.qmd#property-trace)+- property.
+
+
+
+## Running code snippets / interactive mode
+
+
+
+
+
+### Full reload of ABE
+
+
+This triggers setting up the (ABE-related) landscape, loading of all Javascript source and running initial code (e.g., for selecting STPs for stands).
+
+-+fmengine.reloadABE()+-
+
+
+
+### Load and run test code with iLand
+
+
+Additional javascript code may be loaded within the iLand-viewer using the “load script” and “reload script” buttons in the Scripting tab. This usually just adds (or overwrites) code to the active Javascript environment, which can be called manually from iLand.
+It is useful for testing to tell ABE to run code in the context of a stand – this enables the various links between Javascript and C++ (e.g., the -+stand+-, -+activity+-, -+stp+-, -+agent+- objects).
+
+
+```javascript
+function test() {
+   fmengine.standId = xxx; // set to some valid stand Id
+   <code executing in the context of ABE, e.g.>
+   fmengine.log(stand.volume); // print the volume of the stand ‘xxx’
+}
+```
+
+
+
+
+### Execute a management activity
+
+
+Running an activity in the context of a specific stand is also possible:
+
+```javascript
+fmengine.runActivity(standId, activity)
+fmengine.runActivityEvaluate(standId, activity)
+```
+
+with -+standId+- a valid ID, and -+activity+- the name of an activity (as provided in setting up the STP). The -+runActivity+- function calls the “main” routine of the activity, effectively bypassing constraints and the scheduling of events. The -+runActivityEvaluate+- variant executes not the main execution slot, but the evaluate-function (for scheduled activities).
+
+
+::: {.callout-note title="citation"}
+[Rammer, W., Seidl, R., 2015](http://dx.doi.org/10.1016/j.gloenvcha.2015.10.003). Coupling human and natural systems: Simulating adaptive management agents in dynamically changing forest landscapes. Global Environmental Change, 35, 475-485.
+:::
+

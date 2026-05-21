@@ -1,0 +1,23 @@
+---
+title: "soil water response"
+---
+
+Different variables have been used as predictors of plant response to soil water availability in process-based models. [Granier et al. (1999)](http://dx.doi.org/10.1016/S0304-3800(98)00205-1) and [Landsberg and Waring (1997)](http://dx.doi.org/10.1016/S0378-1127(97)00026-1) are examples of using soil water content (*SWC*) to model soil water effects on vegetation. [Hanson et al. (2001)](http://treephys.oxfordjournals.org/cgi/reprint/21/6/345) and [Schwalm and Ek (2004)](http://dx.doi.org/10.1016/j.ecolmodel.2004.04.016) used soil water potential (*Ψ*), whereas [Running and Coughlan (1988)](http://dx.doi.org/10.1016/0304-3800(88)90112-3) convert *SWC *directly to leaf water potential. The work of [Hanson et al. (2004)](http://dx.doi.org/10.1890/03-4049) presents an in depth model comparison of approaches with different complexity and resolution.
+
+In iLand we use [#soil water pool|soil water potential](water-cycle.qmd) (*Ψ*) as predictor of species-specific growth response to soil water availability. We follow [Hanson et al. (2001](http://treephys.oxfordjournals.org/cgi/reprint/21/6/345), [2003](http://tinyurl.com/ycwsduw)) in defining the modifier as a linear function of *Ψ* between field capacity and a species-specific *Ψ<sub>min</sub>* (Eq. 1)
+
+$$
+f_{sw}=max(min(\frac{\Psi -\Psi _{min}}{\Psi _{fc}-\Psi _{min}}\: ;\: 1)\: ;\: 0)
+$$
+
+with *Ψ<sub>fc</sub>*=-0.015MPa.
+
+Several empirical studies report species differences in response to and maximum *Ψ* (e.g., [Auge et al. 1998](http://jxb.oxfordjournals.org/cgi/reprint/49/321/753), [Saito et al. 2003](http://treephys.oxfordjournals.org/cgi/reprint/23/1/59), [Wullschleger and Hanson 2003](http://tinyurl.com/ycwsduw)). As with [#species-specific light utilization|shade tolerance](individual-tree-light-availability.qmd), we use the homogenized drought tolerance ratings of [Niinemets and Valladares (2006)](http://tinyurl.com/ylcln59) and their corresponding approximate *Ψ<sub>min</sub>* to derive species-specific *Ψ<sub>min</sub>* values by interpolation.
+
+
+
+
+::: {.callout-note title="citation"}
+[Seidl, R., Rammer, W., Scheller, R.M., Spies, T.A. 2012](http://dx.doi.org/10.1016/j.ecolmodel.2012.02.015). An individual-based process model to simulate landscape-scale forest ecosystem dynamics. Ecol. Model. 231, 87-100.
+:::
+

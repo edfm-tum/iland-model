@@ -1,0 +1,154 @@
+---
+title: "dynamic outputs"
+---
+
+Dynamic outputs are a special type of [Outputs](outputs.qmd) which allow more control on what data is aggregated in which way. One example is the [#dynamic_stand_output_by_species_RU|dynamic stand](outputs.qmd) output. This output allows aggregation of trees (>4m) per species or resource unit and allows to customize the list of aggregated variables (see detailed description [#dynamic_stand_output_by_species_RU|here](outputs.qmd)).
+
+Note that the dynamic outputs are somewhat general and thus not as optimized as other outputs. You could - for instance - replicate much of the functionality of, say, the landscape output with the *customagg *output, but it would me less memory efficient and much slower.
+
+
+
+## *customagg *output
+
+
+A more general approach is the *customagg* output. This output - or more specifically, a collection of outputs - allow even more control on when which data should be aggregated and saved.
+
+* Different **entities**: entities of aggregation can be trees, sapling, snags, or resource units.
+* Different **levels**: data can be aggregated to stand level, resource unit level, or landscape level
+* **Multiple **outputs: a user can define multiple outputs and customize settings (e.g., filters, output database table name)
+
+The general structure of within the [project+file](project-file.qmd) is as follows:
+
+ 
+
+```xml
+<customagg>
+   <output1>
+      <enabled>true</enabled>
+      <tablename>custom_saps1</tablename>
+      <entity>sapling</entity>
+      <level>stand</level>
+      <filter>year>100</filter>
+      <entityfilter>height>1.3</entityfilter>
+     <columns>nrep.sum, dbh.mean, if(height>2 and height<3,1,0), if(height>3,1,0) </columns>
+  <output1>
+  <output2>...</output2>
+  ...
+<customagg>
+```
+
+
+ A detailed description of the elements is given below:
+
+
+
+#### enabled
+
+
+output is only generated if *enabled *is set to *true*.
+
+
+
+#### tablename
+
+
+tablename gives each sub output a unique tablename, which is used to save the data in the output table. Make sure to use valid table names (i.e., avoid spaces and special characters)
+
+
+
+#### entity
+
+
+defines the type of object which is aggregaged. Supported entites are trees ("tree", see [tree+variables](tree-variables.qmd)), saplings ("sapling", see [sapling+variables](sapling-variables.qmd)), snags ("snag", see [dead tree variables]), and resource units ("ru", see [resource+unit+variables](resource-unit-variables.qmd)).
+
+
+
+#### level
+
+
+defines the aggregation level. Available are either stand ("stand"), resource unit ("ru") or landsacpe level ("landscape"). Note that data is always additionally grouped by species for trees and saplings.
+
+
+
+#### filter
+
+
+Use filter to control when the output should be executed. filter can contain a valid expression with the current simulation year as variable.
+
+Examples:
+
+* year=10: once in a specific year
+* year>10 and year<20: for every year within a range
+* in(year, 10,20,30,40): for specific years (using the in() function of expressions)
+
+
+
+#### entityfilter
+
+
+Filter that allows to control which entities should be processed. The filter is an expression and the available variables depend on the entity of the output.
+
+Examples:
+
+* dbh>30 and species=piab: only use trees above a threshold (and a given species)
+* height>1.3: only saplings above a threshold
+* snag=true and decayClass<3: for standing snags with low decay class
+
+
+
+#### levelfilter
+
+
+Filter that allows to control which levels should be processed. The filter is an expression and the single variable that is available depends on the level. It is the resource-unit-Id in case of resource units, and the ID of the stand in case of stands.
+
+Examples:
+
+* in(id, 4,5,6,7): only produce outputs for RIDs (or stands) 4,5,6,7
+
+
+
+
+#### columns
+
+
+defines a list of columns that should be processed. Each entry in the list defines a variable / expression and an aggregation. Each field is defined as: *field.aggregation* (separated by a dot). A *field* is a valid [Expression](https://iland-model.org/Expression). *Aggregation* is one of the following: mean, sum, min, max, p25, p50, p75, p5, 10, p80, p85, p90, p95 (pXX=XXth percentile), sd (std.dev.).
+Complex expression are allowed, e.g: if(dbh>50,1,0).sum (-> counts trees with dbh>50)
+Note that the column names in the output table may be slightly different, as dots (and other special characsters) are not allowed in column names und substituted.
+
+
+
+### special features
+
+
+You can control/ change the grid that is used when aggregation level is set to stand. This lets you produce output grouped in custom polygons (very neat!). A custom grid can be set using Globals.useSpecialMapForOutputs() function.
+
+
+
+### Examples
+
+
+**Save the same data with different level of details at different time points**. For instance, you could use landscape level aggregation for every year, and more details (e.g. resource unit aggregation) every 10 years. Do this by setting different "filter" and "level" properties for two outputs.
+
+Track custom polygons. By providing a custom stand grid, you could limit / focus outputs to specifc custom polygons on the landscape.
+
+
+
+#### Example: Standing and lying dead trees
+
+
+
+Table **c_snag_lscp** will contain landscape level (*level'*) numbers for standing dead trees (*filter*). Columns are, i.a., total volume (sum), mean proportion of remaining biomass, number of trees per decay class (remember, *(decayClass=1)'' is either 1 or 0 for a single tree)
+
+
+```xml
+<output1>
+                <enabled>true</enabled>
+                <tablename>c_snag_lscp</tablename>
+                <entity>snag</entity>
+                <level>landscape</level>
+                <entityfilter>snag=true</entityfilter>
+                <columns>volume.sum, remaining.mean, biomass.sum,  (decayClass=1).sum, (decayClass=2).sum, (decayClass=3).sum, (decayClass=4).sum, (decayClass=5).sum, yearsStanding.mean,
+				(decayClass=1)*biomass.sum, (decayClass=2)*biomass.sum, (decayClass=3)*biomass.sum, (decayClass=4)*biomass.sum, (decayClass=5)*biomass.sum</columns>
+            </output1>
+```
+

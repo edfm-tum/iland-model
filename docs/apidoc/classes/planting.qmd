@@ -1,0 +1,97 @@
+---
+title: "Class: planting"
+sidebar: apidoc
+---
+
+# planting Class
+
+The planting library includes management operations related to artificial and natural regeneration.
+
+Commonalities....
+
+## Properties Overview
+
+| Name | Type | Description |
+| :--- | :--- | :--- |
+| [`speciesDefaults`](#speciesdefaults) | `any` | Default planting settings for various species. |
+
+## Methods Overview
+
+| Method | Return Type | Description |
+| :--- | :--- | :--- |
+| [`dynamic(options)`](#dynamic) | `void` | Dynamically schedules planting activities based on provided options. |
+| [`general(options)`](#general) | `void` | Schedules a general planting activity. |
+
+## Properties Details
+
+### `speciesDefaults` {#speciesdefaults}
+
+<span class="api-tag tag-type">any</span>
+
+Default planting settings for various species.
+
+```javascript
+// Accessing default settings for 'piab' (spruce)
+    const spruceDefaults = lib.planting.speciesDefaults.piab;
+    console.log(spruceDefaults);
+    // Output: { species: 'piab', h: 0.3, age: 1, fraction: [Function] }
+```
+
+---
+
+## Methods Details
+
+### `dynamic(options)` {#dynamic}
+
+**Returns:** `void`
+
+Dynamically schedules planting activities based on provided options.
+
+**Parameters:**
+
+*   **`options`** (`Object`): Options for configuring the dynamic planting.
+    @param {String} options.id A unique identifier for the planting activity (default: 'planting').
+    @param {Schedule} options.schedule The planting schedule.
+    @param {Object|Function} options.speciesSelectivity Defines the target species and their relative weights.
+        This can be an object with species as keys and weights as values, or a function that returns such an object.
+    @param {Object} options.speciesDefaults Default settings for species (default: lib.planting.speciesDefaults).
+    @param {string} options.patches should planting should happen only on some selected patches (default: undefined).
+    @param {string|undefined} options.sendSignal signal send out after final femel harvest activity (default: undefined).
+    @param {string|undefined} options.constraint constraint (default: undefined).
+
+---
+
+### `general(options)` {#general}
+
+**Returns:** `void`
+
+Schedules a general planting activity.
+
+**Parameters:**
+
+*   **`options`** (`Object`): Options for configuring the general planting.
+    @param {String} options.id A unique identifier for the activity (default: 'planting').
+    @param {Number} options.schedule The planting schedule (default: 1).
+    @param {String} options.species The species to plant. **Mandatory**.
+    @param {Number} options.spacing The spacing between plants (default: 10).
+    @param {Number} options.fraction The fraction of the area to be planted (default: 1).
+    @param {Number} options.treeHeight Initial tree height (default: 0.3).
+    @param {String|undefined} options.pattern Planting pattern (e.g., "rect2"). (default: undefined).
+    @param {Boolean} options.clear Whether to clear existing vegetation before planting (default: false).
+    @param {string|undefined} options.sendSignal signal send after planting activity (default: undefined).
+    @param {string|undefined} options.constraint constraint (default: undefined).
+
+**Example:**
+
+```javascript
+// NOTE: lib.planting is an object, not a class. No need to use 'new'
+    lib.planting.general({
+        schedule: 2,
+        species: 'Pine',
+        spacing: 12,
+        pattern: 'rect'
+    });
+```
+
+---
+

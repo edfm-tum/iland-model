@@ -1,0 +1,195 @@
+---
+title: "barkbeetle module"
+---
+
+The bark beetle module is a[disturbance sub-module](bark-beetle-disturbance.qmd) of iLand. It handles the spread and impact of spruce bark beetles.
+
+
+
+
+
+## Parameters
+
+
+
+Details of the module are configured in a special sub-section of the [XML Project file](project-file.qmd).  This *barkbeetle* section needs to be placed as a sub-node of the *modules*.
+
+
+The following table describes the parameters:
+
+
+| **key** | **datatype** | **description** |
+| --- | --- | --- |
+| enabled | boolean | If *true*, the barkbeetle module is active. |
+| minimumDbh | numeric | minimum Dbh for spruce trees to be regarded as potential beetle host trees. |
+| initialInfestationProbability | numeric | probability that a pixel (containing host trees) is infested at startup. Outbreak duration for these pixels is randomly selected between 1 and 4 years. |
+| backgroundInfestationProbability | numeric | the annual probability for the occurrence of a bark beetle outbreak per hectare. Note: this can be defined spatially explicit using the [environment file mechanism](simulation-extent.qmd). |
+| stormInfestationProbability | numeric | the probability that (suitable) wind-damaged pixels act beetle source. Default: 1 (i.e. all pixels are assumed being immediately infested) |
+| baseWinterMortality | numeric | probabilty that the beetles on an infested pixels (10m) die during the winter. This reduces the number of infested pixels. |
+| winterMortalityFormula | string | This formula gives the probability that infested pixels die as a function of the number of cold days (defined as number of days with the minimum temperature below a threshold of -15°C). This is evaluated (annually) for every infested pixel that passes the 'base mortality'. Formula parameter: days |
+| spreadKernelFormula | string | A formula that defines the spread kernel for bark beetles. The equation provides a probability for a distance x (in meters) from the origin. The given probability density function is limited to the area between 0 and the setting *spreadKernelMaxDistance* and is scaled internally to have a sum of 1. |
+| spreadKernelMaxDistance | numeric | The maximum distance beetles can fly in meters (see *spreadKernelFormula*). |
+| cohortsPerGeneration | numeric | Beetles spread not as individual animals, but as 'packages' (numerous enough to having a small chance of successfully attacking a potential host pixel). This setting is the number of 'packages' that spread for each generation from an infested pixel (in random direction and a random distance selected from the spread kernel). |
+| cohortsPerSisterbrood | numeric | 'packages' of beetles that can spread from an infested pixel if a full sisterbrood develops. The (lower) number of *cohortsPerGeneration *is used when the (potential) sisterbrood fails to develop fully. |
+| colonizeProbabilityFormula | string | The formula expresses the probability that the attack of one beetle 'package' landed on a potential host pixel is successful. The parameter for the formula is the stress-level of the tree ([SI](base-mortality.qmd)). |
+| deadTreeSelectivity | numeric | factor determining how effectively beetles are attracted by dead trees (e.g. windthrown) (within a 5x5 pixel vicinity). 1: all beetles go into dead trees, 0: no effect of dead trees, default: 1 |
+| outbreakClimateSensitivityFormula | string | The formula calculates 'rc', the climate sensitivity factor modifying the *backgroundInfestationProbability*. 'rc' is a multiplier, i.e. 1=no change, 0.8: 20% reduction of the probability. The formula provides the following variables: *Pspring*, *Psummer*, *Pautumn*, *Pwinter*: the relative amount of seasonal precipitation compared to the *seasonalPrecipSum* (see *referenceClimate*), *Tspring*, *Tsummer*, *Tautumn*, *Twinter*: the difference between the seasonal mean temperature of the current year compared to the *seasonalTemperatureAverage*. |
+| outbreakClimateMultiplier | string | An expression that (if provided) calculates a factor modulating the outbreak probability (similar to "outbreakClimateSensitivityFormula"). The factor is a multiplier, i.e. a value of 1 (the default) means no change, a value of e.g. 5 is 5x increase of the odds (roughly 5x of backgroundInfestationProbability). Variables: VPDjj = mean of VPD over June / July (kPa). Note that this factor is calculated for each resource unit (not only for a reference climate) |
+| outbreakDurationMin | double | minimum duration of bark beetle outbreaks. See also outbreakDurationMax |
+| outbreakDurationMax | double | maximum duration of bark beetle outbreaks. The actual outbreak duration is drawn each year randomly between *outbreakDurationMin* and *outbreakDurationMax*. |
+| outbreakDurationMortalityFormula | string | formula that calculates the mortality probability due to antagonists. Variable: relative outbreak duration (with 1=the actual outbreak duration, see above). Example: polygon(t, 0.8,0, 1,1) |
+| referenceClimate | group |  |
+| referenceClimate.tableName | string | The table name in the current climate database that which defines the reference climate. iLand compares the climate given by that table with the values given in the *referenceClimate* section. |
+| referenceClimate.seasonalPrecipSum | list | comma-delimited list of seasonal precipitation sums (spring, summer, autumn, winter). This data should be extracted from the baseline climate for which the bark beetle module is calibrated in the region (and should represent the correct *tableName*). Example: 212, 234, 190, 179 |
+| referenceClimate.seasonalTemperatureAverage | list | comma-delimited list of seasonal mean temperatures (see also *seasonalPrecipSum*). Seasons are: spring: March, April, May, summer: June, July, August, autumn: Sept., Oct., Nov., winter: Dec., Jan., Feb. Example: 7.6, 13.2, 6.9, 3.3 |
+| on<x>afterBarkbeetle | string | Javascript code that is executed after the bark beetle event. This can be used for automating the export of grids (see also the javascript section below). Default: empty. |
+
+
+
+
+## Barkbeetle visualization
+
+
+The bark beetle module adds several grids to the central iLand view whenever the module is enabled. Besides viewing, those grids can also be exported (see the Javascript section).
+
+Specifically, those grids are:
+
+
+| **name** | **description** |
+| --- | --- |
+| generations | total number of bark beetle generations on 100m pixels. |
+| dbh | diameter of the thickest spruce tree when on a 10m pixel. Value is 0 if the pixel is not considered as a potential host (no spruce trees, or diameter below threshold) |
+| infested | returns '1' for pixels that are currently infested, or '0' otherwise. |
+| dead | The pixel value is -1 for non-host pixels, 0 for live pixels, and >0 for dead or infested pixels. The value (>0) indicates the iteration at which a pixel was killed. Newly infested pixels have a value of the max-iteration + 1 (i.e. they will be 'red'). |
+| killed | Value is 1 for pixels that have been killed by bark beetles in the last year (0 otherwise). |
+| p_killed | (maximum) probability of infestation for a pixel. The value combines the effect of the number of beetles which landed on a pixel and the defense status of the trees on a pixel. Values are between 0..1. The value is cleared every year (or when *BarkBeetle.clear()* is called). |
+| n_landed | total number of bark beetle cohorts that landed on a pixel in the current year (sum over all generations). |
+| nEvents | **cumulative** number of damages over the whole simulation on the respective cell. The counter is increased whenever trees are killed on the pixel in the current year |
+| deadwood | 10: trees are killed by storm, 8: pixels are 'trap trees', 5: pixel is in (active) vicinity of dead or trap pixels, 0: no dead trees |
+| outbreakAge | year of the outbreak (simulation year) that lead to killing of the pixel |
+| outbreakProbability | background infestation probability (probability that outbreak starts at each of the 10m pixel per year) (this does not include the interannual climate sensitivity) |
+| outbreakClimateMultiplier | the climate driven bark beetle outbreak multiplier for each RU (current year) |
+
+
+
+
+## Bark beetle javascript
+
+
+
+Most functionalities of the barkbeetle module can be accessed via an Javascript-API. The barkbeetle API can be accessed using the *BarkBeetle *object that is available in the global context when the module is enabled.
+
+
+
+### Methods
+
+
+**runBB(number iteration)**
+executes a full cycle of the bark beetle module if *iteration* is 0 (i.e.: calculate generations, fetch vegetation from iLand, and spread/ attack/ kill). If *iteration* is larger then 0, only spread/attack/killing is simulated. This can be used to simulate multiple barkbeetle iterations (years) with a static forest state (note, though, that trees are removed! - see also *simulate*, *newYear*
+
+**reloadSettings()**
+(Re-)load the parameters from the XML-settings. Can be used in conjunction with [*Globals.set()*](../apidoc/classes/globals.qmd) for quick (Javascript-based) tests. 
+
+**clear()**
+clears/resets the internal grids (10m cells, 100m cells), i.e. damage and spread data.
+
+**newYear()**
+increments the internal year counter - this is useful multiple years of bark beetles should be simulated without iLand running (which would synchronize the simulation year).
+
+**gridToFile(type, filename)**
+writes a grid of type *type* to a ESRI ASCII grid (*filename*). *type* is one of the available grids (see [#Barkbeetle_visualization|here](barkbeetle-module.qmd)). The project folder is the default location for *filename*.
+
+**grid(type)**
+retrieve a grid of the type *type* (see also *gridToFile()*, http://iland-model.org/apidoc/classes/Grid.html).
+
+**generations(x, y)**
+return  the number of bark beetle generation at position x/y (indices on the 10m grid)
+
+**setInfested(x,y)**
+Initiate damage; sets pixel at (x/y) (grid indices) as infested, return true if pixel was a potential host pixel
+
+__setInfestedFromMap(Map grid,  key,  probability,  agerange)_
+ set all pixels on stand *key* on the map *grid* (with probability *probability*) as infested. If infested, an "age" for the infestation is randomly selected between 0 and *agerange*. See also: http://iland-model.org/apidoc/classes/Map.html)
+
+**setBackgroundInfestationProbability(x)**
+set the background infestation probability to 'x' for the whole landscape.
+
+
+### Properties
+
+
+
+**simulate **- boolean
+Tree killing is only simulated, if set to *true*. (default: false)
+
+**enabled** - boolean
+The bark beetle module can be (temporarily) disabled by setting *enabled* to *false*. (default: true)
+
+
+### Script Example
+
+
+
+
+```javascript
+// movie mode: run 'n' iterations (slowly)
+function rounds(n)
+{
+  reset(); // see below
+  for (var i=0;i < n;++i) {
+    BarkBeetle.runBB(i);
+    Globals.repaint();
+    Globals.wait(100);
+  }
+}
+function reset()
+{
+  // change settings of the module
+  Globals.set("modules.barkbeetle.cohortsPerGeneration", 50);
+  // now reload the bark beetle module, and enable 'simulation-mode'
+  BarkBeetle.reloadSettings();
+  BarkBeetle.clear();
+  BarkBeetle.simulate = true;
+}
+
+// when setting the "onAfterBarkbeetle" event in the XML file to
+// this function ("after_barkbeetle_damage()"), it is called
+// automatically
+function after_barkbeetle_damage() {
+   BarkBeetle.gridToFile('dead', Globals.path("temp/bb_dead.asc"));
+   console.log('event triggered...');
+}
+```
+
+
+
+
+
+## BarkBeetle module output
+
+
+Table Name: barkbeetle
+Barkbeetle related outputs per year. The outputs are created after each year (or spread event) and contain information about bark beetle generations, spread and damage for the total landscape.
+ For spatially explicit outputs, see also the script functions for extracting gridded data.
+
+
+| **caption** | **datatype** | **description** |
+| --- | --- | --- |
+| year | integer | simulation year |
+| initialInfestedArea_ha | double | Area of infested pixels (ha) at the start of the iteration (i.e. before winter mortality or background activation happen). |
+| backgroundMortality_ha | double | Area of infested pixels (ha) that die due to winter mortality. |
+| backgroundActivation_ha | double | Area of (not infested) pixels (ha) that are 'ignited' and consequently a source of bark beetles. |
+| stormActivation_ha | double | Area of (not infested) pixels (ha) that are 'ignited' by storm and consequently infested. |
+| spreadCohorts | double | Number of bark beetle 'packages' (x1000) that are spread from the source pixels (kilo-cohorts). |
+| landedCohorts | double | Number of bark beetle 'packages' (x1000) that reach potential hosts (cohorts x 1000). |
+| landedArea_ha | double | Area (ha) of potential host trees where bark beetles landed. |
+| infestedArea_ha | double | Area (ha) of newly infected host pixels. |
+| killedTrees | double | total number of Norway spruce trees  that were killed in this iteration. |
+| killedBasalArea | double | Total Basal Area of killed trees in the current year. |
+
+
+
+::: {.callout-note title="citation"}
+[Seidl, R., Rammer, W., 2016](http://link.springer.com/article/10.1007/s10980-016-0396-4). Climate change amplifies the interactions between wind and bark beetle disturbances in forest landscapes. Landscape Ecol (2016). doi:10.1007/s10980-016-0396-4
+:::
+

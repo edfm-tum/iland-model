@@ -1,0 +1,253 @@
+---
+title: "wind module"
+---
+
+
+
+## wind module
+
+
+The wind module is a sub module of iLand. See [disturbance modules](disturbance-modules.qmd) for a list of available modules.
+Scientific background  of the spatially explicit wind disturbance simulation is available on the [wind disturbance] page.
+
+
+
+
+## wind module input data
+
+
+Users of the iLand wind module need to provide several types of input data. These types are:
+
+* static parameters: either global parameters or variables per tree species. Examples are species specific turning moments or crown shape parameters. While global parameters are directly provided in the [project file](project-file.qmd), species specific parameters are provided in an own parameter table in the input database of iLand.
+* parameters in space: this is currently the *topoModifier* which scales the global wind pattern to a local value. Values per resource unit can be assigned using the mechanism to set up the [simulation extent](simulation-extent.qmd).
+* parameters in time: basically a time series of wind events (with accompanying properties like wind direction and storm duration). This time series is provided with a [time events](time-events.qmd) file.
+
+
+
+## species parameters
+
+
+Species specific parameters for the wind module are stored in a table specific to the module. The database table needs to be stored in the same database as the rest of the [species parameter](species-parameter.qmd) (see [project file](project-file.qmd) for more details).
+The following table provides an overview:
+
+
+| **name** | **datatype** | **description** |
+| --- | --- | --- |
+| shortName | string | short name of the species. This key must be identical to the keys used for general [species parameter](species-parameter.qmd). |
+| CReg | numeric | Nm/kg, critical turning coefficient derived from tree pulling experiments |
+| crownAreaFactor | numeric | empirical factor for the crown shape (fraction of area of the projected crown shape compared to an rectangle) (0..1) |
+| crownLength | numeric | crown length of the tree given as fraction of tree height (0..1). See also [competition for light](competition-for-light.qmd) for details on iLand crown shapes. |
+| MOR | numeric | modules of rupture (MPa) |
+| wetBiomassFactor | numeric | conversion factor between dry and wet biomass (wet = dry*factor). |
+
+
+The SQL statements to create the parameter table and to populate with default values:
+
+```
+-- SQL statement
+CREATE TABLE wind (shortName integer, CReg real, crownAreaFactor real, crownLength real, MOR real, wetBiomassFactor real);
+insert into wind select shortName, 111,0.65,0.6,30.6,1.85 from species;
+```
+
+
+
+## project file parameters
+
+
+the general behavior of the wind module is configured by settings in the XML-[project file](project-file.qmd) in the section *modules.wind*. Especially settings related to characteristics of the storm (speed, direction, date) may be set using the time event mechanism.
+The following settings are available:
+
+
+
+**general**
+
+| **key** | **datatype** | **description** |
+| --- | --- | --- |
+| enabled | boolean | switches the module on (*true*), or off (*false*). |
+| speciesParameter | string | table name of the species parameter table for the wind module (see [#species_parameters]). |
+| triggeredByTimeEvent | boolean | if *true*, then wind events are triggered by [time events](time-events.qmd) (i.e. defined in an external input file). |
+| LRITransferFunction | string | [expression](expression.qmd) to compute the Hegyi concurrency index from the trees' LRI. Default: max(min(3.733-6.467*LRI,3.41),0.5) LINK MISSING |
+| soilFreezeMode | string | switch to define how to determine the state of the soil. Possible values are the strings *yes*: always frozen, *no*: never frozen, *auto*: the state is determined by calculating the soil temperature; if the temperature in 10cm depth is below 0°, the soil is considered as frozen. |
+| edgeDetectionThreshold | double | threshold for the edge detection algorithm. An edge is defined as a height difference greater than *edgeDetectionThreshold* between neighboring pixels in the height grid. |
+
+**storm characteristics**
+
+| **key** | **datatype** | **description** |
+| --- | --- | --- |
+| speed | numeric | hourly mean above-canopy wind speed (10m above canopy, m/s). This general wind speed is modified by topography and may be modified during a event. |
+| duration | numeric | duration of the wind event in minutes. Internally, *duration* is transformed to a number of iterations (see also *durationPerIteration*). |
+| direction | numeric | main cardinal direction of the storm in degrees (0°: north, 90°: east, 180°: south, 270°: west). The direction of the wind may be modified for individual pixels (see *directionVariation*) |
+| dayOfYear | numeric | day of the year (0..365) of the storm event (used to calculate soil temperature). |
+
+**modifiers**
+
+| **key** | **datatype** | **description** |
+| --- | --- | --- |
+| topoModifier | numeric | multiplier accounting for differences in local wind speed. The modifier is either resource unit specific (see [simulation extent](simulation-extent.qmd)) or defined by 10m pixel (see setting *topoGridFile*). The actual wind speed for a pixel is calculated by multiplying the modifier with the *speed*. |
+| topoGridFile | string | specifies a ASCII grid file containing the *topoModifier*. Modifier values are sampled for 10m pixels. File paths are relative to the project root folder. |
+| topexModifierType | string | specifies the calculation mode for values for the *topoModifier*. Possible values are "additive" and "multiplicative", which is the default. If "additive", the 10m-wind speed is calculated as (*speed* + *topoModifier*) * *gustModifier*. |
+| gustModifier | numeric | defines the variation of the global wind speed between iterations of the model. The *gustModifier* is given as a fraction (e.g. 0.05). The base wind speed is modified for each iteration with a value from the range +/- *gustModifier* (e.g.: multiplied by 0.95 - 1.05). |
+| durationPerIteration | numeric | duration (minutes) of one iteration of the model, i.e. how long it takes to advance the frontline of the storm to the next (10m) pixel. The factor is used to scale the *duration* to a number of iterations used internally by the model. |
+| directionVariation | numeric | variation in wind direction (°) for fetch calculation; current wind direction = *direction* + rnd(-x, +x) |
+| factorEdge | numeric | (constant) ratio between the maximum turning moments at the stand edge and conditions well inside the forest (see Byrne 2011) (default: 5) |
+
+**other settings**
+
+| **key** | **datatype** | **description** |
+| --- | --- | --- |
+| on<x>beforeWind | Javascript | Javascript expression evaluated before a wind event is executed. For example, you could define a function that sets an event-specifc topo grid. (Note: it is "on BeforeWind" (without space) not "on<x>beforeWind" - the wiki does not allow the correct term) |
+| on<x>afterWind | Javascript | Javascript function that is called after every wind event (e.g. for postprocessing). For example, you can provide **myTestFunction()** in XML, and defined a **myTestFunction** within the iLand Javascript engine. (Note: it is "on  AfterWind" (no space) not "on<x>afterWind" - the wiki does not allow the correct term ) |
+
+
+
+## GUI visualization and grid description
+
+
+The [wind module](wind-module.qmd) operates for most calculations on a 10x10m grid. iLand provides a variety of input and output variables on that level. These grids can either be viewed in the GUI or exported via Javascript to ASCII grids.
+Available grids are:
+
+| **name** | **description** |
+| --- | --- |
+| height | height of the tallest tree (m) on a pixel. |
+| edge | values <>0 are "edges". The numeric value is the current "fetch" from this pixel, i.e. the distance in meters in the current wind direction to the next sheltering pixel. |
+| cwsUproot | critical wind speed for uprooting (m/s) calculated on the pixel. If pixels are cleared (i.e. trees died) on a pixel, the value is kept. |
+| cwsBreak | critical wind speed for stem breakages |
+| treesKilled | the number of trees killed by the wind on a pixel (tree>4m height). |
+| basalAreaKilled | the sum of basal area of all trees killed on the pixel. |
+| iteration | a number indicating the iteration (1..n) when a pixel is "killed" |
+| windSpeedCrown | current wind speed in the crown (calculated) |
+| topo | topoModifier for wind speed calculations. (if the variable is provided on the resource unit level, it is shown here scaled to the 10m pixel resolution) |
+| isFrozen | 1 if soil is frozen on pixel, 0 otherwise. Note: resource unit level variable is scaled to 10m pixel resolution. Resource units that are not affected by the storm are "not frozen" by default. |
+| nEvents | **cumulative** event counter, counting whenever trees on a particular pixel are killed (for the whole simulation). |
+| sumVolume | **cumulative** disturbed volume (m3) on pixel |
+| edgeAge | age of an edge (consecutive number of years that a cell is an edge). |
+| basalArea | sum of basal area (trees>4m) on the cell. |
+
+
+
+## Javascript
+
+
+The wind module provides also a Javascript binding. Whenever the module is active, a Javascript object *Wind* is available in global scope.
+
+
+
+### Functions
+
+
+**Wind.windEvent(windspeed, winddirection, max_iteration, simulate, current_iteration)**
+ trigger a wind event from javascript.
+windspeed: average wind speed (m/s)
+winddireciton: wind direction (0°=N..180°=S..270=W°)
+max_iteration: maximum number of iterations
+simulate: if true, trees are not really affected (default: false)
+current_iteration: if given a value >=0, then only one iteration is calculated ("interactive mode") (default: -1)
+
+
+```javascript
+// start a single wind event
+  Wind.windEvent(40 /*m/s*/, 90 /*east*/, 10 /* iterations */);
+
+  // code for a interactive "movie"
+	for (var i=0;i<10;i++) {
+		Wind.windEvent(40,  132.4, 10,
+				   false, // do not simulate
+				   i); // iteration
+		Globals.wait(500); // wait half a second
+		Globals.repaint(); // repaint the GUI
+	}
+```
+
+
+**Wind.gridToFile(gridtype, filename)**
+This function saves a wind specific grid (specified by *gridtype*) in ESRI raster textfile format to *filename*. For possible values for *gridtype* see [#GUI_visualization_and_grid_description].
+
+
+```javascript
+// save the form of the fire in ESRI raster format
+  Wind.gridToFile('edge', 'temp/fetch.txt'); // default storage location: project root folder
+```
+
+
+**Grid Wind.grid(gridtype)**
+This function returns a wind specific grid (specified by *gridtype*). For possible values for *gridtype* see [#GUI_visualization_and_grid_description].
+Returns a [Grid](http://iland-model.org/apidoc/classes/Grid.html).
+
+
+```javascript
+var g =  Wind.gridToFile('nKilled');
+  g.name = "k"; // set the internal name of the variable
+  g.apply("if(k>0, 1, 0)"); // create a binary mask of damage pixels
+  // further processing, e.g. g.save()
+```
+
+
+
+**Wind.initialize()**
+The function resets and reloads the wind module. Very helpful for repeated simulations as this allows to change model settings.
+
+
+```javascript
+function manyEvents() {
+    Globals.set("modules.wind.topoGridFile", "gis/topo_grid_1.txt");
+    Wind.initialize(); // reload the wind module
+    Wind.windEvent(20,235,100);
+    // output processing omitted
+    Globals.set("modules.wind.topoGridFile", "gis/topo_grid_2.txt");
+    Wind.initialize();
+    Wind.windEvent(20,235,100);
+}
+```
+
+
+**Wind.setTopexGrid(grid_file_name)**
+Sets the "topex grid" that defines the spatial pattern of wind speeds on the landscape (setting "topoGridFile"). The ASCII grid is provided with grid_file_name. Together with "on<x>beforeWind", this can be used to set event-specific wind speed grids for the landscape.
+
+
+```javascript
+function onBeforeWind() {
+       // use time-event mechanism to provide the correct file name
+       let topo_grid = Globals.setting("user.topo");
+       // set the grid
+       Wind.setTopexGrid(topo_grid);
+  }
+ /* required steps:
+     * in project file, set "onBeforeWind" in wind module to "onBeforeWind()", add "user.topo" setting
+     * add column "user.topo" to time event grids and set correct grids names
+     * add JS function above to iLand (e.g., using "system.javascript" setting)
+ */
+```
+
+
+
+
+
+
+## Wind disturbance module output
+
+
+Table Name: wind
+Wind related output generated by event (typically per year). The outputs are created after each year (or spread event) and contain information about bark beetle generations, spread and damage for the total landscape.
+ For spatially explicit outputs, see also the script functions for extracting gridded data.
+
+
+| **caption** | **datatype** | **description** |
+| --- | --- | --- |
+| year | integer | simulation year |
+| iterations | integer | Number of iterations of the storm event. Translate to duration by multiplying with 'durationPerIteration'. |
+| windspeed_ms | double | Wind speed of the event in m/s (note that windspeed varies with topography and between interations). |
+| direction | double | Main wind direction of the event in degrees (0°: north, 90°: east, 180°: south, 270°: west). |
+| area_ha | double | Total area affected (sum of area of pixels with affected trees) |
+| killedTrees | double | total number of trees that were killed in the event. |
+| killedBasalArea | double | Total Basal Area (m2) of killed during the event. |
+| killedVolume | double | Sum of tree volume (m3) killed during the event. |
+
+
+
+
+
+
+::: {.callout-note title="citation"}
+[Seidl, R., Rammer, W., Blennow, K. 2014](http://dx.doi.org/10.1016/j.envsoft.2013.09.018). Simulating wind disturbance impacts on forest landscapes: Tree-level heterogeneity matters. Environ. Model. Software 51, 1-11.
+:::
+

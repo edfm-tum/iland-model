@@ -1,0 +1,131 @@
+---
+title: "dead trees"
+---
+
+
+
+## Description
+
+
+
+iLand, an individual-based forest landscape and disturbance model, explicitly simulates the dynamics of dead organic matter, including **standing woody debris (snags)** and **downed woody debris (DWD)**, as integral parts of its carbon and nitrogen cycling. iLand tracks these elements in several "pools" per resource-unit (see for individual dead trees below). When, for example, a tree dies, its biomass is transferred to one of three SWD-Pools (per ha, depending on dimension). Carbon in this pool is transferred over time to the atmosphere, and to the downed woody debris pool, where it further decays (atmosphere) and eventually becomes part of the soil (modeled with the ICBM approach).
+
+* Snag dynamics: [Snag dynamics](snag-dynamics.qmd)
+* Carbon cycling: [soil C and N cycling](soil-c-and-n-cycling.qmd)
+* Simplified soil parameterization: [Simplified soil parameterization](simplified-soil-parameterization.qmd)
+* Detailed snag debug output: [Debug Outputs](debug-outputs.qmd)
+
+
+
+### Extending resolution to track individual dead trees
+
+
+
+In addition to the cohort / pool based approach described above, also individual snags (both standing and lying) can be tracked. This allows to assess in more detail the quantity, quality (decay class), dimension and species of snags and downed stems, for - example - habitat quality assessments. Note that the pool-based and the individual-based approach co-exist: trees below a DBH threshold and non-stem-compartments (e.g., branches) are pooled even if larger stems are tracked individually!
+
+Trees enter the individual track, when the DBH at the time of death is larger than *model.settings.soil.swdDBHSingle* (cm). When trees above that threshold die, the biomass is separated to SWD pools (branches, foliage, fine- and coarse roots), and the stem biomass is tracked as a standing snag (unless the reason of death is wind or being cut down by management, in which case the stem is downed immediatley).
+
+Biomass of individual snags decays analog to snag pools (Eq. 1) based on species specific decay rate *k<sub>sw</sub>* and climate modifier *re*. The transition from standing to downed woody debris follows the logic laid out above: only here, an annual probability of falling is calculated as:
+
+$$
+p_{falling}=log(2)\cdot \frac{re}{hl_s}
+$$
+
+
+Snags that transitioned to the ground continue as downed woody debris. Biomass of downed snags decay with increased speed (species parameter {latex}}k_{yr}{{/latex}}). When the total remaining biomass falls below 5%, the snag ceases to exist and the remaining biomass is transferred to corresponding ICBM pool (Yr).
+
+
+
+#### Snag variables
+
+
+
+An overview of the snag variables is given here: [dead tree variables](dead-tree-variables.qmd)
+
+* *snag*: true if the tree is a standing dead tree, *false* if downed (DWD).
+* *species*: species (alpha-numeric code)
+* *volume*: tree volume (m3) of the tree when dying (keeps constant, set to 0 for decay class = 5)
+* *decayClass*: class 1 to 5 (1 least decayed, 5 most decayed). Classes are set based on the proportion of remaining stem biomass
+* *biomass*: (remaining) stem biomass (kg)
+* *remaining*: proportion of biomass that is remaining (relative to biomass at time of death)
+* *yearsStanding*: years standing since death. The counter is set to 1 in the year following the year of death
+* *yearsDowned*: number of years the stem is on the ground. The total number of years since death is *yearsStanding + yearsDowned*.
+
+
+
+#### JavaScript and Visualization
+
+
+
+Snags (both standing and downed) can be accessed via JavaScript (<https://iland-model.org/apidoc/classes/DeadTreeList.html>), and used for visualization in the UI and for custom outputs [link: dynamic outputs](dynamic-outputs.qmd)).
+
+
+
+#### Decay classes
+
+
+
+Each snag (standing or lying) is assigned a decay class based on percent remaining biomass. Note that this decay class is purely end-of-pipe and does not affect the model processes. Classification thresholds can be edited in the project file with the *model.settings.soil.decayClassThresholds* key. The parameter expects a comma-separated list of four thresholds (default: *0.2, 0.4, 0.7, 0.9*, leading to: &lt;=0.2: class V, 0.2-0.4: class IV, 0.4-0.7: class III, 0.7-0.9: class II, &gt;0.9: class I).
+
+
+
+#### Outputs
+
+
+
+Carbon stocks and fluxes within individual snags / DWD is combined with pools for reporting, e.g., *snags_c* of the *carbon* output includes the sum of pools and individual snags. In addition, [customagg](dynamic-outputs.qmd) output lets you define specific output based on the individual trees (e.g., number and total biomass of snags within certain DBH ranges).
+
+
+
+### Technical details:
+
+
+
+
+
+#### Where and how is carbon tracked?
+
+
+
+Snags: Snags are split into SWD (below threshold, other compartments) and individual snags. Decay happens both in pools and individual snags; the total carbon in SWD is calculated by summing pool and single snags.
+
+DWD: when an individual snag is downed, *all* biomass is transferred to the Yr soil pool. Consequently, all decay is handled by standard ICBM processes (as is the book-keeping for soil pools). Individual DWD snags still have a "biomass", but that exists outside of the closed carbon cycle and is *only* for estimating DWD decay (and decay classes) in that stage.
+
+
+
+#### Snapshots
+
+
+
+Snags/DWD are integrated into snapshots, i.e. they are included in the snapshot database (table *deadtrees*), and loaded from a snapshot database. Right now, other ways of initializing *individual* dead trees are not available.
+
+
+
+#### BITE integration
+
+
+
+Snags/DWD are integrated with BITE, i.e. agents modeled in BITE can respond to availability/quality of deadwood.
+
+The JavaScript object "deadTrees" can now accessed from a "BITE-Cell", i.e. *cell.deadTrees*. Example from JS (interactive):
+
+```javascript
+var ag = Bite.agent('Pinewood nematode');
+var cell = ag.cell(2,2);  // access a single cell
+
+cell.reloadDeadTrees(); // -> loads the dead trees for the cell
+console.log(cell.deadTrees.sum('biomass')) // access
+console.log(cell.deadTrees.count)
+
+// count standing dead spruce trees
+console.log( cell.deadTrees.sum("1", "species=piab and snag=true") )
+```
+
+
+This should work in BITE context in all functions that provide the *cell* as parameter.
+
+See also: variables [dead tree variables](dead-tree-variables.qmd)
+
+API-doc of *cell.deadTrees*: <https://iland-model.org/apidoc/classes/DeadTreeList.html>
+
+Note that the integration is for now experimental!

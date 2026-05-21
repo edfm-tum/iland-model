@@ -1,0 +1,169 @@
+---
+title: "download"
+---
+
+iLand is a research tool, and is publicly available as open source software. We have developed the software relying solely on open source components, in order to facilitate its use and further development by others (see [here](http://iland-model.org/blog1) for some ideas on iLand software development). The software is released under the [GNU General Public Licence](http://www.gnu.org/licenses/gpl.html) (GPL).
+
+
+
+### Source code
+
+
+iLand @ GitHub: https://github.com/edfm-tum/iland-model
+
+
+
+#### Building instructions
+
+
+See here in the [wiki](https://iland-model.org/software+-+getting+started#Building_iLand_from_source)and in the [online book](https://iland-model.org/iland-book/Building_iLand.html)
+
+
+
+### Demo landscape
+
+
+The "demo landscape" is the "Klausbachtal", one of the three main valleys of Berchtesgaden Nationalpark. The demo landscape is ~2300ha and comes with vegetation, climate data, and disturbance data and is ready to run.
+
+Download demo project: <https://iland-model.org/downloads/example_bgd.zip>
+
+Check out the [introductory chapters](https://iland-model.org/iland-book/Part_I.html) of the iLand book to learn how to get started!
+
+
+
+### Species parameters
+
+
+Thom et al 2024 (<https://doi.org/10.1016/j.dib.2024.110662>) provide a collection of iLand species parameters for 150 species and provenances Europe, North America, and Japan. The [repository](https://data.mendeley.com/datasets/58xdbwskp8/1) contains the parameter table in SQLite format (*all_species_database.sqlite*).
+
+Per default, all species are "switched on" in this database - this is indicated by a value of "1" in the column "active". For use in a specific region it is good practise to turn off unused species (set active to 0), which makes iLand run faster (with a lower memory footprint) and produce less output data.
+Note that the species parameter table shipped with the "demo landscape" is set up for Central Europe.
+
+
+### iLand book
+
+
+The first book about using iLand available online or as PDF.
+
+Online version: <https://iland-model.org/iland-book>
+PDF-Version: <https://iland-model.org/downloads/iland-book.pdf>
+
+
+
+### Download statistics
+
+
+See [download statistics](download-statistics.qmd) for details.
+
+
+
+
+<div class="panel expandable">
+  <div class="panel-heading" style="text-align: left; font-weight: normal; cursor: pointer">
+
+    <div class="download-container" style="display: flex; flex-direction: column; gap: 20px;">
+
+      <div class="download-info-row" style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+        <img src="../img/download.png" width="80" alt="Download iLand" style="flex-shrink: 0;"/>
+        <div>
+            <h3 style="margin-top: 0; margin-bottom: 10px;">iLand version 2.1 for Windows, macOS & Linux</h3>
+            <p style="margin: 0;">
+                **Release Date:**2025-08-08.**</br>
+                Source code is available on [GitHub](https://github.com/edfm-tum/iland-model/releases/tag/v2.1).</br>
+                Find more details on the iLand [blog](https://iland-model.org/blogpost61-Release-iLand-2-1).
+
+
+        </div>
+      </div>
+
+      <div class="download-form-container" style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #ddd;">
+
+        <form action="/get_iland/iland_download.php" name="downloadform100" onsubmit="return validateDownloadForm('downloadform100');" method="post">
+          <input type="hidden" name="file" value="iLandPackage2.1-win.zip">
+
+          <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 10px; font-weight: bold;">1. Select your Operating System</label>
+            <div id="os-chooser" style="display: flex; gap: 5px; flex-wrap: wrap;">
+              <button type="button" class="os-button active" onclick="selectOS(this)" data-file="iLandPackage2.1-win.zip" data-target="#win-info">Windows</button>
+              <button type="button" class="os-button" onclick="selectOS(this)" data-file="iLandPackage2.1-mac.dmg" data-target="#mac-info">macOS</button>
+              <button type="button" class="os-button" onclick="selectOS(this)" data-file="iLandPackage2.1-linux.tar.gz" data-target="#linux-info">Linux</button>
+            </div>
+          </div>
+
+          <div id="win-info" class="os-info" style="border: 1px solid #cce5ff; background-color:#f0f8ff; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
+            <p style="margin:0;">**Info:** iLand 2.1 for Windows.
+
+          </div>
+          <div id="mac-info" class="os-info" style="display: none; border: 1px solid #cce5ff; background-color:#f0f8ff; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
+            <p style="margin:0;">**Info:** See also [installation notes for Mac](https://iland-model.org/iLand+Software#Mac).
+
+          </div>
+          <div id="linux-info" class="os-info" style="display: none; border: 1px solid #cce5ff; background-color:#f0f8ff; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
+            <p style="margin:0;">**Info:** We are working on a installation package for Linux, but it is not ready yet - sorry! In the meanwhile consider compiling iLand from source on Linux (it is not that hard, see the [iLand development chapter](https://iland-model.org/iland-book/Building_iLand.html) in the book)
+
+          </div>
+
+          <label style="display: block; margin-bottom: 10px; font-weight: bold;">2. Enter your Details</label>
+          <div style="display: flex; flex-wrap: wrap; gap: 15px;">
+            <input type="text" name="name" placeholder="Name" style="flex: 1; min-width: 150px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+            <input type="text" name="country" placeholder="Country" style="flex: 1; min-width: 150px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+            <input type="email" name="email" placeholder="E-Mail (Optional)" style="flex: 2; min-width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+          </div>
+
+          <div style="margin-top: 15px; margin-bottom: 20px;">
+            <label for="captcha100" style="display: block; margin-bottom: 5px;">Human check: What is the square root of nine?</label>
+            <input type="text" id="captcha100" name="answer" size="6" style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+          </div>
+
+          <div style="margin-bottom: 20px;">
+            <input type="checkbox" id="agree100" name="agree" value="Bike" style="vertical-align: middle;">
+            <label for="agree100" style="vertical-align: middle;"> I accept the [terms and conditions](terms-and-conditions.qmd).</label>
+          </div>
+
+          <input type="submit" value="Download iLand" style="width: 100%; background-color: #2a8442; color: white; padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 1.2em; font-weight: bold;">
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .os-button {
+    padding: 10px 15px;
+    cursor: pointer;
+    border: 1px solid #ccc;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+    font-size: 1em;
+    font-weight: normal;
+    transition: background-color 0.2s;
+  }
+  .os-button.active {
+    background-color: #2a8442;
+    color: white;
+    border-color: #2a8442;
+    font-weight: bold;
+  }
+</style>
+
+<script>
+  function selectOS(selectedButton) {
+    document.forms['downloadform100'].elements['file'].value = selectedButton.getAttribute('data-file');
+    var buttons = document.querySelectorAll('#os-chooser .os-button');
+    buttons.forEach(function(button) {
+      button.classList.remove('active');
+    });
+    selectedButton.classList.add('active');
+    var infoBoxes = document.querySelectorAll('.os-info');
+    infoBoxes.forEach(function(box) {
+      box.style.display = 'none';
+    });
+    var targetBox = document.querySelector(selectedButton.getAttribute('data-target'));
+    if (targetBox) {
+      targetBox.style.display = 'block';
+    }
+  }
+</script>
+
+
+See [iLand - previous releases](iland-previous-releases.qmd) for earlier releases of iLand!

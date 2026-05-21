@@ -1,0 +1,6 @@
+---
+title: "mindmap"
+---
+
+<img src="../img/mm_iLand_20081203.png" alt="Image" width="700" class="img-fluid" />
+

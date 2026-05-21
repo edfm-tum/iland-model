@@ -1,0 +1,71 @@
+---
+title: "ground vegetation"
+---
+
+-= Note: currently (2017) the grass - regeneration feedback is disabled!  =-
+
+
+
+
+## concept
+
+
+In order to account for difficulties that trees have to regenerate, we developed a forest floor vegetation cover and a [browsing](http://iland-model.org/browsing) submodule. While forest floor vegetation primarily prohibits germination of seeds, browsing essentially prunes saplings and causes their mortality. Both of these processes imply consequences on forest succession.
+We developed two approaches to implement a forest floor vegetation cover in iLand. The first approach (“pixel”) enables or disables regeneration on each 2x2m pixel  after disturbance. The second approach ("continuous") provides a probability of each sapling to establish in dependency to grass cover.
+
+
+## implementation
+
+
+
+
+### Type “pixel”
+
+
+To determine whether a pixel is enabled or disabled to regenerate, we accounted for (i) a threshold in minimum light requirements to allow grass on a pixel, (ii) a time-lag after disturbance until regeneration on a pixel manages to outcompete grass, and (iii) a probability that a pixel remains covered by grass for the time after this time-lag.
+We had two data sources to develop the “pixel” approach. Data on the relation between ground vegetation cover (vascular plant species in the herb layer with a height of up to 60 cm) and tree crown cover were derived from the FlorAlp-Database ([Dullinger et al. 2012](http://onlinelibrary.wiley.com/doi/10.1111/j.1466-8238.2011.00732.x/abstract;jsessionid=B5A4084336AAFBC669AD27FB69C473A4.f01t02)) by selecting releves with a uniform size of 625 m2 (N=852) (data available in [Thom et al. 2016](https://dx.doi.org/10.5061/dryad.2d6h4)). As crown cover is not an accurate surrogate for light availability, we took a subset from a study landscape in the northern front range of the Austrian Alps, and initialized it in iLand. We extracted model outputs for crown cover and LIF ([light influence field](http://iland-model.org/competition+for+light), i.e., light availability), and derived a negative exponential function to describe the relationship between LIF and crown cover on 4.44Mio pixel with a grain of 2x2m. The negative exponential function was then used to fit LIF at the 852 inventory points. Based on the relation between ground vegetation cover and LIF, we estimated a suitable LIF threshold (0.2) to allow regeneration when light increases abruptly after disturbance.
+To derive the time-lag for regeneration due to weedage after disturbance, and to estimate a time period as well as a probability for ground vegetation to severely affect regeneration within this period, we assessed the relation between time since disturbance and regeneration density using the data in [Pröll et al. (2015)](http://link.springer.com/article/10.1007/s10342-014-0851-1) who collected data in the Austrian Alps for this study. The data on ground vegetation after disturbance varies between 1 and 29 years and the regeneration density on disturbed sites compared to control sites ranges from 0 – 1.8% in this study. Within the first five years, the regeneration density was found to be close to 0, and after five years there was an increase in regeneration density, but without indication for a pattern over time. Based on this data we set the minimum time-lag to enable regeneration on any pixel after disturbance to five years. After five years until year 29 after disturbance, we assumed the same probability that a year was sampled to allow regeneration on each pixel, so that after a maximum of 29 years all pixels are available to regeneration.
+
+
+
+
+
+## Type “continuous”
+
+
+To implement the forest floor vegetation cover submodule with type “continuous”, we acknowledged three environmental processes: (i) the forest floor vegetation cover reaches its theoretical potential (saturation) in dependency to incoming light, (ii) there is a time-lag to reach this potential, and (iii) tree regeneration is reduced in dependency of the actual forest floor vegetation cover.
+To derive the maximum potential cover of ground vegetation, we used the same data as for the "pixel" approach to describe the dependency of ground vegetation on LIF, but this time we derived a power function to describe the relationship between ground vegetation and LIF instead of setting a threshhold. We assumed this function to be the theoretical maximum ground vegetation cover in the model. The time-lag to reach this maximum can be estimated from field experiments or experts, e.g., a time-lag of 4 years means that in each year after a disturbance of the forest crown (as a reduced crown cover also increases LIF), ground vegetation cover increases by 25% of its maximum value. In the opposite case, i.e., with decreasing LIF, the maximum ground vegetation cover decreases according to the LIF value. As an decrease in ground vegetation does not necessarily mean a linear increase in regeneration, we included the effect of ground vegetation as a probability of prohibiting regeneration on a pixel as a function of ground vegetation cover.
+The advantage of this approach compared to type “pixel” is that it covers the underlying processes of weedage in forests more accurate, and thus allows for a more sophisticated response of regeneration to grass as it provides a gradation, depending on the maximum ground vegetation cover and its effect. However, the disadvantage of the type “continuous” is the requirement for adequate data to define each parameter.
+
+
+
+
+### project file parameters
+
+
+the ground vegetation module is configured by settings in the XML-[project file](project-file.qmd) in the section *settings.grass*. The following settings are available:
+
+
+
+**general**
+
+| **key** | **datatype** | **description** |
+| --- | --- | --- |
+| enabled | boolean | switches the module on (*true*), or off (*false*). |
+| type | boolean | types are either "pixel" or "continuous" |
+
+**pixel mode**
+
+| **key** | **datatype** | **description** |
+| --- | --- | --- |
+| grassDuration | string | Defines ramp to prohibit regeneration during the first years after disturbance, followed by an equal probability in each year to allow a pixel to regenerate again (once a pixel allows regeneration after disturbance, it stays "unlocked" until the next disturbance accurs). After reaching the maximum year, a pixels must be available for reneration. E.g., polygon(x, 0,0, 6,0, 6,1, 30,1, 30,0) |
+| LIFThreshold | numeric | If a pixel exceeds the LIF threshold due to a discrete event (e.g., disturbance), ground vegetation invades the pixel. E.g., 0.2 |
+
+**continuous mode**
+
+| **key** | **datatype** | **description** |
+| --- | --- | --- |
+| grassPotential | string | Maximum grass cover (0,1) as function of the LIF pixel value. E.g., polygon(0.9999*x^0.15) |
+| maxTimeLag | numeric | Maximum duration in years to reach full ground vegetation cover. E.g., 4 |
+| grassEffect | string | Probability of prohibiting regeneration as a function of grass level (0,1). E.g., polygon(0.9999*x^0.15) |
+

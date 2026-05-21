@@ -1,0 +1,9 @@
+---
+title: "Class: Constraint"
+sidebar: apidoc
+---
+
+# Constraint Class
+
+Constraints object.
+

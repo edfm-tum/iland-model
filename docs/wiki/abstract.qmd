@@ -1,0 +1,43 @@
+---
+title: "abstract"
+---
+
+<h2 class="showhide_heading">**Context**</h2>
+
+
+[Forests ecosystems](http://www.fao.org/docrep/013/i2000e/i2000e00.htm) cover roughly 30% of the global land area, store approximately three times more [carbon](http://www.sciencemag.org/content/333/6045/988.short) than the earths’ atmosphere, are hotspots of [biodiversity](http://www.cbd.int/forest/about.shtml), and provided a multitude of [ecosystem services to society](http://www.maweb.org/en/index.aspx). However, many of these crucial ecosystem functions and services are severely threatened by [anthropogenic climate change](http://www.ipcc.ch/). Understanding the trajectories and sensitivities of forest ecosystems is thus crucial for [sustaining the planets life-support system](http://www.nature.com/nature/journal/v461/n7263/full/461472a.html), and for a transformation towards a sustainable, carbon-neutral society.
+
+
+<strong style="font-size:22px;"><img alt="" src="display1" style="padding-top:5px;padding-right:5px;padding-bottom:5px;padding-left:5px;float:left;" />**
+
+
+Forest ecosystems are [complex adaptive systems](http://en.wikipedia.org/wiki/Complex_adaptive_system). Their dynamics emerges from nonlinear interactions between adaptive biotic agents (i.e., individual trees) and their relationship with a spatially and temporally heterogeneous abiotic environment. Processes at multiple scales, from organs of individual trees (e.g., photosynthesis) to the landscape (e.g., wildfire) interact to form diverse and [resilient ecosystems](http://books.google.at/books?id=DHcjtSM5TogC&amp;lpg=PP1&amp;hl=de&amp;pg=PP1#v=onepage&amp;q&amp;f=false). In order to assess how climate change - which affects a variety of these processes - will impact ecosystems, and to sustainably [manage these complex systems](http://books.google.at/books?id=NJwN3b1csDoC&amp;lpg=PP1&amp;dq=managing for complexity&amp;hl=de&amp;pg=PP1#v=onepage&amp;q=managing for complexity&amp;f=false), we need to consider these multiple interactions among processes and scales. To that end we have developed a simulation model of forest ecosystem dynamics at landscape scales, the <u>i</u>ndividual-based forest <u>lan</u>dscape and <u>d</u>isturbance model [iLand](http://iland-model.org/iland).
+
+
+ 
+
+
+<h2 class="showhide_heading">**Approach**</h2>
+
+
+iLand explicit simulates the principal adaptive agents in forest ecosystems, i.e., individual trees, over large areas. This scalability is achieved by (i) employing a [pattern-based rendering of ecological field theory](http://iland-model.org/competition+for+light) to efficiently model spatially explicit resource availability at the landscape scale, and by (ii) integrating local resource competition and [physiological resource use](http://iland-model.org/primary+production) via a [hierarchical multi-scale framework](http://iland-model.org/scaling).
+
+
+<img alt="" src="display2" style="float:right;" />iLand is conceived as a process-based model of the primary demographic processes in forest ecosystems, i.e. growth, mortality, and regeneration of trees. [Seed dispersal](http://iland-model.org/dispersal) in the landscape is simulated spatially explicit, and, in conjunction with a [phenology-based establishment model](http://iland-model.org/establishment), determines tree regeneration and species distribution. [Productivity](http://iland-model.org/primary+production) is derived at stand-level by means of a light-use efficiency approach, and downscaled to individuals via [local light availability](http://iland-model.org/individual+tree+light+availability), accounting for [adaptive](http://iland-model.org/allocation)[behavior](http://iland-model.org/stem+growth) of trees in response to their environment. [Individual tree mortality](http://iland-model.org/base+mortality) is modeled based on carbon starvation, while spatially explicit modules of [disturbance agents](http://iland-model.org/mortality) (wind, bark beetles, wildfire) can be deployed to simulate large-scale mortality events. The model thus harnesses approaches from community ecology, ecosystem ecology, and landscape ecology to address current questions of ecosystem stewardship and resilience. In addition, iLand integrates an [agent-based model of forest management](management.qmd) in order to dynamically address the interactions between forests and managers as coupled human and natural systems.
+
+
+<h2>
+**Application**</h2>
+
+
+iLand is a general model of forest ecosystem dynamics. It can be employed to elucidate a wide variety of ecology- and management-related questions. Major applications of the model are:
+
+
+<ul><li> The [resilience of ecosystems](http://en.wikipedia.org/wiki/Resilience_(ecology)) to disturbances arises from their multi-scale diversity in agents and responses, an aspect that is well represented in iLand. The model can thus contribute crucial capacities to studies aiming to understand and foster the resilience of ecosystem functions and services under [intensifying disturbance regimes](http://dx.doi.org/10.1111/j.1365-2486.2011.02452.x).</li>
+	<li>[Climate change adaptation](http://dx.doi.org/10.1139/X10-235) is a major concern in forest management currently, in order to ensure a sustainable provisioning of crucial ecosystem services also under a drastically changing environment. With its process-based foundation and agent-based [management](management.qmd) engine iLand offers a robust framework for scenario analysis towards developing climate-smart management systems for the future.</li>
+	<li>iLand keeps track of above- and belowground carbon stocks in forest ecosystems. It can thus be employed to study [questions of forest C storage and exchange](http://www.nature.com/nature/journal/v452/n7190/abs/nature06777.html), e.g. in the context of the increasingly important question of climate change mitigation through forest management.</li>
+	<li> Not only does iLand predict biological diversity in space and time explicitly, e.g. with regard to tree species richness and diversity, it also simulates many diversity measures highly indicative for other guilds of organisms (e.g., standing and downed deadwood, vertical canopy structure). iLand can thus be a powerful tool in the context of questions relating to the conservation of biodiversity, and for elucidating the [functional roles of diversity](http://www.fundiveurope.eu/).</li>
+</ul>
+
+
+<img src="display3" alt="Image" class="img-fluid" /><span> </span>

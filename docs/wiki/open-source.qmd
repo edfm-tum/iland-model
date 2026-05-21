@@ -1,0 +1,39 @@
+---
+title: "open source"
+---
+
+<h1 class="showhide_heading">
+	iLand is a Open-Source Project</h1>
+<h2>
+	Open source software development</h2>
+
+
+	We believe that the results of research - especially when publicly funded - should also be available to the public. Furthermore, we believe that a fundamental principle of science is that research should be replicable by peers (which gets increasingly harder the more complex the applied tools become, and the more restricted traditional publication outlets become).
+
+
+
+	That's why we chose to release the full iLand software suite under the [GNU GPL (General Public licence)](http://www.gnu.org/copyleft/gpl.html). The [GNU General Public Licence](http://www.opensource.org/licenses/gpl-2.0.php) (GPL) is one of the most commonly used licenses for open-source projects. The GPL grants and guarantees a wide range of rights to developers and users working with open-source software. Basically, it allows users to legally copy, distribute and modify software. This means you can:
+
+<ul><li>
+		**Copy the software.**
+
+		Copy it onto your own computers or servers, pretty much anywhere you want. There’s no limit to the number of copies you can make.</li>
+	<li>
+		**Make whatever modifications to the software you want.**
+
+		If you want to add or remove functionality, go ahead. If you want to use a portion of the code in another project, you can. The only catch is that the other project must also be released under the GPL.</li>
+</ul><h2>
+	Open source components</h2>
+
+
+	One dedicated goal is to use as much open-source/free software as possible to not restrict the potential use of iLand by licenses etc. This includ:
+
+<ul><li>
+		toolkit ([Qt](qt.qmd))</li>
+	<li>
+		IDE ([Qt creator](http://doc.qt.io/qtcreator/)), and compiler ([Gnu C++](http://gcc.gnu.org/))</li>
+	<li>
+		the [SQLite](http://www.sqlite.org/)database</li>
+	<li>
+		[The R project for statistical computing](http://www.r-project.org/) (for both spatial and non-spatial data analysis)</li>
+</ul>

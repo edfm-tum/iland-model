@@ -1,0 +1,21 @@
+---
+title: "vapor pressure deficit response"
+---
+
+Vapor pressure deficit is used in iLand as proxy for atmospheric humidity. It serves as the mediator between atmospheric conditions and transpiration via stomatal conductance, and acts as a direct modifier on primary production. We follow [Landsberg and Waring (1997)](http://dx.doi.org/10.1016/S0378-1127(97)00026-1) in applying the same response function for both production and stomatal conductance (Eq. 1)
+
+$$
+f_{D,d}=e^{-k\cdot D}
+$$
+
+with *d* a index for day of the year, *k* an empirical constant, and *D *the atmospheric vapor pressure deficit in kPa. The model is sensitive to this modifier, both with regard to water cycle feedbacks and direct effects on *NPP*. It is thus noteworthy that [Mäkelä et al. (2008)](http://dx.doi.org/10.1111/j.1365-2486.2007.01463.x), conducting a empirical parametrization of Eq. 1 over sites in Europe, obtained strongly divergent parameters for *k *compared to [Landsberg and Waring (1997)](http://dx.doi.org/10.1016/S0378-1127(97)00026-1). A possible explanation lies in differences in temporal resolution, with daily ([Mäkelä et al. 2008](http://dx.doi.org/10.1111/j.1365-2486.2007.01463.x)) vs. monthly ([Landsberg and Waring 1997](http://dx.doi.org/10.1016/S0378-1127(97)00026-1)) responses.
+
+In iLand Eq. 1 is calculated on a daily basis. It is used as daily modifier on stomatal conductance in the water cycle simulations and averaged to obtain the *f<sub>vpd</sub>* modifier for the monthly calculation of [utilizable radiation](primary-production.qmd) and production.
+
+
+
+
+::: {.callout-note title="citation"}
+[Seidl, R., Rammer, W., Scheller, R.M., Spies, T.A. 2012](http://dx.doi.org/10.1016/j.ecolmodel.2012.02.015). An individual-based process model to simulate landscape-scale forest ecosystem dynamics. Ecol. Model. 231, 87-100.
+:::
+

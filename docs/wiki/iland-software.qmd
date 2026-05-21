@@ -1,0 +1,95 @@
+---
+title: "iLand Software"
+---
+
+
+
+
+
+## The iLand software
+
+
+The iLand software consists of several components:
+
+* The [iLand viewer](iland-viewer.qmd): this is a GUI shell around the core model. Usually, this application is the prime tool when working with iLand.
+* The [iLand console](iland-console.qmd) application (*ilandc*): a non-GUI version of the model, which will be useful as a command line based workhorse for large simulation jobs or for simulations jobs in a computer cluster.
+* The [LightRoom](lightroom.qmd) is the auxiliary tool used to create the pre calculated light influence pattern that are consequently [used in the core model](competition-for-light.qmd).
+
+From time to time, we create "official" iLand releases; usually this are versions of the model that are used for some "important" simulations (e.g. those that are used to produce [publications](iland-publications.qmd)). This helps, together with the source code repository, to keep the model development process traceable and transparent. The more technical [release notes](release-notes.qmd) page contains useful information on single iLand releases (e.g. for upgrading database tables).
+
+
+
+## iLand source code
+
+
+The iLand software itself is released under the [GPL](http://www.gnu.org/copyleft/gpl.html) open source licence. The full source code of iLand is packaged together with the official [iLand releases](iland-releases.qmd). However, as we use a [subversion](http://subversion.tigris.org/) repository for iLand development, the code is also available online at [iland-model.org/publicsvn](http://iland-model.org/publicsvn). We also generate additional documentation directly from the source code using [Doxygen](http://www.stack.nl/~dimitri/doxygen/). A current snapshot of that is online at [our doxy site](http://iland-model.org/doxy/index.html).
+
+
+
+## Building iLand
+
+
+The source code of iLand is bundled with the [download package](download.qmd) of the model  and is also available online at http://iland-model.org/publicsvn . Within the download package, the full source code of the model is in the ZIP archive “sourcecode.zip”. In order to be able to modify and compile iLand for yourself, you will need Qt and the QtCreator IDE. Both packages are freely available at http://qt.io/ .
+After installing the Qt Creator IDE, open the “iland.pro” project in the “src/iland” folder (be sure to preserve file paths when extracting the source code). iLand uses no external libraries (except the Qt libraries) which should simplify the building process considerably – a click to “build” should suffice.
+
+
+
+## Installing iLand
+
+
+Get the iLand executable package from the [download](download.qmd) page, select your operating system.
+
+
+
+### Windows
+
+
+ To install iLand, simply extract the ZIP folder to a location of your choice und start the model by double clicking the “iland.exe” file. iLand comes without a dedicated installer and does not modify the Windows registry. It is thus also possible to run iLand from a USB stick.
+
+
+
+### Mac
+
+
+Note that support for Mac is experimental. Here some infomation:
+
+Sometimes it is necessary to install Xcode (available on Mac App Store / installation with Terminal).
+Additionally, you need a package manager, such as home-brew. Therefore the following terminal-command can be used:
+^
+	/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+^
+Test your home-brew version /installation:
+^
+	brew --version
+^
+After installing home-brew, "freeimage" is necessary, therefore use terminal to install with the following command:
+^
+	brew install freeimage
+^
+We shortly tested iLand on functionality, bugs can occur. Tests done on Apple Silicon (M-chip).
+
+NOTE: If your Mac displays an error message saying that the file is corrupt, this may be due to security restrictions that prevent the execution of apps downloaded outside the official App Store. In this case, you need to adjust the security label of the file manually. To do so, open the .dmg file and drag the contained app into your Applications folder. Then, open the Terminal and run the following command:
+
+
+::: {.callout-note}
+ sudo xattr -rd com.apple.quarantine /Applications/iLand.app
+:::
+
+
+You may be prompted to enter your password. After completing this step, the app should launch normally.
+
+
+
+
+## project files and folders
+
+
+For iLand, a **project** combines all the necessary settings and input files that are needed to run a simulation for a specific case. The different files that are needed by the model may (but not necessarily have to) be stored in a specific folder structure. Examples are [climate files](climatedata.qmd), files to [initialize trees](initialize-trees.qmd) or to [initialize the landscape]. The iLand packages contain example projects that demonstrate the organization.
+The [project file](project-file.qmd) is a single file in a XML format that contains various model settings:
+
+* paths and locations to other data (see also [filenames and paths](filenames-and-paths.qmd))
+* the definition of the simulation space, i.e. the size and the properties
+* general switches for the model (e.g. switch regeneration sub module on or off)
+* more specific model settings (e.g. the definition of nitrogen response classes)
+* settings relevant for the simulation software (e.g. whether multithreading is enabled)
+* properties of the [outputs](outputs.qmd) that should be produced.

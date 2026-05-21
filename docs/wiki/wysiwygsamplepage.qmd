@@ -1,0 +1,98 @@
+---
+title: "wysiwyg_sample_page"
+---
+
+<h1 class="showhide_heading">
+	WYSIWYG Sample Page</h1>
+
+
+	Start off by clicking "edit" then switching the editor to use the wysiwyg editor using the <img src="../img/pencil_go.png" alt="Image" class="img-fluid" /> button on the toolbar.
+
+<h2 class="showhide_heading">
+	Text formatting</h2>
+
+
+	**bold**
+*italic*
+<u>underlined</u>
+
+<div style="text-align:center;">
+	centred text</div>
+<h2 class="showhide_heading">
+	Lists and table</h2>
+<ul><li>
+		An unordered list item
+		<ul><li>
+				A subitem</li>
+		</ul></li>
+</ul>
+
+	And some text
+
+<ul><li>
+		Another item</li>
+</ul>
+
+	. . . and more text . . .
+
+<ul><li>
+		Item 3</li>
+</ul>
+
+	. . . and some more text, to illustrate the line spacing.
+
+
+
+	A table:
+
+<table class="wikitable"><tbody><tr><td class="wikicell">
+				Row One, Column One</td>
+			<td class="wikicell">
+				Row One, Column Two</td>
+		</tr><tr><td class="wikicell">
+				Row Two, Column One</td>
+			<td class="wikicell">
+				Row Two, Column Two</td>
+		</tr></tbody></table><div class="simplebox">
+	A box</div>
+
+
+
+
+	A [link](http://tiki.org)
+
+
+
+	**And these are produced by wiki plugins:**
+
+<h2 class="showhide_heading">
+	Plugins</h2>
+<h3 class="showhide_heading">
+	Quote plugin:</h3>
+
+>
+> Just what do you think you're doing, Dave?
+>
+> **HAL, in 2001:** A Space Odyssey (1968)
+
+<h3 class="showhide_heading">
+	Code plugin:</h3>
+
+```javascript
+function foo() {
+this.func(x);
+}
+```
+
+<h3 class="showhide_heading">
+	FANCYTABLE example:</h3>
+
+| head one~ | ~head two~ | ~head three |
+| --- | --- | --- |
+| cell one~ | ~cell two~ | ~cell three |
+| row 2 cell 1~ | ~ row 2 cell 2~ | ~ row 2 cell 3 |
+
+
+
+	 
+

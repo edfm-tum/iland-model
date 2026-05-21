@@ -1,0 +1,171 @@
+---
+title: "iLand cluster"
+---
+
+This page describes a possible set up (and step by step instructions) for running multiple iLand simulations on a compute cluster. Here we assume a cluster infrastructure based on Linux.
+
+
+
+
+## iLand software
+
+
+ 
+
+* get the iLand C++ [source code](iland-software-and-source-code.qmd) and copy to the server (we assume a folder *iland*)
+* create a *build* folder within the *iland* folder
+* build the [console version of iLand](iland-console.qmd) on the command prompt (see below). Prerequsites are a viable compiler (e.g., gcc, icc) and the Qt packages (see for example <http://doc.qt.io/qt-5/linux.html>). Details of the setup process will probably differ and depend on the specific details of the cluster.
+
+^
+cd plugins
+rm -r *
+qmake ../../src/plugins/plugins.pro
+make
+cd ..
+
+cd ilandc
+rm -r *
+qmake ../../src/ilandc/ilandc.pro
+make
+cd ..
+^
+ 
+
+* on success, iLand can be run:
+
+^
+[wrammer@l33 build]$ ilandc/ilandc
+iLand console (1.04 - #1306)
+This is the console version of iLand, the individual based
+landscape and disturbance forest model.
+More at: http://iland-model.org
+(c) Werner Rammer, Rupert Seidl, 2009-2017
+compiled: Intel 64 bit Qt 5.8.0
+
+                                                                                                                                                            *
+
+Usage:
+ilandc.exe <xm<x>l-project-file> <...other options>
+Options:
+you specify a number key=value pairs, and *after* loading of the project
+the 'key' settings are set to 'value'. E.g.: ilandc project.xml 100 output.stand.enabled=false output.stand.landscape=false
+See also http://iland-model.org/iLand+console </xm
+^
+ 
+
+
+## setup of the simulation project
+
+
+An iLand project is typically a folder that contains the main [project file](project-file.qmd) and all necessary files (e.g., climate data, data for the initialization of the vegetation, ...). Usually, the project folder can be simply copied from the desktop computer to the cluster.
+A typical simulation project will consist of multiple simulations, for example a setup of a simulation study on a single landscape could include:
+
+* 5 different climate scenarios
+* 4 different management scenarios
+* simulations with and without natural disturbances
+* replications of each factor combination (to include effects of stochasticity), e.g. 20 replicates
+
+In this example, a total of 5 x 4 x 2 x 20 = 800 simulations are required. One practical way to define the whole simulation job is to create a table with one row for each simulation. Here is an example for such a 'master' file:
+
+
+| id | climate | disturbance | management |
+| --- | --- | --- | --- |
+| 1 | scenarioA | yes | mgmtA.js |
+| 2 | scenarioA | no | mgmtA.js |
+| 3 | scenarioB | yes | mgmtA.js |
+| 4 | scenarioB | no | mgmtA.js |
+| ... |  |  |  |
+
+ 
+
+The "id" is a unique Id for a simulation, and the columns "climate", "disturbance", and "management" define the detailed settings for each run. The details depend of course on the specific simulation study.
+
+
+
+## The batch process
+
+
+iLand does not use any parallel computing across computer nodes (e.g., mpc); instead, every iLand simulation runs on a single computer node independently. The main advantage of a cluster environment is thus that many iLand simulations can be run at the same time (e.g., with different climate and management scenarios). In a typical environment the steps for a single simulation run with id "x" are:
+
+* copy the required data (i.e. the project folder) to the compute node (note: if storage is fast you could also run all simulations from a project somewhere on your storage; in this case just make sure that you store your *output* on the compute node or in a unique location - otherwise parallel simulations might interfere and overwrite each other!)
+* run the simulation on the node (with settings for the run "x")
+* copy the output of the simulation back to a common storage space (e.g., in a folder 'output_x')
+
+The above mentioned steps can be specified in a batch script (e.g. bash script on Linux systems). The 'hard' part is to translate the abstract settings for a given simulation id to something that iLand understands. In most cases this boils down to 'build' the command line arguments for the "ilandc" executable. Here is a (shortened example) - note that the details differ from the more generic example of a 'master' file above.
+
+
+```
+# the run id that should be executed is in the environment variable SLURM_ARRAY_TASK_ID
+# other relevant env. variables:
+# TARGET: the path to a local directory on the node
+# HOME: a path to the directory for the project data and the output data
+
+# extract the run id from the master file:
+ID=`grep "^$SLURM_ARRAY_TASK_ID," $HOME/cent4csink/project/master.csv | cut -d "," -f 1`
+echo "processing job $ID..."
+
+if [ -d "$HOME/cent4csink/results/data${ID}" ]; then
+  echo "directory already exists, quitting"
+  exit 0
+fi
+
+echo "copy data to target directory $TARGET"
+
+rm -r $TARGET/*
+mkdir $TARGET
+cp -r $HOME/cent4csink/project/* $TARGET
+
+cd  $TARGET
+
+LINE=`grep "^$SLURM_ARRAY_TASK_ID," $HOME/cent4csink/project/master.csv`
+echo $LINE
+# extract the variables from the master file
+VARSNAPSHOT=`echo $LINE | cut -d "," -f 5`
+VARCLIMTABLE=`echo $LINE | cut -d "," -f 8`
+VARMGMT=`echo $LINE | cut -d "," -f 6`
+VAREVENTS=`echo $LINE | cut -d "," -f 9`
+
+echo "snapshot: $VARSNAPSHOT, climate table: $VARCLIMTABLE abe-on: $VARMGMT events: $VAREVENTS"
+
+# copy snapshot and climate database to the project folder
+# this steps just avoid copying *all* climate data files to every node even if the data is not needed
+# to do this, parts of the project data are stored outside of the project folder
+CMD="cp $HOME/cent4csink/project_data/$VARSNAPSHOT.* init"
+echo $CMD
+$CMD
+CMD="cp $HOME/cent4csink/project_data/$VARCLIMTABLE database"
+echo $CMD
+$CMD
+
+# build the command for ilandc:
+EXECMD="$HOME/iland/build/ilandc/ilandc project.xml $YEARS user.abe_on=$VARMGMT system.database.climate=$VARCLIMTABLE model.initialization.file=init/${VARSNAPSHOT}.sqlite"
+EXECMD2=" model.world.timeEventsFile=../wind_scenarios/${VAREVENTS}.txt"
+EXECMD="$EXECMD $EXECMD2"
+echo "$EXECMD" > output/cmd.txt
+echo "*** starting the simulation  ***"
+
+# now run the simulation!
+$EXECMD
+
+echo "*** finished! ***"
+echo "copy back the results to data${ID}"
+mkdir $HOME/cent4csink/results/data${ID}
+
+cp $TARGET/output/* $HOME/cent4csink/results/data${ID}
+cp $TARGET/log/log.txt $HOME/cent4csink/results/data${ID}/
+echo "done."
+```
+
+ 
+
+
+
+## Execution of the batch job
+
+
+The details depend on the cluster management software that is used (e.g. [SLURM](http://slurm.schedmd.com/) or [SGE](https://en.wikipedia.org/wiki/Oracle_Grid_Engine)). The use case for iLand (a single job repeated many times with slightly different paramters) is often covered with a term like 'Job arrays' (e.g. [here](https://wiki.vsc.ac.at/doku.php?id=doku:job_arrays)).
+The process is:
+
+* tell the cluster management to run the job with an array of run ids (e.g. 1:800).
+* use the provided tool of the management software to check progress (the cluster usually provides also different log files that help debugging)
+* when the job is finished, the outputs of all simulations are available in a central location (in the example: $HOME/cent4csink/results/*)

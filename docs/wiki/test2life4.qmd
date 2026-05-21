@@ -1,0 +1,27 @@
+---
+title: "Test2Life4"
+---
+
+bla bla
+
+
+
+
+::: {.callout-note title="a title"}
+A whole lot a shakin goin on
+:::
+
+
+
+::: {.callout-note title="Citation"}
+asdfölaksdf
+asdfasdf
+asdfasd
+f
+:::
+
+
+
+::: {.callout-note title="Tiki"}
+A whole lot a shakin goin on
+:::

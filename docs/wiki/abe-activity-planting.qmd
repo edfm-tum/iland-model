@@ -1,0 +1,106 @@
+---
+title: "ABE activity planting"
+---
+
+
+
+The “planting” activity provides specialized functionality for the planting of trees / tree mixtures.
+The activity defines one or more “planting items” that define details of the planting operations such as tree species, dimension, or spacing. If more than one item is defined, the items (and the planting operations) are executed sequentially.
+
+
+| **Property** | **Description** |
+| --- | --- |
+| items | A planting item or an array of planting items. An item defines properties for the planting of one species. See below for details. |
+
+ 
+
+
+
+## Wall-to-wall planting
+
+
+Trees are planted (more or less) regularly spread over the full area of the stand.
+
+
+| **Property** | **Description** |
+| --- | --- |
+| species | The species code (string, e.g, ‘piab’). |
+| h | Tree height (m) of the planted trees. Valid values are between 0.05 and 4m. Default value: 0.05m |
+| age | The age (years) of the planted trees. Default value: 1 |
+| clear | Boolean switch; if true, *all* sapling trees on the pixel are cleared before the tree is planted. |
+| fraction | Defines a fraction [0..1] of 2x2m pixels for which to plant trees of the given species. The `fraction` is interpreted as a probability, i.e. for each 2x2m pixel a random number decides whether to plant or not. |
+
+ 
+
+
+
+## Planting in groups
+
+
+Trees are grouped in small patches on the landscape. Already established regeneration can either be kept or removed. The user can select from a number of pre-defined planting patterns (i.e. patch sizes). The spatial distribution of the patches can either be random or regularly spaced.
+
+
+| **Property** | **Description** |
+| --- | --- |
+| species | The species code (string, e.g, ‘piab’). |
+| h | Tree height (m) of the planted trees. Valid values are between 0.05 and 4m. |
+| clear | Boolean switch; if true, *all* sapling trees on the pixel are cleared before the tree is planted on the respective pixel. |
+| pattern | Name of the pattern (string) to use. See below for details. |
+| random | Boolean; if true, planting patches are located randomly. |
+| n | In random-mode, `n` defines the number of patches per hectare to create. Note: the number of created patches is n * stand_area_ha rounded down to the next integer. |
+| spacing | If random is false, spacing defines the width (and height) in meters of the grid that defines the origin for the planted patches. For example, if spacing is 50, then every 50m the given pattern will be applied. If spacing is omitted or 0, then only a single instance of the pattern (shifted by "offset") will be planted. |
+| offset | The offset shifts the spacing grid (defined by spacing) both in x- and y-direction (in meters). For example, if spacing is 50 and offset is 25, then patters are applied (relative to the bounding box of the stand) at coordinates: 25/25, 75/25, 125/25, ...25/75, ... |
+
+ 
+
+
+
+### List of available patterns
+
+
+The following pre-defined patterns are available:
+
+
+| **pattern** | **Description** |
+| --- | --- |
+| rect2 | A rectangular patch covering 2x2 pixels (4x4m), i.e. 16m². |
+| rect10 | A rectangular patch with 10x10 pixels, i.e. 400m². |
+| rect20 | A rectangular patch with 20x20 pixels (40x40m), i.e. 1600m². |
+| circle5 | A circle-shaped patch with 5 pixels diameter. The area is 68m². |
+| circle10 | A circle-shaped patch with a diameter of 10 pixels. The area is 272m². |
+| circle20 | A circle-shaped patch with a diameter of 20 pixels (40m). The area is 280px=1120m². |
+
+
+Note that a direct-callable form of the planting activity exists ([fmengine.runPlanting()](http://iland-model.org/apidoc/classes/FMEngine.html#method_runPlanting)).
+
+
+
+## Events
+
+
+The planting activity uses an onEvaluate event to determine if a planting should be executed or skipped. The handler is invoked when the planting is to be executed. The planting is skipped (not executed), when the handler return the boolean value 'false'. Planting is always executed when the handler is missing.
+
+
+
+## Examples
+
+
+ 
+
+
+```
+var a_planting = { type: "planting",
+   schedule: 1,
+   items: [ { species: "piab",  fraction: 0.3,  height: 0.5},
+{ species: "lade", pattern: "rect10", random: true, n: 15, h:0.5},
+{ species: "fasy", fraction: 0.4,  height: 0.5}] };
+```
+
+ 
+
+
+::: {.callout-note title="citation"}
+[Rammer, W., Seidl, R., 2015](http://dx.doi.org/10.1016/j.gloenvcha.2015.10.003). Coupling human and natural systems: Simulating adaptive management agents in dynamically changing forest landscapes. Global Environmental Change, 35, 475-485.
+:::
+
+ 

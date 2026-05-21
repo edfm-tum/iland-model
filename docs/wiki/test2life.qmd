@@ -1,0 +1,92 @@
+---
+title: "Test2Life"
+---
+
+<img src="../img/tu_dresden_logo.PNG" alt="Image" class="img-fluid" />
+<img src="../img/act_custom_thinning.png" alt="Image" width="250" class="img-fluid" />
+This is a test page of a test user.
+Let us try MathJax:
+The probability of getting \(k\) heads when flipping \(n\) coins is:
+
+\[\begin{aligned}
+\dot{x} &amp; = \sigma(y-x) \\
+\dot{y} &amp; = \rho x - y - xz \\
+\dot{z} &amp; = -\beta z + xy
+\end{aligned} \]
+
+
+This is a greek symbol in the text: \(alpha\)
+take this: \(x_1\)
+
+<table width="100%" border="0"><tr><td width="80%">equation comes here</td><td>Eq.2.</td></tr></table>
+
+
+
+# Why a test page?
+
+
+
+
+## Why why?
+
+
+this is a test for a equation.
+
+
+$$
+E=mc^2
+$$
+
+
+http://www.sitmo.com/gg/latex/latex2png.2.php?z=100&eq=\frac{SI%20k%20c%20rt\sqrt{-1}}{b}
+
+
+## Why test
+
+
+
+$$
+e=mc^2
+$$
+
+
+this is a code hblock:
+
+```
+void foo()
+{
+foo_is_cool();
+}
+```
+
+
+
+$$
+\int_{0}^{1}\frac{x^{4}\left(1-x\right)^{4}}{1+x^{3}}dx
+ =\frac{22}{7}-\pi
+$$
+
+
+
+## Try it another way
+
+
+<pre>
+
+</pre>
+This is just **plain**html.
+
+
+
+### greek symbols
+
+
+
+* check "Allow HTML" tickbox
+* use HTML - codes as explained [here](http://htmlhelp.com/reference/html40/entities/symbols.html)
+
+Example: give me an ε or an α. What about Λ?
+
+kk
+
+<img src="../img/tu_dresden_logo.PNG" alt="Image" class="img-fluid" />

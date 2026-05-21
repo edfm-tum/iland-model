@@ -1,0 +1,139 @@
+---
+title: "ABE activities"
+---
+
+
+
+An activity is the basic silvicultural building block. It describes the “when” and “what” if an activity should be exeecuted. There are several types of activities, but they all share a basic set of properties (which are described here).
+Activities are the core element of forest management in ABE, as they are the elements that actually change the forest state in the ecosystem model by removing or planting trees. ABE provides a library of pre-defined activities that cover the most important aspects of forest management. Yet, the activity library can be easily extended by providing user-defined activities. Activities are fetched from the library by specifying the name of the activity type and by further defining the properties of the activity.
+
+
+
+### List of available activities
+
+
+
+* [ABE activity general](abe-activity-general.qmd)
+* [ABE activity scheduled](abe-activity-scheduled.qmd)
+* [ABE activity thinning](abe-activity-thinning.qmd)
+* [ABE activity planting](abe-activity-planting.qmd)
+* [ABE activity salvage](abe-activity-salvage.qmd)
+
+[Javascript API documentation for Activity](../apidoc/classes/activity.qmd)
+
+ 
+
+
+
+## General layout
+
+
+An activity is a Javascript object, with a number of pre-defined properties, that can be further enriched. The type of activity is selected by setting the $type$ property (see above for available activity types). The $schedule$ sub-object informs ABE about the timing of the activity, and the $constraint$ object defines conditions that prevent activity execution if not met. Each activity type defines further properties that are described on the respective pages.
+
+
+| **Property** | **Description** |
+| --- | --- |
+| type | The name of the activity type. This selects the activity from the library of activities. |
+| schedule | Schedule-object. The schedule-object defines the planned execution date of an activity. The optimal (as well is minimum and maximum) execution date can be defined, either absolute (e.g., between a stand age of 40 and 50 years, optimally at age 45), or relative to the length of the rotation period (e.g., a final cut at age 1.0*rotation age, no thinning later than 0.5*rotation age). The schedule thus defines a time window within which the scheduler algorithm selects an appropriate execution time. |
+| constraint | Constraint-object. A constraint-object. Provides a list of constraints, i.e., circumstances that prohibit the execution of the activity. For example, thinnings could be delayed until a specific stand height is reached. |
+| enabledIf | Expression that can be used to dynamically link the state of an activity to some other property; for instance, an activity can be made only active, if the agent demands a specific thinning intensity. |
+
+
+The block below gives an schematic example of how an activity definition looks like:
+
+
+```javascript
+var activity  =  {type: , schedule: , constraint: , enabledIf:  …:  …: }
+```
+
+ 
+
+
+
+## Events
+
+
+The Activities of the iLand management system provide an “Events” mechanism that works much like similar event concepts e.g. in internet browsers. Essentially, it allows to use javascript code for reacting to changes (“events”) in the underlying system, or to modify default behaviour, e.g. during the initialization phase. All activity types share a set of event types that is enriched by specific events for some activity types. The table below gives a list of events that are available for all activities.
+
+
+| **Event** | **Description** |
+| --- | --- |
+| onCreate | Fires when the activity is created without the context of a specific stand. This can be used to change properties of the activity that are valid for all stands. |
+| onSetup | Fires separately for each stand. This is the place to specify properties that are specific to a given stand. |
+| onEnter | Fires, when an activity becomes the “current” activity for a stand. The event is also fired, when the activity is assigned as the initial activity during startup. |
+| onEvaluate | This event is fired immediately before an activity is transferred to the scheduler (only applicable for scheduled activities). The activity can be canceled by returning false from the event. |
+| onExecuted | The onExecuted event is fired after an activity was successfully executed. |
+| onCancel | Similar to “onExecuted”, but this event is fired when the activity was either not executed at all (e.g., expired) or cancelled by user code. |
+| onExit | Fires when the scope of the activity is left, i.e. after execution/expiration of the activity or if the activity is programmatically changed. |
+
+
+Events are added to an activity by simple providing a correctly named Javascript function in the activity definition. Note the syntax for adding Javascript functions to a Javascript object:
+
+function-name: function() { }
+ 
+
+
+```javascript
+var activity = { type: "general",
+    ...
+// the onEnter event is called when the activity becomes active for a stand
+onEnter: function() { fmengine.log('entered activity for stand ' + stand.id)},
+    ....
+}
+```
+
+ 
+
+
+
+## Schedule object
+
+
+The Schedule object describes the “when” of an activity. The scheduling of an activity can be defined as a specific point in time, or a as “window of opportunity”. Points in time are always given in years and may either be given in “years since stand establishment” (i.e., stand age) or in absolute terms (e.g., in simulation year 20). Furthermore, dates are provided either absolute ($min$, $max$, $opt$) or relative to the rotation length ($minRel$, $maxRel$, $optRel$).
+
+
+| **Property** | **Description** |
+| --- | --- |
+| min | Minimum stand age for activity. |
+| max | Maximum stand age for activity. |
+| opt | Optimal point in time for execution of the activity. |
+| minRel | Earliest point in time relative to rotation length (e.g. 0.2) |
+| maxRel | Latest point in time relative to rotation length (e.g. 0.4) |
+| optRel | Optimal execution time (relative to rotation length). |
+| repeatInterval | When “repeat” is true, the repeatInterval provides the lag between two executions of the activity. |
+| repeatStart | When “repeat” is true, then repeatStart is the simulation year of the first execution of the activity (Example: repeatInterval=5, repeatStart=0 (the default) -> first execution in year 5. repeatStart=3 -> first execution in year 3) |
+| force | Boolean. If true, then the activity will be triggered, if it has not been executed at the defined maximum age (max or maxRel). |
+| repeat | Boolean. If true, the activity will be automatically repeated every “repeatInterval” years. Default is false. First start: between min and max??? |
+| absolute | Boolean. If true, all provided dates are interpreted as absolute (e.g. 2020). If false (the default), all numbers are interpreted as relative to the rotation, e.g. 20 would be 20 years after stand establishment. |
+
+
+Short form:
+If the schedule property is only a single number, it is interpreted as the “opt” property.
+
+ 
+
+
+
+### Constraint object
+
+
+Using *constraints*, the execution of management activities can be restricted. For example, a thinning operation may only be applied if the respective stand reached already a certain minimum timber volume. The constraint property can be either a single constraint or an array of constraints. If an array of constraints is provided, all constraints must “pass” in order to allow the execution of the activity.
+Each constraint can either be an [expression](expression.qmd) or a Javascript function, both should return a Boolean value (true or false). Note that expressions must be provided as strings (i.e. enclosed by ‘’ or “”).
+“Expressions” make use of the built-in [expression](expression.qmd) engine of iLand and can be used with very little overhead. Javascript functions, on the other hand, execute slower but provide more flexibility. All ABE related variables for [stand, site](abe-variables.qmd), unit and activity are available for both cases.
+
+
+```javascript
+// single constraint (expression)
+constraint: “stand.volume>100”
+// array (list) of constraints, mixing expressions and JS
+constraint: [‘stand.hmean > 12 and stand.volume>250', function(){return stand.hmean>10;}]
+```
+
+ 
+
+
+::: {.callout-note title="citation"}
+[Rammer, W., Seidl, R., 2015](http://dx.doi.org/10.1016/j.gloenvcha.2015.10.003). Coupling human and natural systems: Simulating adaptive management agents in dynamically changing forest landscapes. Global Environmental Change, 35, 475-485.
+:::
+
+ 

@@ -1,0 +1,90 @@
+---
+title: "how to: setup of a landscape"
+---
+
+This page provides some tips & tricks for the process of setting up a landscape in iLand (in addition to already existing documentation pages such as [simulation extent](simulation-extent.qmd), [initialization hub](initialization.qmd) or [landscape setup](landscape-setup.qmd)).
+ 
+
+The most common setup is described on the [landscape setup](landscape-setup.qmd) page and consists of the following elements:
+
+
+
+### Stand grid
+
+
+a definition of the project area as a GIS grid (10m resolution): this is very often derived from some polygonal data (for example a map of stand polygons). Cells with the same (integer) grid value belong to the same "stand". In addition to the forested area within the project area, the grid contains information about the area surrounding the forest. Pixels can be marked as forested (forests not simulated) or as unforested (e.g. agricultural land) (see [#Handling of border areas](landscape-setup.qmd)).
+
+
+::: {.callout-note}
+ **Project file**: world.standGrid.enabled, world.standGrid.fileName
+:::
+
+
+You can visualize the stand grid in iLand via ja<x>vascript:
+
+ 
+```javascript
+// create a javascript object that represents the stand grid
+var stand_map = Factory.newMap();
+
+// visualize the stand map:
+stand_map.paint(0, 2500); // assuming stand ids between 1 and 2500
+stand_map.paint(-5,0); // highlight out-of-project area
+```
+
+
+
+
+
+### Environment grid
+
+
+An environment grid is often used for defining site and climate conditions with a resolution of 100m (i.e., the resolution of [resource units](resource-units.qmd)). While alternative ways to accomplish this exist (see [#spatially distributed parameters](simulation-extent.qmd)), the most often followed approach is:
+
+* an environment grid contains regions with homogeneous soil and climate conditions. The grid itself holds a (integer) "id" for these regions
+* a table (CSV or other text format) contains for each "id" the values for soil and climate conditions (and also things like carbon pools for soil and deadwood). This file is called the "environment file".
+* when iLand initializes a resource unit, it uses the values provided in the environment file. The link to a climate is established via the *table name* in the climate data base.
+
+
+::: {.callout-note}
+ **Project file**: world.environmentMode, world.environmentGrid, world.environmentFile
+:::
+
+
+^ **Tips**
+
+* use the same projection in GIS for all spatial input data in iLand
+* the grids can be larger than the intended simulation area: for instance, if the environment grid is larger than the simulated area, all unused area is discarded. Similiarly, the stand grid should be large enough to cover the relevant out-of-project areas (used e.g. for [external seeds](external-seeds.qmd)).
+* iLand uses the center point of each resource unit to query the environment grid. Since the layout of the resource units is not necessarily aligned with the environment grid (see discussion below), the origin of the project area should be set with care.
+
+^
+
+
+
+### The simulated area
+
+
+The spatial data such as the stand or environment grid defines a "canvas" for iLand (note that there is potentially more gridded input data in iLand: e.g. a [#digital_elevation_model](simulation-extent.qmd) for the fire module, wind speed information for the [wind disturbance module](wind-module.qmd)).
+The actually simulated area is defined by a rectangular area on that canvas. This allows you to simply select smaller parts of a larger landscape for testing. iLand tries to avoid loading unnecessary data (e.g. climate data that is not really used, or forest vegetation that is outside of the simulated area).
+The *world.location* section in the project file defines the origin of the "local" coordinate system that is used in the model in real-world coordinates on the "canvas". The size of the simulated area is defined by *world.width* and *world.height*. Note that all internal grids (e.g. the resource units) are aligned to this origin.
+
+
+
+### Vegetation
+
+
+Again, there are several ways to set up the initial state of the forest, but a practical way is to use the *standgrid* mode for [#standgrid mode|tree initialization](landscape-setup.qmd). In this case a tabular file defines for each of the "stands" of the stand grid (described above) the initial vegetation. The same approach can be used to initialize saplings (i.e. trees < 4m). See [initialize trees](initialize-trees.qmd) for trees, and for [#Initialize_saplings|saplings](initialize-trees.qmd).
+
+
+::: {.callout-note}
+ **Project file**: initialization.mode, initialization.file, initialization.saplingFile
+:::
+
+
+
+
+### Forest management
+
+
+Both ways of forest [management](management.qmd) in iLand can operate on the spatial entities defined in the stand grid. When the [agent based forest management](abe.qmd) module is used then stands can be grouped to management units, and agents and stand treatment programs can be assigned to a stand (see [ABE spatial setup](abe-spatial-setup.qmd)).
+ 

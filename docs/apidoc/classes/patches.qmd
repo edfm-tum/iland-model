@@ -1,0 +1,185 @@
+---
+title: "Class: Patches"
+sidebar: apidoc
+---
+
+# Patches Class
+
+The `patches` object provides functions to create and manage spatial sub-divisions (patches) within a forest stand.
+Patches are defined on a 10x10m grid. They can be used for spatially explicit forest management.
+
+Use the `patches` property of the (current) `stand` variable to access the functionality.
+
+```javascript
+ // create 2 random patches
+ stand.patches.createRandomPatches(2);
+ // get the list of patches
+ var patch_list = stand.patches.list;
+ // get the light influence field for the first patch
+ log("LIF of first patch: " + stand.patches.lif(patch_list[0]));
+```
+
+## Properties Overview
+
+| Name | Type | Description |
+| :--- | :--- | :--- |
+| [`list`](#list) | `Array` | A list containing all [Patch](patches.qmd) objects of the current stand. |
+| [`rectangle`](#rectangle) | `Object` | The bounding rectangle of the stand in meters. This is a read-only property. |
+
+## Methods Overview
+
+| Method | Return Type | Description |
+| :--- | :--- | :--- |
+| [`clear()`](#clear) | `void` | Removes all existing patches from the stand. |
+| [`createExtendedPatch(patchId, newPatchId)`](#createextendedpatch) | `integer` | Creates a new patch by extending an existing patch. |
+| [`createFromGrid(grid)`](#createfromgrid) | `Array` | Creates patches from a raster grid. The grid is provided as a [ScriptGrid](grid.qmd) object. |
+| [`createPatch(x, y, shape_string)`](#createpatch) | `boolean` | Creates a single patch with a specific shape at a given location. |
+| [`createRandomPatches(n)`](#createrandompatches) | `void` | Creates a given number of random patches within the stand. |
+| [`createRegular(size, spacing)`](#createregular) | `Array` | Creates a regular pattern of patches (e.g., squares). |
+| [`createStrips(width, horizontal)`](#createstrips) | `Array` | Creates patches in the form of horizontal or vertical strips. |
+| [`lif(patch)`](#lif) | `double` | Calculates the average value of the Light Influence Field (LIF) at 4m height for a given patch. |
+| [`updateGrid()`](#updategrid) | `void` | This method is usually called automatically. It re-creates the internal 10x10m grid representation |
+
+## Properties Details
+
+### `list` {#list}
+
+<span class="api-tag tag-type">Array</span>
+
+A list containing all [Patch](patches.qmd) objects of the current stand.
+
+---
+
+### `rectangle` {#rectangle}
+
+<span class="api-tag tag-type">Object</span>
+
+The bounding rectangle of the stand in meters. This is a read-only property.
+The rectangle object has `x`, `y`, `width`, and `height` properties.
+
+---
+
+## Methods Details
+
+### `clear()` {#clear}
+
+**Returns:** `void`
+
+Removes all existing patches from the stand.
+
+---
+
+### `createExtendedPatch(patchId, newPatchId)` {#createextendedpatch}
+
+**Returns:** `integer`
+
+Creates a new patch by extending an existing patch.
+The new patch surrounds the existing patch with the given `patchId`.
+
+**Parameters:**
+
+*   **`patchId`** (`integer`): The ID of the existing patch to extend.
+*   **`newPatchId`** (`integer`): The ID for the new patch.
+
+**Return Value Description:** The number of cells added to the new patch.
+
+---
+
+### `createFromGrid(grid)` {#createfromgrid}
+
+**Returns:** `Array`
+
+Creates patches from a raster grid. The grid is provided as a [ScriptGrid](grid.qmd) object.
+For each unique value in the grid, a corresponding patch is created.
+
+**Parameters:**
+
+*   **`grid`** (`ScriptGrid`): The input grid object.
+
+**Return Value Description:** A list of the created [Patch](patches.qmd) objects.
+
+---
+
+### `createPatch(x, y, shape_string)` {#createpatch}
+
+**Returns:** `boolean`
+
+Creates a single patch with a specific shape at a given location.
+
+**Parameters:**
+
+*   **`x`** (`double`): The x-coordinate (in meters) of the center of the shape.
+*   **`y`** (`double`): The y-coordinate (in meters) of the center of the shape.
+*   **`shape_string`** (`string`): A string defining the shape, e.g., "circle(15)" for a circle with a 15m radius, or "rect(20,30)" for a 20x30m rectangle.
+
+**Return Value Description:** `true` if the patch was created successfully, `false` otherwise.
+
+---
+
+### `createRandomPatches(n)` {#createrandompatches}
+
+**Returns:** `void`
+
+Creates a given number of random patches within the stand.
+The patches are non-overlapping and cover the entire stand area.
+
+**Parameters:**
+
+*   **`n`** (`integer`): The number of random patches to create.
+
+---
+
+### `createRegular(size, spacing)` {#createregular}
+
+**Returns:** `Array`
+
+Creates a regular pattern of patches (e.g., squares).
+
+**Parameters:**
+
+*   **`size`** (`integer`): The size of each patch in meters.
+*   **`spacing`** (`integer`): The spacing between patches in meters.
+
+**Return Value Description:** A list of the created [Patch](patches.qmd) objects.
+
+---
+
+### `createStrips(width, horizontal)` {#createstrips}
+
+**Returns:** `Array`
+
+Creates patches in the form of horizontal or vertical strips.
+
+**Parameters:**
+
+*   **`width`** (`double`): The width of the strips in meters.
+*   **`horizontal`** (`boolean`): If `true`, horizontal strips are created, otherwise vertical strips.
+
+**Return Value Description:** A list of the created [Patch](patches.qmd) objects.
+
+---
+
+### `lif(patch)` {#lif}
+
+**Returns:** `double`
+
+Calculates the average value of the Light Influence Field (LIF) at 4m height for a given patch.
+
+**Parameters:**
+
+*   **`patch`** (`Patch`): The patch object for which to calculate the average LIF.
+
+**Return Value Description:** The average LIF value for the patch.
+
+---
+
+### `updateGrid()` {#updategrid}
+
+**Returns:** `void`
+
+This method is usually called automatically. It re-creates the internal 10x10m grid representation
+of the patches from the list of patch objects. You might need to call this if you have manipulated
+the `list` of patches manually.
+
+---
+

@@ -1,0 +1,188 @@
+---
+title: "Class: Tree"
+sidebar: apidoc
+---
+
+# Tree Class
+
+A `Tree` object allows accessing individual trees (>4m height) in iLand via Javascript.
+
+Note that using Javascript with individual trees can be slow.
+
+Accessing a tree
+----------------
+Trees can be accessed via the [Management](management.qmd) object or [TreeList](treelist.qmd) list within ABE.
+The [Management](management.qmd) object provides [tree()](management.qmd#tree) and
+ [treeObject()](management.qmd#treeobject) functions. Similarly, the TreeList includes
+[tree()](treelist.qmd#tree) and [treeObject()](treelist.qmd#treeobject).
+
+
+
+Reference vs object
+-------------------
+iLand provides two distinct ways to access trees, namely as reference (to an internal object) or as a Javascript object.
+Access via reference is faster, but tree references can not be used for later access. See the example:
+
+```javascript
+// load all trees of resource unit 0:
+management.loadResourceUnit(0);
+// access via reference: every call to the tree() functions modifies the reference:
+var t1=management.tree(0); // the first tree (dbh=10)
+var t2=management.tree(1); // the second tree (dbh=20)
+console.log("Tree1: " + t1.dbh + ", Tree2: " + t2.dbh); // -> yields "Tree1: 20, Tree2: 20"!!!!
+
+// access via object:
+var t1=management.treeObject(0); // the first tree (dbh=10)
+var t2=management.treeObject(1); // the second tree (dbh=20)
+console.log("Tree1: " + t1.dbh + ", Tree2: " + t2.dbh); // -> yields "Tree1: 10, Tree2: 20"
+
+// References are, however, useful for iterating over a list of trees:
+var sum_dbh=0;
+for (var i=0;i<management.count;++i)
+    sum_dbh += management.tree(i).dbh;
+console.log("Mean dbh: " + sum_dbh / management.count);
+```
+
+## Properties Overview
+
+| Name | Type | Description |
+| :--- | :--- | :--- |
+| [`dbh`](#dbh) | `double` | The dbh (diamter at breast height), in cm. |
+| [`flags`](#flags) | `int` | `flags` is a binary encoded set of tree flags (see https://iland-model.org/outputs#Tree_Removed_Output for a list of all flags). |
+| [`species`](#species) | `string` | The species (4-character species ID), e.g. 'piab'. |
+| [`valid`](#valid) | `bool` | `false` if the tree object is not valid, `true` otherwise. |
+| [`x`](#x) | `double` | The x-coordinate of the tree, in m. |
+| [`y`](#y) | `double` | The y-coordinate of the tree, in m. |
+
+## Methods Overview
+
+| Method | Return Type | Description |
+| :--- | :--- | :--- |
+| [`expr(expression)`](#expr) | `double` | `expr()` can be used to retrieve the value of an iLand expression iland-model.org/Expression. All tree variables can be accessed via the expression. Note that |
+| [`flag(aflag)`](#flag) | `void` | `flag` returns true or false for the given `aflag` for the current tree. |
+| [`info()`](#info) | `string` | A string with memory address, Id, dbh, height, and coordinates of the tree. |
+| [`setFlag(aflag, value)`](#setflag) | `void` | The function sets the the flag `aflag` to the provided value. |
+
+## Properties Details
+
+### `dbh` {#dbh}
+
+<span class="api-tag tag-type">double</span>
+
+The dbh (diamter at breast height), in cm.
+
+---
+
+### `flags` {#flags}
+
+<span class="api-tag tag-type">int</span>
+
+`flags` is a binary encoded set of tree flags (see https://iland-model.org/outputs#Tree_Removed_Output for a list of all flags).
+
+---
+
+### `species` {#species}
+
+<span class="api-tag tag-type">string</span>
+
+The species (4-character species ID), e.g. 'piab'.
+
+---
+
+### `valid` {#valid}
+
+<span class="api-tag tag-type">bool</span>
+
+`false` if the tree object is not valid, `true` otherwise.
+
+---
+
+### `x` {#x}
+
+<span class="api-tag tag-type">double</span>
+
+The x-coordinate of the tree, in m.
+
+---
+
+### `y` {#y}
+
+<span class="api-tag tag-type">double</span>
+
+The y-coordinate of the tree, in m.
+
+---
+
+## Methods Details
+
+### `expr(expression)` {#expr}
+
+**Returns:** `double`
+
+`expr()` can be used to retrieve the value of an iLand expression iland-model.org/Expression. All tree variables can be accessed via the expression. Note that
+the `expression` is a string and can contain mathematical operations and a set of pre-defined functions.
+
+See also: [TreeExpr](treeexpr.qmd)
+
+**Parameters:**
+
+*   **`expression`** (`string`): iLand tree expression
+
+**Return Value Description:** value of the `expression` for the tree.
+
+**Example:**
+
+```javascript
+var tree = trees.tree(0); // trees is a TreeList
+    console.log( tree.expr("dbh*dbh") ); // print the squared dbh
+```
+
+---
+
+### `flag(aflag)` {#flag}
+
+**Returns:** `void`
+
+`flag` returns true or false for the given `aflag` for the current tree.
+
+**Parameters:**
+
+*   **`aflag`** (`Flags`): the flag to check
+
+---
+
+### `info()` {#info}
+
+**Returns:** `string`
+
+A string with memory address, Id, dbh, height, and coordinates of the tree.
+
+**Return Value Description:** A human-readable string with key characteristics of the tree.
+
+---
+
+### `setFlag(aflag, value)` {#setflag}
+
+**Returns:** `void`
+
+The function sets the the flag `aflag` to the provided value.
+Note that not all flags are setable.
+Possible values are currently: `TreeAffectedBite` and `TreeNoHarvest`.
+
+**Parameters:**
+
+*   **`aflag`** (`Flags`): the flag to check
+*   **`value`** (`bool`): value to set the flag, defaults to true
+
+**Example:**
+
+```javascript
+for (let i=0;i<stand.trees.count;++i)
+      if( i % 17 == 0) {
+        let t = stand.trees.tree(i);
+        t.setFlag(Tree.TreeNoHarvest);
+      }
+```
+
+---
+

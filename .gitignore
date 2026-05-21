@@ -10,3 +10,4 @@ project_file.xml
 .qtc_clangd
 build/
 .DS_Store
+_site

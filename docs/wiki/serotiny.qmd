@@ -1,0 +1,20 @@
+---
+title: "serotiny"
+---
+
+iLand includes serotiny, i.e. the ability to store seeds in a canopy seedbank that is released in the event of a fire, as a functional trait for specific tree species.
+
+Serotinous lodgepole pine (Pinus contorta) only drop seeds in the year following a fire. When trees are serotinous, the amount of seed released is a multiple of the seeds produced by a non-serotinous tree, representing the accumulation of cones over multiple years.
+
+Serotiny is controlled by two species parameters *serotinyFormula *and *serotinyFecundity*.
+
+**serotinyFormula **decides for each individual tree, if the tree is serotinous or not. The result of the function is interpretated as a probability, and the variable of the function is tree age. For example, *polygon(x,20,0,140,1)*, would define a linear increase of probability between 20 and 140 years.
+
+**serotinyFecundity** is a multiplier that increases the fecundity for post-fire seed rain of serotinous species
+
+
+::: {.callout-note title="citation"}
+Hansen, W.D., Braziunas, K.H., Rammer, W., Seidl, R. and Turner, M.G. (2018), It takes a few to tango: changing climate and fire regimes can cause regeneration failure of two subalpine conifers. Ecology, 99: 966-977. https://doi.org/10.1002/ecy.2181
+:::
+
+ 

@@ -1,0 +1,155 @@
+---
+title: "water cycle"
+---
+
+A process-based water balance is simulated in iLand (Eq. 1), explicitly considering precipitation (*P*), interception and canopy evaporation (*I*), snow storage and melting, soil water content (*Θ*) and evapotranspiration (*E*, including transpiration and soil evaporation).
+
+$$
+P-I-R-\Delta \Theta -E=0
+$$
+
+
+
+
+
+
+
+# precipitation and interception
+
+
+Daily precipitation data are used as input to drive the hydrological cycle in iLand. Intra-daily variation in precipitation distribution is neglected. Canopy interception is modeled following the general scheme of [Landsberg and Gower (1997)](http://tinyurl.com/yzlyp7b) and implemented following the rendering of [Seidl et al. 2005](http://treephys.oxfordjournals.org/cgi/reprint/25/7/939) in PICUS. Interception capacity depends on resource unit leaf area and differs for broadleaved and coniferous species. A leaf-area weighted average is used for mixed stands. In a rain event, the precipitation proportion not subject to direct throughfall (dependent on the rain intensity) through canopy gaps is routed to the interception storage (Eq. 2).
+
+$$
+imax_{needle} = P \cdot \left(1 - 0.9 \cdot \sqrt{1.03 - e^{-0.055\cdot P} } \cdot \frac{LAI_{needle}}{LAI_{total}} \right)
+\\
+imax_{bl} = P  \cdot \left(1 -  0.9 \cdot  \left( 1.22 - e^{-0.055\cdot P} \right) ^{0.35} \cdot \frac{LAI_{bl}}{LAI_{total} } \right)
+\\
+$$
+
+,with *imax* the precipitation (in mm) that is not subject to throughfall, LAI the leaf area index of either coniferous species (*needle*), broadleaved species (*bl*) or both (*total*). The maximum interception *storage* is dependent on stand leaf area and on the share of coniferous/broadleaved species in the canopy (Eq. 3).
+
+$$
+storage_{max} = 2 \cdot \frac{LAI_{bl} }{LAI_{total}}+4 \cdot \frac{LAI_{needle}}{LAI_{total}}
+\\
+storage = storage_{max} \left ( 1- e^{-0.5\cdot LAI_{total}} \right )
+$$
+
+The total interception is calculated following Eq. 4:
+
+$$
+i_{total} = min \left(P \: ; \: imax_{needle}+imax_{bl} \: ; \: storage \right)
+$$
+
+The amount of precipitation per event exceeding the interception storage capacity is directly routed to soil (and if applicable: snow) pools. Evaporation of intercepted water from the canopy is calculated using the Penman-Monteith equation (see Eq. 7 below), with the canopy conductance set to infinity (cf. [Landsberg and Gower 1997](http://tinyurl.com/yzlyp7b)). The water not evaporated within one day is eventually channeled to the soil water pool as stemflow and drip.
+
+        *
+
+
+
+
+# snow water pool
+
+
+If the daily mean temperature *T<sub>d</sub>*≤0°C, precipitation falls as snow and is routed to the snow water pool. On days with *T<sub>d</sub>*&gt;0°C the snow water pool looses water to the soil water pool at a rate of 0.7 mm°C<sup>-1</sup>day<sup>-1</sup> ([Running and Coughlan 1988](http://dx.doi.org/10.1016/0304-3800(88)90112-3)). It has to be noted that this representation of snow focuses on the snow water storage but does not give an accurate estimate of snow depth.
+
+        *
+
+
+
+
+# soil water pool
+
+
+Soil hydraulic characteristics define the storage capacity of a one-layer bucket model. The volumetric plant-available water holding capacity (*Θ<sub>paw</sub>*) is derived as the the soil water at field capacity (*Θ<sub>fc</sub>* with field capacity being defined as a soil water potential *Ψ*=-0.015 MPa) minus the water content at a minimum plant-available soil water potential (*Θ<sub>Ψmin</sub>*) (Eq. 5)
+
+$$
+\Theta_{paw}=\Theta _{fc}-\Theta _{\Psi min}
+$$
+
+The soil water characteristics curve to derive these points is defined by saturated soil water content (*Θ<sub>sat</sub>*), saturated soil water potential (*Ψ<sub>sat</sub>*) and *b<sub>s</sub>* the slope of the retention curve (in logarithmic space) (cf. [Campbell and Norman 1998](http://tinyurl.com/yzohlzh), Eq. 6)
+
+$$
+\Psi =\Psi _{sat}(\frac{\Theta }{\Theta _{sat}})^{b}
+$$
+
+*Θ<sub>sat</sub>*, *Ψ<sub>sat</sub>* and *b<sub>s</sub>* can be derived by laboratory analysis of soil samples if available, but have also been estimated from large soil databases based on physical soil properties. In the absence of specific soil data we use the estimates of [Cosby et al. (1984)](http://tinyurl.com/yhz5aan), who employed sand, clay and silt content as predictors. Their data has recently been successfully applied in the process-based forest model of [Schwalm and Ek (2004)](http://dx.doi.org/10.1016/j.ecolmodel.2004.04.016).
+
+By means of effective rooting depth (i.e. the constraining value of maximum rooting depth and soil depth; for a compilation of species-specific max. rooting depth see [Breuer et al. 2003](http://dx.doi.org/10.1016/S0304-3800(03)00274-6)), an important site variable, water input from throughfall and snowmelt can be converted to soil water potentials. Water exceeding the field capacity is simulated to percolate out of the system. For every day, the soil water potential *Ψ*, used as proxy for [tree response to soil water status](soil-water-response.qmd), can be derived following Eq. 6.
+
+        *
+
+
+
+
+# transpiration and canopy conductance
+
+
+Plant available soil water (*Θ<sub>paw</sub>*) can be transpired back to the atmosphere by trees. We use the widely applied Penman-Monteith equation (Eq. 7) to simulate plant transpiration (*T*) and canopy evaporation of intercepted precipitation (*E*), following its implementation in 3-PG ([Landsberg and Waring 1997](http://dx.doi.org/10.1016/S0378-1127(97)00026-1)).
+
+$$
+T=\frac{\Delta R_{n}+\rho \cdot c_{p}\cdot D\cdot g_{a}}{\lambda \left ( \Delta +\gamma \cdot \left ( 1+g_{a}/g_{c} \right ) \right )}\cdot t
+\\
+E=\frac{\Delta R_{n}+\rho \cdot c_{p}\cdot D\cdot g_{a}}{\lambda \left ( \Delta +\gamma  \right )}\cdot t
+$$
+
+with *Δ* the slope of saturation vapor pressure, *R<sub>n</sub>* the incoming radiation (PAR), *ρ* the density of air, *c<sub>p</sub>* the heat capacity of the atmosphere, *D* the saturation deficit of air, *g<sub>a</sub>* the boundary layer conductance, and *g<sub>c</sub>* the canopy conductance, *λ* the latent heat of vaporization of water, and *γ* the psychrometric constant. Eq. 7 captures the two environmental drivers of evaporation, the net radiant energy supply and the supply of dry air, with the two controls *g<sub>a</sub>*, the mixing power of the atmosphere, and *g<sub>c</sub>* the primary physiological control exerted by plants (cf. [Landsberg and Gower 1997](http://tinyurl.com/yhbkmqm)).
+
+We follow [Landsberg and Waring (1997)](http://dx.doi.org/10.1016/S0378-1127(97)00026-1) in defining a constant, species-specific maximum canopy conductance *g<sub>c,max</sub>* for closed canopies (defined as *LAI* &gt; *LAI<sub>gcx</sub>*, with *LAI<sub>gcx</sub>* being typically around 3, cf. [Kelliher et al. 1995](http://dx.doi.org/10.1016/0168-1923(94)02178-M)), and a linear reduction of *g<sub>c,max</sub>* for *LAI* &lt; *LAI<sub>gcx</sub>* (Eq. 8)
+
+$$
+g_{c,max}=g_{c,max}\cdot min(\frac{LAI}{LAI_{gcx}}\; ,\; 1)
+$$
+
+Maximum stomatal and canopy conductance values for species and species groups are for instance reported by [Körner 1994](http://tinyurl.com/ybuxs3b) and [Breuer et al. 2003](http://dx.doi.org/10.1016/S0304-3800(03)00274-6), however both [Körner 1994](http://tinyurl.com/ybuxs3b) and [Kelliher et al. 1995](http://dx.doi.org/10.1016/0168-1923(94)02178-M) report no significant differences between tree species. Actual conductance *g<sub>c</sub>* is derived by correcting *g<sub>c,max</sub>* for the effects of [vapor pressure deficit response](vapor-pressure-deficit-response.qmd) and [soil water use](soil-water-response.qmd), represented by *f<sub>D,d</sub>* and *f<sub>sw,d</sub>* on a daily basis (Eq. 9). A leaf area weighted canopy average *g<sub>c</sub>* is applied for mixed stands.
+
+$$
+g_{c}=g_{c,max}\cdot min(f_{D,d}\; ,\; f_{sw,d})
+$$
+
+Furthermore, following Landsberg and Waring (1997) *f<sub>age</sub>* also directly reduces *g<sub>c</sub>*, and a leaf-area weighted average over *f<sub>age</sub>* for all trees per RU is computed to account for [age-related decline](primary-production.qmd) in canopy conductance. Furthermore, for the vegetation layer &lt;4m in height, for which *LA* dynamics is not explicitly simulated in iLand, conductance is calculated as described [here](transpiration-and-conductance-in-saplings.qmd).
+
+On dry days (i.e. days without precipitation) the water transpired to the atmosphere is calculated as *T* from Eq. 7. On wet days, the transition between *E* and *T* is modeled following the approach by [Wigmosta et al. (1994)](http://dx.doi.org/10.1029/94WR00436). First, intercepted water in the canopy is evaporated at the potential rate (Eq. 10)
+
+$$
+I=min\left ( i_{max};E \right )
+$$
+
+Transpiration from dry vegetation is subsequently calcualted as Eq. 11
+
+$$
+T_{d}=(E-I)\cdot \frac{T}{E}
+$$
+
+with *T/E* the rate between daily transpiration and evaporation rates (Eq. 7). This stepwise calculation allows the vegetation to go from wet to dry within one timestep. If the canopy remains completely wet (i.e. *I*&gt;*E*) or completely dry (i.e. *I*=0), the method is equivalent to the Penman Monteith equations in Eq. 7.
+
+
+
+## evapotranspiration from ground vegetation and saplings
+
+
+iLand explictly models the leaf area from mature trees (&gt;4m height) but also considers the effect of saplings (cohorts of trees) and - in the absence of trees - a ground vegetation layer. More details on saplings and ground vegetation is linked to the water cylce is given on the [transpiration and conductance in saplings](transpiration-and-conductance-in-saplings.qmd) page.
+
+        *
+
+
+
+
+# Sequence of steps
+
+
+
+1. Precipitation *P*
+1. Interception of *P* in the crown
+1. Snow water pool: *P* is either stored in pool, or snow melts and adds to the flow *P*
+1. *P* is added to the soil water container. Excess water is transferred to the Runoff/trickle off pool
+1. Evaporation *E* and transpiration *T* is calculated using the (relative) current water content at this point
+1. *T* is removed from the soil water pool, and intercepted water which was not evaporated is added to the soil water.
+
+
+
+
+
+::: {.callout-note title="citation"}
+[Seidl, R., Rammer, W., Scheller, R.M., Spies, T.A. 2012](http://dx.doi.org/10.1016/j.ecolmodel.2012.02.015). An individual-based process model to simulate landscape-scale forest ecosystem dynamics. Ecol. Model. 231, 87-100.
+:::
+

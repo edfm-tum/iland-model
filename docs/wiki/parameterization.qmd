@@ -1,0 +1,7 @@
+---
+title: "parameterization"
+---
+
+* [soil parametrization and initialization](soil-parametrization-and-initialization.qmd)
+* [simplified soil parameterization](simplified-soil-parameterization.qmd)
+* [fire module parametrization and evaluation](fire-module-evaluation.qmd)

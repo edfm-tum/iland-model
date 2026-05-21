@@ -1,0 +1,68 @@
+/* Custom Stylesheet for iLand Documentation */
+
+/* Ensure smooth transitions on hover */
+a {
+  transition: color 0.2s ease-in-out;
+}
+
+/* Style LaTeX Math Blocks */
+.math.display {
+  background-color: rgba(0, 0, 0, 0.02);
+  padding: 1rem;
+  border-radius: 6px;
+  border-left: 4px solid var(--bs-primary);
+  margin: 1.5rem 0;
+  overflow-x: auto;
+}
+
+html.dark .math.display {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Style settings tables */
+.wikitable, .table {
+  width: 100%;
+  margin-bottom: 1.5rem;
+  vertical-align: top;
+  border-color: var(--bs-border-color);
+}
+
+.table th {
+  background-color: var(--bs-light);
+  color: var(--bs-body-color);
+  font-weight: 600;
+}
+
+html.dark .table th {
+  background-color: rgba(255, 255, 255, 0.07);
+}
+
+/* Style YUI Doc tag sections */
+.api-tag {
+  font-size: 0.85rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+  display: inline-block;
+  margin-right: 0.5rem;
+}
+
+.tag-readonly {
+  background-color: #ffeebe;
+  color: #856404;
+}
+
+html.dark .tag-readonly {
+  background-color: #856404;
+  color: #ffeebe;
+}
+
+.tag-type {
+  background-color: #e2f0d9;
+  color: #385723;
+}
+
+html.dark .tag-type {
+  background-color: #385723;
+  color: #e2f0d9;
+}

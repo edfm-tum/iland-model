@@ -1,0 +1,55 @@
+---
+title: "soil C and N cycling"
+---
+
+
+
+
+
+# Background and rationale for model selection
+
+
+iLand is first and foremost a simulation model for vegetation and disturbance dynamics at the landscape scale. In selecting an approach for modeling soil carbon (C) and nitrogen (N) dynamics the focus was thus not on the capacity to conduct explanatory analyses of soil processes, for which specialized and more detailed approaches exist (e.g. [Harmon and Marks 2002](http://dx.doi.org/10.1139/X01-216), [Harmon et al. 2009b](http://dx.doi.org/10.1007/s10021-009-9256-2)). Our aim was rather to select a simple soil modeling approach, acknowledging the findings of [Manzoni and Porporato (2009)](http://dx.doi.org/10.1016/j.soilbio.2009.02.031), who in a meta-analysis found that for modeling general soil processes <5 state variables suffice (whereas a considerably higher model complexity is required for modeling certain soil aspects with a high level of detail).
+
+Furthermore, iLand is a spatially explicit landscape model, and while soils are strongly heterogeneous at small scales, spatially explicit information about detailed soil pools and characteristics are usually not available at the landscape scale. Thus, in the light of data availability and data uncertainties at the scale of intended application of iLand, a simple soil model design appeared to be commendable, since data uncertainty is most likely to exceed process and model uncertainty (cf. also [Kätterer and Andrén (2001)](http://dx.doi.org/10.1016/S0304-3800(00)00420-8) and the references therein on modeling the unmeasurable).
+
+In particular, the demands on iLand's dynamic soil module were to
+
+* consistently simulate effects of climate change, management and disturbances on soil C stocks, and
+* allow first order plant-soil feedbacks with regard to nutrient availability
+
+The first point makes clear that modeling different inputs of vegetation detritus to soil pools (as mediated e.g. by management strategies, disturbance scenarios) under different climate conditions (influencing e.g., vegetation productivity, species composition and litter quality, decomposition) is the key challenge for iLand with regard to soil modeling. In this regard an approach where a stable steady state in soil pools can serve as [starting point](soil-parametrization-and-initialization.qmd) of the analysis is of particular advantage (e.g., effects such as legacies of past land use etc. are controlled for by using such an assumption; but see [Carvalhais et al. (2008)](http://dx.doi.org/10.1029/2007GB003033) for a discussion of some caveats).
+
+With regard to the second point, plant-soil feedbacks have been shown to be of crucial importance for vegetation dynamics. However, due to the inherent uncertainties in soil data and the potential for strong (and due to limited data and understanding in some cases unrealistic) feedbacks on vegetation development numerous process-based and/or landscape models chose to use decoupled indicators of soil nutrient availability or include soil nutritional status in their empirical parametrization rather than dynamically simulating a fully coupled N cycle (e.g. [Landsberg and Waring 1997](http://dx.doi.org/10.1016/S0378-1127(97)00026-1), [Harmon and Marks 2002](http://dx.doi.org/10.1139/X01-216), [Garman 2004](http://dx.doi.org/10.1016/j.ecolmodel.2003.10.015)). Ideally, both options should be available for iLand, to be able to disentangle the effects of such dynamic feedbacks analytically in the model, but also increase iLand's large scale applicability (i.e. reduce the models general dependability on the availability of detailed soil data).
+
+        *
+
+
+
+# The ICBM/2N approach
+
+
+After reviewing the literature and analyzing seven soil modeling approaches in detail (i.e. Standcarb, TRACE, YASSO07, CENTURY, Biome-BGC, LPJ, the ICBM-family), particularly contrasting their design and abilities with the above mentioned demands, we selected the ICBM/2N approach as an initial soil C and N cycling module in iLand (note, however, that the interface in iLand is flexible and open to accommodate more complex soil modeling approaches if required for particular research questions).
+ICBM/2N ([Kätterer and Andrén 2001](http://dx.doi.org/10.1016/S0304-3800(00)00420-8)) is part of the Introductory Carbon Balance Model (ICBM) family, which was developed as a relatively simple, analytically solvable model to study climate and management effects on soil C ([Andrén and Kätterer 1997](http://www.jstor.org/stable/2641210)). The version ICBM/2N extends the original approach for a simulation of N dynamics and distinguishes two different pools of labile and refractory "young" matter (i.e. litter and woody debris) in addition to a pool tracking "old" matter (i.e. soil organic matter). The role of microbial activity in N dynamics is implicitly accounted for, and steady states of the six considered soil pools can be analytically derived from inputs and parameters. Overall the model is very parameter-parsimonious, and thus part of a class of recently presented minimum soil models for forest ecosystems (cf. also [Rey and Jarvis 2006](http://dx.doi.org/10.1111/j.1365-2486.2006.01230.x), [Grace et al. 2006](http://dx.doi.org/10.1016/j.soilbio.2005.09.013)); it requires six initial pool values and 13 drivers and parameters. The suitability of such relatively simple decomposition models (with 1-2 pools/ decomposition rates) has recently been confirmed by the extensive statistical analysis of [Harmon et al. (2009a)](http://dx.doi.org/10.1111/j.1365-2486.2008.01837.x).
+The full modeling equations of ICBM/2N as implemented in iLand are presented in [Kätterer and Andrén 2001](http://dx.doi.org/10.1016/S0304-3800(00)00420-8). The approach has succesfully been used in a number of forest modeling studies previously (e.g., [Reichstein et al. 2002](http://www.jstor.org/stable/826627), [Magnani et al. 2004](http://dx.doi.org/10.1016/j.foreco.2004.07.030), [Magnani et al. 2007](http://dx.doi.org/10.1038/nature05847)). Recently, [Xenakis et al. (2008)](http://dx.doi.org/10.1016/j.ecolmodel.2008.07.020) dynamically linked the ICBM/2N approach to 3-PG to simulate vegetation-soil feedbacks with regard to nutrient availability. A sensitivity analysis of the approach can be found [#Sensitivity_analysis|here](soil-parametrization-and-initialization.qmd).
+
+        *
+
+
+
+# Integration into the iLand framework
+
+
+ICBM/2N is able to be applied at variable time steps, and is run at annual time step in iLand. The spatial resolution is the [resource unit](resource-units.qmd), typically the area of 1 hectare. Input to the labile litter pool comes from foliage and root turnover, whereas refractory material is transferred to the respective soil pool via [snag dynamics](snag-dynamics.qmd). Litter quality for each flux consists of a fixed compartment-specific stochiometric ratio between C and N (i.e. a [species parameter](species-parameter.qmd)) and a species-specific decay rate (e.g. [Harmon and Marks 2002](http://dx.doi.org/10.1139/X01-216)). The latter implicitly acknowledges the importance of litter quality for decomposition, as for instance underlined by the recent large-scale analysis of [Adair et al. (2008)](http://dx.doi.org/10.1111/j.1365-2486.2008.01674.x). Furthermore, following the implementation of [Harmon et al. (2009b)](http://dx.doi.org/10.1007/s10021-009-9256-2) in the [Standcarb 2 model](http://andrewsforest.oregonstate.edu/pubs/webdocs/models/standcarb2/decomp.htm), this allows for transient changes in substrate quality in response to vegetation changes.
+
+The climate effect on decomposition is represented by a single climate factor, integrating temperature and moisture effects (cf. [Andrén and Kätterer 1997](http://www.jstor.org/stable/2641210)). [Adair et al. (2008)](http://dx.doi.org/10.1111/j.1365-2486.2008.01674.x) recently found the empirically derived variable Q10 function of [Lloyd and Taylor (1994)](http://www.jstor.org/stable/2389824) to be best suited to captured the temperature effect on decomposition. Accordingly, we apply their function, standardized to decomposition rates at 10˚C and optimum moisture, on a daily basis in iLand. We followed [Adair et al. (2008)](http://dx.doi.org/10.1111/j.1365-2486.2008.01674.x) also with regard to water limitations on decomposition, calculated as monthly response to the ratio between precipitation and potential evapotranspiration (calculated daily according to the Penman Monteith FAO reference equation, [Allen et al. 1998](http://www.fao.org/docrep/x0490e/x0490e00.htm)). Both limitations to decomposition were multiplicatively aggregated to allow for trade-offs, and averaged to derive an annual climate modifier.
+
+Using the notation of [Kätterer and Andrén (2001)](http://dx.doi.org/10.1016/S0304-3800(00)00420-8), plant available nitrogen (*Nav*) can be determined summing up the flows of net N mineralization from the three soil pools (cf also [Xenakis et al. 2008](http://dx.doi.org/10.1016/j.ecolmodel.2008.07.020)), accounting for a site-specific leaching rate from soil organic matter. This *Nav* can be used to calculate tree-species specific [response to tree nutritional status](nitrogen-response.qmd). However, since *Nav* derived from ICBM/2N is purely analytical, this direct feedback can also be omitted by selecting an external *Nav* (i.e. fertility rating, cf. [Swenson et al. 2005](http://dx.doi.org/10.1139/X05-089)) without impairing the functionality of the soil dynamics module with regard to C cycling (cf. the second objective discussed above).
+
+
+
+
+::: {.callout-note title="citation"}
+[Seidl, R., Spies, T.A., Rammer, W., Steel, E.A., Pabst, R.J., Olsen, K. 2012](http://dx.doi.org/10.1007/s10021-012-9587-2). Multi-scale drivers of spatial variation in old-growth forest carbon density disentangled with Lidar and an individual-based landscape model. Ecosystems, DOI: 10.1007/s10021-012-9587-2.
+:::
+
