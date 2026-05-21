@@ -66,3 +66,137 @@ html.dark .tag-type {
   background-color: #385723;
   color: #e2f0d9;
 }
+
+/* Homepage Custom Styles */
+.homepage-title {
+  font-weight: 700;
+  font-size: 1.6rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  color: var(--bs-heading-color, #2c3e50);
+}
+
+.quick-links-row {
+  margin-top: 15px;
+  margin-bottom: 25px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.quick-links-label {
+  font-weight: 500;
+  font-size: 1.05rem;
+  color: var(--bs-body-color);
+  margin-right: 5px;
+}
+
+.quick-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #007bff;
+  color: #ffffff !important;
+  text-decoration: none !important;
+  padding: 6px 14px;
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: background-color 0.15s ease-in-out, transform 0.1s ease-in-out;
+  border: none;
+}
+
+.quick-link-btn:hover {
+  background-color: #0056b3;
+  color: #ffffff !important;
+}
+
+.quick-link-btn:active {
+  transform: scale(0.98);
+}
+
+.quick-link-btn i {
+  font-size: 0.9rem;
+}
+
+.homepage-divider {
+  border: 0;
+  border-top: 1px solid var(--bs-border-color, rgba(0, 0, 0, 0.1));
+  margin: 1.5rem 0;
+}
+
+/* Homepage Box Layout styles */
+#hpboxcontainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.hp_box {
+  background-color: var(--bs-card-bg, #ffffff);
+  border: 1px solid var(--bs-border-color, rgba(0, 0, 0, 0.08));
+  border-radius: 8px;
+  padding: 1.25rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+html.dark .hp_box {
+  background-color: #1e1e24;
+  border-color: #2d2d35;
+}
+
+.hp_box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.08);
+}
+
+.hp_box img {
+  max-width: 140px;
+  height: auto;
+  border-radius: 6px;
+  margin: 0;
+  display: block;
+}
+
+.hp_box img[align="left"] {
+  float: left;
+  margin-right: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.hp_box img[align="right"] {
+  float: right;
+  margin-left: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.hpcaption {
+  display: block;
+  font-weight: 700;
+  font-style: italic;
+  font-size: 1.15rem;
+  margin-bottom: 0.5rem;
+  color: var(--bs-primary);
+}
+
+.hptext {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+@media (max-width: 576px) {
+  .hp_box img[align="left"],
+  .hp_box img[align="right"] {
+    float: none;
+    margin: 0 auto 1rem auto;
+    max-width: 100%;
+  }
+  .hpcaption {
+    text-align: center;
+  }
+}

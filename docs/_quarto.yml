@@ -7,6 +7,7 @@ project:
 website:
   title: "iLand"
   navbar:
+    logo-href: /wiki/startpage.qmd
     background: primary
     left:
       - href: index.qmd

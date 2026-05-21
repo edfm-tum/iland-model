@@ -59,72 +59,58 @@ See [download statistics](download-statistics.qmd) for details.
 
 
 <div class="panel expandable">
-  <div class="panel-heading" style="text-align: left; font-weight: normal; cursor: pointer">
-
-    <div class="download-container" style="display: flex; flex-direction: column; gap: 20px;">
-
-      <div class="download-info-row" style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
-        <img src="../img/download.png" width="80" alt="Download iLand" style="flex-shrink: 0;"/>
-        <div>
-            <h3 style="margin-top: 0; margin-bottom: 10px;">iLand version 2.1 for Windows, macOS & Linux</h3>
-            <p style="margin: 0;">
-                **Release Date:**2025-08-08.**</br>
-                Source code is available on [GitHub](https://github.com/edfm-tum/iland-model/releases/tag/v2.1).</br>
-                Find more details on the iLand [blog](https://iland-model.org/blogpost61-Release-iLand-2-1).
-
-
-        </div>
-      </div>
-
-      <div class="download-form-container" style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #ddd;">
-
-        <form action="/get_iland/iland_download.php" name="downloadform100" onsubmit="return validateDownloadForm('downloadform100');" method="post">
-          <input type="hidden" name="file" value="iLandPackage2.1-win.zip">
-
-          <div style="margin-bottom: 20px;">
-            <label style="display: block; margin-bottom: 10px; font-weight: bold;">1. Select your Operating System</label>
-            <div id="os-chooser" style="display: flex; gap: 5px; flex-wrap: wrap;">
-              <button type="button" class="os-button active" onclick="selectOS(this)" data-file="iLandPackage2.1-win.zip" data-target="#win-info">Windows</button>
-              <button type="button" class="os-button" onclick="selectOS(this)" data-file="iLandPackage2.1-mac.dmg" data-target="#mac-info">macOS</button>
-              <button type="button" class="os-button" onclick="selectOS(this)" data-file="iLandPackage2.1-linux.tar.gz" data-target="#linux-info">Linux</button>
-            </div>
-          </div>
-
-          <div id="win-info" class="os-info" style="border: 1px solid #cce5ff; background-color:#f0f8ff; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
-            <p style="margin:0;">**Info:** iLand 2.1 for Windows.
-
-          </div>
-          <div id="mac-info" class="os-info" style="display: none; border: 1px solid #cce5ff; background-color:#f0f8ff; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
-            <p style="margin:0;">**Info:** See also [installation notes for Mac](https://iland-model.org/iLand+Software#Mac).
-
-          </div>
-          <div id="linux-info" class="os-info" style="display: none; border: 1px solid #cce5ff; background-color:#f0f8ff; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
-            <p style="margin:0;">**Info:** We are working on a installation package for Linux, but it is not ready yet - sorry! In the meanwhile consider compiling iLand from source on Linux (it is not that hard, see the [iLand development chapter](https://iland-model.org/iland-book/Building_iLand.html) in the book)
-
-          </div>
-
-          <label style="display: block; margin-bottom: 10px; font-weight: bold;">2. Enter your Details</label>
-          <div style="display: flex; flex-wrap: wrap; gap: 15px;">
-            <input type="text" name="name" placeholder="Name" style="flex: 1; min-width: 150px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
-            <input type="text" name="country" placeholder="Country" style="flex: 1; min-width: 150px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
-            <input type="email" name="email" placeholder="E-Mail (Optional)" style="flex: 2; min-width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
-          </div>
-
-          <div style="margin-top: 15px; margin-bottom: 20px;">
-            <label for="captcha100" style="display: block; margin-bottom: 5px;">Human check: What is the square root of nine?</label>
-            <input type="text" id="captcha100" name="answer" size="6" style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
-          </div>
-
-          <div style="margin-bottom: 20px;">
-            <input type="checkbox" id="agree100" name="agree" value="Bike" style="vertical-align: middle;">
-            <label for="agree100" style="vertical-align: middle;"> I accept the [terms and conditions](terms-and-conditions.qmd).</label>
-          </div>
-
-          <input type="submit" value="Download iLand" style="width: 100%; background-color: #2a8442; color: white; padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 1.2em; font-weight: bold;">
-        </form>
-      </div>
-    </div>
-  </div>
+<div class="panel-heading" style="text-align: left; font-weight: normal; cursor: pointer">
+<div class="download-container" style="display: flex; flex-direction: column; gap: 20px;">
+<div class="download-info-row" style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+<img src="../img/download.png" width="80" alt="Download iLand" style="flex-shrink: 0;"/>
+<div>
+<h3 style="margin-top: 0; margin-bottom: 10px;">iLand version 2.1 for Windows, macOS & Linux</h3>
+<p style="margin: 0;">
+<strong>Release Date:</strong> 2025-08-08.<br/>
+Source code is available on <a href="https://github.com/edfm-tum/iland-model/releases/tag/v2.1">GitHub</a>.<br/>
+Find more details on the iLand <a href="https://iland-model.org/blogpost61-Release-iLand-2-1">blog</a>.
+</p>
+</div>
+</div>
+<div class="download-form-container" style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #ddd;">
+<form action="/get_iland/iland_download.php" name="downloadform100" onsubmit="return validateDownloadForm('downloadform100');" method="post">
+<input type="hidden" name="file" value="iLandPackage2.1-win.zip">
+<div style="margin-bottom: 20px;">
+<label style="display: block; margin-bottom: 10px; font-weight: bold;">1. Select your Operating System</label>
+<div id="os-chooser" style="display: flex; gap: 5px; flex-wrap: wrap;">
+<button type="button" class="os-button active" onclick="selectOS(this)" data-file="iLandPackage2.1-win.zip" data-target="#win-info">Windows</button>
+<button type="button" class="os-button" onclick="selectOS(this)" data-file="iLandPackage2.1-mac.dmg" data-target="#mac-info">macOS</button>
+<button type="button" class="os-button" onclick="selectOS(this)" data-file="iLandPackage2.1-linux.tar.gz" data-target="#linux-info">Linux</button>
+</div>
+</div>
+<div id="win-info" class="os-info" style="border: 1px solid #cce5ff; background-color:#f0f8ff; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
+<p style="margin:0;"><strong>Info:</strong> iLand 2.1 for Windows.</p>
+</div>
+<div id="mac-info" class="os-info" style="display: none; border: 1px solid #cce5ff; background-color:#f0f8ff; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
+<p style="margin:0;"><strong>Info:</strong> See also <a href="https://iland-model.org/iLand+Software#Mac">installation notes for Mac</a>.</p>
+</div>
+<div id="linux-info" class="os-info" style="display: none; border: 1px solid #cce5ff; background-color:#f0f8ff; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
+<p style="margin:0;"><strong>Info:</strong> We are working on an installation package for Linux, but it is not ready yet - sorry! In the meanwhile consider compiling iLand from source on Linux (it is not that hard, see the <a href="https://iland-model.org/iland-book/Building_iLand.html">iLand development chapter</a> in the book).</p>
+</div>
+<label style="display: block; margin-bottom: 10px; font-weight: bold;">2. Enter your Details</label>
+<div style="display: flex; flex-wrap: wrap; gap: 15px;">
+<input type="text" name="name" placeholder="Name" style="flex: 1; min-width: 150px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+<input type="text" name="country" placeholder="Country" style="flex: 1; min-width: 150px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+<input type="email" name="email" placeholder="E-Mail (Optional)" style="flex: 2; min-width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+</div>
+<div style="margin-top: 15px; margin-bottom: 20px;">
+<label for="captcha100" style="display: block; margin-bottom: 5px;">Human check: What is the square root of nine?</label>
+<input type="text" id="captcha100" name="answer" size="6" style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+</div>
+<div style="margin-bottom: 20px;">
+<input type="checkbox" id="agree100" name="agree" value="Bike" style="vertical-align: middle;">
+<label for="agree100" style="vertical-align: middle;"> I accept the <a href="terms-and-conditions.html">terms and conditions</a>.</label>
+</div>
+<input type="submit" value="Download iLand" style="width: 100%; background-color: #2a8442; color: white; padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 1.2em; font-weight: bold;">
+</form>
+</div>
+</div>
+</div>
 </div>
 
 <style>
