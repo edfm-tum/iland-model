@@ -64,7 +64,7 @@ The properties are either related to the trees on the cell (<4m, e.g., DBHMean),
 | HMean, HMedian, HMax | Mean / median / max tree height over all trees (>4m) on the cell (m). |
 | NQD | variation in DBH expressed as 100 * interquartile distance / median. Interquartile distance: 75th - 25th percentile of DBH on the cell. (trees >4m). |
 | N_ha | number of trees (>4m) per hectare (includes transformation from the cell size, but not stockable area within the cell) |
-| CPA | crown projection area (0..1). Calculates the crown projection of all trees (>4m) on a 2m grid using the tree crown radii. See also http://iland-model.org/apidoc/classes/SpatialAnalysis.html. All 2m cells with more than 50% crown area are counted and the CPA is then calculated  as #total area of cells >50% crown cover / #stockable area. |
+| CPA | crown projection area (0..1). Calculates the crown projection of all trees (>4m) on a 2m grid using the tree crown radii. See also [SpatialAnalysis.html.](../apidoc/classes/iland/spatialanalysis.qmd) All 2m cells with more than 50% crown area are counted and the CPA is then calculated  as #total area of cells >50% crown cover / #stockable area. |
 | deadwoodShare | share of standing / lying (aboveground) deadwood relative to (aboveground) living biomass (Carbon). Values for standing / lying deadwood C are retrieved from the resource units (100m). Only the aboveground fraction of snags and coarse woody debris is counted. The deadwoodShare is calculated as: deadwood_carbon / living_aboveground_carbon(incl.regeneration). Note that deadwoodShare can become > 1. |
 | Pct_PMugo | percentage (0..100) of the (stockable) cell area, that is covered with trees of Pinus mugo with a height > 1.3m. |
 

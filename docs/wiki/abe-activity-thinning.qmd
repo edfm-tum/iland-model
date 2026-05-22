@@ -24,7 +24,7 @@ The property *thinning* specifies the type of the thinning. Each thinning type h
 The custom thinning provides a very general interface for selecting a subset of the trees for harvesting. In very general terms, the user defines the planned harvest in either relative or absolute classes along a number of optional constraints/ settings.
 Figure 1 shows the concept of distribution based vs. relative classes. The parameter percentile selects the required mode.
 
-<img src="../img/act_custom_thinning.png" alt="Image" class="img-fluid" />
+<img src="/img/act_custom_thinning.png" alt="Image" class="img-fluid" />
 Figure 1. Example with 5 classes based on percentiles (a) and as relative classes (b). For (a), the classes 1 to 5 are defined by the 20th, the 40th, the 60th, the 80th percentile of the DBH distribution of the stand. Hence, every class contains (roughly) the same number of trees. For relative classes (b), each class spans the same diameter range, but the classes do not host an equal number of trees.
 
 Class values can relate to relative or to absolute values, and refer either to trees that should be removed or trees that should remain on site. The requested behavior is controlled by the parameters -+remove+- and -+relative+-.

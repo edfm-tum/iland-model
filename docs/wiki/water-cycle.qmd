@@ -50,7 +50,7 @@ The amount of precipitation per event exceeding the interception storage capacit
 # snow water pool
 
 
-If the daily mean temperature *T<sub>d</sub>*≤0°C, precipitation falls as snow and is routed to the snow water pool. On days with *T<sub>d</sub>*&gt;0°C the snow water pool looses water to the soil water pool at a rate of 0.7 mm°C<sup>-1</sup>day<sup>-1</sup> ([Running and Coughlan 1988](http://dx.doi.org/10.1016/0304-3800(88)90112-3)). It has to be noted that this representation of snow focuses on the snow water storage but does not give an accurate estimate of snow depth.
+If the daily mean temperature *T<sub>d</sub>*≤0°C, precipitation falls as snow and is routed to the snow water pool. On days with *T<sub>d</sub>*&gt;0°C the snow water pool looses water to the soil water pool at a rate of 0.7 mm°C<sup>-1</sup>day<sup>-1</sup> ([Running and Coughlan 1988](http://dx.doi.org/10.1016/0304-3800(88)). It has to be noted that this representation of snow focuses on the snow water storage but does not give an accurate estimate of snow depth.
 
         *
 
@@ -74,7 +74,7 @@ $$
 
 *Θ<sub>sat</sub>*, *Ψ<sub>sat</sub>* and *b<sub>s</sub>* can be derived by laboratory analysis of soil samples if available, but have also been estimated from large soil databases based on physical soil properties. In the absence of specific soil data we use the estimates of [Cosby et al. (1984)](http://tinyurl.com/yhz5aan), who employed sand, clay and silt content as predictors. Their data has recently been successfully applied in the process-based forest model of [Schwalm and Ek (2004)](http://dx.doi.org/10.1016/j.ecolmodel.2004.04.016).
 
-By means of effective rooting depth (i.e. the constraining value of maximum rooting depth and soil depth; for a compilation of species-specific max. rooting depth see [Breuer et al. 2003](http://dx.doi.org/10.1016/S0304-3800(03)00274-6)), an important site variable, water input from throughfall and snowmelt can be converted to soil water potentials. Water exceeding the field capacity is simulated to percolate out of the system. For every day, the soil water potential *Ψ*, used as proxy for [tree response to soil water status](soil-water-response.qmd), can be derived following Eq. 6.
+By means of effective rooting depth (i.e. the constraining value of maximum rooting depth and soil depth; for a compilation of species-specific max. rooting depth see [Breuer et al. 2003](http://dx.doi.org/10.1016/S0304-3800(03)), an important site variable, water input from throughfall and snowmelt can be converted to soil water potentials. Water exceeding the field capacity is simulated to percolate out of the system. For every day, the soil water potential *Ψ*, used as proxy for [tree response to soil water status](soil-water-response.qmd), can be derived following Eq. 6.
 
         *
 
@@ -84,7 +84,7 @@ By means of effective rooting depth (i.e. the constraining value of maximum root
 # transpiration and canopy conductance
 
 
-Plant available soil water (*Θ<sub>paw</sub>*) can be transpired back to the atmosphere by trees. We use the widely applied Penman-Monteith equation (Eq. 7) to simulate plant transpiration (*T*) and canopy evaporation of intercepted precipitation (*E*), following its implementation in 3-PG ([Landsberg and Waring 1997](http://dx.doi.org/10.1016/S0378-1127(97)00026-1)).
+Plant available soil water (*Θ<sub>paw</sub>*) can be transpired back to the atmosphere by trees. We use the widely applied Penman-Monteith equation (Eq. 7) to simulate plant transpiration (*T*) and canopy evaporation of intercepted precipitation (*E*), following its implementation in 3-PG ([Landsberg and Waring 1997](http://dx.doi.org/10.1016/S0378-1127(97)).
 
 $$
 T=\frac{\Delta R_{n}+\rho \cdot c_{p}\cdot D\cdot g_{a}}{\lambda \left ( \Delta +\gamma \cdot \left ( 1+g_{a}/g_{c} \right ) \right )}\cdot t
@@ -94,13 +94,13 @@ $$
 
 with *Δ* the slope of saturation vapor pressure, *R<sub>n</sub>* the incoming radiation (PAR), *ρ* the density of air, *c<sub>p</sub>* the heat capacity of the atmosphere, *D* the saturation deficit of air, *g<sub>a</sub>* the boundary layer conductance, and *g<sub>c</sub>* the canopy conductance, *λ* the latent heat of vaporization of water, and *γ* the psychrometric constant. Eq. 7 captures the two environmental drivers of evaporation, the net radiant energy supply and the supply of dry air, with the two controls *g<sub>a</sub>*, the mixing power of the atmosphere, and *g<sub>c</sub>* the primary physiological control exerted by plants (cf. [Landsberg and Gower 1997](http://tinyurl.com/yhbkmqm)).
 
-We follow [Landsberg and Waring (1997)](http://dx.doi.org/10.1016/S0378-1127(97)00026-1) in defining a constant, species-specific maximum canopy conductance *g<sub>c,max</sub>* for closed canopies (defined as *LAI* &gt; *LAI<sub>gcx</sub>*, with *LAI<sub>gcx</sub>* being typically around 3, cf. [Kelliher et al. 1995](http://dx.doi.org/10.1016/0168-1923(94)02178-M)), and a linear reduction of *g<sub>c,max</sub>* for *LAI* &lt; *LAI<sub>gcx</sub>* (Eq. 8)
+We follow [Landsberg and Waring (1997)](http://dx.doi.org/10.1016/S0378-1127(97) in defining a constant, species-specific maximum canopy conductance *g<sub>c,max</sub>* for closed canopies (defined as *LAI* &gt; *LAI<sub>gcx</sub>*, with *LAI<sub>gcx</sub>* being typically around 3, cf. [Kelliher et al. 1995](http://dx.doi.org/10.1016/0168-1923(94)), and a linear reduction of *g<sub>c,max</sub>* for *LAI* &lt; *LAI<sub>gcx</sub>* (Eq. 8)
 
 $$
 g_{c,max}=g_{c,max}\cdot min(\frac{LAI}{LAI_{gcx}}\; ,\; 1)
 $$
 
-Maximum stomatal and canopy conductance values for species and species groups are for instance reported by [Körner 1994](http://tinyurl.com/ybuxs3b) and [Breuer et al. 2003](http://dx.doi.org/10.1016/S0304-3800(03)00274-6), however both [Körner 1994](http://tinyurl.com/ybuxs3b) and [Kelliher et al. 1995](http://dx.doi.org/10.1016/0168-1923(94)02178-M) report no significant differences between tree species. Actual conductance *g<sub>c</sub>* is derived by correcting *g<sub>c,max</sub>* for the effects of [vapor pressure deficit response](vapor-pressure-deficit-response.qmd) and [soil water use](soil-water-response.qmd), represented by *f<sub>D,d</sub>* and *f<sub>sw,d</sub>* on a daily basis (Eq. 9). A leaf area weighted canopy average *g<sub>c</sub>* is applied for mixed stands.
+Maximum stomatal and canopy conductance values for species and species groups are for instance reported by [Körner 1994](http://tinyurl.com/ybuxs3b) and [Breuer et al. 2003](http://dx.doi.org/10.1016/S0304-3800(03), however both [Körner 1994](http://tinyurl.com/ybuxs3b) and [Kelliher et al. 1995](http://dx.doi.org/10.1016/0168-1923(94) report no significant differences between tree species. Actual conductance *g<sub>c</sub>* is derived by correcting *g<sub>c,max</sub>* for the effects of [vapor pressure deficit response](vapor-pressure-deficit-response.qmd) and [soil water use](soil-water-response.qmd), represented by *f<sub>D,d</sub>* and *f<sub>sw,d</sub>* on a daily basis (Eq. 9). A leaf area weighted canopy average *g<sub>c</sub>* is applied for mixed stands.
 
 $$
 g_{c}=g_{c,max}\cdot min(f_{D,d}\; ,\; f_{sw,d})

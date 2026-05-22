@@ -130,126 +130,92 @@ Available grids are:
 
 The wind module provides also a Javascript binding. Whenever the module is active, a Javascript object *Wind* is available in global scope.
 
-### `windEvent(windspeed, winddirection, max_iteration, simulate, current_iteration)` {#windevent}
 
-**Returns:** `void`
 
-Trigger a wind event from JavaScript.
+### Functions
 
-**Parameters:**
 
-*   **`windspeed`** (`double`): average wind speed (m/s)
-*   **`winddirection`** (`double`): wind direction (0°=N..180°=S..270=W°)
-*   **`max_iteration`** (`integer`): maximum number of iterations
-*   **`simulate`** (`boolean`, optional): if true, trees are not really affected (default: `false`)
-*   **`current_iteration`** (`integer`, optional): if given a value >= 0, then only one iteration is calculated ("interactive mode") (default: `-1`)
+**Wind.windEvent(windspeed, winddirection, max_iteration, simulate, current_iteration)**
+ trigger a wind event from javascript.
+windspeed: average wind speed (m/s)
+winddireciton: wind direction (0°=N..180°=S..270=W°)
+max_iteration: maximum number of iterations
+simulate: if true, trees are not really affected (default: false)
+current_iteration: if given a value >=0, then only one iteration is calculated ("interactive mode") (default: -1)
 
-**Example:**
 
 ```javascript
 // start a single wind event
-Wind.windEvent(40 /*m/s*/, 90 /*east*/, 10 /* iterations */);
+  Wind.windEvent(40 /*m/s*/, 90 /*east*/, 10 /* iterations */);
 
-// code for an interactive "movie"
-for (var i=0; i<10; i++) {
-    Wind.windEvent(40, 132.4, 10,
-                   false, // do not simulate
-                   i); // iteration
-    Globals.wait(500); // wait half a second
-    Globals.repaint(); // repaint the GUI
-}
+  // code for a interactive "movie"
+	for (var i=0;i<10;i++) {
+		Wind.windEvent(40,  132.4, 10,
+				   false, // do not simulate
+				   i); // iteration
+		Globals.wait(500); // wait half a second
+		Globals.repaint(); // repaint the GUI
+	}
 ```
 
----
 
-### `gridToFile(gridtype, filename)` {#gridtofile}
+**Wind.gridToFile(gridtype, filename)**
+This function saves a wind specific grid (specified by *gridtype*) in ESRI raster textfile format to *filename*. For possible values for *gridtype* see [#GUI_visualization_and_grid_description].
 
-**Returns:** `boolean`
-
-Saves a wind-specific grid (specified by `gridtype`) in ESRI raster textfile format to `filename`.
-
-**Parameters:**
-
-*   **`gridtype`** (`string`): the type of the grid. For possible values see [GUI visualization and grid description](#gui-visualization-and-grid-description).
-*   **`filename`** (`string`): destination path for the saved grid (relative to the project root folder).
-
-**Example:**
 
 ```javascript
-// save the wind fetch grid in ESRI raster format
-Wind.gridToFile('edge', 'temp/fetch.txt'); // default storage location: project root folder
+// save the form of the fire in ESRI raster format
+  Wind.gridToFile('edge', 'temp/fetch.txt'); // default storage location: project root folder
 ```
 
----
 
-### `grid(gridtype)` {#grid}
+**Grid Wind.grid(gridtype)**
+This function returns a wind specific grid (specified by *gridtype*). For possible values for *gridtype* see [#GUI_visualization_and_grid_description].
+Returns a [Grid](../apidoc/classes/iland/grid.qmd).
 
-**Returns:** [`Grid`](../apidoc/classes/iland/grid.qmd)
-
-Returns a wind-specific grid (specified by `gridtype`).
-
-**Parameters:**
-
-*   **`gridtype`** (`string`): the type of the grid. For possible values see [GUI visualization and grid description](#gui-visualization-and-grid-description).
-
-**Example:**
 
 ```javascript
-// retrieve wind-specific grid and apply a threshold
-var g = Wind.grid('nKilled');
-g.name = "k"; // set the internal name of the variable
-g.apply("if(k>0, 1, 0)"); // create a binary mask of damage pixels
-// further processing, e.g. g.save()
+var g =  Wind.gridToFile('nKilled');
+  g.name = "k"; // set the internal name of the variable
+  g.apply("if(k>0, 1, 0)"); // create a binary mask of damage pixels
+  // further processing, e.g. g.save()
 ```
 
----
 
-### `initialize()` {#initialize}
 
-**Returns:** `void`
+**Wind.initialize()**
+The function resets and reloads the wind module. Very helpful for repeated simulations as this allows to change model settings.
 
-Resets and reloads the wind module. Very helpful for repeated simulations as this allows changing model settings.
-
-**Example:**
 
 ```javascript
 function manyEvents() {
     Globals.set("modules.wind.topoGridFile", "gis/topo_grid_1.txt");
     Wind.initialize(); // reload the wind module
-    Wind.windEvent(20, 235, 100);
+    Wind.windEvent(20,235,100);
     // output processing omitted
     Globals.set("modules.wind.topoGridFile", "gis/topo_grid_2.txt");
     Wind.initialize();
-    Wind.windEvent(20, 235, 100);
+    Wind.windEvent(20,235,100);
 }
 ```
 
----
 
-### `setTopexGrid(grid_file_name)` {#settopexgrid}
+**Wind.setTopexGrid(grid_file_name)**
+Sets the "topex grid" that defines the spatial pattern of wind speeds on the landscape (setting "topoGridFile"). The ASCII grid is provided with grid_file_name. Together with "on<x>beforeWind", this can be used to set event-specific wind speed grids for the landscape.
 
-**Returns:** `void`
-
-Sets the "topex grid" that defines the spatial pattern of wind speeds on the landscape (setting `topoGridFile`). The ASCII grid is provided with `grid_file_name`. Together with `onBeforeWind`, this can be used to set event-specific wind speed grids for the landscape.
-
-**Parameters:**
-
-*   **`grid_file_name`** (`string`): path to the ASCII topo grid file.
-
-**Example:**
 
 ```javascript
 function onBeforeWind() {
-    // use time-event mechanism to provide the correct file name
-    let topo_grid = Globals.setting("user.topo");
-    // set the grid
-    Wind.setTopexGrid(topo_grid);
-}
-/* required steps:
-    * in project file, set "onBeforeWind" in wind module to "onBeforeWind()", add "user.topo" setting
-    * add column "user.topo" to time event grids and set correct grids names
-    * add JS function above to iLand (e.g., using "system.javascript" setting)
-*/
+       // use time-event mechanism to provide the correct file name
+       let topo_grid = Globals.setting("user.topo");
+       // set the grid
+       Wind.setTopexGrid(topo_grid);
+  }
+ /* required steps:
+     * in project file, set "onBeforeWind" in wind module to "onBeforeWind()", add "user.topo" setting
+     * add column "user.topo" to time event grids and set correct grids names
+     * add JS function above to iLand (e.g., using "system.javascript" setting)
+ */
 ```
 
 

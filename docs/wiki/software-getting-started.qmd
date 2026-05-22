@@ -29,11 +29,11 @@ title: "software - getting started"
 <h1>
 	Running iLand</h1>
 <div>
-	iLand organizes its inputs and outputs in so-called “projects”. A “project” is a set of folders containing different kinds of data (e.g. climate data or species parameters) and a “project-file” ([http://iland-model.org/project+file](project-file.qmd)), which is a XML-file acting as the main controller for the various model  options. </div>
+	iLand organizes its inputs and outputs in so-called “projects”. A “project” is a set of folders containing different kinds of data (e.g. climate data or species parameters) and a “project-file” ([[project file](project-file.qmd)](project-file.qmd)), which is a XML-file acting as the main controller for the various model  options. </div>
 <div>
 	In order to run simulations with iLand you need to (see also Figure 1):</div>
 <ul><li>
-		Start The iLand viewer (iland.exe) (see also [http://iland-model.org/iLand+Software](iland-software.qmd)) </li>
+		Start The iLand viewer (iland.exe) (see also [[iLand Software](iland-software.qmd)](iland-software.qmd)) </li>
 	<li>
 		Select  a project file (1)</li>
 	<li>
@@ -43,22 +43,22 @@ title: "software - getting started"
 	<li>
 		While the model is running (there is also a “Pause” button), you can view different types of data in the GUI visualization:
 		<ul><li>
-				“Light influence field”: This is the “LIF” ([http://iland-model.org/competition+for+light](competition-for-light.qmd)). Red means low, blue high light levels. Spatial resolution is a 2m grid.</li>
+				“Light influence field”: This is the “LIF” ([[competition for light](competition-for-light.qmd)](competition-for-light.qmd)). Red means low, blue high light levels. Spatial resolution is a 2m grid.</li>
 			<li>
 				“dominance grid”:  Maximum tree heights at 10m resolution</li>
 			<li>
-				“Individual trees” shows tree crowns from bird’s eye perspective (i.e. as stylized circles with the radius indicating the size of the tree). The color indicates the light resource index (again, red means low LRIs, see [http://iland-model.org/competition+for+light](competition-for-light.qmd))</li>
+				“Individual trees” shows tree crowns from bird’s eye perspective (i.e. as stylized circles with the radius indicating the size of the tree). The color indicates the light resource index (again, red means low LRIs, see [[competition for light](competition-for-light.qmd)](competition-for-light.qmd))</li>
 			<li>
-				“resource unit” show the resource units, i.e. a 100m grid used for the calculation of e.g. the water balance. ([http://iland-model.org/resource+units](resource-units.qmd))</li>
+				“resource unit” show the resource units, i.e. a 100m grid used for the calculation of e.g. the water balance. ([[resource units](resource-units.qmd)](resource-units.qmd))</li>
 			<li>
-				Clicking on a tree and a resource unit, respectively, shows their attribute in the “Data” box in the lower right corner. You can enter mathematical expressions ([http://iland-model.org/expression](ex.qmd)) using these variables in the „expression“ field to visualize various aspects (e.g. “dbh” or “dbh*dbh/4*3.141592” to calculate basal area)</li>
+				Clicking on a tree and a resource unit, respectively, shows their attribute in the “Data” box in the lower right corner. You can enter mathematical expressions ([[expression](expression.qmd)](ex.qmd)) using these variables in the „expression“ field to visualize various aspects (e.g. “dbh” or “dbh*dbh/4*3.141592” to calculate basal area)</li>
 		</ul></li>
 	<li>
 		The log area (4) contains messages from the model. This kind of log info is especially helpful to track configuration or model errors.</li>
 	<li>
-		The non-visual outputs of the model are stored in an output database ([http://iland-model.org/Outputs](outputs.qmd)). See [http://iland-model.org/Software+Tools](software-tools.qmd) for tools helping to access the SQLite databases iLand uses to store simulation results in (it is also quite easy to read these databases into R for further analysis).</li>
+		The non-visual outputs of the model are stored in an output database ([[Outputs](outputs.qmd)](outputs.qmd)). See [[Software Tools](software-tools.qmd)](software-tools.qmd) for tools helping to access the SQLite databases iLand uses to store simulation results in (it is also quite easy to read these databases into R for further analysis).</li>
 </ul><div>
-	<img alt="" src="display11" /></div>
+	<img alt="" src="/img/getting_started_screen.jpg" /></div>
 <div>
 	Figure 1. Main window of iLand at startup</div>
 <div>

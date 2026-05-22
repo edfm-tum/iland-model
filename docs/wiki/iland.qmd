@@ -7,34 +7,34 @@ title: "iLand"
 <span style="font-size:1.2em;margin-bottom:20px;">the individual-based forest landscape and disturbance model</span>
 <div style="float:right;width:185px;margin-right:5px;">
 
-<div id="hpbuttonbox">	<div>[<img src="../img/b_wiki.png" title="read online documentation" alt="documentation" />](../index.qmd)	</div>
-<div>[<img src="../img/b_pubs.png" title="view scientific publications" alt="publications" />](iland-publications.qmd)	</div>
-<div>[<img src="../img/b_download.png" title="download iLand" alt="download"/>](download.qmd)	</div>
+<div id="hpbuttonbox">	<div>[<img src="/img/b_wiki.png" title="read online documentation" alt="documentation" />](iland-hub.qmd)	</div>
+	<div>[<img src="/img/b_pubs.png" title="view scientific publications" alt="publications" />](iland-publications.qmd)	</div>
+	<div>[<img src="/img/b_download.png" title="download iLand" alt="download"/>](download.qmd)	</div>
 </div>
 </div>
 <!-- WR TEST -->
 <div id="hpboxcontainer">
-<div class="hp_box">[<img src="../img/iland_gfx1.png" align="left">](abstract.qmd)
+<div class="hp_box">[<img src="/img/iland_gfx1.png" align="left">](abstract.qmd)
 <span class="hpcaption">*What it is.*</span>
 <p class="hptext">iLand is a model of forest landscape dynamics, simulating individual tree competition, growth, mortality, and regeneration. It addresses interactions between climate (change), disturbance regimes, vegetation dynamics, and forest management. [Read more...](abstract.qmd)
 
 </div>
-<div class="hp_box">[<img src="../img/iLand_gfx5.png" align="right">](abstract.qmd)
+<div class="hp_box">[<img src="/img/iLand_gfx5.png" align="right">](abstract.qmd)
 <span class="hpcaption">*How it works.*</span><p class="hptext">
 Forest ecosystems are complex adaptive systems. In iLand, their dynamics is modeled as an emergent property of interactions between adaptive agents, and their environment. iLand is a multi-scale process-based model, integrating processes from the individual tree level (e.g., competition) to the landscape scale (e.g., disturbance) in a hierarchical simulation framework. [Read more…](abstract.qmd)
 
 </div>
-<div class="hp_box">[<img align="left" src="../img/iland_gfx3.png">](abstract.qmd)
+<div class="hp_box">[<img align="left" src="/img/iland_gfx3.png">](abstract.qmd)
 <span class="hpcaption">*What it's good for.*</span>
 <p class="hptext">iLand simulates forest dynamics at watershed and landscape scales (i.e. 10,000 hectares and beyond) over decades and centuries. It estimates species composition and stand structure, quantifies carbon storage, and can be used to assess the effects of climate change on e.g., disturbance regimes and ecosystem services.[Read more...](abstract.qmd)
 
 </div>
-<div class="hp_box">[<img align="right" src="../img/iLand_gfx6.png">](download.qmd)
+<div class="hp_box">[<img align="right" src="/img/iLand_gfx6.png">](download.qmd)
 <span class="hpcaption">*Can I use it?*</span>
 <p class="hptext">Sure! iLand is a research tool already used by a growing number of scientists in the US and Europe. The iLand software is released under the GNU General Public License and [freely available.](download.qmd)
 
 </div>
-<div class="hp_box">[<img align="left" src="../img/iLand_gfx4.gif">](team.qmd)
+<div class="hp_box">[<img align="left" src="/img/iLand_gfx4.gif">](team.qmd)
 <span class="hpcaption">*Who's behind it.*</span>
 <p class="hptext">The principal developers of iLand are Rupert Seidl and Werner Rammer, with contributions from experts at BOKU Vienna, OSU Corvallis, PSU Portland, and SLU Alnarp. Funding for initial model development came from an EUs’ Marie Curie fellowship. [Read more…](team.qmd)
 

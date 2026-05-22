@@ -71,7 +71,7 @@ The following pre-defined patterns are available:
 | circle20 | A circle-shaped patch with a diameter of 20 pixels (40m). The area is 280px=1120m². |
 
 
-Note that a direct-callable form of the planting activity exists ([fmengine.runPlanting()](http://iland-model.org/apidoc/classes/FMEngine.html#method_runPlanting)).
+Note that a direct-callable form of the planting activity exists ([fmengine.runPlanting()](../apidoc/classes/abe/fmengine.qmd#method-runplanting)).
 
 
 

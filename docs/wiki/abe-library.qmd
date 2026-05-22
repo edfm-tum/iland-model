@@ -32,7 +32,7 @@ Users can compose an individual forest management "menu" by selecting pre-define
 The detailed API documentation of the JavaScript library is here:
 
 
-<h4>[https://iland-model.org/abe-lib](https://iland-model.org/abe-lib/modules/abe-lib.html)</h4>
+<h4>[[abe-lib](abe-lib.qmd)](abe-lib/modules/abe-lib.html)</h4>
 
 <h3 class="showhide_heading" id="How_to_Use">How to Use</h3>
 

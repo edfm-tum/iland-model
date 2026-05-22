@@ -16,7 +16,7 @@ $$
 
 with *p<sub>transit</sub>* the resulting and *p<sub>i</sub>* the individual transit probabilities.
 
-<img src="../img/spread algorithm2.png" alt="Image" class="img-fluid" />
+<img src="/img/spread algorithm2.png" alt="Image" class="img-fluid" />
 Figure 1: scheme of the spread algorithm.
 
 

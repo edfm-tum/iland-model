@@ -20,7 +20,7 @@ und etwas text, wieder hier. vielleicht etwas source-code?
 | data1 | data2 |
 | data3 | data4 |
 
-<img src="/img/tiki/iland_landscape.gif" alt="Image" class="img-fluid" />
+<img src="/img/iland_triangle.jpg" alt="Image" class="img-fluid" />
 **ein schönes bild...**
 
 ::: {.callout-note}

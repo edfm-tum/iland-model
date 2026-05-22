@@ -118,4 +118,4 @@ In addition, this mechanism is used in the [fire module](fire-module.qmd) to all
 <h3 class="showhide_heading">interactive mode</h3>
 
 
-The iLand GUI allows for calling javascript functions when the model execution is paused (or before the model starts to run). This provides an easy way to, for instance, start script based evaluation tasks (an example is described [in this blog post](http://iland-model.org/blogpost31-Vegetation-snapshots-and-Javascript).
+The iLand GUI allows for calling javascript functions when the model execution is paused (or before the model starts to run). This provides an easy way to, for instance, start script based evaluation tasks (an example is described [in this blog post](../blog/blogpost31-vegetation-snapshots-and-javascript.qmd).

@@ -2,61 +2,56 @@
 title: "team"
 ---
 
-
-
 ## iLand core development team
-
 
 [Rupert Seidl](http://www.wabo.boku.ac.at/seidl.html) and [Werner Rammer](http://www.wabo.boku.ac.at/rammer.html), both currently at [TU Munich](https://www.edfm.wzw.tum.de/en.html), are the principal investigators of iLand.
 
-<img src="../img/DSCF1030_square.jpg" alt="Image" width="140" style="margin-left: 10px; margin-right: 10px;" class="img-fluid" /> [Rupert Seidl](https://www.edfm.wzw.tum.de/en/staff/seidl.html) is professor for Ecosystem Dynamics and Forest Management at TU Munich and head of research and monitoring at [Berchtesgaden National Park](https://www.nationalpark-berchtesgaden.bayern.de/). He has worked extensively on forest ecosystem dynamics, disturbance ecology, and the effects of climate change on forest ecosystems. In addition to developing iLand he has worked with a range of different modeling approaches (from empirical to process-based) on simulating forest ecosystems at a variety of scales, from individual trees to the continental level.
+::: {.clearfix}
+![Image](/img/DSCF1030_square.jpg){.float-end .ms-3 .mb-2 width="140"}
+[Rupert Seidl](https://www.edfm.wzw.tum.de/en/staff/seidl.html) is professor for Ecosystem Dynamics and Forest Management at TU Munich and head of research and monitoring at [Berchtesgaden National Park](https://www.nationalpark-berchtesgaden.bayern.de/). He has worked extensively on forest ecosystem dynamics, disturbance ecology, and the effects of climate change on forest ecosystems. In addition to developing iLand he has worked with a range of different modeling approaches (from empirical to process-based) on simulating forest ecosystems at a variety of scales, from individual trees to the continental level.
+:::
 
-
-<img src="../img/werner2016b.jpg" alt="Image" width="140" style="margin-left: 10px; margin-right: 10px;" class="img-fluid" /> [Werner Rammer](https://www.edfm.wzw.tum.de/en/staff/rammer.html) holds an PhD in forestry and is currently senior scientist at the Ecosystem Dynamics and Forest Management Group at TU Munich. In addition, he received an education as software developer and has gathered expertise in the field of environmental computing both in academia and the private sector. Besides developing iLand he worked in many projects related to forest ecosystems and their management, mostly bridging the gap between biology and its reresentation in data and software.
+::: {.clearfix}
+<img src="/img/werner2016b.jpg" alt="Image" class="img-fluid float-end ms-3 mb-2" width="140"/>
+[Werner Rammer](https://www.edfm.wzw.tum.de/en/staff/rammer.html) holds an PhD in forestry and is currently senior scientist at the Ecosystem Dynamics and Forest Management Group at TU Munich. In addition, he received an education as software developer and has gathered expertise in the field of environmental computing both in academia and the private sector. Besides developing iLand he worked in many projects related to forest ecosystems and their management, mostly bridging the gap between biology and its representation in data and software.
+:::
 
  
 
-
 ## iLand collaborators
-
 
 iLand is a collaborative effort, and a variety of people have contributed and do currently contribute to the successful development and application of the model.
 
-* <img src="../img/tu_dresden_logo.PNG" alt="Image" width="90" class="img-fluid" />[Dominik Thom](https://tu-dresden.de/bu/umwelt/forst/wb/waldbau/die-professur/inhaber) ([TU Dresden, Institute of Silviculture](https://tu-dresden.de)) is professor for Silviculture at TU Dresden and is instrumental in parameterizing iLand for Central European and North American forest ecosystems, and evaluating the model against a variety of independent datasets.
+::: {.team-list}
+-   <img src="/img/tu_dresden_logo.PNG" alt="Image" class="img-fluid float-end ms-3 mb-2" width="90"/>[Dominik Thom](https://tu-dresden.de/bu/umwelt/forst/wb/waldbau/die-professur/inhaber) ([TU Dresden, Institute of Silviculture](https://tu-dresden.de)) is professor for Silviculture at TU Dresden and is instrumental in parameterizing iLand for Central European and North American forest ecosystems, and evaluating the model against a variety of independent datasets.
 
-* <img src="../img/univ_wisconsin.png" alt="Image" width="90" class="img-fluid" />[Monica G Turner](https://turnerlab.ibio.wisc.edu/staff/turner-monica-g/) ([University of Wisconsin-Madison, USA](https://www.wisc.edu/)) is the Eugene P. Odum Professor of Ecology at the University of Wisconsin and is instrumental in bringing iLand to the Greater Yellowstone Ecosystem. She has studied fire, vegetation dynamics, nutrient cycling, bark beetle outbreaks, and climate change in Greater Yellowstone for over 35 years.
+-   <img src="/img/univ_wisconsin.png" alt="Image" class="img-fluid float-end ms-3 mb-2" width="90"/>[Monica G Turner](https://turnerlab.ibio.wisc.edu/staff/turner-monica-g/) ([University of Wisconsin-Madison, USA](https://www.wisc.edu/)) is the Eugene P. Odum Professor of Ecology at the University of Wisconsin and is instrumental in bringing iLand to the Greater Yellowstone Ecosystem. She has studied fire, vegetation dynamics, nutrient cycling, bark beetle outbreaks, and climate change in Greater Yellowstone for over 35 years.
 
-* <img src="../img/cary_institute.png" alt="Image" width="90" class="img-fluid" />[Winslow D Hansen](https://www.caryinstitute.org/science/our-scientists/dr-winslow-d-hansen/) ([Cary Institute of Ecosystem Studies, USA](https://www.caryinstitute.org)) works on forest ecology, social-ecological resilience, and natural disturbance in western US and Alaska and contributed with the developement of the Permafrost module in iLand.
+-   <img src="/img/cary_institute.png" alt="Image" class="img-fluid float-end ms-3 mb-2" width="90"/>[Winslow D Hansen](https://www.caryinstitute.org/science/our-scientists/dr-winslow-d-hansen/) ([Cary Institute of Ecosystem Studies, USA](https://www.caryinstitute.org)) works on forest ecology, social-ecological resilience, and natural disturbance in western US and Alaska and contributed with the developement of the Permafrost module in iLand.
 
-* <img src="../img/luke.png" alt="Image" width="90" class="img-fluid" />[Juha Honkaniemi](https://www.luke.fi/en/experts/juha-honkaniemi) ([Luke, Finland](https://www.luke.fi/en)) is Researech Scientist at Luke and is interested in forest disturbance dynamics, particularly from biotic disturbance agents. He contributed with the development of the BITE submdule for biotic disturbances and the introduction of iLand to boreal forests.
+-   <img src="/img/luke.png" alt="Image" class="img-fluid float-end ms-3 mb-2" width="90"/>[Juha Honkaniemi](https://www.luke.fi/en/experts/juha-honkaniemi) ([Luke, Finland](https://www.luke.fi/en)) is Researech Scientist at Luke and is interested in forest disturbance dynamics, particularly from biotic disturbance agents. He contributed with the development of the BITE submdule for biotic disturbances and the introduction of iLand to boreal forests.
 
-* <img src="../img/utokyo.png" alt="Image" width="90" class="img-fluid" />[Akira S. Mori](https://akkym.net/en/) ([University of Tokyo, Japan](https://www.u-tokyo.ac.jp)) is professor at the Research Center for Advanced Science and Technology at University of Tokyo. He works on biodeversity, ecosystem functioning, disturbance ecology and ecosystem management is instrumental to bringing iLand to Japan.
+-   <img src="/img/utokyo.png" alt="Image" class="img-fluid float-end ms-3 mb-2" width="90"/>[Akira S. Mori](https://akkym.net/en/) ([University of Tokyo, Japan](https://www.u-tokyo.ac.jp)) is professor at the Research Center for Advanced Science and Technology at University of Tokyo. He works on biodeversity, ecosystem functioning, disturbance ecology and ecosystem management is instrumental to bringing iLand to Japan.
 
-* <img src="../img/czu.png" alt="Image" width="90" class="img-fluid" />[Thomas Hlasny](https://www.researchgate.net/lab/Global-Change-Research-Group-CULS-Prague-Tomas-Hlasny) ([CZU Praha, Czech Republic](https://www.fld.czu.cz/en)) leads the Global Change Research Group and works on disturbance ecology and management. He was leading model-based research on forest management and novel biotic disturbance agents in Slovakia and Czech Republic.
+-   <img src="/img/czu.png" alt="Image" class="img-fluid float-end ms-3 mb-2" width="90"/>[Thomas Hlasny](https://www.researchgate.net/lab/Global-Change-Research-Group-CULS-Prague-Tomas-Hlasny) ([CZU Praha, Czech Republic](https://www.fld.czu.cz/en)) leads the Global Change Research Group and works on disturbance ecology and management. He was leading model-based research on forest management and novel biotic disturbance agents in Slovakia and Czech Republic.
 
-* <img src="../img/u_dab.png" alt="Image" width="90" class="img-fluid" />[Brian Harvey](https://environment.uw.edu/faculty/brian-harvey/) ([University of Washington, USA](https://www.washington.edu/)) is Assistant Professor at the University of Washington and works primarily on the interaction of forest structure with forest fire and insect outbreaks in the Pacific North West, the Rockies and California.
-
-
+-   <img src="/img/u_dab.png" alt="Image" class="img-fluid float-end ms-3 mb-2" width="90"/>[Brian Harvey](https://environment.uw.edu/faculty/brian-harvey/) ([University of Washington, USA](https://www.washington.edu/)) is Assistant Professor at the University of Washington and works primarily on the interaction of forest structure with forest fire and insect outbreaks in the Pacific North West, the Rockies and California.
+:::
 
 ## iLand supporters
 
-
 The development of iLand was only possible due to the support of several people, particularly in the early years of model development.
 
-* [Tom Spies](http://fes.forestry.oregonstate.edu/faculty/spies-tom) (USDA Forest Service, USA) provided expertise with regard to issues of landscape ecology and forest dynamics.
+-   [Tom Spies](http://fes.forestry.oregonstate.edu/faculty/spies-tom) (USDA Forest Service, USA) provided expertise with regard to issues of landscape ecology and forest dynamics.
 
-* [Rob Scheller](https://cnr.ncsu.edu/directory/robert-scheller/) (NC State University, USA) is the principal investigator of the [LANDIS-II forest landscape model](http://www.landis-ii.org/), and provided valuable insight into modeling disturbance and regeneration processes.
+-   [Rob Scheller](https://cnr.ncsu.edu/directory/robert-scheller/) (NC State University, USA) is the principal investigator of the [LANDIS-II forest landscape model](http://www.landis-ii.org/), and provided valuable insight into modeling disturbance and regeneration processes.
 
-* [Manfred Lexer](https://boku.ac.at/personen/person/159EE8D583EF617F) (BOKU University, Austria) is the principal developer of the [PICUS family of gap models](http://www.wabo.boku.ac.at/picus.html), and has supported iLand with insights on individual-based modeling and hybrid modeling.
+-   [Manfred Lexer](https://boku.ac.at/personen/person/159EE8D583EF617F) (BOKU University, Austria) is the principal developer of the [PICUS family of gap models](http://www.wabo.boku.ac.at/picus.html), and has supported iLand with insights on individual-based modeling and hybrid modeling.
 
-* [Kristina Blennow](http://www.slu.se/en/faculties/ltj/about-the-faculty/departments/landscape-architecture/staff/kristina-blennow/) (SLU Alnarp, Sweden) is an expert on the process-based modeling of wind disturbances, and collaborated with the iLand team to develop a wind disturbance module for iLand.
+-   [Kristina Blennow](http://www.slu.se/en/faculties/ltj/about-the-faculty/departments/landscape-architecture/staff/kristina-blennow/) (SLU Alnarp, Sweden) is an expert on the process-based modeling of wind disturbances, and collaborated with the iLand team to develop a wind disturbance module for iLand.
 
-* [Bernhard Wolfslehner](https://efi.int/staff-list/bernhard-wolfslehner) (European Forest Institute) is an expert on human - environment interactions and has worked extensively on forest management decision making. Dr. Wolfslehner collaborated with the iLand PIs in the development of an agent-based model of forest management.
-
-
-
+-   [Bernhard Wolfslehner](https://efi.int/staff-list/bernhard-wolfslehner) (European Forest Institute) is an expert on human - environment interactions and has worked extensively on forest management decision making. Dr. Wolfslehner collaborated with the iLand PIs in the development of an agent-based model of forest management.
 
 ## iLand funding
 
-
-Initial funding for developing iLand came from a  <img src="../img/mca.jpg" alt="Image" width="100" style="margin-left: 10px; margin-right: 10px; margin-top: 10px; margin-bottom: 10px;" class="img-fluid" /> [Marie Curie International Outgoing Fellowship](http://ec.europa.eu/research/mariecurieactions/index.htm)of the European Commissions' [7<sup>th</sup> Framework Program](http://cordis.europa.eu/fp7/home_en.html) (grant agreement: 237085) to Rupert Seidl. Since then a number of research projects provided the opportunities for ongoing model development. A big thanks to all funding agencies in Austria, Germany, and, particularly, the European Union that make this possible!
+Initial funding for developing iLand came from a <img src="/img/mca.jpg" alt="Image" class="img-fluid" width="100" style="margin-left: 10px; margin-right: 10px; margin-top: 10px; margin-bottom: 10px;"/> [Marie Curie International Outgoing Fellowship](http://ec.europa.eu/research/mariecurieactions/index.htm)of the European Commissions' [7<sup>th</sup> Framework Program](http://cordis.europa.eu/fp7/home_en.html) (grant agreement: 237085) to Rupert Seidl. Since then a number of research projects provided the opportunities for ongoing model development. A big thanks to all funding agencies in Austria, Germany, and, particularly, the European Union that make this possible!

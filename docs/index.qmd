@@ -18,7 +18,7 @@ Welcome to the central portal for navigating the **iLand** (individual-based for
           iLand simulates forest ecosystems as complex adaptive systems. Its dynamics emerge from interactions between individual trees (the adaptive biotic agents) and their relationship with a spatially and temporally heterogeneous environment.
         </p>
         <div class="text-center my-3">
-          <img src="img/iLand-model-components.png" class="img-fluid rounded border" alt="iLand Model Components" style="max-height: 220px;">
+          <img src="/img/iLand-model-components.png" class="img-fluid rounded border" alt="iLand Model Components" style="max-height: 220px;">
         </div>
         <div class="d-flex flex-wrap gap-2 mt-3 justify-content-center">
           <a href="wiki/why-developed.html" class="btn btn-sm btn-primary">Why iLand</a>
@@ -74,7 +74,7 @@ Welcome to the central portal for navigating the **iLand** (individual-based for
           The continuous life-cycle stages of the forest: energy capture leads to individual tree growth, stress triggers tree mortality, and seeds disperse to establish regeneration.
         </p>
         <div class="text-center my-3">
-          <img src="img/iland-process-overview.png" class="img-fluid rounded border" alt="iLand Demographic Processes" style="max-height: 180px;">
+          <img src="/img/iland-process-overview.png" class="img-fluid rounded border" alt="iLand Demographic Processes" style="max-height: 180px;">
         </div>
         <div class="d-flex flex-wrap gap-2 justify-content-center">
           <a href="wiki/growth.html" class="btn btn-sm btn-outline-primary">Growth</a>
@@ -102,7 +102,7 @@ Welcome to the central portal for navigating the **iLand** (individual-based for
           Discontinuous, sudden ecological events that disrupt forest landscape dynamics. iLand explicitly simulates multiple natural disturbance agents.
         </p>
         <div class="text-center my-3">
-          <img src="img/iland-disturbance-overview.png" class="img-fluid rounded border" alt="iLand Disturbances" style="max-height: 180px;">
+          <img src="/img/iland-disturbance-overview.png" class="img-fluid rounded border" alt="iLand Disturbances" style="max-height: 180px;">
         </div>
         <div class="list-group list-group-flush mb-3">
           <div class="list-group-item bg-transparent px-0 py-2">

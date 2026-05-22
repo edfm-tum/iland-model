@@ -28,7 +28,7 @@ Wind speed information are likely available only for a limited number of point l
 
 In an example for southern Sweden we used wind data from 12 weather stations ([SMHI 2011](http://www.smhi.se/klimatdata/meteorologi/vind)) and the 30m resolution DEM of [ASTER (2011)](http://asterweb.jpl.nasa.gov/gdem.asp). We for every weather station location calculated the TTD for the distances 0.5 km, 1 km, 2 km, and 3 km, and related it to the mean 10 minute wind speed recorded in 3h intervals over ten years (1996-2006) at the weather stations. We found that any single TTD index had only moderate explanatory power in the mild rolling topography of southern Sweden (but see [Hannah et al. 1995](http://dx.doi.org/10.1017/CBO9780511600425.007) for a more complex terrain). A combination of TTD indices over all distances together with elevation (using principal components regression to control for correlation between predictors), however, gave satisfactorily results, explaining 64% of the variation in mean wind speeds (Figure 1).
 
-<img src="/img/wiki_up/Fig1_wind_model_v2.jpg" alt="Image" width="800" class="img-fluid" />
+<img src="/img/Fig1_wind_model_v2.jpg" alt="Image" width="800" class="img-fluid" />
 ***Figure 1:*** Relationship of observed wind speed to predicted wind speed using (a) topex-to-distance 2km, (b) topex-to-distance 2km and elevation, and (c) topex-to-distance 0.5 km, 1 km, 2km, 3km and elevation as explanatory variables. Models (a) and (b) are simple linear regressions. Model (c) is a principal component regression.
 
 
@@ -54,7 +54,7 @@ We assume that major wind disturbance events occur first and foremost at stand e
 
 
 
-To derive the canopy top wind speed from the above canopy wind speed (cf. step 1 and 2) a vertical wind profile is calculated, following the approach of ForestGALES ([Gardiner et al. 2000](http://dx.doi.org/10.1016/S0304-3800(00)00220-9)) described in detail by [Byrne (2011)](http://hdl.handle.net/2429/33800). Zero-plane displacement (*d<sub>0</sub>*), i.e. the height at which the wind profile changes from a logarithmic to an exponential form, is calculated according to Raupachs drag partitioning model ([Raupach 1992](http://dx.doi.org/10.1007/BF00155203), 1994, Eq. 1).
+To derive the canopy top wind speed from the above canopy wind speed (cf. step 1 and 2) a vertical wind profile is calculated, following the approach of ForestGALES ([Gardiner et al. 2000](http://dx.doi.org/10.1016/S0304-3800(00)) described in detail by [Byrne (2011)](http://hdl.handle.net/2429/33800). Zero-plane displacement (*d<sub>0</sub>*), i.e. the height at which the wind profile changes from a logarithmic to an exponential form, is calculated according to Raupachs drag partitioning model ([Raupach 1992](http://dx.doi.org/10.1007/BF00155203), 1994, Eq. 1).
 
 $$
 d_{0}=h\cdot \left ( 1-\frac{1-e^{-(c_{d1}\cdot \lambda)^{0.5} }}{\left (c_{dl}\cdot \lambda  \right )^{0.5}} \right )
@@ -119,7 +119,7 @@ $$
 The turning moment affecting trees is significantly higher at stand edges than within a forest stand. Using data from [Gardiner et al. (1997)](http://dx.doi.org/10.1093/forestry/70.3.233), [Byrne (2011)](http://hdl.handle.net/2429/33800) established an equation relating the maximum turning moment to the distance from the stand edge. The factor *f<sub>edge</sub>* represents a (constant) ratio between the maximum turning moments at the stand edge and conditions well inside the forest.
 The effect of local upwind vegetation from the edge, also known as fetch, is calculated following data of [Gardiner et al. (1997)](http://dx.doi.org/10.1093/forestry/70.3.233) using the equations of [Peltola et al. (1999)](http://dx.doi.org/10.1139/x99-029). Their approximation assumes that the effect of upwind gaps increases
 with gap size up to 10 tree heights in upwind direction. The thus derived gap factor
-(*f<sub>gap</sub>*) assumes 0.2 for closed stands (and thus cancels out with *f<sub>edge</sub>* in closed stands)and reaches (*f<sub>gap</sub>*)= 1 for cells with upwind gaps of 10 tree heights in size (cf. Figure 2). A gap in iLand is defined based on canopy height of upwind cells <10 m than the focal cell canopy height. Furthermore, the additional moment provided by the overhanging displaced mass of the canopy was considered via the factor *f<sub>CW</sub>*, set to 1.25 here (see [Gardiner et al., 2000](http://dx.doi.org/10.1016/S0304-3800(00)00220-9)).
+(*f<sub>gap</sub>*) assumes 0.2 for closed stands (and thus cancels out with *f<sub>edge</sub>* in closed stands)and reaches (*f<sub>gap</sub>*)= 1 for cells with upwind gaps of 10 tree heights in size (cf. Figure 2). A gap in iLand is defined based on canopy height of upwind cells <10 m than the focal cell canopy height. Furthermore, the additional moment provided by the overhanging displaced mass of the canopy was considered via the factor *f<sub>CW</sub>*, set to 1.25 here (see [Gardiner et al., 2000](http://dx.doi.org/10.1016/S0304-3800(00)).
 The maximum turning moment calculation of Eq. 7 is subsequently modified by the gap factor *f<sub>gap</sub>*, edge factor *f<sub>edge</sub>*, and overhang factor *f<sub>CW</sub>* (Eq. 8).
 
 $$
@@ -127,7 +127,7 @@ M_{max}=U_{c}^{2}\cdot T_{c}\cdot f_{gap}\cdot f_{edge}\cdot f_{CW}
 $$
 
 
-<img src="/img/wiki_up/file_14.png" alt="Image" width="450" class="img-fluid" />
+<img src="/img/Fig2_wind_model.jpg" alt="Image" width="450" class="img-fluid" />
 ***Figure 2:*** The gap factor according to Peltola et al. (1999), modifying turning moments.
 
 
@@ -139,7 +139,7 @@ $$
 
 with *C<sub>Hegyi</sub>* the distance-dependent competition index by Hegyi (1974). From Figure 3 it is clear that size dominates the refitted *T<sub>c</sub>* equation, but that increasing competition, as expected, decreases *T<sub>c</sub>*. In the context of thinning and forest management it is also interesting to note that the absolute sensitivity of *T<sub>c</sub>* to competition increases with tree size (Figure 3), but that the relative sensitivity (expressed in percent *T<sub>c</sub>* response) decreases with tree size.
 
-<img src="../img/Fig3_wind_model_v2.jpg" alt="Image" width="800" class="img-fluid" />
+<img src="/img/Fig3_wind_model_v2.jpg" alt="Image" width="800" class="img-fluid" />
 ***Figure 3:*** (a) Observed versus predicted turning coefficients (*T<sub>c</sub>*) for the refitted [Hale et al. (2012)](http://dx.doi.org/10.1007/s10342-010-0448-2) model explicitly including competition (Eq. 9, R<sup>2</sup>=0.950). (b) Sensitivity of Tc to tree size. Solid line is for mean observed competition index (*C<sub>Hegyi</sub>*), dashed lines give the results for the 5th and 95th percentile of observed *C<sub>Hegyi</sub>*, respectively. (c) Sensitivity of Tc to competition as represented by the distance-dependent competition index of Hegyi (*C<sub>Hegyi</sub>*). Solid line is for mean observed tree size, dashed lines give the results for the 5<sup>th</sup> and 95<sup>th</sup> percentile of observed tree size, respectively.
 
 
@@ -164,19 +164,19 @@ If, for instance, a thinning intervention is simulated with the model, the *LRI*
 
 
 
-Critical wind speeds are calculated separately for uprooting and stem breakage, following the approach of ForestGALES ([Gardiner et al. 2000](http://dx.doi.org/10.1016/S0304-3800(00)00220-9)). The critical moment for uprooting is given by (Eq. 11)
+Critical wind speeds are calculated separately for uprooting and stem breakage, following the approach of ForestGALES ([Gardiner et al. 2000](http://dx.doi.org/10.1016/S0304-3800(00)). The critical moment for uprooting is given by (Eq. 11)
 
 $$
 M_{crit}=C_{reg}\cdot SW_{green}
 $$
 
-with *C<sub>reg</sub>* an species-specific, empirical coefficient derived from tree pulling experiments ([Gardiner et al. 2000](http://dx.doi.org/10.1016/S0304-3800(00)00220-9)) and *SW<sub>green</sub>* the green stem weight. Given the information is available, also soil-type specific differences in *C<sub>reg</sub>* can be incorporated as a modifier to the species-specific base value at RU level in iLand. Stem biomass is calculated dynamically in the model, however, on a dry matter basis, i.e. it has to be converted to green weight for the calculations of critical wind speed. The critical wind speed (*cws*) necessary to achieve this moment is derived by equating Eq. 11 with Eq. 8, and transforming for wind speed (Eq. 12).
+with *C<sub>reg</sub>* an species-specific, empirical coefficient derived from tree pulling experiments ([Gardiner et al. 2000](http://dx.doi.org/10.1016/S0304-3800(00)) and *SW<sub>green</sub>* the green stem weight. Given the information is available, also soil-type specific differences in *C<sub>reg</sub>* can be incorporated as a modifier to the species-specific base value at RU level in iLand. Stem biomass is calculated dynamically in the model, however, on a dry matter basis, i.e. it has to be converted to green weight for the calculations of critical wind speed. The critical wind speed (*cws*) necessary to achieve this moment is derived by equating Eq. 11 with Eq. 8, and transforming for wind speed (Eq. 12).
 
 $$
 cws_{uprooting}=(\frac{C_{reg}\cdot SW_{green}}{T_{c}\cdot f_{gap}\cdot f_{edge}\cdot f_{CW}})^{0.5}
 $$
 
-The critical bending moment at which stem breakage occurs was defined by [Gardiner et al. (2000)](http://dx.doi.org/10.1016/S0304-3800(00)00220-9) as (Eq. 13)
+The critical bending moment at which stem breakage occurs was defined by [Gardiner et al. (2000)](http://dx.doi.org/10.1016/S0304-3800(00) as (Eq. 13)
 
 $$
 M_{crit}=\frac{\pi }{32}\cdot f_{knot}\cdot MOR\cdot dbh^3
@@ -198,7 +198,7 @@ $$
 
 
 
-The calculations of steps (3) to (7) are conducted for the dominant tree of a 10 m cell. The lower *cws* is used to calculate wind impact on vegetation, i.e., trees are uprooted if *cws<sub>uprooting</sub>* < *cws<sub>breakage</sub>* or else they are broken. If the soil is frozen, as determined by a soil temperature ≤0°C at 10cm soil depth, only stem breakage is assumed to occur (see [Peltola et al. 2000](http://dx.doi.org/10.1016/S0378-1127(00)00306-6), [Blennow et al. 2010b](http://dx.doi.org/10.1016/j.foreco.2009.07.004)). Soil temperatures are determined for the particular day of year of a wind event from air temperature in conjunction with vegetation and litter characteristics ([Paul et al. 2004](http://dx.doi.org/10.1016/j.agrformet.2003.08.030)).
+The calculations of steps (3) to (7) are conducted for the dominant tree of a 10 m cell. The lower *cws* is used to calculate wind impact on vegetation, i.e., trees are uprooted if *cws<sub>uprooting</sub>* < *cws<sub>breakage</sub>* or else they are broken. If the soil is frozen, as determined by a soil temperature ≤0°C at 10cm soil depth, only stem breakage is assumed to occur (see [Peltola et al. 2000](http://dx.doi.org/10.1016/S0378-1127(00), [Blennow et al. 2010b](http://dx.doi.org/10.1016/j.foreco.2009.07.004)). Soil temperatures are determined for the particular day of year of a wind event from air temperature in conjunction with vegetation and litter characteristics ([Paul et al. 2004](http://dx.doi.org/10.1016/j.agrformet.2003.08.030)).
 
 If the critical wind speed for uprooting is exceeded, the tree is thrown (i.e. killed) and all other trees on the cell are likewise assumed to be killed. For trees considerably smaller than the dominant tree the assumption is that they are either being hit by the falling tree or being uprooted together with the root plate of the dominant individual. Trees of the same size and species on the other hand (i.e., in even-aged stands) would have the same approximate physical properties as the focal tree and thus would also fall if the calculations were conducted separately for them. The biomass from uprooted trees is moved directly to the downed woody debris (stem and branch compartments) and litter (foliage compartment) pools, i.e. no [snags](snag-dynamics.qmd) are created from windthrown trees.
 

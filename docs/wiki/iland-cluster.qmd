@@ -38,7 +38,7 @@ cd ..
 iLand console (1.04 - #1306)
 This is the console version of iLand, the individual based
 landscape and disturbance forest model.
-More at: http://iland-model.org
+More at: [Welcome](../index.qmd)
 (c) Werner Rammer, Rupert Seidl, 2009-2017
 compiled: Intel 64 bit Qt 5.8.0
 
@@ -49,7 +49,7 @@ ilandc.exe <xm<x>l-project-file> <...other options>
 Options:
 you specify a number key=value pairs, and *after* loading of the project
 the 'key' settings are set to 'value'. E.g.: ilandc project.xml 100 output.stand.enabled=false output.stand.landscape=false
-See also http://iland-model.org/iLand+console </xm
+See also [iLand console](iland-console.qmd) </xm
 ^
  
 

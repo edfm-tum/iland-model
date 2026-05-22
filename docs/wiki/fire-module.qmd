@@ -106,224 +106,153 @@ The iLand GUI provides some means to visually inspect various fire-related varia
 ## Fire specific JavaScript
 
 
-The fire module sports a JavaScript binding allowing extended control on fire processes. When the fire module is active, the JavaScript engine contains a global variable ***Fire*** supporting the following functions and properties### Properties
+The fire module sports a JavaScript binding allowing extended control on fire processes. When the fire module is active, the JavaScript engine contains a global variable ***Fire*** supporting the following functions and properties:
 
-### `id` {#id}
 
-<span class="api-tag tag-type">integer</span> <span class="api-tag tag-readonly">ReadOnly</span>
 
-The numeric ID of the last fire event. Each fire event has assigned a unique identifier that is also used in database outputs.
+### Properties
 
----
 
-### `x` {#x}
+**id**
+The numeric Id of the last fire event (integer, read-only). Each fire events has assigned an unique identifier that is also used in database outputs.
 
-<span class="api-tag tag-type">double</span> <span class="api-tag tag-readonly">ReadOnly</span>
-
+**x**
 The (metric) x-coordinate of the ignition point of the last fire.
 
----
-
-### `y` {#y}
-
-<span class="api-tag tag-type">double</span> <span class="api-tag tag-readonly">ReadOnly</span>
-
+**y**
 The (metric) y-coordinate of the ignition point of the last fire.
 
----
+**onIgnitionRU**
+If set to a valid Javascript function, then the function is called during the ignition phase for each resource unit. The function has the following signature:
+mgmt_factor = Fire.onIgnitionRU(kbdi, mgmt_factor)
+*kbdi* is the kbdi value on the resource unit, *mgmt_factor* the default factor for the RU. If a value is returned, it is used as the suppression factor (rMgmt) for the current RU, otherwise *mgmt_factor* is used.
 
-### `onIgnitionRU` {#onignitionru}
-
-<span class="api-tag tag-type">function</span>
-
-If set to a valid JavaScript function, then the function is called during the ignition phase for each resource unit.
-
-**Signature:** `mgmt_factor = Fire.onIgnitionRU(kbdi, mgmt_factor)`
-*   `kbdi` is the KBDI value on the resource unit.
-*   `mgmt_factor` is the default factor for the RU.
-*   If a value is returned, it is used as the suppression factor (`rMgmt`) for the current RU, otherwise `mgmt_factor` is used.
-
-**Example:**
 
 ```javascript
 // function is called for every RU
 Fire.onIgnitionRU = function(kbdi, rmgmt) {
-    // parameters: kbdi: the kbdi of the RU,
-    // rmgmt: the suppression scalar (set in iLand)
-    console.log("kbdi: " + kbdi + ", rmgmt: " + rmgmt);
-    // calculate a new suppression factor based on the kbdi (just a test):
-    var r = rmgmt + 10 * kbdi;
-    // use this value for the current year on the RU:
-    return r;
+// parameters: kbdi: the kbdi of the RU,
+// rmgmt: the supression scalar (set in iLand)
+console.log("kbdi: " + kbdi + ", rmgmt: " + rmgmt);
+// calculate a new suppression factor based on the kbdi: (just a test)
+var r = rmgmt + 10*kbdi;
+// use this value for the current year on the RU:
+return r;
 }
 ```
 
----
 
-### `onCalculateFireSize` {#oncalculatefiresize}
+**onCalculateFireSize**
+If set to a valid JavaScript function, then the function is called when the actual fire size is calcuated for a fire event. The function has the signature:
+fire_size_m2 = onCalculateFireSize(rclim, fire_size)
+with *rclim* the climate factor ($KBDI/KBDI_{ref}$), *fire_size* the value drawn from default distribution in iLand. The return value will be used as the fire size for the current event.
 
-<span class="api-tag tag-type">function</span>
-
-If set to a valid JavaScript function, then the function is called when the actual fire size is calculated for a fire event.
-
-**Signature:** `fire_size_m2 = onCalculateFireSize(rclim, fire_size)`
-*   `rclim` is the climate factor ($KBDI/KBDI_{ref}$).
-*   `fire_size` is the value drawn from the default distribution in iLand.
-*   The return value will be used as the fire size for the current event.
-
-**Example:**
 
 ```javascript
 // helper function to get a random number between 'min' and 'max'
 function runiform(min, max) {
-    return Math.random() * (max - min) + min;
+  return Math.random() * (max - min) + min;
 }
 
 // calculate fire size; rclim=KBDI/KBDIRef, old_size=fire size drawn from standard distribution (iLand)
 Fire.onCalculateFireSize = function(rclim, old_size) {
-    if (rclim < 0.75) {
-        return runiform(10000, 200000);
-    }
-    if (rclim > 1.75) {
-        return runiform(2000000000, 450000000);
-    }
-    // drawn from distribution, applied min/max range
-    return old_size;
+if (rclim < 0.75) {
+return runiform(10000,200000);
+}
+if (rclim > 1.75)
+return runiform(2000000000, 450000000);
+
+// drawn from distribution, applied min/max range
+return old_size;
 }
 ```
 
----
 
-### `onIgnition` {#onignition}
+**onIgnition**
+The handler is called immediately before the standard ignition routine is run and can be used to start prescribes fires.
 
-<span class="api-tag tag-type">function</span>
 
-The handler is called immediately before the standard ignition routine is run and can be used to start prescribed fires.
-
----
 
 ### Functions
 
-### `ignite(x_meter, y_meter, firesize, windspeed, winddirection)` {#ignite}
 
-**Returns:** `double`
+**Fire.ignite(x_meter, y_meter, firesize, windspeed, winddirection)**
+Ignite a fire event with pre-defined properties, i.e. at a given location (parameters *x_meter*, *y_meter*) with given conditions (i.e. wind direction and speed and fire size). if both *x* and *y* are set to -1, the ignition is performed stochastically, i.e. as used in dynamic simulation mode.
+The return value is -1 if no fire was ignited, or the total burnt area (m2) otherwise.
+x_meter, y_meter: metric coordinates of the ignition point in the landscape
+firesize: provide a fire size (m2). The fire size will be drawn from the fire size distribution if firesize=-1 or omitted.
+windspeed: wind speed (m/s), drawn randomly if omitted or -1.
+winddirection: wind direction (0°=N..180°=S..270=W°), drawn randomly if omitted or set to -1.
 
-Ignite a fire event with pre-defined properties, i.e., at a given location (parameters `x_meter`, `y_meter`) with given conditions (i.e., wind direction, speed, and fire size). If both `x` and `y` are set to -1, the ignition is performed stochastically, i.e., as used in dynamic simulation mode.
-The return value is -1 if no fire was ignited, or the total burnt area ($m^2$) otherwise.
-
-**Parameters:**
-
-*   **`x_meter`** (`double`): metric x-coordinate of the ignition point in the landscape.
-*   **`y_meter`** (`double`): metric y-coordinate of the ignition point in the landscape.
-*   **`firesize`** (`double`, optional): fire size ($m^2$). The fire size will be drawn from the fire size distribution if `firesize = -1` or omitted.
-*   **`windspeed`** (`double`, optional): wind speed (m/s), drawn randomly if omitted or -1.
-*   **`winddirection`** (`double`, optional): wind direction (0°=N..180°=S..270=W°), drawn randomly if omitted or set to -1.
-
-**Example:**
 
 ```javascript
 // start a fire at 100/100
-Fire.ignite(100, 100);
-// start a fire with pre-defined fire size (1 ha)
-Fire.ignite(100, 100, 10000);
+  Fire.ignite(100, 100);
+  // start a fire with pre-defined fire size (1 ha)
+  Fire.ignite(100, 100, 10000);
 ```
 
----
 
-### `igniteBurnIn(x_meter, y_meter, perimeter_length, firesize_m2, simulate)` {#igniteburnin}
+**Fire.igniteBurnIn(x_meter, y_meter, perimeter_length, firesize_m2, simulate=false)**
+The function starts a fire not from a point, but from a line along the iLand landscape perimeter. The incoming fire front is defined by a center point along the perimeter (*x_meter* / *y_meter* in the iLand reference system, the model looks for the closest 20m edge pixel within 100m; if no pixel is found an error is thrown) and the *perimeter_length*. iLand ignites the edge of the landscape left/right from the center point at a total length of *perimeter_length* (m). From this ignited cell the fire spreads using the usual spread algorithm; the maximum fire size is constrained to *firesize_m2*. If *simulate* is true no actual fire is simulated, but only the edge detection is executed. The return value is the realized fire size (when simulate is false), or the number of edge cells ignited (when simulate is true). See also the code example at the bottom of the page.
 
-**Returns:** `double`
+**Fire.gridToFile(gridtype, filename)**
+This function saves a fire specific grid (specified by *gridtype*) in ESRI raster textfile format to *filename*. Possible values for *gridtype* are:
 
-Starts a fire not from a point, but from a line along the iLand landscape perimeter. The incoming fire front is defined by a center point along the perimeter (`x_meter` / `y_meter` in the iLand reference system; the model looks for the closest 20m edge pixel within 100m; if no pixel is found an error is thrown) and the `perimeter_length`. iLand ignites the edge of the landscape left/right from the center point at a total length of `perimeter_length` (m). From this ignited cell, the fire spreads using the usual spread algorithm; the maximum fire size is constrained to `firesize_m2`.
+* *basalarea*: share of died trees (basal area) on burning pixels (0..1) (RU-Level)
+* *kbdi*: current values for the kbdi drought index (0..1) (RU-Level)
+* *spread*: shape of the last burning fire (20m pixels). Non-null numbers indicate the generation counter of the cellular automaton.
+* "border": if *allowBurnIn* is true, iLand detects edge pixels (20m resolution) and this grid can be retrieved (1=edge, 0=no edge)
+* *dbh*: average dbh (cm) of burning pixels, limited with the threshold dbh. RU-Level
+* *crownkill* average crownkill fraction of all burning pixels on RU. (0..1) (see [wildfire](wildfire.qmd) for details)
+* *baseIgnition* base probability of an annual fire ignition event for a cell on RU level (depending on fire-return-interval and average fire size)
+ 
 
-The return value is the realized fire size (when `simulate` is false), or the number of edge cells ignited (when `simulate` is true).
-
-**Parameters:**
-
-*   **`x_meter`** (`double`): metric x-coordinate of the center point along the perimeter.
-*   **`y_meter`** (`double`): metric y-coordinate of the center point along the perimeter.
-*   **`perimeter_length`** (`double`): length (m) of the perimeter edge to ignite.
-*   **`firesize_m2`** (`double`): maximum constrained fire size ($m^2$).
-*   **`simulate`** (`boolean`, optional): if true, no actual fire is simulated, but only edge detection is executed (default: `false`).
-
----
-
-### `gridToFile(gridtype, filename)` {#gridtofile}
-
-**Returns:** `boolean`
-
-Saves a fire-specific grid (specified by `gridtype`) in ESRI raster textfile format to `filename`.
-
-**Parameters:**
-
-*   **`gridtype`** (`string`): specifies which fire-specific grid to write. Possible values are:
-    *   `'basalarea'`: share of killed trees (basal area) on burning pixels (0..1) (RU-Level)
-    *   `'kbdi'`: current values for the KBDI drought index (0..1) (RU-Level)
-    *   `'spread'`: shape of the last burning fire (20m pixels). Non-null numbers indicate the generation counter of the cellular automaton.
-    *   `'border'`: if `allowBurnIn` is true, iLand detects edge pixels (20m resolution) and this grid can be retrieved (1=edge, 0=no edge)
-    *   `'dbh'`: average dbh (cm) of burning pixels, limited with the threshold DBH (RU-Level)
-    *   `'crownkill'`: average crownkill fraction of all burning pixels on RU (0..1) (see [wildfire](wildfire.qmd) for details)
-    *   `'baseIgnition'`: base probability of an annual fire ignition event for a cell on RU level (depending on fire-return-interval and average fire size)
-*   **`filename`** (`string`): destination path for the saved grid (relative to the project root folder).
-
-**Example:**
 
 ```javascript
 // save the shape of the fire in ESRI raster format
-Fire.gridToFile('spread', 'e:/spread.txt');
+  Fire.gridToFile('spread', 'e:/spread.txt');
 ```
 
----
 
-### `grid(gridtype)` {#grid}
+**Fire.grid(gridtype)**
+Returns a grid of given *gridtype* (string) as a Javascript Object. See [Grid Javascript API](../apidoc/classes/iland/grid.qmd) for details. All grids (with the exception of the actual spread on the 20m pixels) from the "fire specific visualization" are available.
 
-**Returns:** [`Grid`](../apidoc/classes/iland/grid.qmd)
-
-Returns a grid of the given `gridtype` as a JavaScript object. See [Grid Javascript API](../apidoc/classes/iland/grid.qmd) for details. All grids (with the exception of the actual spread on the 20m pixels) from the fire-specific visualization are available.
-
-**Parameters:**
-
-*   **`gridtype`** (`string`): specifies which fire-specific grid to retrieve (see [gridToFile](#gridtofile) for possible values).
-
-**Example:**
 
 ```javascript
 // retrieve and save the shape of the fire in ESRI raster format
-var spread_grid = Fire.grid('spread');
-spread_grid.save(Globals.path('temp/grid1.asc'));
+  var spread_grid = Fire.grid('spread');
+  spread_grid.save(Globals.path('temp/grid1.asc'));
 ```
 
----
+ 
+
+
 
 ### Event handler
 
-### `onAfterFire()` {#onafterfire}
 
-**Returns:** `void`
+**onAfterFire()**
+The *on<x>afterFire* event handler is called immediately after a fire event. The event handler is set with the *fire.onAfterEvent* setting in the project file.
+Example:
 
-The `onAfterFire` event handler is called immediately after a fire event. The event handler is set with the `fire.onAfterEvent` setting in the project file.
-
-**Example:**
 
 ```javascript
 // event handler. Set the fire.onAfterFire to "afterFireProcessing()"
 function afterFireProcessing() {
-    var praefix = Fire.id;
-    // save the form of the fire in ESRI raster format
-    // save a file for each fire
-    Fire.gridToFile('spread', 'output/fire/spread' + praefix + '.txt');
+   var praefix = Fire.id;
+   // save the form of the fire in ESRI raster format
+   // save a file for each fire
+   Fire.gridToFile('spread', 'output/fire/spread' + praefix + '.txt');
 }
 ```
 
----
 
-### `onIgnitionRU`
+**onIgnitionRU**
+see above.
 
-See above.
-
-### `onCalculateFireSize`
-
-See above.
+**onCalculateFireSize**
+see above.
 
 
 

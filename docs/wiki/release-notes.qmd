@@ -22,13 +22,13 @@ alter table species add column estSOLthickness numeric;
 ## iLand 2.0
 
 
-Details in [this blog post](https://iland-model.org/blogpost60-Release-of-iLand-2-0).
+Details in [this blog post](../blog/blogpost60-release-of-iland-20.qmd).
 
 
 ## iLand 1.0
 
 
-Details in the blog posts [here](https://iland-model.org/blogpost58-iLand-1-0-released) and [here](https://iland-model.org/blogpost57-iLand-1-0-release-in-numbers)
+Details in the blog posts [here](../blog/blogpost58-iland-10-released.qmd) and [here](../blog/blogpost57-iland-10-release-in-numbers.qmd)
 SVN: date: 2016/11/16
 features: final release of the iLand includes all planned features ;).
 
@@ -59,7 +59,7 @@ This release has been skipped. 1.0 is around the corner.
 ## iLand 0.8
 
 
-Details on the [blog](https://iland-model.org/blogpost52-New-iLand-release-0-8).
+Details on the [blog](../blog/blogpost52-new-iland-release-08.qmd).
 SVN: 926 date: 2014/08/01
 features: iLand on fire.
 The release 0.8 includes the [fire module](fire-module.qmd). Required for the fire module was, inter alia, the inclusion of a digital elevation model.

@@ -9,7 +9,7 @@ title: "ABE spatial setup"
 
 The following figure demonstrates the interaction of the landscape as seen from the process based forest model (iLand) and from the agent based forest management module (ABE). This page describes the spatial setup of the latter. The [ABE minimal setup](abe-minimal-setup.qmd) page provides practical information for the minimum setup of ABE.
 
-<img src="../img/abe_figure.png" alt="Image" class="img-fluid" />
+<img src="/img/abe_figure.png" alt="Image" class="img-fluid" />
 
 The right part of the figure is an example for a typical spatial organisation:
 

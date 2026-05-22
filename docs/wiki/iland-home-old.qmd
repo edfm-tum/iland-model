@@ -16,7 +16,7 @@ title: "iland home old"
 
  
 
-* hear about [new developments](http://iland-model.org/blog2) and [technical blips](http://iland-model.org/blog1) from the 'engine room'
+* hear about [new developments](../blog/index.qmd) and [technical blips](../blog/index.qmd) from the 'engine room'
 * find out more <u>[about the project](project-abstract.qmd)</u> and [iLands niche in the landscape of existing forest ecosystem models](iland-model-complexity-and-its-niche-in-the-landscape-of-models.qmd)
 * get to know the <u>[iLand team](team.qmd)</u>
 * browse <u>[iLand-related publications](iland-publications.qmd)</u>
@@ -29,8 +29,8 @@ title: "iland home old"
 ## individual-based modeling at the watershed scale
 
 
-The animation below shows a 500 year iLand simulation for a 172 ha watershed in the [HJ Andrews experimental forest](http://andrewsforest.oregonstate.edu/), central western Cascades, Oregon. More information about this particular simulation can be found [here](http://iland-model.org/blog2).
+The animation below shows a 500 year iLand simulation for a 172 ha watershed in the [HJ Andrews experimental forest](http://andrewsforest.oregonstate.edu/), central western Cascades, Oregon. More information about this particular simulation can be found [here](../blog/index.qmd).
 
-<img src="../img/WS12_500yrs_medium.gif" alt="Image" width="600" class="img-fluid" />
+<img src="/img/WS12_500yrs_medium.gif" alt="Image" width="600" class="img-fluid" />
 
-[<img src="../img/mca.jpg" alt="Image" height="50" class="img-fluid" />](http://cordis.europa.eu/fp7/people/home_en.html) [<img src="../img/fp7.jpg" alt="Image" height="50" class="img-fluid" />](http://cordis.europa.eu/fp7/home_en.html) [<img src="../img/eu.png" alt="Image" height="50" class="img-fluid" />](http://europa.eu/)
+[<img src="/img/mca.jpg" alt="Image" height="50" class="img-fluid" />](http://cordis.europa.eu/fp7/people/home_en.html) [<img src="/img/fp7.jpg" alt="Image" height="50" class="img-fluid" />](http://cordis.europa.eu/fp7/home_en.html) [<img src="/img/eu.png" alt="Image" height="50" class="img-fluid" />](http://europa.eu/)

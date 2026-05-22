@@ -159,7 +159,7 @@ html.dark .hp_box {
   height: auto;
   border-radius: 6px;
   margin: 0;
-  display: block;
+  display: inline-block;
 }
 
 .hp_box img[align="left"] {
@@ -190,6 +190,9 @@ html.dark .hp_box {
 }
 
 @media (max-width: 576px) {
+  .hp_box img {
+    display: block;
+  }
   .hp_box img[align="left"],
   .hp_box img[align="right"] {
     float: none;
@@ -200,3 +203,11 @@ html.dark .hp_box {
     text-align: center;
   }
 }
+
+/* Team and collaborator list styling */
+.team-list li {
+  display: flow-root;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+}
+

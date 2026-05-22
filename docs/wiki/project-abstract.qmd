@@ -25,7 +25,7 @@ To successfully address (interactions between) disturbances as <u>[**emerging pr
 ## A word cloud of the iLand research proposal
 
 
-<img src="../img/iland_proposal_wordle_sm.jpg" alt="Image" width="600" class="img-fluid" />
+<img src="/img/iland_proposal_wordle_sm.jpg" alt="Image" width="600" class="img-fluid" />
 
 Word cloud created with [Wordle](http://www.wordle.net).
 

@@ -7,9 +7,9 @@ title: "development strategy"
 
 We see model development as a continuous cycle of various phases and steps with feedbacks and interactions between all of them (cf. [Grimm and Railsback 2005](http://tinyurl.com/nj757y)). iLand development advances in three phases, from initial parameterization and testing to large scale [Bayesian calibration](http://treephys.oxfordjournals.org/cgi/reprint/25/7/915) and evaluation in specific application cases.
 
-<img src="../img/dev_strategy.jpg" alt="Image" width="350" class="img-fluid" />
+<img src="/img/dev_strategy.jpg" alt="Image" width="350" class="img-fluid" />
 
-The overall iLand model design corresponds directly to its intended [domain of application](project-abstract.qmd). [Process resolution and level of complexity](iland-model-complexity-and-its-niche-in-the-landscape-of-models.qmd) are selected accordingly, yet taking feasability of implementation in the project duration into account. An initial model design overview can be [found here](how-it-works.qmd).
+The overall iLand model design corresponds directly to its intended [domain of application](project-abstract.qmd). [Process resolution and level of complexity](iland-model-complexity-and-its-niche-in-the-landscape-of-models.qmd) are selected accordingly, yet taking feasability of implementation in the project duration into account. An initial model design overview can be [found here](model-design.qmd).
 
 
 

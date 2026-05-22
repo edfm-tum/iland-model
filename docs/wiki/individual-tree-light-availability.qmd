@@ -13,7 +13,7 @@ To derive individual tree light availability the light resources available to an
 
 
 *[LRI](competition-for-light.qmd)* is aggregated bottom up based on individual tree light influence patterns. Its strength lies in an efficient approximation of an individuals' relative competitive status, while absolute levels of absorbed radiation are likely to be biased as an effect of the simplified computation.
-Actual radiation absorption is calculated at the *RU *level in iLand using Beers law. Although this is a somewhat erroneous approximation particularly for strongly structured stands, it is a robust and frequently applied method and alleviates the complexity of radiation interception modeling for individual tree crowns (cf. [Brunner 1998](http://dx.doi.org/10.1016/S0378-1127(97)00325-3), [Lieffers et al. 1999](http://dx.doi.org/10.1139/cjfr-29-6-796), [Duursma and Mäkelä 2007](http://treephys.oxfordjournals.org/cgi/reprint/27/6/859)).
+Actual radiation absorption is calculated at the *RU *level in iLand using Beers law. Although this is a somewhat erroneous approximation particularly for strongly structured stands, it is a robust and frequently applied method and alleviates the complexity of radiation interception modeling for individual tree crowns (cf. [Brunner 1998](http://dx.doi.org/10.1016/S0378-1127(97), [Lieffers et al. 1999](http://dx.doi.org/10.1139/cjfr-29-6-796), [Duursma and Mäkelä 2007](http://treephys.oxfordjournals.org/cgi/reprint/27/6/859)).
 Consequently, the bottom-up calculated *LRI* needs to be adjusted to achieve congruence with the *RU *level absorbed radiation (Eq. 1-3). This step constitutes a constraint on bottom-up *LRI* from a hierarchically higher level, in line with the [hierarchical multiprocess scaling approach](scaling.qmd) adopted in iLand. We follow [Brunner and Nigh (2000)](http://treephys.oxfordjournals.org/cgi/reprint/20/5-6/323.pdf) in defining an individual trees’ success to intercept radiation as a multiplier of *PAR* (Eq. 1), with *WLA<sub>j</sub>* (m<sup>2</sup>) the weighted leaf area of individual *j*, a measure integrating both its leaf area and canopy status.
 
 $$
@@ -49,7 +49,7 @@ $$
 f_{light}=S1 + (S5-S1)\cdot\frac{s_{tol} - 1}{4}
 $$
 
-<img src="../img/light_response.png" alt="Image" width="300" class="img-fluid" />
+<img src="/img/light_response.png" alt="Image" width="300" class="img-fluid" />
 **Figure 1: Light response functions accounting for species-specific light utilization (*S5*= shade tolerant, *S1*= light-demanding)**
 
         *

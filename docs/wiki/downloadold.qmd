@@ -8,7 +8,7 @@ title: "download_old"
 
 
 
-iLand is a research tool, and is freely available for non-commercial use. We have developed the software relying solely on open source components, in order to facilitate its use and further development by others (see [here](http://iland-model.org/blog1) for some ideas on iLand software development). The software is released under the [GNU General Public Licence](http://www.gnu.org/licenses/gpl.html) (GPL).
+iLand is a research tool, and is freely available for non-commercial use. We have developed the software relying solely on open source components, in order to facilitate its use and further development by others (see [here](../blog/index.qmd) for some ideas on iLand software development). The software is released under the [GNU General Public Licence](http://www.gnu.org/licenses/gpl.html) (GPL).
 
 This page contains the newest and latest official iLand release. Older releases can be found on the [iLand - previous releases](iland-previous-releases.qmd) page.
 
@@ -24,7 +24,7 @@ if (x == false) {
 </script>
 <!-- download box -->
 <div class="cbox expandable">
-<div class="cbox-title" style="text-align: left; font-weight: normal"><img src="display4" alt="Image" style="margin: 5px" align="left"/><div style="margin-left: 120px">
+<div class="cbox-title" style="text-align: left; font-weight: normal"><img src="/img/button_download.png" alt="Image" style="margin: 5px" align="left"/><div style="margin-left: 120px">
 <h3>iLand 0.6.9 for Windows</h3>
 iLand version 0.6.9, i.e. the model version applied for the HJ Andrews study [Seidl et al. (2012b)](.qmd). The download package includes:
 <ul>
@@ -54,7 +54,7 @@ iLand is a research and software development effort free of charge. The software
 </div>
 </br>
 <div class="cbox expandable">
-<div class="cbox-title" style="text-align: left; font-weight: normal"><img src="display12" alt="Image" style="margin: 5px" align="left"/><div style="margin-left: 120px">
+<div class="cbox-title" style="text-align: left; font-weight: normal"><img src="/img/button_restricted.png" alt="Image" style="margin: 5px" align="left"/><div style="margin-left: 120px">
 <h3>current iLand development version</h3>
 We are currently working on improvements and new features for iLand. We plan on releasing new versions periodically once the new developments have undergone peer review and are published in the scientific literature.
 In case you want more information on these ongoing developments, or want to use the latest version of iLand, please [contact us](contact-information.qmd).

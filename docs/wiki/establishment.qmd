@@ -30,7 +30,7 @@ $$
 
 with *kF* a species-specific tolerance parameter. Figure 1 visualizes the phenological approach of a process-based model of the species regeneration niche.
 
-<img src="../img/burton_cumming_phenology.jpg" alt="Image" width="400" class="img-fluid" />
+<img src="/img/burton_cumming_phenology.jpg" alt="Image" width="400" class="img-fluid" />
 **Figure 1: Phenological processes modeling regeneration (source: [Burton and Cumming 1995](http://dx.doi.org/10.1007/BF01182850)).**
 
 

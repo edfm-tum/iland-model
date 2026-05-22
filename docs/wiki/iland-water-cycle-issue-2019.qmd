@@ -18,11 +18,11 @@ The model in the paper uses two approaches for the water cycle:
 
 While the WHC calculation uses Kilopascal as the resulting unit, the SWP uses Megapascal. Unfortunately, the original iLand code erroneously assumed also KPa for the SWP calculation; consequently, the plant usable water is retrieved from the power function not between 15-4000 KPa, but between 15-4000 MPa. Due to this error the resulting water holding capacity in iLand was too low (about a factor of two for most textures, and for very sandy soils even higher).
 
- The calculation of [evapotranspiration](water-cycle.qmd) in iLand is based on the implementation of the Penman-Monteith equation in the original 3-PG model (Landsberg and Waring). A key parameter is the maximum canopy conductance (“maxCanopyConductance” in m/s). The literature suggests no significant differences between species ([Körner 1994](https://link.springer.com/chapter/10.1007/978-3-642-79354-7_22)), and [Keliher et al (1995)](https://doi.org/10.1016/0168-1923(94)02178-M) report values for conifers (0.0212 +- 0.0071) and deciduous temperate forests (0.0207 +- 0.0065). (Figure 1).
+ The calculation of [evapotranspiration](water-cycle.qmd) in iLand is based on the implementation of the Penman-Monteith equation in the original 3-PG model (Landsberg and Waring). A key parameter is the maximum canopy conductance (“maxCanopyConductance” in m/s). The literature suggests no significant differences between species ([Körner 1994](https://link.springer.com/chapter/10.1007/978-3-642-79354-7_22)), and [Keliher et al (1995)](https://doi.org/10.1016/0168-1923(94) report values for conifers (0.0212 +- 0.0071) and deciduous temperate forests (0.0207 +- 0.0065). (Figure 1).
 
 The previous parameterization of the “maxCanopyConductance” parameter in iLand (for Europe) was 0.015 for most species (and 0.014 for very drought tolerant species such as Pinus sylvestris and oak species).
 
-<img src="../img/gcmax_keliher.png" alt="Image" class="img-fluid" />
+<img src="/img/gcmax_keliher.png" alt="Image" class="img-fluid" />
  Figure 1. Reported values for maximum canopy conductance (Gsmax) in Keliher et al 1995.
 
 
@@ -62,7 +62,7 @@ We changed “*maxCanopyConductance*” to the literature values (i.e., 0.0212 f
 Due to the change the simulated effective water holding capacity of a soil changed considerably (Note that iLand does not calculate WHC and the reported values are assuming default thresholds of 15 kPa (field capacity) and 1500 kPa (permanent wilting point)).
 The calculated WHCs for average textures are about two times larger in the updated version; for very sandy soils the difference is much more distinct.
 
-<img src="../img/whc_triangle.png" alt="Image" class="img-fluid" />
+<img src="/img/whc_triangle.png" alt="Image" class="img-fluid" />
 Figure 2. Water holding capacity (mm for a soil depth 1m) for different soil textures (sand + silt + clay = 100). Top left: static estimate (based on Schwalm & Ek), top right: old iLand version (with the error), bottom left: correct equation (but without the extra log(10) factor), bottom right: original equation (as in the Schwalm & Ek paper). iLand now uses the "Fix (no log)" version of the formulation.
 
 
@@ -79,7 +79,7 @@ The combined model and parameter update results in higher values for evapotransp
 
 Figure 3 shows results of productivity tests across five European landscapes and 34 points of the Austrian Forest Inventory (AFI).
 
-<img src="../img/europe_productivity.png" alt="Image" class="img-fluid" />
+<img src="/img/europe_productivity.png" alt="Image" class="img-fluid" />
 Figure 3. Comparison of productivity runs showing mean stand height at age 100. This=new version and parameter changes, other=old version; AFI=points of Austrian Forest Inventory, BW=Bucklige Welt, NPKA=Nationalpark Kalkalpen, Stubai=Stubai valley, Tatra=Lower Tatra, WBT=Weissenbachtal. Productivity increased slightly especially for NPKA and WBT.
 
 
@@ -89,7 +89,7 @@ Figure 3. Comparison of productivity runs showing mean stand height at age 100. 
 
 Figure 4 shows runs with the updated version of iLand ("this") and version before the update ("other").
 
-<img src="../img/landscape_pnv.png" alt="Image" class="img-fluid" />
+<img src="/img/landscape_pnv.png" alt="Image" class="img-fluid" />
 Figure 4. Basal area shares after 1000 years of simulation for European landsacapes ("BW": bucklige Welt, "LT": lower tatra, "NPKA": Nationalpark Kalkalpen, "Stubai": Stubaital, "WBT": Weissenbachtal). The "this" bar is the updated model version, the "other" bar the old version.
 
 

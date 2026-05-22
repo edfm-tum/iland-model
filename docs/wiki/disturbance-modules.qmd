@@ -22,7 +22,7 @@ However, from a model user point of view, a module does not differ from the core
 * the [barkbeetle module](barkbeetle-module.qmd) simulates spruce bark beetles (*Ips typographus*)
 * the [biotic disturbance engine (BITE](bite.qmd)) provides a general framework for simulating biotic disturbances
 
-A special disturbance module in iLand is [BITE](http://iland-model.org/bite) (the BIotic disTurbance Engine). BITE is a general model to simulate biotic disturbances in forest ecosystems. It is a modular and simple model that is general enough to simulate a wide range of biotic disturbance agents, from fungi to large mammals. The [BITE] page contains information about how to use BITE in iLand.
+A special disturbance module in iLand is [BITE](bite.qmd) (the BIotic disTurbance Engine). BITE is a general model to simulate biotic disturbances in forest ecosystems. It is a modular and simple model that is general enough to simulate a wide range of biotic disturbance agents, from fungi to large mammals. The [BITE] page contains information about how to use BITE in iLand.
 
 
 

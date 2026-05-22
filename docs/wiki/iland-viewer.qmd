@@ -11,13 +11,13 @@ This page describes the user interface of the iLand viewer application. This sof
 <h2 class="showhide_heading" id="The_main_window">The main window</h2>
 
 
-<img src="../img/main_screen.png" alt="Image" class="img-fluid" /> The iLand viewer has a number of main components: (1) The toolbar provides access to the most important functions: you can create / destroy a landscape (destroying means deleting and freeing all ressources), and run the model for 1 year or multiple years. While running, you can pause or cancel (Stop button) the execution. (2) The main panel shows the legend, but provides also access to the scripting engine - see below (3) The logging area shows all the log messages from the model (if logging is not redirected to a log file). This kind of log info is especially helpful to track configuration or model errors. (4) There are many options to customize the main visualization in iLand (see below) (5) Clicking on a single tree or on a resource unit populates this detail view of tree/resource unit variables
+<img src="/img/main_screen.png" alt="Image" class="img-fluid" /> The iLand viewer has a number of main components: (1) The toolbar provides access to the most important functions: you can create / destroy a landscape (destroying means deleting and freeing all ressources), and run the model for 1 year or multiple years. While running, you can pause or cancel (Stop button) the execution. (2) The main panel shows the legend, but provides also access to the scripting engine - see below (3) The logging area shows all the log messages from the model (if logging is not redirected to a log file). This kind of log info is especially helpful to track configuration or model errors. (4) There are many options to customize the main visualization in iLand (see below) (5) Clicking on a single tree or on a resource unit populates this detail view of tree/resource unit variables
 
 
 <h3 class="showhide_heading" id="Running_a_simulation_in_iLand">Running a simulation in iLand</h3>
 
 
-In order to run simulations with iLand you need to (see also figure below): • Start The iLand viewer (iland.exe) (see also http://iland-model.org/iLand+Software) • Select a project file (in the File menu or in the side panel (2)) • Create the model ("Create" button in the toolbar). This sets up the model landscape and initial trees. • Run the model ("Run many" button in the toolbar). Enter the number of years you want the model to run. • While the model is running (there is also a “Pause” button), you can view different types of data in the GUI visualization (see below) • The bulk of numeric outputs of the model are stored in an output database (http://iland-model.org/Outputs). See http://iland-model.org/Software+Tools for tools helping to access the SQLite databases iLand uses to store simulation results in (it is also quite easy to read these databases into, for instance, R for further analysis).
+In order to run simulations with iLand you need to (see also figure below): • Start The iLand viewer (iland.exe) (see also [iLand Software](iland-software.qmd)) • Select a project file (in the File menu or in the side panel (2)) • Create the model ("Create" button in the toolbar). This sets up the model landscape and initial trees. • Run the model ("Run many" button in the toolbar). Enter the number of years you want the model to run. • While the model is running (there is also a “Pause” button), you can view different types of data in the GUI visualization (see below) • The bulk of numeric outputs of the model are stored in an output database ([Outputs](outputs.qmd)). See [Software Tools](software-tools.qmd) for tools helping to access the SQLite databases iLand uses to store simulation results in (it is also quite easy to read these databases into, for instance, R for further analysis).
 
 
 <h2 class="showhide_heading" id="Main_panel">Main panel</h2>
@@ -29,7 +29,7 @@ The main side panel has multiple tabs: the main tab shows the legend and rulers,
 <h3 class="showhide_heading" id="Main_tab">Main tab</h3>
 
 
-<img src="../img/manage_main.png" alt="Image" width="600" class="img-fluid" />
+<img src="/img/manage_main.png" alt="Image" width="600" class="img-fluid" />
 
 The main tab lets you load project file and shows the current legend and ruler. (1) Click the 'open' icon to select an XML project file (or use the File-&gt;Open command); the 'view' button shows the XML content. To create the model, use then the buttons in the toolbar (see above). (2) the legend depends on the selected visualization option; there are, broadly speaking, two types of legends: continuous numerical values (such as tree heights or standing volume) and unique values (such as tree species or stand Ids). For continuous variables, the value range can be edited after checking "show details" (3) The ruler shows the scale of the current visualization
 
@@ -37,7 +37,7 @@ The main tab lets you load project file and shows the current legend and ruler. 
 <h3 class="showhide_heading" id="working_with_the_Javascript_tab">working with the Javascript tab</h3>
 
 
-<img src="../img/manage_jscript.png" alt="Image" width="400" class="img-fluid" />
+<img src="/img/manage_jscript.png" alt="Image" width="400" class="img-fluid" />
 
 The 'scripting' tab allows a direct access to the Javascript engine in iLand. You can: (1) Load / reload a script file; reloading means, that the file is re-evaluated in the current context. You can conveniently edit externally and quickly reload/execute code. (2) enter commands here. This can be function calls to user-defined functions (see (1)), calls to the the iLand system libraries, or even full programs (see example). (3) executed commands are stored in the command history and can quickly be recovered. In addition, often used commands can be made accessible as links below (3). See the *setUIshortcuts* method of the Globals object. (4) script output (e.g. results of *'console.log()*' calls) is printed in this area. Note, that output is also redirected to the iLand log. See [iLand scripting](iland-scripting.qmd) for more on the scripting capabilities of iLand, and the [Scripting](scripting.qmd) page for diving into the iLand API. Note that availability of some functions depend on the enabled modules of iLand.
 
@@ -45,7 +45,7 @@ The 'scripting' tab allows a direct access to the Javascript engine in iLand. Yo
 <h3 class="showhide_heading" id="working_with_the_Expressions_tab">working with the Expressions tab</h3>
 
 
-<img src="../img/manage_expressions.png" alt="Image" width="400" class="img-fluid" />
+<img src="/img/manage_expressions.png" alt="Image" width="400" class="img-fluid" />
 
 
 The 'expression' tab allows some basic analysis of the properties of the trees on the landscape. You can: (1) Filter the trees that should be considered. See [expression](expression.qmd) for details, and [tree variables](tree-variables.qmd) for a list of all available tree variables. Note that you can filter also by species (e.g., species=piab). Checking "draw filtered" shows graphically (after a redraw) which trees pass the filter expression. (2) give the 'aggregate' expression that should be run over all trees. Again, any valid expression (see above) can be used. Clicking 'calculate' evaluates the expression over all (filtered) trees and prints summary statistics to the log (the sum, min/max/average, the 25th, 50th, 75th and 90th percentile). Example:
@@ -59,14 +59,14 @@ expression: "dbh" filtered 210234 of 1685551 sum: 5.99994e+06 min 20.0002 max 56
 <h2 class="showhide_heading" id="Visualization">Visualization</h2>
 
 
-<img src="../img/vis_options.png" alt="Image" width="250" class="img-fluid" />
+<img src="/img/vis_options.png" alt="Image" width="250" class="img-fluid" />
 
 
 iLand provides means to visualize what is "going on" in the simulation visually. This feature has many times proven to be very important and useful: it allows researchers to get a feeling of what is really happening in the model, and it is a powerful tool for spying problems, but also for finding cues for solving those issues. The basic options are (1):
 
 
 <ul>
-	<li>Light influence field”: This is the “LIF” (http://iland-model.org/competition+for+light). Red means low, blue high light levels. Spatial resolution is a 2m grid.</li>
+	<li>Light influence field”: This is the “LIF” ([competition for light](competition-for-light.qmd)). Red means low, blue high light levels. Spatial resolution is a 2m grid.</li>
 	<li>“dominance grid”: this are maximum tree heights at 10m resolution; areas [outside of the project area](landscape-setup.qmd) are either drawn grey (areas that are assumed to being forested) or white (for non-forested areas).</li>
 	<li>"seed availability": This shows the seed availablility of a selected species (4) on the 20m seed dispersal grid.</li>
 	<li>"regeneration": shows the state of the regeneration layer (2m resolution). The height of cohorts are shown for a selected species (4). If no species is selected (4), the value is the maximum height of all living cohorts on that pixel. Note, that the maps are generated on the fly and may be slow to create. If the "established" box is checked, only newly established cohorts are shown (with value=1 for pixels with new cohorts). The species filter (4) works as described above.</li>

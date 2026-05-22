@@ -6,7 +6,7 @@ title: "wysiwyg_sample_page"
 	WYSIWYG Sample Page</h1>
 
 
-	Start off by clicking "edit" then switching the editor to use the wysiwyg editor using the <img src="../img/pencil_go.png" alt="Image" class="img-fluid" /> button on the toolbar.
+	Start off by clicking "edit" then switching the editor to use the wysiwyg editor using the <img src="/img/pencil_go.png" alt="Image" class="img-fluid" /> button on the toolbar.
 
 <h2 class="showhide_heading">
 	Text formatting</h2>

@@ -219,7 +219,7 @@ The *condition* filter is (when present) evaluated and the output is only execut
 Each field is defined as: *field.aggregation* (separated by a dot). A *field* is a valid [Expression]. *Aggregation* is one of the following:  mean, sum, min, max, p25, p50, p75, p5, 10, p80, p85, p90, p95 (pXX=XXth percentile), sd (std.dev.).
 Complex expression are allowed, e.g: if(dbh>50,1,0).sum (-> counts trees with dbh>50)
 Note that the column names in the output table may be slightly different, as dots (and other special characsters) are not allowed in column names und substituted.
-Note also, that `customagg` is another highly customizable output (https://iland-model.org/dynamic+outputs).
+Note also, that `customagg` is another highly customizable output ([dynamic outputs](dynamic-outputs.qmd)).
 
 
 | **caption** | **datatype** | **description** |
@@ -237,7 +237,7 @@ Note also, that `customagg` is another highly customizable output (https://iland
 
 
 Table Name: customagg
-See https://iland-model.org/dynamic+outputs for details.
+See [dynamic outputs](dynamic-outputs.qmd) for details.
 
 
 | **caption** | **datatype** | **description** |

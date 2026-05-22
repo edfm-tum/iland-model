@@ -18,7 +18,7 @@ title: "Software Tools"
 ### Qt toolkit
 
 
-iLand uses the cross platform C++ toolkit [Qt](http://qt-project.org). Qt is available for Windows, Linux and Mac platforms (along several mobile platforms like Symbian, Maemo, and others) - so you are not locked in with regard to operating systems. The [Qt framework](http://en.wikipedia.org/wiki/Qt_(framework)) is open source and offers lots of functionality beyond the graphical user interface.
+iLand uses the cross platform C++ toolkit [Qt](http://qt-project.org). Qt is available for Windows, Linux and Mac platforms (along several mobile platforms like Symbian, Maemo, and others) - so you are not locked in with regard to operating systems. The [Qt framework](http://en.wikipedia.org/wiki/Qt_(framework) is open source and offers lots of functionality beyond the graphical user interface.
 
 
 ## Database

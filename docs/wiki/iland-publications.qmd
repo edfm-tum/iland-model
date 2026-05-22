@@ -91,7 +91,7 @@ Forest ecosystems are the most important terrestrial carbon (C) storage globally
 ::: {.callout-note collapse="true" title="Abstract"}
 Anthropogenic climate change has the potential to impact a variety of natural processes across scales in forest ecosystems, affecting their structure, composition and functioning. The mechanisms governing these processes are frequently characterized by nonlinearities and threshold behavior, which underscores the importance of considering climate change exposure levels at high spatial resolution. Particularly complex mountain landscapes, characterized by high spatial heterogeneity, require a fine grained multi-scale approach to assess forest ecosystem impacts and resilience under a changing climate. With the aim of modeling these aspects mechanistically as emerging system properties we developed a simulation approach balancing functional and structural process representation while granting scalability from individual trees to forest landscapes. As the core processes of forest dynamics we explicitly modeled individual tree competition for resources and their utilization following generalized physiological principles, applying a hierarchical multi-scale framework. Here we present the general modeling approach as well as a multi-attribute evaluation. Functional aspects (e.g., productivity) were evaluated against FIA plot data over an ecological transect ranging from coastal forest types to mountain forest ecosystems both windward and in the rain shadow of the Cascade mountains in Oregon. To evaluate aspects of forest structure and composition independent long-term vegetation study data of the HJ Andrews experimental forest were used. Our results showed generally good agreement between modeled and empirical data for the initial suite of indicators examined. In addition, the ability to encompass spatial complexity was evaluated by analyzing scalability of the approach. In an optimized implementation of the pattern-based individual tree model computation was found to scale linearly with the number of individuals, making it suitable for landscape-scale simulations of forest dynamics. In conclusion, the current study presents a step towards an improved consideration of ecological heterogeneity in process-based modeling, strengthening the predictive capacities for complex mountain forest landscapes under climate change.
 %%%
-[download the poster](/img/wiki_up/seidl_etal_mtnclim2010_poster.pdf)
+[download the poster](/img/seidl_etal_mtnclim2010_poster.pdf)
 %%%
 :::
 
@@ -393,7 +393,7 @@ Scaling is widely recognized as a central issue in ecology. The associated cross
 :::
 
 
-[**Seidl, R., Blennow, K., 2012**](http://dx.doi.org/ 10.1371/journal.pone.0033301) Pervasive growth reduction in Norway spruce forests following wind disturbance. PLoS ONE 7(3): e33301.
+[**Seidl, R., Blennow, K., 2012**](http://dx.doi.org/) Pervasive growth reduction in Norway spruce forests following wind disturbance. PLoS ONE 7(3): e33301.
 
 
 ::: {.callout-note collapse="true" title="Abstract"}

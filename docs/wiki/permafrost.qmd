@@ -627,7 +627,7 @@ ggplot( rids %>% left_join(dbg_wc) %>% group_by(rid, year) %>% mutate(n=row_numb
 
 
 
-<img src="../img/permafrost_debug.png" alt="Image" class="img-fluid" />
+<img src="/img/permafrost_debug.png" alt="Image" class="img-fluid" />
 
 
 The code creates figures such as:

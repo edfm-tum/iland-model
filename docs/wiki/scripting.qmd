@@ -19,7 +19,7 @@ The transition is, unfortunately, not fully complete, and you still find some pa
 
 
 
-### [iland-model.org/apidoc](http://iland-model.org/apidoc/modules/iLand.html)
+### [iland-model.org/apidoc](../apidoc/index.qmd)
 
 
 

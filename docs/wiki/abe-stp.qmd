@@ -7,7 +7,7 @@ The main constituent of a stand treatment program is a collection of activity ob
 A “Stand Treatment Program” (STP) can be thought of as a “management regime” or “management system”. It defines a management (for a specific forest type) by combining different “activities” for the respective stages of forest development (regeneration, tending, thinning …).
 One important property of a forest management agent is the set of available STPs: for example, some agents may be able to use more sophisticated techniques than others.
 
-<img src="../img/abe_stp.png" alt="Image" class="img-fluid" />
+<img src="/img/abe_stp.png" alt="Image" class="img-fluid" />
 **Figure**: The stand treatment program (STP) (c) can be seen as a collection of activities selected from the "library" (a). The STP does also define the execution time (slot) and other properties (e.g., constraints) for each activity (d). The detailed behavior of activities can depend on properties of the stand, the STP, or properties of the agent (b).
 
 Technically, a STP is defined as a Javascript object:

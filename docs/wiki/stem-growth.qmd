@@ -14,7 +14,7 @@ Based on the allocation of biomass increment to the [#reserve and allocation to 
 
 Altering the partitioning regime between height and diameter increment is a major tree response to competition for light. Ecological theory ([Grime 1979](http://tinyurl.com/yjpoyzs)) suggests that height growth is favored over diameter increment with decreasing light levels for the individual, as a strategy to improve its competitive status in the canopy. This is also supported by empirical findings, documenting a non-constant allometric relationship between height and diameter growth of individual trees as a result of their competitive status (e.g., [Henry and Aarssen 1999](http://dx.doi.org/10.1046/j.1461-0248.1999.22054.x)). [Niklas (1995)](http://dx.doi.org/10.1006/anbo.1995.1015), for instance, found the rate of height growth to diameter increment greater for trees growing in stands compared to open-grown trees.
 
-To simulate this behavior as emerging property of the model (cf. also the analysis of [Seidl et al. 2010](http://dx.doi.org/10.1007/s00468-009-0387-z)) we extend the approach of [Bossel (1996)](http://dx.doi.org/10.1016/0304-3800(95)00139-5), who defined two height-diameter bounds (with and without competition) for allocation of annual increments (see also [Peng et al. 2002](http://dx.doi.org/10.1016/S0304-3800(01)00505-1)). In iLand, diameter-dependent h/d-thresholds are defined per species. Upper limits (*h/d<sub>max</sub>*)are derived from densly stocked, even-aged stands (e.g., yield table stands), while lower limits (*h/d<sub>min</sub>*) are parameterized from growth records for open-grown trees (e.g., [Hasenauer et al. 1997](http://dx.doi.org/10.1016/S0378-1127(97)00057-1)). The specific h/d-ratio for the increment of a tree at a given diameter (*r<sub>h/d</sub>*) is subsequently derived using *[LRI](competition-for-light.qmd)* as measure of light competition (Eq. 1a)
+To simulate this behavior as emerging property of the model (cf. also the analysis of [Seidl et al. 2010](http://dx.doi.org/10.1007/s00468-009-0387-z)) we extend the approach of [Bossel (1996)](http://dx.doi.org/10.1016/0304-3800(95), who defined two height-diameter bounds (with and without competition) for allocation of annual increments (see also [Peng et al. 2002](http://dx.doi.org/10.1016/S0304-3800(01)). In iLand, diameter-dependent h/d-thresholds are defined per species. Upper limits (*h/d<sub>max</sub>*)are derived from densly stocked, even-aged stands (e.g., yield table stands), while lower limits (*h/d<sub>min</sub>*) are parameterized from growth records for open-grown trees (e.g., [Hasenauer et al. 1997](http://dx.doi.org/10.1016/S0378-1127(97)). The specific h/d-ratio for the increment of a tree at a given diameter (*r<sub>h/d</sub>*) is subsequently derived using *[LRI](competition-for-light.qmd)* as measure of light competition (Eq. 1a)
 
 $$
 r_{h/d}=h/d_{min}\cdot LRI+h/d_{max}\cdot (1-LRI)
@@ -67,7 +67,7 @@ $$
 $$
 
 
-, *H* the tree height, *ρ* the species-specific wood density, and *φ*; the form factor (cf. [Bossel 1996](http://dx.doi.org/10.1016/0304-3800(95)00139-5)). Substituting Eq. 1 into Eq. 2 and differentiating to derive stem increment yields
+, *H* the tree height, *ρ* the species-specific wood density, and *φ*; the form factor (cf. [Bossel 1996](http://dx.doi.org/10.1016/0304-3800(95)). Substituting Eq. 1 into Eq. 2 and differentiating to derive stem increment yields
 
 $$
 \frac{\delta W_s}{\delta dbh} = \phi dbh^2(2\frac{H}{dbh}+r_{h/d})
@@ -91,7 +91,7 @@ $$
 \Delta H=\Delta dbh\cdot r_{h/d}
 $$
 
-A linearization as given in Eq. 5 is erroneous due to the high non-linear nature of the stem growth derivate (but see [Peng et al. 2002](http://dx.doi.org/10.1016/S0304-3800(01)00505-1)). We thus use the previous years *dbh* increment as well as a redistribution of residuals to ultimately derive Δ*dbh* and Δ*H*, granting consistency with overall *w<sub>f</sub>* but avoiding a computationally expensive iterative soluation. Eq. 7 shows the inclusion of the *dbh* increment of last year:
+A linearization as given in Eq. 5 is erroneous due to the high non-linear nature of the stem growth derivate (but see [Peng et al. 2002](http://dx.doi.org/10.1016/S0304-3800(01)). We thus use the previous years *dbh* increment as well as a redistribution of residuals to ultimately derive Δ*dbh* and Δ*H*, granting consistency with overall *w<sub>f</sub>* but avoiding a computationally expensive iterative soluation. Eq. 7 shows the inclusion of the *dbh* increment of last year:
 
 $$
 \Delta dbh = \frac{1}{\phi (dbh + \Delta dbh_{t+1})^2(2\frac{H}{dbh}+r_{h/d})}w_s

@@ -111,7 +111,7 @@ Examples:
 #### columns
 
 
-defines a list of columns that should be processed. Each entry in the list defines a variable / expression and an aggregation. Each field is defined as: *field.aggregation* (separated by a dot). A *field* is a valid [Expression](https://iland-model.org/Expression). *Aggregation* is one of the following: mean, sum, min, max, p25, p50, p75, p5, 10, p80, p85, p90, p95 (pXX=XXth percentile), sd (std.dev.).
+defines a list of columns that should be processed. Each entry in the list defines a variable / expression and an aggregation. Each field is defined as: *field.aggregation* (separated by a dot). A *field* is a valid [Expression](expression.qmd). *Aggregation* is one of the following: mean, sum, min, max, p25, p50, p75, p5, 10, p80, p85, p90, p95 (pXX=XXth percentile), sd (std.dev.).
 Complex expression are allowed, e.g: if(dbh>50,1,0).sum (-> counts trees with dbh>50)
 Note that the column names in the output table may be slightly different, as dots (and other special characsters) are not allowed in column names und substituted.
 

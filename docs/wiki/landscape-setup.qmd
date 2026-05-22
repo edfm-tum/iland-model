@@ -23,7 +23,7 @@ Note that the same type of spatial input files is not only used for the set up o
 
 The stand grid defines the spatial distribution of forest stands at the beginning of the simulation. A *stand* is defined by a numeric (integer) ID greater than zero. Pixel values of *-1* (or the NO_DATA_VALUE of the grid) are considered to be non-project-area. For instance, no regeneration establishes on such pixels. The stand grid is loaded during startup from a file specified in *model.world.standGrid.fileName* (and if *model.world.standGrid.enabled* is *true*). When displaying the "dominance grid" in the iLand viewer, non-project-area pixels are painted in white.
 
-<img src="../img/landscape_setup.png" alt="Image" width="500" class="img-fluid" />
+<img src="/img/landscape_setup.png" alt="Image" width="500" class="img-fluid" />
 
 The screenshot taken from a GIS application (e.g., ArcMap) shows the target landscape. The shown grid is derived from stand polygons and has a cell size of 10m. Blank pixels are not within the project area.
 Also indicated are the metric coordinates of the lower left corner of the project area. The black frame indicates the planned simulation area (i.e. 500m x 500m). The next step is to export the grid file with the same projection to the ESRI text file format.
@@ -87,7 +87,7 @@ stand_id,species,count,dbh_from,dbh_to,hd,age
 
 
 
-<img src="../img/landscape_screen.png" alt="Image" class="img-fluid" />
+<img src="/img/landscape_screen.png" alt="Image" class="img-fluid" />
 The iLand-screenshot shows the 10m dominance grid; blank areas are outside of the project area (compare to the image above), blue areas are without initialized vegetation, and orange/yellow are four stand polygons that were successfully initialized.
 
 

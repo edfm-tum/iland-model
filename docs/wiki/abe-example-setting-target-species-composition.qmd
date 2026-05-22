@@ -114,5 +114,5 @@ function alignTarget(full_state_abs, plan_rel, target_abs)
 ```
 
 
-* The -+calculateSpeciesProbabilities()+- function determines first the basal area of each species on the stand ([using the -+stand+- object of the API](http://iland-model.org/apidoc/classes/Stand.html))
+* The -+calculateSpeciesProbabilities()+- function determines first the basal area of each species on the stand ([using the -+stand+- object of the API](../apidoc/classes/abe/stand.qmd))
 * If there are enough trees (basal area) on the stand, the function -+alignTarget()+-  actually does the calculation of species removal probabilities.

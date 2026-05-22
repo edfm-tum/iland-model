@@ -6,11 +6,11 @@ the Biotic Disturbance Engine
 
 BITE is a general model to simulate biotic disturbances in forest ecosystems. BITE is a modeling framework that is general enough to simulate a wide range of biotic disturbance agents, from fungi to large mammals. The framework is also simple and modular (in order to also be applicable in situations where knowledge about an agent is limited, as is the case with new invaders). BITE allows the quantification of the impacts of emerging pests and pathogens on forests in time and space.
 
-BITE is coupled with iLand and its implementation makes heavy use of the Javascript Engine provided by Qt (and also used by iLand). The implementation of agents in BITE is purely done in Javascript (which accesses the BITE engine written in C++). A [BiteAgent](http://iland-model.org/bite/#/BiteAgent)consists of several [BiteItems](http://iland-model.org/bite/#/?id=items); each item implements one aspect of the life cycle of an agent.
+BITE is coupled with iLand and its implementation makes heavy use of the Javascript Engine provided by Qt (and also used by iLand). The implementation of agents in BITE is purely done in Javascript (which accesses the BITE engine written in C++). A [BiteAgent](bite.qmd#biteagent)consists of several [BiteItems](bite.qmd#iditems); each item implements one aspect of the life cycle of an agent.
 
 
 
-### Full [BITE documentation](http://iland-model.org/bite)
+### Full [BITE documentation](bite.qmd)
 
 
 

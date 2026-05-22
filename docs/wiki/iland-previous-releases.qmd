@@ -9,10 +9,10 @@ This page contains older official releases of the iLand software and example pac
 
 <!-- download box -->
 <div class="panel expandable">
-<div class="panel-heading" style="text-align: left; font-weight: normal; cursor: pointer"><img src="display4" alt="Image" style="margin: 5px" align="left"/><div style="margin-left: 120px">
+<div class="panel-heading" style="text-align: left; font-weight: normal; cursor: pointer"><img src="/img/button_download.png" alt="Image" style="margin: 5px" align="left"/><div style="margin-left: 120px">
 <h3>iLand version 2.0 for Windows</h3>
 This is the iLand version 2.0 (released 2024-07-17).  </br>
-Check out more details on this release on the iLand  blog [here](https://iland-model.org/blogpost60-Release-of-iLand-2-0).
+Check out more details on this release on the iLand  blog [here](../blog/blogpost60-release-of-iland-20.qmd).
 
 The download package includes the executables and all required libraries. Just unzip and run, no need for installation. Source code available at: https://github.com/edfm-tum/iland-model/releases/tag/v2.0
 A download link for the demo landscape is given at the top of this page!
@@ -44,11 +44,11 @@ The download should start after clicking the "submit" button.
 
 <!-- download box -->
 <div class="panel expandable">
-<div class="panel-heading" style="text-align: left; font-weight: normal; cursor: pointer"><img src="display4" alt="Image" style="margin: 5px" align="left"/><div style="margin-left: 120px">
+<div class="panel-heading" style="text-align: left; font-weight: normal; cursor: pointer"><img src="/img/button_download.png" alt="Image" style="margin: 5px" align="left"/><div style="margin-left: 120px">
 <h3>iLand version 1.0 for Windows</h3>
 This is the iLand version 1.0 (released 2016-11-16), i.e. the model version that is "feature complete" in the sense that it includes all major processes that were originally planned.
 Compared to the last major public release, this version includes the agent based forest mangement engine and the bark beetle disturbance module. </br>
-Check out more details on this release on the iLand  blog [here](https://iland-model.org/blogpost58-iLand-1-0-released) and [here](https://iland-model.org/blogpost57-iLand-1-0-release-in-numbers).
+Check out more details on this release on the iLand  blog [here](../blog/blogpost58-iland-10-released.qmd) and [here](../blog/blogpost57-iland-10-release-in-numbers.qmd).
 
 The download package includes:
 <ul>
@@ -84,10 +84,10 @@ The download should start after clicking the "submit" button.
 
 
 <div class="panel expandable">
-<div class="panel-heading" style="text-align: left; font-weight: normal; cursor: pointer"><img src="display4" alt="Image" style="margin: 5px" align="left"/><div style="margin-left: 120px">
+<div class="panel-heading" style="text-align: left; font-weight: normal; cursor: pointer"><img src="/img/button_download.png" alt="Image" style="margin: 5px" align="left"/><div style="margin-left: 120px">
 <h3>iLand version 0.8 for Windows</h3>
 This is the iLand version 0.8 (released 2014-08-01), i.e. the model version used for the study "Seidl R, Rammer W, Spies TA, 2014: Disturbance lagacies increase the resilience of forest ecosystem structure, composition, and functioning, , Ecol. Appl., [dx.doi.org/10.1890/14-0255.1](http://dx.doi.org/10.1890/14-0255.1)". This iLand version includes the fire disturbance module and many other improvements and fixes.
-More details on the [iLand news blog](https://iland-model.org/tiki-view_blog.php?blogId=2) and on the iLand [tech blog](https://iland-model.org/tiki-view_blog.php?blogId=1).
+More details on the [iLand news blog](../blog/index.qmd) and on the iLand [tech blog](../blog/index.qmd).
 The download package includes:
 <ul>
 <li>The executable and all required libraries. Just unzip and run, no need for installation</li>
@@ -122,9 +122,9 @@ The download should start after clicking the "submit" button.
 
 
 <div class="panel expandable">
-<div class="panel-heading" style="text-align: left; font-weight: normal; cursor: pointer"><img src="display4" alt="Image" style="margin: 5px" align="left"/><div style="margin-left: 120px">
+<div class="panel-heading" style="text-align: left; font-weight: normal; cursor: pointer"><img src="/img/button_download.png" alt="Image" style="margin: 5px" align="left"/><div style="margin-left: 120px">
 <h3>iLand version 0.7 for Windows</h3>
-This is the iLand version 0.7 (released 2013-10-14), i.e. the model version used for the study "Seidl R, Rammer W, Blennow K, 2013: Simulating wind disturbance impacts on forest landscapes: Tree-level heterogeneity matters. Environ. Model. Software,  [doi:10.1016/j.envsoft.2013.09.018](http://dx.doi.org/10.1016/j.envsoft.2013.09.018)". This version includes the first iLand disturbance module (wind). More details on the [iLand news blog](https://iland-model.org/tiki-view_blog.php?blogId=2) and on the iLand [tech blog](https://iland-model.org/tiki-view_blog.php?blogId=1).
+This is the iLand version 0.7 (released 2013-10-14), i.e. the model version used for the study "Seidl R, Rammer W, Blennow K, 2013: Simulating wind disturbance impacts on forest landscapes: Tree-level heterogeneity matters. Environ. Model. Software,  [doi:10.1016/j.envsoft.2013.09.018](http://dx.doi.org/10.1016/j.envsoft.2013.09.018)". This version includes the first iLand disturbance module (wind). More details on the [iLand news blog](../blog/index.qmd) and on the iLand [tech blog](../blog/index.qmd).
 The download package includes:
 <ul>
 <li>The executable and all required libraries. Just unzip and run, no need for installation</li>
@@ -152,9 +152,9 @@ iLand is a research and software development effort free of charge. The software
 </div>
 
 <div class="panel expandable">
-<div class="panel-heading" style="text-align: left; font-weight: normal; cursor: pointer"><img src="display4" alt="Image" style="margin: 5px" align="left"/><div style="margin-left: 120px">
+<div class="panel-heading" style="text-align: left; font-weight: normal; cursor: pointer"><img src="/img/button_download.png" alt="Image" style="margin: 5px" align="left"/><div style="margin-left: 120px">
 <h3>iLand 0.6.9 for Windows</h3>
-iLand version 0.6.9 (released 2012-09-26), i.e. the model version applied for the study described in  [Seidl et al. (2012b)](http://dx.doi.org/10.1007/s10021-012-9587-2). More details on [new features](http://iland-model.org/blogpost40) as well as [technical release notes](http://iland-model.org/blogpost39) can be found at the [iLand blogs](http://iland-model.org/tiki-list_blogs.php). The download package includes:
+iLand version 0.6.9 (released 2012-09-26), i.e. the model version applied for the study described in  [Seidl et al. (2012b)](http://dx.doi.org/10.1007/s10021-012-9587-2). More details on [new features](../blog/blogpost40-iland-v069-whats-new.qmd) as well as [technical release notes](../blog/blogpost39-iland-069-the-new-kid-on-the-block.qmd) can be found at the [iLand blogs](../blog/index.qmd). The download package includes:
 <ul>
 <li>The executable and all required libraries. Just unzip and run, no need for installation</li>
 <li>The full C++ source code of iLand (src.zip).</li>
@@ -186,9 +186,9 @@ iLand is a research and software development effort free of charge. The software
 
 <!-- download box -->
 <div class="panel expandable">
-<div class="panel-heading" style="text-align: left; font-weight: normal; cursor: pointer"><img src="display4" alt="Image" style="margin: 5px" align="left"/><div style="margin-left: 120px">
+<div class="panel-heading" style="text-align: left; font-weight: normal; cursor: pointer"><img src="/img/button_download.png" alt="Image" style="margin: 5px" align="left"/><div style="margin-left: 120px">
 <h3>iLand 0.3 for Windows</h3>
-iLand version 0.3 (released 2012-03-21), i.e. the model version applied for the simulations presented in [Seidl et al. (2012)](http://dx.doi.org/10.1016/j.ecolmodel.2012.02.015). More infos about the release can be found at the [iLand blog](http://iland-model.org/blogpost35). The download package includes:
+iLand version 0.3 (released 2012-03-21), i.e. the model version applied for the simulations presented in [Seidl et al. (2012)](http://dx.doi.org/10.1016/j.ecolmodel.2012.02.015). More infos about the release can be found at the [iLand blog](../blog/blogpost35-iland-release.qmd). The download package includes:
 <ul>
 <li>The executable and all required libraries. Just unzip and run, no need for installation</li>
 <li>Example application including exemplarily stand and climate data for a simulation experiment in Oregon, USA</li>

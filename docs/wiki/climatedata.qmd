@@ -24,7 +24,7 @@ iLand uses climate data on a daily basis. Climate data is stored in a [SQLite da
 | vpd | average of the vapour pressure deficit of that day (kPa) |
 
 
-The mean temperature and the mean temperature of the light hours are calculated as follows ( [Floyd and Braddock, 1984](http://dx.doi.org/10.1016/0168-1923(84)90081-9:), Landsberg, 1986):
+The mean temperature and the mean temperature of the light hours are calculated as follows ( [Floyd and Braddock, 1984](http://dx.doi.org/10.1016/0168-1923(84), Landsberg, 1986):
 
 
 $$
@@ -87,7 +87,7 @@ By default, iLand used the first year of climate data in the database tables for
 
 There are two ways to simulate changing ambient CO2 concentrations in iLand. One way is to use the [time events](time-events.qmd) mechanism. Here you add a column with the name 'model.climate.co2concentration' to your events file and thus update every year the CO2 value of the model.
 The second way is easier to use (but less flexible): you can specify a CO2 concentration pathway with the key 'model.climate.co2pathway' (e.g, 'RCP4.5') and define a start year ('model.climate.co2startYear'). The latter defines which year of the CO2-timeseries corresponds to the first simulated year (e.g., if co2startYear is 1990, then the first simulated year will have the CO2 concentration of 1990 (349.91ppm), and year 10 will use the concentration of 2000). Available values for 'co2pathway' are: 'RCP2.6', 'RCP4.5', 'RCP6.0', 'RCP8.5', and 'No' (if no RCP is used). If the key is empty (or 'No'), then time events mechanism is used. The CO2 values are obtained from https://tntcat.iiasa.ac.at/RcpDb and the time series cover 1980 to 2100. Simulated years after 2100 use the CO2 level of 2100. The image shows the CO2 concentrations:
-<img src="../img/rcp_co2.png" alt="Image" class="img-fluid" />
+<img src="/img/rcp_co2.png" alt="Image" class="img-fluid" />
 
 
 

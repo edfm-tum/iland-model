@@ -2,7 +2,7 @@
 title: "allocation"
 ---
 
-Partitioning of NPP to plant compartments is modeled by means of compartment-specific allometric ratios (cf. [Landsberg and Waring 1997](http://dx.doi.org/10.1016/S0378-1127(97)00026-1)), which was recently shown to yield promising results not only at stand level but also in individual-based modeling frameworks ([Seidl et al. 2009](http://dx.doi.org/10.1007/s00468-009-0387-z)). A hierarchical partitioning scheme was adopted in iLand, allocating NPP to the root, foliage, reserves and stem compartments.
+Partitioning of NPP to plant compartments is modeled by means of compartment-specific allometric ratios (cf. [Landsberg and Waring 1997](http://dx.doi.org/10.1016/S0378-1127(97)), which was recently shown to yield promising results not only at stand level but also in individual-based modeling frameworks ([Seidl et al. 2009](http://dx.doi.org/10.1007/s00468-009-0387-z)). A hierarchical partitioning scheme was adopted in iLand, allocating NPP to the root, foliage, reserves and stem compartments.
 
 
 
@@ -11,7 +11,7 @@ Partitioning of NPP to plant compartments is modeled by means of compartment-spe
 # belowground NPP
 
 
-Modeling allocation to root compartments follows [Landsberg and Waring (1997)](http://dx.doi.org/10.1016/S0378-1127(97)00026-1), reflecting the accumulating evidence that trees allocate increased amounts of carbon to their roots when growing conditions deteriorate. This environmental effect on allocation is represented by the environmental modifiers introduced in the modeling of [primary production](primary-production.qmd) (Eq. 1).
+Modeling allocation to root compartments follows [Landsberg and Waring (1997)](http://dx.doi.org/10.1016/S0378-1127(97), reflecting the accumulating evidence that trees allocate increased amounts of carbon to their roots when growing conditions deteriorate. This environmental effect on allocation is represented by the environmental modifiers introduced in the modeling of [primary production](primary-production.qmd) (Eq. 1).
 
 $$
 \eta_{r}=\frac{0.8}{1+2.5\cdot f_{N}\cdot \frac{uAPAR}{APAR}}
@@ -46,7 +46,7 @@ with *w<sub>fr</sub>* and *w<sub>cr</sub>* the respective biomass increments of 
 # allocation to foliage biomass
 
 
-We follow the modified scheme of [Duursma et al. (2007)](http://dx.doi.org/10.1016/j.ecolmodel.2006.11.032) to partition *NPP<sub>ag</sub>* into foliage and stem compartments. This approach extends the one of [Landsberg and Waring (1997)](http://dx.doi.org/10.1016/S0378-1127(97)00026-1) by explicitly including compartment-specific turnover in the computation of allocation.
+We follow the modified scheme of [Duursma et al. (2007)](http://dx.doi.org/10.1016/j.ecolmodel.2006.11.032) to partition *NPP<sub>ag</sub>* into foliage and stem compartments. This approach extends the one of [Landsberg and Waring (1997)](http://dx.doi.org/10.1016/S0378-1127(97) by explicitly including compartment-specific turnover in the computation of allocation.
 The growth of the foliage pool relative to the woody biomass pool can be expressed by Eq. 5:
 
 $$
@@ -115,7 +115,7 @@ Two modifications are made within this scheme to adapt it to the overall iLand m
 # carbohydrate reserves and allocation to stem growth
 
 
-As implemented in many process-based forest ecosystem models a carbohydrate reserves pool is introduced in iLand (e.g., [Aber et al. 1995](http://www.int-res.com/articles/cr/5/c005p207.pdf), [Bossel 1996](http://dx.doi.org/10.1016/0304-3800(95)00139-5), [Friend et al. 1997](http://dx.doi.org/10.1016/S0304-3800(96)00034-8)). We follow [Bossel (1997)](http://dx.doi.org/10.1016/0304-3800(95)00139-5) in defining the size of this pool(*w<sub>res</sub>*) as one leaf and fine root turnover (Eq. 13). The reserves pool is conceptually integrated into the woody biomass pool and thus deduced from [#allocation to foliage biomass|gross allocation](allocation.qmd) to this compartment.
+As implemented in many process-based forest ecosystem models a carbohydrate reserves pool is introduced in iLand (e.g., [Aber et al. 1995](http://www.int-res.com/articles/cr/5/c005p207.pdf), [Bossel 1996](http://dx.doi.org/10.1016/0304-3800(95), [Friend et al. 1997](http://dx.doi.org/10.1016/S0304-3800(96)). We follow [Bossel (1997)](http://dx.doi.org/10.1016/0304-3800(95) in defining the size of this pool(*w<sub>res</sub>*) as one leaf and fine root turnover (Eq. 13). The reserves pool is conceptually integrated into the woody biomass pool and thus deduced from [#allocation to foliage biomass|gross allocation](allocation.qmd) to this compartment.
 
 $$
 w_{res}=min(W_{f}\cdot (\gamma _{f}+p_{fr}\cdot \gamma _{fr})\: ;\: NPP_{ag}\cdot \eta _{w})
@@ -142,10 +142,10 @@ Allocation and update of biomass pools is calculated annually in iLand, implemen
 1. Calculate the available carbohydrates as a sum of NPP and *w<sub>res</sub>*.
 1. Derive belowground production according to Eq. 1 and update coarse and fine root pools by substracting turnover and adding *w<sub>cr</sub>* and *w<sub>fr</sub>* to the respective pools.
 1. Calculate partitioning into the foliage pool applying Eqs. 2 and 9, and update foliage biomass pool accounting for turnover and growth.
-1. Refill reserves pool from gross allocation to wood and reserves (Eq. 10). This annual turnover of the reserves pool is equicalent to the implementation in the process-based model HYBRID v3.0 ([Friend et al. (1997)](http://dx.doi.org/10.1016/S0304-3800(96)00034-8)).
+1. Refill reserves pool from gross allocation to wood and reserves (Eq. 10). This annual turnover of the reserves pool is equicalent to the implementation in the process-based model HYBRID v3.0 ([Friend et al. (1997)](http://dx.doi.org/10.1016/S0304-3800(96)).
 1. Derive biomass growth allocated to the stem compartment by means of Eq. 11.
 
-This hierachical prioritzation of compartments in allocation, i.e. roots &gt; foliage &gt; reserves &gt; stem reproduces general plant strategies under limited resources and is in line with a number of physiological models (e.g., [Bossel 1996](http://dx.doi.org/10.1016/0304-3800(95)00139-5), [Friend et al. 1997](http://dx.doi.org/10.1016/S0304-3800(96)00034-8)). It is furthermore of relevance for the determination of stress in trees, and is as such used to simulate [mortality risk](base-mortality.qmd) in iLand.
+This hierachical prioritzation of compartments in allocation, i.e. roots &gt; foliage &gt; reserves &gt; stem reproduces general plant strategies under limited resources and is in line with a number of physiological models (e.g., [Bossel 1996](http://dx.doi.org/10.1016/0304-3800(95), [Friend et al. 1997](http://dx.doi.org/10.1016/S0304-3800(96)). It is furthermore of relevance for the determination of stress in trees, and is as such used to simulate [mortality risk](base-mortality.qmd) in iLand.
 
 
 

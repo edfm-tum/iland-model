@@ -2,7 +2,7 @@
 title: "nitrogen response"
 ---
 
-Plant-available nitrogen (*N<sub>av</sub>*) is used in response functions following [Pastor and Post (1985)](http://tinyurl.com/ybmz8l3) to derive the soil nutrient modifier *f<sub>N</sub>* (cf. [Landsberg and Warings' (1997)](http://dx.doi.org/10.1016/S0378-1127(97)00026-1) fertility rating). We re-calculate the three N response classes of [Pastor and Post (1985)](http://tinyurl.com/ybmz8l3) as (Eq. 1)
+Plant-available nitrogen (*N<sub>av</sub>*) is used in response functions following [Pastor and Post (1985)](http://tinyurl.com/ybmz8l3) to derive the soil nutrient modifier *f<sub>N</sub>* (cf. [Landsberg and Warings' (1997)](http://dx.doi.org/10.1016/S0378-1127(97) fertility rating). We re-calculate the three N response classes of [Pastor and Post (1985)](http://tinyurl.com/ybmz8l3) as (Eq. 1)
 
 $$
 f_{N}=max(1-e^{a_{N}\cdot (N_{av}-b_{N})}\: ;\: 0)

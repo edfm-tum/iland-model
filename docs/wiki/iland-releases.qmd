@@ -9,7 +9,7 @@ This page lists important milestones in the development of the iLand model.
 ## iLand 0.3 &quot;Molokai&quot;
 
 
-<img src="../img/hawii_molokai.jpg" alt="Image" width="280" class="img-fluid" />
+<img src="/img/hawii_molokai.jpg" alt="Image" width="280" class="img-fluid" />
 SVN-tag: [#443](http://iland-model.org/websvn/listing.php?repname=iland&amp;path=/&amp;rev=443)
 Date:  2010/06/29
 This version was used for the simulations that are the basis of the first iLand publication (*Seidl R, Rammer W, Scheller R, Spies T, 201(1|2): Simulating complexity: a scalable, individual-based process model of forest ecosystem dynamics*). The version includes the basic processes for adult tree growth, competition and mortality.
@@ -20,7 +20,7 @@ This version was used for the simulations that are the basis of the first iLand 
 ## iLand 0.6.9 &quot;Lanai&quot;
 
 
-<img src="../img/hawii_lanai.jpg" alt="Image" width="280" class="img-fluid" />
+<img src="/img/hawii_lanai.jpg" alt="Image" width="280" class="img-fluid" />
 SVN-tag: [#635](http://iland-model.org/websvn/listing.php?repname=iland&amp;path=/&amp;rev=635)
 Date: 2011/03/26
 This version was used for the simulations for the iLand publication II (*Seidl R, Spies T, Rammer W, Steel A, Pabst R, Olsen K, 2012: Drivers of spatial variation in old-growth forest carbon density disentangled with Lidar and an individual-based landscape model*). This version includes several new modules: a soil module for carbon/ nitrogen cycling, a module to treat standing dead wood, a regeneration module covering seed dispersal, establishment and the growth of saplings. In addition, several enhancements aiming at &quot;real&quot; landscape scale simulations were introduced.

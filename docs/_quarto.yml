@@ -15,9 +15,11 @@ website:
           - text: "Welcome / Start Page"
             href: wiki/startpage.qmd
           - text: "Team"
-            href: wiki/project-team.qmd
+            href: wiki/team.qmd
           - text: "Publications"
             href: wiki/iland-publications.qmd
+          - text: "News"
+            href: blog/index.qmd
       - text: "Model Documentation"
         menu:
           - text: "Documentation Hub"

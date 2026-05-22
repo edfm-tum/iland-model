@@ -17,7 +17,7 @@ iLand is work in progress, and our ongoing efforts to evaluate, improve, and fur
 
 * [abstract](project-abstract.qmd) of the initial project to develop iLand
 * [initial team](project-team.qmd) developing the first iLand version
-* initial ideas for the [iLand model design](how-it-works.qmd)
+* initial ideas for the [iLand model design](model-design.qmd)
 * initial [iLand model development strategy](development-strategy.qmd)
 
 

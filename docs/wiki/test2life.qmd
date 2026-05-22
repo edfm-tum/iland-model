@@ -2,8 +2,8 @@
 title: "Test2Life"
 ---
 
-<img src="../img/tu_dresden_logo.PNG" alt="Image" class="img-fluid" />
-<img src="../img/act_custom_thinning.png" alt="Image" width="250" class="img-fluid" />
+<img src="/img/tu_dresden_logo.PNG" alt="Image" class="img-fluid" />
+<img src="/img/act_custom_thinning.png" alt="Image" width="250" class="img-fluid" />
 This is a test page of a test user.
 Let us try MathJax:
 The probability of getting \(k\) heads when flipping \(n\) coins is:
@@ -89,4 +89,4 @@ Example: give me an ε or an α. What about Λ?
 
 kk
 
-<img src="../img/tu_dresden_logo.PNG" alt="Image" class="img-fluid" />
+<img src="/img/tu_dresden_logo.PNG" alt="Image" class="img-fluid" />
