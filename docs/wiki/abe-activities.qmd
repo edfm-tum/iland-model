@@ -19,7 +19,7 @@ Activities are the core element of forest management in ABE, as they are the ele
 * [ABE activity planting](abe-activity-planting.qmd)
 * [ABE activity salvage](abe-activity-salvage.qmd)
 
-[Javascript API documentation for Activity](../apidoc/classes/activity.qmd)
+[Javascript API documentation for Activity](../apidoc/classes/abe/activity.qmd)
 
  
 

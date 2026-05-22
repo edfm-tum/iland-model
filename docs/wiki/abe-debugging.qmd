@@ -10,9 +10,9 @@ title: "ABE debugging"
 
 
 You can control the amount of log messages that is created by ABE, and you can add user-defined debug messages. All log messages end in the iLand log file.
-The log function -+[fmengine.log](../apidoc/classes/fmengine.qmd#method-log)+- adds to each log message the current stand and the current year. This allows efficient filtering of messages for stands and/or years.
-The -+[fmengine.verbose](../apidoc/classes/fmengine.qmd#property-verbose)+- property controls the level of details for system generated messages. Note, that -+verbose+- can be enabled also only for a short time.
-The level of detail of log messages can also be increased for individual stands by using the -+[stand.trace](../apidoc/classes/stand.qmd#property-trace)+- property.
+The log function -+[fmengine.log](../apidoc/classes/abe/fmengine.qmd#method-log)+- adds to each log message the current stand and the current year. This allows efficient filtering of messages for stands and/or years.
+The -+[fmengine.verbose](../apidoc/classes/abe/fmengine.qmd#property-verbose)+- property controls the level of details for system generated messages. Note, that -+verbose+- can be enabled also only for a short time.
+The level of detail of log messages can also be increased for individual stands by using the -+[stand.trace](../apidoc/classes/abe/stand.qmd#property-trace)+- property.
 
 
 

@@ -10,12 +10,50 @@ website:
     logo-href: /wiki/startpage.qmd
     background: primary
     left:
-      - href: index.qmd
-        text: "Documentation"
-      - href: bite/index.qmd
-        text: "Bite Module"
-      - href: apidoc/index.qmd
-        text: "JavaScript API"
+      - text: "About"
+        menu:
+          - text: "Welcome / Start Page"
+            href: wiki/startpage.qmd
+          - text: "Team"
+            href: wiki/project-team.qmd
+          - text: "Publications"
+            href: wiki/iland-publications.qmd
+      - text: "Model Documentation"
+        menu:
+          - text: "Documentation Hub"
+            href: index.qmd
+          - text: "Physiological Processes"
+            href: wiki/resource-availability-and-competition.qmd
+          - text: "Demographic Processes"
+            href: wiki/growth.qmd
+          - text: "Disturbances"
+            href: wiki/disturbance-modules.qmd
+          - text: "Forest Management"
+            href: wiki/management.qmd
+          - text: "Submodules"
+            href: wiki/permafrost.qmd
+      - text: "Working with iLand"
+        menu:
+          - text: "iLand Software"
+            href: wiki/iland-software.qmd
+          - text: "Landscape Initialization"
+            href: wiki/initialization.qmd
+      - text: "References"
+        menu:
+          - text: "Outputs"
+            href: wiki/outputs.qmd
+          - text: "Project Settings"
+            href: wiki/project-file.qmd
+          - text: "Species Parameters"
+            href: wiki/species-parameter.qmd
+      - text: "APIs & Scripting"
+        menu:
+          - text: "JavaScript API"
+            href: apidoc/index.qmd
+          - text: "Bite Module"
+            href: bite/index.qmd
+          - text: "Scripting Overview"
+            href: wiki/scripting.qmd
     right:
       - icon: github
         href: https://github.com/edfm-tum/iland-model
@@ -26,72 +64,181 @@ website:
       style: "docked"
       collapse-level: 2
       contents:
-        - wiki/index.qmd
-        - section: "Growth & Allocation"
+        - index.qmd
+        - section: "Part 1: Model Documentation"
           contents:
-            - wiki/growth.qmd
-            - wiki/allocation.qmd
-        - section: "Disturbances"
+            - section: "About iLand"
+              contents:
+                - wiki/why-developed.qmd
+                - wiki/how-it-works.qmd
+                - wiki/introduction.qmd
+                - wiki/ecological-complexity.qmd
+                - wiki/project-team.qmd
+            - section: "Physiological Processes"
+              contents:
+                - wiki/resource-availability-and-competition.qmd
+                - wiki/competition-for-light.qmd
+                - wiki/individual-tree-light-availability.qmd
+                - wiki/competition-for-belowground-resources.qmd
+                - wiki/primary-production.qmd
+                - wiki/allocation.qmd
+                - wiki/stem-growth.qmd
+                - wiki/constraints-to-resource-utilization.qmd
+                - wiki/phenology.qmd
+                - wiki/water-cycle.qmd
+                - wiki/landscape-scale-soil-water-dynamics.qmd
+                - wiki/soil-dynamics.qmd
+                - wiki/soil-c-and-n-cycling.qmd
+                - wiki/temperature-response.qmd
+                - wiki/vapor-pressure-deficit-response.qmd
+                - wiki/co2-response.qmd
+                - wiki/soil-water-response.qmd
+                - wiki/nitrogen-response.qmd
+            - section: "Demographic Processes"
+              contents:
+                - wiki/growth.qmd
+                - section: "Regeneration"
+                  contents:
+                    - wiki/regeneration.qmd
+                    - wiki/dispersal.qmd
+                    - wiki/establishment.qmd
+                    - wiki/fecundity.qmd
+                    - wiki/sapling-growth-and-competition.qmd
+                    - wiki/recruitment.qmd
+                    - wiki/sprouts.qmd
+                    - wiki/serotiny.qmd
+                    - wiki/external-seeds.qmd
+                    - wiki/seed-kernel-and-seed-distribution.qmd
+                    - wiki/transpiration-and-conductance-in-saplings.qmd
+                    - wiki/regeneration-technical-details-2010.qmd
+                - section: "Mortality"
+                  contents:
+                    - wiki/mortality.qmd
+                    - wiki/base-mortality.qmd
+            - section: "Disturbances"
+              contents:
+                - wiki/disturbance-modules.qmd
+                - wiki/wind-module.qmd
+                - wiki/wind-disturbance.qmd
+                - wiki/wind-module-sensitivity-analysis.qmd
+                - wiki/fire-module.qmd
+                - wiki/wildfire.qmd
+                - wiki/wildfire-spread.qmd
+                - wiki/barkbeetle-module.qmd
+                - wiki/bark-beetle-disturbance.qmd
+                - wiki/bite.qmd
+            - section: "Forest Management"
+              contents:
+                - wiki/management.qmd
+                - section: "Agent-Based Management (ABE)"
+                  contents:
+                    - wiki/abe.qmd
+                    - wiki/abe-activities.qmd
+                    - wiki/abe-activity-general.qmd
+                    - wiki/abe-activity-scheduled.qmd
+                    - wiki/abe-activity-salvage.qmd
+                    - wiki/abe-activity-thinning.qmd
+                    - wiki/abe-activity-planting.qmd
+                    - wiki/abe-stp.qmd
+                    - wiki/abe-agents.qmd
+                    - wiki/abe-spatial-setup.qmd
+                    - wiki/abe-minimal-setup.qmd
+                    - wiki/abe-variables.qmd
+                    - wiki/abe-outputs.qmd
+                    - wiki/abe-scheduling.qmd
+                    - wiki/abe-debugging.qmd
+                    - wiki/abe-library.qmd
+                    - wiki/management-example-parallel-management.qmd
+            - section: "Submodules"
+              contents:
+                - wiki/permafrost.qmd
+                - wiki/browsing.qmd
+                - wiki/ground-vegetation.qmd
+        - section: "Part 2: Working with iLand"
           contents:
-            - wiki/fire-module.qmd
-            - wiki/wind-module.qmd
-            - wiki/barkbeetle-module.qmd
-        - section: "Soil & Water"
+            - section: "iLand Software"
+              contents:
+                - wiki/iland-software.qmd
+                - wiki/iland-viewer.qmd
+                - wiki/iland-console.qmd
+                - wiki/iland-cluster.qmd
+                - wiki/software-tools.qmd
+            - section: "Landscape Setup"
+              contents:
+                - wiki/how-to-setup-of-a-landscape.qmd
+                - wiki/landscape-setup.qmd
+                - wiki/simulation-extent.qmd
+                - wiki/initialization.qmd
+                - wiki/initialize-trees.qmd
+                - wiki/spinup.qmd
+                - wiki/parameterization.qmd
+                - wiki/lightroom.qmd
+                - wiki/simplified-soil-parameterization.qmd
+                - wiki/soil-parametrization-and-initialization.qmd
+                - wiki/evaluation.qmd
+                - wiki/scaling.qmd
+                - wiki/fire-module-evaluation.qmd
+                - wiki/light-competition-evaluation.qmd
+            - section: "Scripting"
+              contents:
+                - wiki/scripting.qmd
+                - wiki/iland-scripting.qmd
+                - wiki/time-events.qmd
+                - wiki/expression.qmd
+        - section: "Part 3: Reference & Resources"
           contents:
-            - wiki/soil-dynamics.qmd
-            - wiki/water-cycle.qmd
-        - section: "Forest Management (ABE)"
-          contents:
-            - wiki/abe.qmd
-            - wiki/abe-activities.qmd
-        - section: "Model Niche & Complexity"
-          contents:
-            - wiki/abstract.qmd
-            - wiki/introduction.qmd
-            - wiki/model-design.qmd
-            - wiki/development-strategy.qmd
-            - wiki/iland-model-complexity-and-its-niche-in-the-landscape-of-models.qmd
-            - wiki/ilands-niche-in-the-landscape-of-models-level-of-modeling-dimensions.qmd
-            - wiki/ilands-niche-in-the-landscape-of-models-indicator-level.qmd
-            - wiki/discussion-and-conclusion.qmd
+            - wiki/project-file.qmd
+            - wiki/species-parameter.qmd
+            - wiki/tree-variables.qmd
+            - wiki/sapling-variables.qmd
+            - wiki/resource-unit-variables.qmd
+            - wiki/dead-tree-variables.qmd
+            - wiki/outputs.qmd
+            - wiki/debug-outputs.qmd
+            - wiki/organizing-outputs.qmd
+            - wiki/dynamic-outputs.qmd
+            - wiki/iland-publications.qmd
+            - wiki/terms-and-conditions.qmd
+            - wiki/history.qmd
+            - wiki/contact-information.qmd
+            - wiki/release-notes.qmd
 
     - id: apidoc
       title: "Javascript API"
       style: "docked"
       contents:
         - apidoc/index.qmd
-        - section: "iLand Core Classes"
+        - section: "iLand Core API"
           contents:
-            - apidoc/classes/grid.qmd
-            - apidoc/classes/tree.qmd
-            - apidoc/classes/treelist.qmd
-            - apidoc/classes/deadtreelist.qmd
-            - apidoc/classes/saplinglist.qmd
-            - apidoc/classes/globals.qmd
-            - apidoc/classes/map.qmd
-        - section: "iLand Tools & Utilities"
+            - apidoc/classes/iland/csvfile.qmd
+            - apidoc/classes/iland/factory.qmd
+            - apidoc/classes/iland/globals.qmd
+            - apidoc/classes/iland/grid.qmd
+            - apidoc/classes/iland/management.qmd
+            - apidoc/classes/iland/map.qmd
+            - apidoc/classes/iland/spatialanalysis.qmd
+            - apidoc/classes/iland/tree.qmd
+            - apidoc/classes/iland/treeexpr.qmd
+        - section: "Agent-Based Management (ABE) API"
           contents:
-            - apidoc/classes/csvfile.qmd
-            - apidoc/classes/factory.qmd
-            - apidoc/classes/helper.qmd
-            - apidoc/classes/treeexpr.qmd
-            - apidoc/classes/spatialanalysis.qmd
-        - section: "Agent-Based Management (ABE)"
-          contents:
-            - apidoc/classes/fmengine.qmd
-            - apidoc/classes/management.qmd
-            - apidoc/classes/agent.qmd
-            - apidoc/classes/stand.qmd
-            - apidoc/classes/patches.qmd
-            - apidoc/classes/activity.qmd
-            - apidoc/classes/stp.qmd
-            - apidoc/classes/schedule.qmd
-            - apidoc/classes/constraint.qmd
+            - apidoc/classes/abe/fmengine.qmd
+            - apidoc/classes/abe/activity.qmd
+            - apidoc/classes/abe/agent.qmd
+            - apidoc/classes/abe/constraint.qmd
+            - apidoc/classes/abe/deadtreelist.qmd
+            - apidoc/classes/abe/patches.qmd
+            - apidoc/classes/abe/saplinglist.qmd
+            - apidoc/classes/abe/schedule.qmd
+            - apidoc/classes/abe/stand.qmd
+            - apidoc/classes/abe/stp.qmd
+            - apidoc/classes/abe/treelist.qmd
         - section: "ABE Library (Javascript)"
           contents:
-            - apidoc/classes/planting.qmd
-            - apidoc/classes/thinning.qmd
-            - apidoc/classes/harvest.qmd
+            - apidoc/classes/abe-library/abe-lib.qmd
+            - apidoc/classes/abe-library/harvest.qmd
+            - apidoc/classes/abe-library/helper.qmd
+            - apidoc/classes/abe-library/planting.qmd
+            - apidoc/classes/abe-library/thinning.qmd
 
     - id: bite
       title: "Bite Module"

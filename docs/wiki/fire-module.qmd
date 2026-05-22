@@ -216,7 +216,7 @@ This function saves a fire specific grid (specified by *gridtype*) in ESRI raste
 
 
 **Fire.grid(gridtype)**
-Returns a grid of given *gridtype* (string) as a Javascript Object. See [Grid Javascript API](../apidoc/classes/grid.qmd) for details. All grids (with the exception of the actual spread on the 20m pixels) from the "fire specific visualization" are available.
+Returns a grid of given *gridtype* (string) as a Javascript Object. See [Grid Javascript API](../apidoc/classes/iland/grid.qmd) for details. All grids (with the exception of the actual spread on the 20m pixels) from the "fire specific visualization" are available.
 
 
 ```javascript

@@ -1,61 +1,318 @@
 ---
-title: "Documentation"
+title: "iLand Documentation Hub"
 ---
 
-Welcome to the central hub for navigating the iLand (individual-based forest landscape and disturbance model) documentation.
+Welcome to the central portal for navigating the **iLand** (individual-based forest landscape and disturbance model) documentation.
 
-## About the Model
-
-iLand is a process-based model of forest ecosystem dynamics, simulating processes like **growth**, **mortality**, and **regeneration** at watershed-to-landscape scales. Individual tree competition for resources and environmental influences on forest processes are explicitly modeled. 
-
-The model is designed to investigate the effects of climatic changes on forest ecosystem dynamics, with a particular focus on natural disturbances, and to harness these capacities for questions of sustainable forest management under changing environmental conditions.
-
-::: {.callout-note}
-### Quick Navigation Links
-The following table provides quick links to the key scientific components of iLand.
-:::
-
-| Resources & Growth | Mortality & Regeneration | Application & Scaling |
-| :--- | :--- | :--- |
-| [Growth](wiki/growth.qmd) | [Mortality](wiki/mortality.qmd) | [Parametrization](wiki/parameterization.qmd) |
-| [Resource Availability & Competition](wiki/resource-availability-and-competition.qmd) | [Regeneration](wiki/regeneration.qmd) | [Evaluation](wiki/evaluation.qmd) |
-| [Constraints to Resource Utilization](wiki/constraints-to-resource-utilization.qmd) | [Management (ABE)](wiki/management.qmd) | [Scaling across space/time](wiki/scaling.qmd) |
-| [Soil Dynamics](wiki/soil-dynamics.qmd) | | |
-
----
-
-## About the Implementation
-
-The iLand modeling software is written in C++ using the **Qt** toolkit. Key development goals are high computational performance, a rich GUI, and extended scripting facilities.
-
-![](img/screen_species.PNG){width=450px}
-
-### References
-
-| Component | Description |
-| :--- | :--- |
-| [Project File](wiki/project-file.qmd) | The main configuration file for simulated landscapes (XML format). |
-| [Species Parameters](wiki/species-parameter.qmd) | Description of species-specific parameters in iLand. |
-| [Tree Variables](wiki/tree-variables.qmd) & [RU Variables](wiki/resource-unit-variables.qmd) | Reference lists of variables accessible via scripting and expressions. |
-| [Outputs](wiki/outputs.qmd) & [Debug Outputs](wiki/debug-outputs.qmd) | Technical description of iLand outputs. |
-| [Javascript API Docs](apidoc/index.qmd) | Unified reference for the C++ Javascript API bindings (e.g., [Grid](apidoc/classes/grid.qmd)). |
+```{=html}
+<div class="row my-4">
+  <div class="col-md-12 text-center">
+    <p class="lead">
+      iLand simulates forest landscape dynamics by modeling individual tree competition, growth, mortality, and regeneration.
+    </p>
+    <a href="wiki/why-developed.html" class="btn btn-outline-primary btn-md mx-2 my-1">
+      <i class="bi bi-question-circle"></i> Why iLand was developed
+    </a>
+    <a href="wiki/how-it-works.html" class="btn btn-outline-primary btn-md mx-2 my-1">
+      <i class="bi bi-gear"></i> How iLand works in a nutshell
+    </a>
+  </div>
+</div>
+```
 
 ---
 
-## Frequent Tasks & Specialized Content
+## Part 1: Model Documentation
 
-| Category | Topics |
-| :--- | :--- |
-| **Common Workflows** | [Scripting in iLand](wiki/scripting.qmd) \| [Landscape Initialization](wiki/initialization.qmd) \| [Using iLand Viewer & Console](wiki/iland-software.qmd) |
-| **Extended Modules** | [Disturbance Modules (Fire, Wind, Beetles)](wiki/disturbance-modules.qmd) \| [Agent-Based Management Engine (ABE)](wiki/abe.qmd) |
+```{=html}
+<div class="row">
+  <!-- Card 1: About iLand -->
+  <div class="col-md-6 mb-4">
+    <div class="card h-100 shadow-sm">
+      <div class="card-body">
+        <h3 class="card-title text-primary"><i class="bi bi-info-circle"></i> About iLand</h3>
+        <p class="card-text">
+          iLand simulates forest ecosystems as complex adaptive systems. Its dynamics emerge from interactions between individual trees (the adaptive biotic agents) and their relationship with a spatially and temporally heterogeneous environment.
+        </p>
+        <div class="text-center my-3">
+          <img src="img/iLand-model-components.png" class="img-fluid rounded border" alt="iLand Model Components" style="max-height: 220px;">
+        </div>
+        <div class="d-flex flex-wrap gap-2 mt-3 justify-content-center">
+          <a href="wiki/why-developed.html" class="btn btn-sm btn-primary">Why iLand</a>
+          <a href="wiki/how-it-works.html" class="btn btn-sm btn-primary">Design Principles</a>
+          <a href="wiki/technical-design.html" class="btn btn-sm btn-outline-secondary">Technical Design</a>
+          <a href="wiki/introduction.html" class="btn btn-sm btn-outline-secondary">Introduction</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 2: Physiological Processes -->
+  <div class="col-md-6 mb-4">
+    <div class="card h-100 shadow-sm">
+      <div class="card-body">
+        <h3 class="card-title text-primary"><i class="bi bi-activity"></i> Physiological Processes</h3>
+        <p class="card-text">
+          Continuous demographic and physiological processes driving resource acquisition, primary production, carbon/nitrogen allocation, water cycles, and decomposition.
+        </p>
+        <div class="list-group list-group-flush mb-3">
+          <div class="list-group-item bg-transparent px-0 py-2">
+            <strong>Resource & Competition:</strong> <br/>
+            <a href="wiki/resource-availability-and-competition.html">Resource Availability & Competition</a> | 
+            <a href="wiki/competition-for-light.html">Light Competition</a> | 
+            <a href="wiki/individual-tree-light-availability.html">Light Influence Patterns (LIPs)</a> | 
+            <a href="wiki/competition-for-belowground-resources.html">Belowground Competition</a>
+          </div>
+          <div class="list-group-item bg-transparent px-0 py-2">
+            <strong>Production & Growth:</strong> <br/>
+            <a href="wiki/primary-production.html">Primary Production (3-PG)</a> | 
+            <a href="wiki/allocation.html">Carbon Allocation</a> | 
+            <a href="wiki/stem-growth.html">Stem Growth</a> | 
+            <a href="wiki/constraints-to-resource-utilization.html">Environmental Modifiers</a> | 
+            <a href="wiki/phenology.html">Phenology</a>
+          </div>
+          <div class="list-group-item bg-transparent px-0 py-2">
+            <strong>Biogeochemical Cycling:</strong> <br/>
+            <a href="wiki/water-cycle.html">Water Cycle</a> | 
+            <a href="wiki/soil-dynamics.html">Soil Dynamics</a> | 
+            <a href="wiki/soil-c-and-n-cycling.html">Carbon & Nitrogen cycling (ICBM)</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 3: Demographic Processes -->
+  <div class="col-md-6 mb-4">
+    <div class="card h-100 shadow-sm">
+      <div class="card-body">
+        <h3 class="card-title text-primary"><i class="bi bi-people"></i> Demographic Processes</h3>
+        <p class="card-text">
+          The continuous life-cycle stages of the forest: energy capture leads to individual tree growth, stress triggers tree mortality, and seeds disperse to establish regeneration.
+        </p>
+        <div class="text-center my-3">
+          <img src="img/iland-process-overview.png" class="img-fluid rounded border" alt="iLand Demographic Processes" style="max-height: 180px;">
+        </div>
+        <div class="d-flex flex-wrap gap-2 justify-content-center">
+          <a href="wiki/growth.html" class="btn btn-sm btn-outline-primary">Growth</a>
+          <a href="wiki/regeneration.html" class="btn btn-sm btn-outline-primary">Regeneration</a>
+          <a href="wiki/mortality.html" class="btn btn-sm btn-outline-primary">Mortality</a>
+        </div>
+        <div class="mt-3 small text-center text-muted border-top pt-2">
+          <strong>Sub-modules:</strong> 
+          <a href="wiki/dispersal.html">Dispersal</a> &bull; 
+          <a href="wiki/establishment.html">Establishment</a> &bull; 
+          <a href="wiki/sapling-growth-and-competition.html">Saplings</a> &bull; 
+          <a href="wiki/recruitment.html">Recruitment</a> &bull; 
+          <a href="wiki/base-mortality.html">Base Mortality</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 4: Disturbances -->
+  <div class="col-md-6 mb-4">
+    <div class="card h-100 shadow-sm">
+      <div class="card-body">
+        <h3 class="card-title text-primary"><i class="bi bi-lightning-charge"></i> Disturbances</h3>
+        <p class="card-text">
+          Discontinuous, sudden ecological events that disrupt forest landscape dynamics. iLand explicitly simulates multiple natural disturbance agents.
+        </p>
+        <div class="text-center my-3">
+          <img src="img/iland-disturbance-overview.png" class="img-fluid rounded border" alt="iLand Disturbances" style="max-height: 180px;">
+        </div>
+        <div class="list-group list-group-flush mb-3">
+          <div class="list-group-item bg-transparent px-0 py-2">
+            <strong>Abiotic:</strong> 
+            <a href="wiki/wind-module.html">Wind Concept</a> / <a href="wiki/wind-disturbance.html">Wind Module</a> &bull; 
+            <a href="wiki/fire-module.html">Fire Concept</a> / <a href="wiki/wildfire.html">Wildfire Module</a>
+          </div>
+          <div class="list-group-item bg-transparent px-0 py-2">
+            <strong>Biotic:</strong> 
+            <a href="wiki/barkbeetle-module.html">Bark Beetle Concept</a> / <a href="wiki/bark-beetle-disturbance.html">Beetle Module</a> &bull; 
+            <a href="wiki/bite.html">BITE (Biotic Disturbance Engine)</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 5: Forest Management -->
+  <div class="col-md-6 mb-4">
+    <div class="card h-100 shadow-sm">
+      <div class="card-body">
+        <h3 class="card-title text-primary"><i class="bi bi-sliders"></i> Forest Management</h3>
+        <p class="card-text">
+          iLand models management interventions from simple harvesting and tree planting to complex multi-agent silvicultural regimes across ownership boundaries.
+        </p>
+        <div class="d-flex flex-wrap gap-2 mb-3 justify-content-center">
+          <a href="wiki/management.html" class="btn btn-sm btn-primary">Base Management</a>
+          <a href="wiki/abe.html" class="btn btn-sm btn-primary">Agent Based Management Engine (ABE)</a>
+        </div>
+        <div class="small text-muted border-top pt-2">
+          Configure Stand Treatment Programs (STPs), activities, treatment schedules, and ownership rules:
+          <a href="wiki/abe-activities.html">Management Activities</a> &bull;
+          <a href="wiki/abe-library.html">ABE Script Library</a> &bull;
+          <a href="wiki/abe-variables.html">ABE Variables</a> &bull;
+          <a href="wiki/management-example-parallel-management.html">Parallel Management Example</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 6: Submodules -->
+  <div class="col-md-6 mb-4">
+    <div class="card h-100 shadow-sm">
+      <div class="card-body">
+        <h3 class="card-title text-primary"><i class="bi bi-box-seam"></i> Submodules</h3>
+        <p class="card-text">
+          Optional extensions covering localized geographical conditions, special vegetation tiers, or trophic interactions.
+        </p>
+        <div class="list-group list-group-flush">
+          <a href="wiki/permafrost.html" class="list-group-item list-group-item-action bg-transparent px-0 py-2">
+            <i class="bi bi-snow2 text-info"></i> <strong>Permafrost (POLE-FM):</strong> Boreal forest soil-organic layer and frozen soil dynamics.
+          </a>
+          <a href="wiki/browsing.html" class="list-group-item list-group-item-action bg-transparent px-0 py-2">
+            <i class="bi bi-flower2 text-success"></i> <strong>Ungulate Browsing:</strong> Spatially explicit impact of browsing on seedling height growth.
+          </a>
+          <a href="wiki/ground-vegetation.html" class="list-group-item list-group-item-action bg-transparent px-0 py-2">
+            <i class="bi bi-tree-fill text-muted"></i> <strong>Understory & Grass:</strong> Forest floor vegetation layer competition with young tree cohorts.
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+```
 
 ---
 
-## Additional Resources
+## Part 2: Working with iLand
 
-### [iLand Book](https://iland-model.org/iland-book)
-The *iLand Book* is a companion resource built with Quarto. It provides a compact, guided introduction for both beginners and advanced users, covering how to get started with the model and parameterize new species.
+```{=html}
+<div class="row">
+  <!-- Card 7: iLand Software -->
+  <div class="col-md-4 mb-4">
+    <div class="card h-100 shadow-sm border-success">
+      <div class="card-body">
+        <h4 class="card-title text-success"><i class="bi bi-display"></i> iLand Software</h4>
+        <p class="card-text small">
+          Executing simulations in GUI interactive mode or on headless high-performance computing clusters.
+        </p>
+        <ul class="small ps-3">
+          <li><a href="wiki/software-tools.html">Software Tools Overview</a></li>
+          <li><a href="wiki/iland-software.html">Managing simulation experiments</a></li>
+          <li><a href="wiki/iland-viewer.html">The iLand Viewer GUI</a></li>
+          <li><a href="wiki/iland-console.html">Command Line (ilandc)</a></li>
+          <li><a href="wiki/iland-cluster.html">Running on Compute Clusters</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
 
-### Community & Support
-The community of iLand users is active on Discord. You can join the conversation via the invite link:
-*   [Join iLand Discord Channel](https://discord.gg/e5trneUKav)
+  <!-- Card 8: Landscape Setup -->
+  <div class="col-md-4 mb-4">
+    <div class="card h-100 shadow-sm border-success">
+      <div class="card-body">
+        <h4 class="card-title text-success"><i class="bi bi-map"></i> Landscape Setup</h4>
+        <p class="card-text small">
+          Configuring landscape extents, soil files, weather datasets, and vegetation parameters.
+        </p>
+        <ul class="small ps-3">
+          <li><a href="wiki/how-to-setup-of-a-landscape.html">Setting up a Landscape</a></li>
+          <li><a href="wiki/landscape-setup.html">Biophysical Grid Configuration</a></li>
+          <li><a href="wiki/initialization.html">Vegetation Initialization</a></li>
+          <li><a href="wiki/initialize-trees.html">Initializing Trees & Stand Grids</a></li>
+          <li><a href="wiki/spinup.html">Vegetation Spin-up Process</a></li>
+          <li><a href="wiki/parameterization.html">Species Parameterization</a></li>
+          <li><a href="wiki/evaluation.html">Model Calibration & Evaluation</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 9: Scripting & Developer API -->
+  <div class="col-md-4 mb-4">
+    <div class="card h-100 shadow-sm border-success">
+      <div class="card-body">
+        <h4 class="card-title text-success"><i class="bi bi-code-slash"></i> Scripting</h4>
+        <p class="card-text small">
+          Using scripting to orchestrate landscape-wide activities, write custom outputs, or extend core C++ code.
+        </p>
+        <ul class="small ps-3">
+          <li><a href="wiki/scripting.html">JavaScript Scripting Overview</a></li>
+          <li><a href="wiki/iland-scripting.html">JavaScript API Bindings</a></li>
+          <li><a href="wiki/time-events.html">Time Events & Scheduling</a></li>
+          <li><a href="wiki/expression.html">iLand Dynamic Expressions</a></li>
+          <li><a href="wiki/object-management.html">Scripting Objects (Globals, Map, etc.)</a></li>
+          <li><a href="wiki/sourcecode.html">Developing iLand (C++ & Qt setup)</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+---
+
+## Part 3: Reference & Resources
+
+```{=html}
+<div class="row">
+  <!-- Card 10: Reference Tables -->
+  <div class="col-md-4 mb-4">
+    <div class="card h-100 shadow-sm border-info">
+      <div class="card-body">
+        <h4 class="card-title text-info"><i class="bi bi-journal-text"></i> Core Reference</h4>
+        <ul class="small ps-3">
+          <li><a href="wiki/project-file.html">Project File (XML Schema)</a></li>
+          <li><a href="wiki/species-parameter.html">Species Parameters list</a></li>
+          <li><a href="wiki/tree-variables.html">Individual Tree Variables</a></li>
+          <li><a href="wiki/sapling-variables.html">Sapling Cohort Variables</a></li>
+          <li><a href="wiki/resource-unit-variables.html">Resource Unit Variables</a></li>
+          <li><a href="wiki/dead-tree-variables.html">Dead Tree Variables</a></li>
+          <li><a href="wiki/outputs.html">Outputs SQLite Databases</a></li>
+          <li><a href="wiki/debug-outputs.html">Console Debug Logs</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 11: API Reference -->
+  <div class="col-md-4 mb-4">
+    <div class="card h-100 shadow-sm border-info">
+      <div class="card-body">
+        <h4 class="card-title text-info"><i class="bi bi-terminal"></i> API Documentation</h4>
+        <p class="card-text small">
+          Syntactical API details for iLand scripting interfaces.
+        </p>
+        <ul class="small ps-3">
+          <li><a href="apidoc/index.html"><strong>JavaScript API Reference</strong></a></li>
+          <li><a href="apidoc/classes/globals.html">Globals Class</a> | <a href="apidoc/classes/grid.html">Grid Class</a></li>
+          <li><a href="apidoc/classes/fmengine.html">ABE Forest Management Engine</a></li>
+          <li><a href="apidoc/classes/thinning.html">ABE Thinning Class</a></li>
+          <li><a href="bite/index.html"><strong>Bite Engine API Reference</strong></a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 12: Community & Support -->
+  <div class="col-md-4 mb-4">
+    <div class="card h-100 shadow-sm border-info">
+      <div class="card-body">
+        <h4 class="card-title text-info"><i class="bi bi-chat-left-text"></i> Support & Publications</h4>
+        <p class="card-text small">
+          Connect with other iLand developers or browse model applications.
+        </p>
+        <ul class="small ps-3">
+          <li><a href="wiki/iland-publications.html">Scientific Publications</a></li>
+          <li><a href="https://iland-model.org/iland-book" target="_blank">The iLand Book (Quarto Guide)</a></li>
+          <li><a href="https://discord.gg/e5trneUKav" target="_blank">Join iLand Discord Channel</a></li>
+          <li><a href="wiki/release-notes.html">iLand Version Release Notes</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+```

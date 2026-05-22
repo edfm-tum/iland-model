@@ -88,7 +88,7 @@ Most functionalities of the barkbeetle module can be accessed via an Javascript-
 executes a full cycle of the bark beetle module if *iteration* is 0 (i.e.: calculate generations, fetch vegetation from iLand, and spread/ attack/ kill). If *iteration* is larger then 0, only spread/attack/killing is simulated. This can be used to simulate multiple barkbeetle iterations (years) with a static forest state (note, though, that trees are removed! - see also *simulate*, *newYear*
 
 **reloadSettings()**
-(Re-)load the parameters from the XML-settings. Can be used in conjunction with [*Globals.set()*](../apidoc/classes/globals.qmd) for quick (Javascript-based) tests. 
+(Re-)load the parameters from the XML-settings. Can be used in conjunction with [*Globals.set()*](../apidoc/classes/iland/globals.qmd) for quick (Javascript-based) tests. 
 
 **clear()**
 clears/resets the internal grids (10m cells, 100m cells), i.e. damage and spread data.

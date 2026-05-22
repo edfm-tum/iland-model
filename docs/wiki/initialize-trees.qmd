@@ -14,7 +14,7 @@ The main switch in the [project file](project-file.qmd) is *world.initialization
 | unit | load from an initialization file for each resource unit; this uses the "environment file" approach described [here](simulation-extent.qmd). |
 | map | the landscape is divided in "stands" using a stand-grid. For each stand a initialization file is loaded. This approach is described [here](landscape-setup.qmd). The mode used for individual stands can be either "single" or "distribution" |
 | standgrid | as in *map* mode, the landscape is divided in stands - see [landscape setup](landscape-setup.qmd). But instead of loading many small files, one large init file is loaded. The init file needs to have a column named *stand_id*. For each stand the respective section of the init file is processed. |
-| snapshot | The whole landscape is loaded from a *vegetation snapshot* (see also [Object Globals](../apidoc/classes/globals.qmd), and the section [## supported initializataion files
+| snapshot | The whole landscape is loaded from a *vegetation snapshot* (see also [Object Globals](../apidoc/classes/iland/globals.qmd), and the section [## supported initializataion files
 
 
 Currently, iLand supports two text file based input formats. One handles a list of tree individuals with defined locations and properties. The 2nd format deals with tree distributions and describes a stand using a couple of simple properties.
@@ -160,8 +160,8 @@ The general approach of selecting suitable tree locations [#Tree_locations](init
 
 
 A *snapshot* is a full representation of the internal vegetation and soil state and is stored in a database. This *snapshot* can later be used to restore a previous vegetation state. The snapshot includes all state variables of trees, saplings, snags and soil-pools.
-A *snapshot* is created by using the Javascript function [saveModelSnapshot(](../apidoc/classes/globals.qmd)). This function creates a SQLite database file (which can be quite large) and an additional resource-unit map as a ESRI raster-file with the same name (and .asc as file extension).
-To load a snapshot, one can use either the Javascript function [loadModelSnapshot(](../apidoc/classes/globals.qmd)), or use the mode *snapshot* in the project-file for the tree initialization (see top of this page).
+A *snapshot* is created by using the Javascript function [saveModelSnapshot(](../apidoc/classes/iland/globals.qmd)). This function creates a SQLite database file (which can be quite large) and an additional resource-unit map as a ESRI raster-file with the same name (and .asc as file extension).
+To load a snapshot, one can use either the Javascript function [loadModelSnapshot(](../apidoc/classes/iland/globals.qmd)), or use the mode *snapshot* in the project-file for the tree initialization (see top of this page).
 It is also possible to restore only a part of a stored snapshot (e.g., to set up a smaller part of a larger landscape for testing purposes): this is automatically done when the extent of the simulated landscape is smaller than the landscape used for creating the snapshot.
 When regeneration is disabled (*model.settings.regenerationEnabled*), then saplings are not loaded, which can speed up the process of initializing the model remarkably.
 

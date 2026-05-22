@@ -39,7 +39,7 @@ The 'devstage' mechanism expects a Javascript object in the global Javascript wo
 | types | An object that describes the possible development stages with a numeric Id, name, a color.See below. |
 | run() | function with the signature "int run(cell)". This function calculates for each 'cell' a development stage and returns the numeric value. The function is only executed for cells that contain stockable area. See below for details. |
 | on<x>finished() | function that is called after completion of the development stage calculations. Can be used to save e.g. grids. Signature: "void on<x>finished(cell)". Note: on<x>finished with an upper-case "F", which is not saved correctly in the wiki. |
-| grid() | grid() returns the full development stage grid as a [Javascript grid](../apidoc/classes/grid.qmd). Use in combination with the 'on<x>finished' callback. |
+| grid() | grid() returns the full development stage grid as a [Javascript grid](../apidoc/classes/iland/grid.qmd). Use in combination with the 'on<x>finished' callback. |
 
 
  

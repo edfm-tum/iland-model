@@ -7,7 +7,7 @@ title: "iLand"
 <span style="font-size:1.2em;margin-bottom:20px;">the individual-based forest landscape and disturbance model</span>
 <div style="float:right;width:185px;margin-right:5px;">
 
-<div id="hpbuttonbox">	<div>[<img src="../img/b_wiki.png" title="read online documentation" alt="documentation" />](iland-hub.qmd)	</div>
+<div id="hpbuttonbox">	<div>[<img src="../img/b_wiki.png" title="read online documentation" alt="documentation" />](../index.qmd)	</div>
 <div>[<img src="../img/b_pubs.png" title="view scientific publications" alt="publications" />](iland-publications.qmd)	</div>
 <div>[<img src="../img/b_download.png" title="download iLand" alt="download"/>](download.qmd)	</div>
 </div>

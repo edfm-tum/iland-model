@@ -340,7 +340,7 @@ This output provides a summary of key model performance metrics for each simulat
 ### Dynamic Output
 
 
-The dynamic output produces statistics for all trees in the simulation. The "dynamic" output is configured in the [project file](project-file.qmd) section "output" (*output.dynamic*) and switched on/off there. In addition, the dynamic debug output can be switched on/off using the [Globals](../apidoc/classes/globals.qmd) Javascript function *Globals.startOutput("debug_dynamic")* and stopOutput().
+The dynamic output produces statistics for all trees in the simulation. The "dynamic" output is configured in the [project file](project-file.qmd) section "output" (*output.dynamic*) and switched on/off there. In addition, the dynamic debug output can be switched on/off using the [Globals](../apidoc/classes/iland/globals.qmd) Javascript function *Globals.startOutput("debug_dynamic")* and stopOutput().
 The defintion of columns is similar to the [#dynamic_stand_output_by_species_RU|dynamic stand output](outputs.qmd).
 
 Example for the section in the project file:

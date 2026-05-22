@@ -9,7 +9,7 @@ We see model development as a continuous cycle of various phases and steps with 
 
 <img src="../img/dev_strategy.jpg" alt="Image" width="350" class="img-fluid" />
 
-The overall iLand model design corresponds directly to its intended [domain of application](project-abstract.qmd). [Process resolution and level of complexity](iland-model-complexity-and-its-niche-in-the-landscape-of-models.qmd) are selected accordingly, yet taking feasability of implementation in the project duration into account. An initial model design overview can be [found here](model-design.qmd).
+The overall iLand model design corresponds directly to its intended [domain of application](project-abstract.qmd). [Process resolution and level of complexity](iland-model-complexity-and-its-niche-in-the-landscape-of-models.qmd) are selected accordingly, yet taking feasability of implementation in the project duration into account. An initial model design overview can be [found here](how-it-works.qmd).
 
 
 

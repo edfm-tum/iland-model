@@ -32,7 +32,7 @@ The approach in iLand relies on using Javascript as the "scripting language". Th
 
 
 
-For the base management, good starting points are the [Object Management](../apidoc/classes/management.qmd) and [Object Globals](../apidoc/classes/globals.qmd) API documentation as well as available demo examples (like [this](management-example-parallel-management.qmd) or [that](management-example-hja-fire-history.qmd)).
+For the base management, good starting points are the [Object Management](../apidoc/classes/iland/management.qmd) and [Object Globals](../apidoc/classes/iland/globals.qmd) API documentation as well as available demo examples (like [this](management-example-parallel-management.qmd) or [that](management-example-hja-fire-history.qmd)).
 
 
 In base management, a single javascript file is defined in the [Project file](project-file.qmd) and loaded during startup of the model. Every year the function *manage()* is called by iLand. The example shows a very simple and not particularly useful management routine:
@@ -69,7 +69,7 @@ You can:
 </ul>
 
 
-See the [Object Globals](../apidoc/classes/globals.qmd) for more details.
+See the [Object Globals](../apidoc/classes/iland/globals.qmd) for more details.
 
 
 <h2 class="showhide_heading">access points for scripts</h2>

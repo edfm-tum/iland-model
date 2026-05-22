@@ -36,4 +36,4 @@ The *output*section of the [project file](project-file.qmd) contains a sub-secti
 ## Controlling outputs during runtime
 
 
-Outputs can be controlled by Javascript, i.e. they can be started and stopped from a user defined script. See [#access_to_iLand_outputs](../apidoc/classes/globals.qmd) for details.
+Outputs can be controlled by Javascript, i.e. they can be started and stopped from a user defined script. See [#access_to_iLand_outputs](../apidoc/classes/iland/globals.qmd) for details.

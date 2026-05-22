@@ -45,11 +45,11 @@ The *agentDataFile* can have the following fixed columns:
 | U | the current rotation age of the stand (see notes below) |
 
 
-Note: if the *agentDataFile* contains additional columns, then the values are automatically assigned to each stand as stand properties and can thus be accessed in Javascript (see [stand.flag() method](../apidoc/classes/stand.qmd)).
+Note: if the *agentDataFile* contains additional columns, then the values are automatically assigned to each stand as stand properties and can thus be accessed in Javascript (see [stand.flag() method](../apidoc/classes/abe/stand.qmd)).
 
 There are two ways of specifying the *Agent* for each polygon:
 
-* you can specify an agent directly with the name of the agent in the 'agent' column of the *agentDataFile*. In this case, the agent has to created manually and registered by calling the Javascript function [fmengine.addAgent()](../apidoc/classes/fmengine.qmd).
+* you can specify an agent directly with the name of the agent in the 'agent' column of the *agentDataFile*. In this case, the agent has to created manually and registered by calling the Javascript function [fmengine.addAgent()](../apidoc/classes/abe/fmengine.qmd).
 * alternatively, you specify the agent type (the *agentType* column in the *agentDataFile*). In this case, a agent of the given agent type will be created on the fly.
 * both approaches can be mixed; e.g. you could define small scale farmers on one part of the landscape (with an separate agent for each stand), and a big company with a single agent that manages multiple stands on another part of the landscape
 

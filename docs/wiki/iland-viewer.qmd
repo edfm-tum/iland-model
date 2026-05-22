@@ -127,7 +127,7 @@ iLand tries to reload the last loaded project file. To accomplish this, iLand sa
 <h3 class="showhide_heading" id="Controlling_the_visualization_with_Javascript">Controlling the visualization with Javascript</h3>
 
 
-iLand allows to control the visualization via Javascript. This can be achieved via the [Globals](../apidoc/classes/globals.qmd)-Javascript object:
+iLand allows to control the visualization via Javascript. This can be achieved via the [Globals](../apidoc/classes/iland/globals.qmd)-Javascript object:
 
 
 <ul>

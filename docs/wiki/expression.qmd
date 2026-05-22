@@ -106,7 +106,7 @@ Generally, mathematical functions are executed without checking for the validity
 
 | **Name, Arguments** | **Description** | **Example** |
 | --- | --- | --- |
-| incsum(fn) | when used in SQL like expressions (e.g., [management](../apidoc/classes/management.qmd), the function *incsum* cumulates its value over several calls. See the management functions *mean* and *sum* functions. | incsum(basalArea)<40 |
+| incsum(fn) | when used in SQL like expressions (e.g., [management](../apidoc/classes/iland/management.qmd), the function *incsum* cumulates its value over several calls. See the management functions *mean* and *sum* functions. | incsum(basalArea)<40 |
 | polygon(value, x1,y1, x2,y2, x3,y3, ..., xn,yn) | return is: y1 if value<x1, yn if value>xn, or the lineraly interpolated numeric y-value. | polygon(x, 0,0, 1,0.5) |
 | sigmoid(x, type, param1, param2) | The value of "sigmoid" curve at *x*. The type of curve is designated by *type* with the two parameters *param1* and *param2*. 0: [logistic](http://en.wikipedia.org/wiki/Logistic_function), 1: [Hill-function](http://en.wikipedia.org/wiki/Hill_function), 2: 1-logistic, 3: 1-hill | sigmoid(x, 0, 10, 100) |
 | rnd(from, to) | returns a uniformly distributed random function between *from* and *to*. | rnd(0,1) |

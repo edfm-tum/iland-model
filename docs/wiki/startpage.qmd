@@ -6,7 +6,7 @@ pagetitle: "iLand"
 
 <div class="quick-links-row">
   <span class="quick-links-label">Quick links:</span>
-  <a href="iland-hub.html" class="quick-link-btn"><i class="bi bi-chevron-right"></i> Wiki</a>
+  <a href="../index.html" class="quick-link-btn"><i class="bi bi-chevron-right"></i> Wiki</a>
   <a href="https://discord.gg/e5trneUKav" target="_blank" class="quick-link-btn"><i class="bi bi-chevron-right"></i> Discord</a>
   <a href="https://iland-model.org/iland-book" target="_blank" class="quick-link-btn"><i class="bi bi-chevron-right"></i> iLand Book</a>
   <a href="iland-publications.html" class="quick-link-btn"><i class="bi bi-file-earmark-text"></i> Publications</a>
