@@ -83,47 +83,137 @@ Most functionalities of the barkbeetle module can be accessed via an Javascript-
 
 ### Methods
 
+### `runBB(iteration)` {#runbb}
 
-**runBB(number iteration)**
-executes a full cycle of the bark beetle module if *iteration* is 0 (i.e.: calculate generations, fetch vegetation from iLand, and spread/ attack/ kill). If *iteration* is larger then 0, only spread/attack/killing is simulated. This can be used to simulate multiple barkbeetle iterations (years) with a static forest state (note, though, that trees are removed! - see also *simulate*, *newYear*
+**Returns:** `void`
 
-**reloadSettings()**
-(Re-)load the parameters from the XML-settings. Can be used in conjunction with [*Globals.set()*](../apidoc/classes/iland/globals.qmd) for quick (Javascript-based) tests. 
+Executes a full cycle of the bark beetle module if `iteration` is 0 (i.e., calculate generations, fetch vegetation from iLand, and spread/attack/kill). If `iteration` is larger than 0, only spread/attack/killing is simulated. This can be used to simulate multiple bark beetle iterations (years) with a static forest state (note, though, that trees are removed! - see also [simulate](#simulate), [newYear](#newyear)).
 
-**clear()**
-clears/resets the internal grids (10m cells, 100m cells), i.e. damage and spread data.
+**Parameters:**
 
-**newYear()**
-increments the internal year counter - this is useful multiple years of bark beetles should be simulated without iLand running (which would synchronize the simulation year).
+*   **`iteration`** (`integer`): the iteration counter (0 for full cycle, >0 for spread/attack only).
 
-**gridToFile(type, filename)**
-writes a grid of type *type* to a ESRI ASCII grid (*filename*). *type* is one of the available grids (see [#Barkbeetle_visualization|here](barkbeetle-module.qmd)). The project folder is the default location for *filename*.
+---
 
-**grid(type)**
-retrieve a grid of the type *type* (see also *gridToFile()*, http://iland-model.org/apidoc/classes/Grid.html).
+### `reloadSettings()` {#reloadsettings}
 
-**generations(x, y)**
-return  the number of bark beetle generation at position x/y (indices on the 10m grid)
+**Returns:** `void`
 
-**setInfested(x,y)**
-Initiate damage; sets pixel at (x/y) (grid indices) as infested, return true if pixel was a potential host pixel
+(Re-)load the parameters from the XML settings. Can be used in conjunction with [`Globals.set()`](../apidoc/classes/iland/globals.qmd) for quick JavaScript-based tests.
 
-__setInfestedFromMap(Map grid,  key,  probability,  agerange)_
- set all pixels on stand *key* on the map *grid* (with probability *probability*) as infested. If infested, an "age" for the infestation is randomly selected between 0 and *agerange*. See also: http://iland-model.org/apidoc/classes/Map.html)
+---
 
-**setBackgroundInfestationProbability(x)**
-set the background infestation probability to 'x' for the whole landscape.
+### `clear()` {#clear}
 
+**Returns:** `void`
+
+Clears and resets the internal grids (10m cells, 100m cells), i.e., damage and spread data.
+
+---
+
+### `newYear()` {#newyear}
+
+**Returns:** `void`
+
+Increments the internal year counter - this is useful when multiple years of bark beetles should be simulated without iLand running (which would synchronize the simulation year).
+
+---
+
+### `gridToFile(type, filename)` {#gridtofile}
+
+**Returns:** `boolean`
+
+Writes a grid of type `type` to an ESRI ASCII grid (`filename`). The project folder is the default location for `filename`.
+
+**Parameters:**
+
+*   **`type`** (`string`): the type of the grid to write. See [Barkbeetle visualization](#barkbeetle-visualization) for the list of available grids.
+*   **`filename`** (`string`): the destination file path.
+
+---
+
+### `grid(type)` {#grid}
+
+**Returns:** [`Grid`](../apidoc/classes/iland/grid.qmd)
+
+Retrieves a grid of the type `type` as a JavaScript object (see also [gridToFile](#gridtofile)).
+
+**Parameters:**
+
+*   **`type`** (`string`): the type of the grid to retrieve.
+
+---
+
+### `generations(x, y)` {#generations}
+
+**Returns:** `double`
+
+Returns the number of bark beetle generations at position x/y (indices on the 10m grid).
+
+**Parameters:**
+
+*   **`x`** (`integer`): local 10m x-coordinate index.
+*   **`y`** (`integer`): local 10m y-coordinate index.
+
+---
+
+### `setInfested(x, y)` {#setinfested}
+
+**Returns:** `boolean`
+
+Initiates damage; sets pixel at (x/y) (grid indices) as infested. Returns `true` if the pixel was a potential host pixel.
+
+**Parameters:**
+
+*   **`x`** (`integer`): local 10m x-coordinate index.
+*   **`y`** (`integer`): local 10m y-coordinate index.
+
+---
+
+### `setInfestedFromMap(grid, key, probability, agerange)` {#setinfestedfrommap}
+
+**Returns:** `void`
+
+Sets all pixels on stand `key` on the map `grid` as infested with a probability of `probability`. If infested, an "age" for the infestation is randomly selected between 0 and `agerange`.
+
+**Parameters:**
+
+*   **`grid`** ([`Map`](../apidoc/classes/iland/map.qmd)): the map grid object defining the stands.
+*   **`key`** (`integer`): the ID/key of the stand on the map.
+*   **`probability`** (`double`): the probability (0..1) of infestation for each pixel.
+*   **`agerange`** (`integer`): the range of years (0..`agerange`) to randomly choose the infestation age from.
+
+---
+
+### `setBackgroundInfestationProbability(x)` {#setbackgroundinfestationprobability}
+
+**Returns:** `void`
+
+Sets the background infestation probability to `x` for the whole landscape.
+
+**Parameters:**
+
+*   **`x`** (`double`): the background infestation probability (0..1).
+
+---
 
 ### Properties
 
+### `simulate` {#simulate}
 
+<span class="api-tag tag-type">boolean</span>
 
-**simulate **- boolean
-Tree killing is only simulated, if set to *true*. (default: false)
+Tree killing is only simulated if set to `true` (default: `false`).
 
-**enabled** - boolean
-The bark beetle module can be (temporarily) disabled by setting *enabled* to *false*. (default: true)
+---
+
+### `enabled` {#enabled}
+
+<span class="api-tag tag-type">boolean</span>
+
+The bark beetle module can be (temporarily) disabled by setting `enabled` to `false` (default: `true`).
+
+---
 
 
 ### Script Example

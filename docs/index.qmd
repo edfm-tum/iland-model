@@ -4,23 +4,6 @@ title: "iLand Documentation Hub"
 
 Welcome to the central portal for navigating the **iLand** (individual-based forest landscape and disturbance model) documentation.
 
-```{=html}
-<div class="row my-4">
-  <div class="col-md-12 text-center">
-    <p class="lead">
-      iLand simulates forest landscape dynamics by modeling individual tree competition, growth, mortality, and regeneration.
-    </p>
-    <a href="wiki/why-developed.html" class="btn btn-outline-primary btn-md mx-2 my-1">
-      <i class="bi bi-question-circle"></i> Why iLand was developed
-    </a>
-    <a href="wiki/how-it-works.html" class="btn btn-outline-primary btn-md mx-2 my-1">
-      <i class="bi bi-gear"></i> How iLand works in a nutshell
-    </a>
-  </div>
-</div>
-```
-
----
 
 ## Part 1: Model Documentation
 
