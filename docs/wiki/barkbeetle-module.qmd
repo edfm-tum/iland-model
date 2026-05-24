@@ -12,7 +12,7 @@ The bark beetle module is a[disturbance sub-module](bark-beetle-disturbance.qmd)
 
 
 
-Details of the module are configured in a special sub-section of the [XML Project file](project-file.qmd).  This *barkbeetle* section needs to be placed as a sub-node of the *modules*.
+Details of the module are configured in a special sub-section of the [XML Project file](project-file.qmd).  This *barkbeetle* section needs to be placed as a sub-node of the *modules*.
 
 
 The following table describes the parameters:
@@ -27,9 +27,9 @@ The following table describes the parameters:
 | stormInfestationProbability | numeric | the probability that (suitable) wind-damaged pixels act beetle source. Default: 1 (i.e. all pixels are assumed being immediately infested) |
 | baseWinterMortality | numeric | probabilty that the beetles on an infested pixels (10m) die during the winter. This reduces the number of infested pixels. |
 | winterMortalityFormula | string | This formula gives the probability that infested pixels die as a function of the number of cold days (defined as number of days with the minimum temperature below a threshold of -15°C). This is evaluated (annually) for every infested pixel that passes the 'base mortality'. Formula parameter: days |
-| spreadKernelFormula | string | A formula that defines the spread kernel for bark beetles. The equation provides a probability for a distance x (in meters) from the origin. The given probability density function is limited to the area between 0 and the setting *spreadKernelMaxDistance* and is scaled internally to have a sum of 1. |
-| spreadKernelMaxDistance | numeric | The maximum distance beetles can fly in meters (see *spreadKernelFormula*). |
-| cohortsPerGeneration | numeric | Beetles spread not as individual animals, but as 'packages' (numerous enough to having a small chance of successfully attacking a potential host pixel). This setting is the number of 'packages' that spread for each generation from an infested pixel (in random direction and a random distance selected from the spread kernel). |
+| spreadKernelFormula | string | A formula that defines the spread kernel for bark beetles. The equation provides a probability for a distance x (in meters) from the origin. The given probability density function is limited to the area between 0 and the setting *spreadKernelMaxDistance* and is scaled internally to have a sum of 1. |
+| spreadKernelMaxDistance | numeric | The maximum distance beetles can fly in meters (see *spreadKernelFormula*). |
+| cohortsPerGeneration | numeric | Beetles spread not as individual animals, but as 'packages' (numerous enough to having a small chance of successfully attacking a potential host pixel). This setting is the number of 'packages' that spread for each generation from an infested pixel (in random direction and a random distance selected from the spread kernel). |
 | cohortsPerSisterbrood | numeric | 'packages' of beetles that can spread from an infested pixel if a full sisterbrood develops. The (lower) number of *cohortsPerGeneration *is used when the (potential) sisterbrood fails to develop fully. |
 | colonizeProbabilityFormula | string | The formula expresses the probability that the attack of one beetle 'package' landed on a potential host pixel is successful. The parameter for the formula is the stress-level of the tree ([SI](base-mortality.qmd)). |
 | deadTreeSelectivity | numeric | factor determining how effectively beetles are attracted by dead trees (e.g. windthrown) (within a 5x5 pixel vicinity). 1: all beetles go into dead trees, 0: no effect of dead trees, default: 1 |
@@ -88,7 +88,7 @@ Most functionalities of the barkbeetle module can be accessed via an Javascript-
 executes a full cycle of the bark beetle module if *iteration* is 0 (i.e.: calculate generations, fetch vegetation from iLand, and spread/ attack/ kill). If *iteration* is larger then 0, only spread/attack/killing is simulated. This can be used to simulate multiple barkbeetle iterations (years) with a static forest state (note, though, that trees are removed! - see also *simulate*, *newYear*
 
 **reloadSettings()**
-(Re-)load the parameters from the XML-settings. Can be used in conjunction with [*Globals.set()*](../apidoc/classes/iland/globals.qmd) for quick (Javascript-based) tests. 
+(Re-)load the parameters from the XML-settings. Can be used in conjunction with [*Globals.set()*](../apidoc/classes/iland/globals.qmd) for quick (Javascript-based) tests. 
 
 **clear()**
 clears/resets the internal grids (10m cells, 100m cells), i.e. damage and spread data.

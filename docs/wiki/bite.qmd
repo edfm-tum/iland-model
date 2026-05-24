@@ -10,12 +10,12 @@ BITE is coupled with iLand and its implementation makes heavy use of the Javascr
 
 
 
-### Full [BITE documentation](bite.qmd)
+### Full [BITE documentation](bite.qmd)
 
 
 
 
-## Integration in iLand
+## Integration in iLand
 
 
 
@@ -33,14 +33,14 @@ In section "modules" (similar to e.g. the fire module):
 | file | path to a Javascript file that contains the definition of agents. Note that further files can be included via the **include()** function of iLand. |
 
 
- 
+ 
 
 
 
 ## Outputs
 
 
- 
+ 
 
 
 ### Annual summary for each Bite agent
@@ -92,4 +92,4 @@ These are:
 | saplingKilled | integer | number of sapling cohorts killed |
 
 
- 
+ 

@@ -2,7 +2,7 @@
 title: "ABE debugging"
 ---
 
- This page describes some tipps and tricks of using ABE, and some hints on efficient debugging of the ABE system.
+ This page describes some tipps and tricks of using ABE, and some hints on efficient debugging of the ABE system.
 
 
 

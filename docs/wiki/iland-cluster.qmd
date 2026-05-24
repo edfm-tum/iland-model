@@ -10,13 +10,13 @@ This page describes a possible set up (and step by step instructions) for runnin
 ## iLand software
 
 
- 
+ 
 
 * get the iLand C++ [source code](iland-software-and-source-code.qmd) and copy to the server (we assume a folder *iland*)
 * create a *build* folder within the *iland* folder
 * build the [console version of iLand](iland-console.qmd) on the command prompt (see below). Prerequsites are a viable compiler (e.g., gcc, icc) and the Qt packages (see for example <http://doc.qt.io/qt-5/linux.html>). Details of the setup process will probably differ and depend on the specific details of the cluster.
 
-^
+```bash
 cd plugins
 rm -r *
 qmake ../../src/plugins/plugins.pro
@@ -28,33 +28,31 @@ rm -r *
 qmake ../../src/ilandc/ilandc.pro
 make
 cd ..
-^
- 
+```
+ 
 
 * on success, iLand can be run:
 
-^
+```text
 [wrammer@l33 build]$ ilandc/ilandc
 iLand console (1.04 - #1306)
 This is the console version of iLand, the individual based
 landscape and disturbance forest model.
-More at: [Welcome](../index.qmd)
+More at: https://iland-model.org
 (c) Werner Rammer, Rupert Seidl, 2009-2017
 compiled: Intel 64 bit Qt 5.8.0
 
-                                                                                                                                                            *
-
 Usage:
-ilandc.exe <xm<x>l-project-file> <...other options>
+ilandc.exe <xml-project-file> <...other options>
 Options:
 you specify a number key=value pairs, and *after* loading of the project
 the 'key' settings are set to 'value'. E.g.: ilandc project.xml 100 output.stand.enabled=false output.stand.landscape=false
-See also [iLand console](iland-console.qmd) </xm
-^
- 
+See also [iLand console](iland-console.qmd)
+```
+ 
 
 
-## setup of the simulation project
+## setup of the simulation project
 
 
 An iLand project is typically a folder that contains the main [project file](project-file.qmd) and all necessary files (e.g., climate data, data for the initialization of the vegetation, ...). Usually, the project folder can be simply copied from the desktop computer to the cluster.
@@ -76,13 +74,13 @@ In this example, a total of 5 x 4 x 2 x 20 = 800 simulations are required. One p
 | 4 | scenarioB | no | mgmtA.js |
 | ... |  |  |  |
 
- 
+
 
 The "id" is a unique Id for a simulation, and the columns "climate", "disturbance", and "management" define the detailed settings for each run. The details depend of course on the specific simulation study.
 
 
 
-## The batch process
+## The batch process
 
 
 iLand does not use any parallel computing across computer nodes (e.g., mpc); instead, every iLand simulation runs on a single computer node independently. The main advantage of a cluster environment is thus that many iLand simulations can be run at the same time (e.g., with different climate and management scenarios). In a typical environment the steps for a single simulation run with id "x" are:
@@ -94,7 +92,7 @@ iLand does not use any parallel computing across computer nodes (e.g., mpc); ins
 The above mentioned steps can be specified in a batch script (e.g. bash script on Linux systems). The 'hard' part is to translate the abstract settings for a given simulation id to something that iLand understands. In most cases this boils down to 'build' the command line arguments for the "ilandc" executable. Here is a (shortened example) - note that the details differ from the more generic example of a 'master' file above.
 
 
-```
+```bash
 # the run id that should be executed is in the environment variable SLURM_ARRAY_TASK_ID
 # other relevant env. variables:
 # TARGET: the path to a local directory on the node
@@ -156,11 +154,9 @@ cp $TARGET/log/log.txt $HOME/cent4csink/results/data${ID}/
 echo "done."
 ```
 
- 
 
 
-
-## Execution of the batch job
+## Execution of the batch job
 
 
 The details depend on the cluster management software that is used (e.g. [SLURM](http://slurm.schedmd.com/) or [SGE](https://en.wikipedia.org/wiki/Oracle_Grid_Engine)). The use case for iLand (a single job repeated many times with slightly different paramters) is often covered with a term like 'Job arrays' (e.g. [here](https://wiki.vsc.ac.at/doku.php?id=doku:job_arrays)).

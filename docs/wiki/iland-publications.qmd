@@ -95,10 +95,10 @@ Anthropogenic climate change has the potential to impact a variety of natural pr
 %%%
 :::
 
- 
+ 
 
         *
- 
+ 
 
 
 
@@ -141,7 +141,7 @@ Anthropogenic climate change has the potential to impact a variety of natural pr
 [**Dobor, L., Baldo, M., Bílek, I., Mális, F., Stepánek, P., Hlasny, T., (2024).**](https://doi.org/10.1111/gcb.17194) The interacting effect of climate change and herbivory can trigger large-scale transformations of European temperate forests. Global Change Biology, https://doi.org/10.1111/gcb.17194
 
 
-[**Dollinger, C., Rammer. W., Seidl, R. (2023).**](https://doi.org/10.1111/1365-2664.14520) Climate change accelerates ecosystem restoration in the mountain forests of Central Europe. Journal of Applied Ecology, https://doi.org/10.1111/1365-2664.14520
+[**Dollinger, C., Rammer. W., Seidl, R. (2023).**](https://doi.org/10.1111/1365-2664.14520) Climate change accelerates ecosystem restoration in the mountain forests of Central Europe. Journal of Applied Ecology, https://doi.org/10.1111/1365-2664.14520
 
 
 [**Albrich, K., Seidl, R., Rammer, W., & Thom, D. (2023).**](https://doi.org/10.1093/forestry/cpac022) From sink to source: changing climate and disturbance regimes could tip the 21st century carbon balance of an unmanaged mountain forest landscape. Forestry: An International Journal of Forest Research, 1–11. https://doi.org/10.1093/forestry/cpac022
@@ -285,7 +285,7 @@ Conclusions. We conclude that, rather than homogenizing disturbed areas, forest 
 Biodiversity fosters the functioning and stability of forest ecosystems and, consequently, the provision of crucial ecosystem services that support human well-being and quality of life. In particular, it has been suggested that tree species diversity buffers ecosystems against the impacts of disturbances, a relationship known as the “insurance hypothesis”. Natural disturbances have increased across Europe in recent decades and climate change is expected to amplify the frequency and severity of disturbance events. In this context, mitigating disturbance impacts and increasing the resilience of forest ecosystems is of growing importance. We have tested how tree species diversity modulates the impact of disturbance on net primary production and the total carbon stored in living biomass for a temperate forest landscape in Central Europe. Using the simulation model iLand to study the effect of different disturbance regimes on landscapes with varying levels of tree species richness, we found that increasing diversity generally reduces the disturbance impact on carbon storage and uptake, but that this effect weakens or even reverses with successional development. Our simulations indicate a clear positive relationship between diversity and resilience, with more diverse systems experiencing lower disturbance-induced variability in their trajectories of ecosystem functioning. We found that positive effects of tree species diversity are mainly driven by an increase in functional diversity and a modulation of traits related to recolonization and resource usage. The results of our study suggest that increasing tree species diversity could mitigate the effects of intensifying disturbance regimes on ecosystem functioning and improve the robustness of forest carbon storage and the role of forests in climate change mitigation.
 :::
 
- 
+ 
 
 
 
@@ -341,7 +341,7 @@ Forest ecosystems are the most important terrestrial carbon (C) storage globally
 
 
         *
- 
+ 
 
 
 ## Japan
@@ -441,4 +441,4 @@ The decision-making environment in forest management (FM) has changed drasticall
 %%%
 :::
 
- 
+ 

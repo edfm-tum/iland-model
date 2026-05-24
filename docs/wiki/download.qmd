@@ -2,7 +2,7 @@
 title: "download"
 ---
 
-iLand is a research tool, and is publicly available as open source software. We have developed the software relying solely on open source components, in order to facilitate its use and further development by others (see [here](../blog/index.qmd) for some ideas on iLand software development). The software is released under the [GNU General Public Licence](http://www.gnu.org/licenses/gpl.html) (GPL).
+iLand is a research tool, and is publicly available as open source software. We have developed the software relying solely on open source components, in order to facilitate its use and further development by others (see [here](../blog/index.qmd) for some ideas on iLand software development). The software is released under the [GNU General Public Licence](http://www.gnu.org/licenses/gpl.html) (GPL).
 
 
 

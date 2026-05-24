@@ -1,0 +1,10 @@
+---
+title: "iLand @ ESA"
+date: "2012-08-07"
+author: "Rupert Seidl"
+---
+
+For those of you who happen to be in Portland for this years’ [annual meeting of the Ecological Society of America](http://www.esa.org/portland/): We’ll be presenting an iLand application in the contributed oral session on [linking community structure and ecosystem function](http://eco.confex.com/eco/2012/webprogram/Session8191.html). The title of the paper is [“Drivers of spatial variation in old-growth forest carbon density disentangled with LiDAR and an individual-based landscape model”](http://eco.confex.com/eco/2012/webprogram/Paper36325.html). In the paper we’ve used iLand to
+(i) estimate C stocks of old-growth forests at the [HJ Andrews experimental forest](http://andrewsforest.oregonstate.edu/), and
+(ii) conduct a hierarchical simulation experiment to disentangle environmental and community drivers of spatial C variation.
+I’m looking forward to an interesting session and discussion!

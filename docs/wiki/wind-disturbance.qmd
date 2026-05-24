@@ -218,7 +218,7 @@ Within a wind event, windthrow or –breakage creates new edges and increases fe
 Generally, by accounting for local differences in terrain (exposure) and vegetation structure and composition (susceptibility) wind disturbance in iLand (i.e., the size, spatial footprint, and intensity of a wind event) is an emergent property of process-based considerations of wind effects. In the current version of the model we’re concentrating on edges only. It has to be noted, however, that “edges” are identified at a 10m pixel resolution, i.e. wind calculations are also conducted for individual tall trees within a stand (e.g. such as shelter- or seed trees). Furthermore, since a dynamic calculation of fetch is included in the model, the above described routine could also be applied to closed stand conditions in future versions if found desirable.
 
 
- 
+ 
 
 
 

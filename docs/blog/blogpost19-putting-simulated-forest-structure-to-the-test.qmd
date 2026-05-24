@@ -1,0 +1,13 @@
+---
+title: "Putting simulated forest structure to the test"
+date: "2010-05-31"
+author: "Rupert Seidl"
+---
+
+I know my posts here come in irregular intervals, but there has been a lot happening in the iLand universe lately, keeping me quite busy. However, now it’s time for some more updates… here another blurb on what has kept me (and Werner) occupied during the last weeks. And that was basically putting [iLands](../wiki/iland.qmd) abilities with regard to **simulating complex forest structures** to the test.
+
+And for that, we were in the lucky position to be able to use detailed data on a very interesting temperate forest ecosystem, [**Pacific Northwest old growth forests**](http://www.sciencemag.org/cgi/content/short/204/4400/1380). Besides their [awe-inspiring majesty](http://www.fs.fed.us/pnw/forests/west-cascade/douglas-fir/mature/trees/index.shtml) and their [recent history of ecological discovery and social controversy](http://tinyurl.com/29kx7lt), they are particularly interesting for the task of model evaluation, as there is hardly a more challenging forest ecosystem imaginable in terms of modeling forest structure. A system characterized by multiple species, consisting of a multi-story canopy where the height difference between dominant Douglas fir individuals and shade-tolerant new recruits of Western Hemlock easily amounts to more than 60m (and in some cases up to 80m) makes everyone concerned with modeling forest structure sweat, I guess.
+
+We are using multiple data sets both from the Pacific Northwest and the Eastern Alps to evaluate a number of aspects in iLand, an were able to use long-term vegetation data from the [HJ Andrews experimental forest](http://andrewsforest.oregonstate.edu/index.cfm) to **evaluate simulated stand structure** against observed stand development. And considering the process resolution of iLand (see previous post on [intermediate level of complexity](blogpost18-model-complexity-and-ilands-niche-in-the-complexity-landscape-of-forest-models.qmd)) and the heterogeneity and complexity of these systems, the results obtained in our evaluation are quite encouraging. The model is basically capable to reproduce observed stand structures over the 20+ year observation period for selected reference stands in the HJ Andrews. Below a histogram of observed and predicted stem number distributions after a 22 year simulation for reference stand 31 (a [site and stand description can be found here](http://andrewsforest.oregonstate.edu/pubs/webdocs/reports/permplot/hja/template.cfm?rs=31&topnav=55), observed data courtesy of [Harmon and Munger 2005](http://andrewsforest.oregonstate.edu/data/abstract.cfm?dbcode=TV010)).
+
+<img src='/img/rs31_dbhdist.jpg' border='0' alt='image' width=700 />

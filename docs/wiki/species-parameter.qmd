@@ -19,43 +19,43 @@ Species parameter are defined for each species in the input database. The *Name*
 		</tr>
 		<tr>
 			<td class="wikicell">shortName</td>
-			<td class="wikicell"> </td>
+			<td class="wikicell"> </td>
 			<td class="wikicell">unique identifier for a species</td>
 			<td class="wikicell">piab</td>
 		</tr>
 		<tr>
 			<td class="wikicell">name</td>
-			<td class="wikicell"> </td>
+			<td class="wikicell"> </td>
 			<td class="wikicell">descriptive (longer) name of a species</td>
 			<td class="wikicell">Picea Abies</td>
 		</tr>
 		<tr>
 			<td class="wikicell">displayColor</td>
-			<td class="wikicell"> </td>
+			<td class="wikicell"> </td>
 			<td class="wikicell">color used for drawing trees. The color is defined as a 6-character hexadecimal color in the form 'rrggbb' (red, green, blue, without a # character).</td>
 			<td class="wikicell">3E9C49</td>
 		</tr>
 		<tr>
 			<td class="wikicell">active</td>
-			<td class="wikicell"> </td>
+			<td class="wikicell"> </td>
 			<td class="wikicell">flag that allows to disable a species. Disabled species are not loaded into iLand</td>
 			<td class="wikicell">1=enabled, 0=disableld</td>
 		</tr>
 		<tr>
 			<td class="wikicell">LIPFile</td>
-			<td class="wikicell"> </td>
+			<td class="wikicell"> </td>
 			<td class="wikicell">filename of the binary LIP (light influence pattern) file. See also [Path](filenames-and-paths.qmd), [LightInfluencePattern](individual-tree-light-availability.qmd)</td>
 			<td class="wikicell">piab.bin</td>
 		</tr>
 		<tr>
 			<td class="wikicell">isConiferous</td>
-			<td class="wikicell"> </td>
+			<td class="wikicell"> </td>
 			<td class="wikicell">0 for broadleaved species, 1 for conifers</td>
 			<td class="wikicell">1</td>
 		</tr>
 		<tr>
 			<td class="wikicell">isEvergreen</td>
-			<td class="wikicell"> </td>
+			<td class="wikicell"> </td>
 			<td class="wikicell">1 for wintergreen species</td>
 			<td class="wikicell">0</td>
 		</tr>
@@ -133,13 +133,13 @@ Species parameter are defined for each species in the input database. The *Name*
 		</tr>
 		<tr>
 			<td class="wikicell">bmRoot_a</td>
-			<td class="wikicell"> </td>
+			<td class="wikicell"> </td>
 			<td class="wikicell">Parameter a of the allometric equation for coarse root biomass.</td>
 			<td class="wikicell">0.004</td>
 		</tr>
 		<tr>
 			<td class="wikicell">bmRoot_b</td>
-			<td class="wikicell"> </td>
+			<td class="wikicell"> </td>
 			<td class="wikicell">Parameter b of the allometric equation for coarse root biomass.</td>
 			<td class="wikicell">2.79</td>
 		</tr>
@@ -181,7 +181,7 @@ Species parameter are defined for each species in the input database. The *Name*
 		</tr>
 		<tr>
 			<td class="wikicell">barkThickness</td>
-			<td class="wikicell"> </td>
+			<td class="wikicell"> </td>
 			<td class="wikicell">factor to calculate thickness of the bark (cm): thickness = dbh * barkThickness (see [wildfire](wildfire.qmd) ).</td>
 			<td class="wikicell">0.065</td>
 		</tr>
@@ -256,7 +256,7 @@ Species parameter are defined for each species in the input database. The *Name*
 		</tr>
 		<tr>
 			<td class="wikicell">phenologyClass</td>
-			<td class="wikicell"> </td>
+			<td class="wikicell"> </td>
 			<td class="wikicell">link to a phenology class. 0= evergreen coniferous, 1= deciduous broadleaved, 2= deciduous coniferous. See [project file](project-file.qmd) for details as well as the page on [phenology](phenology.qmd).</td>
 			<td class="wikicell">0</td>
 		</tr>
@@ -295,7 +295,7 @@ Species parameter are defined for each species in the input database. The *Name*
 		</tr>
 		<tr>
 			<td class="wikicell">fecundity_m2</td>
-			<td class="wikicell"> </td>
+			<td class="wikicell"> </td>
 			<td class="wikicell">seedlings produced and surviving the first weeks per m² canopy cover (see also [fecundity](fecundity.qmd)).</td>
 			<td class="wikicell">100</td>
 		</tr>
@@ -319,14 +319,14 @@ Species parameter are defined for each species in the input database. The *Name*
 		</tr>
 		<tr>
 			<td class="wikicell">serotinyFormula</td>
-			<td class="wikicell"> </td>
+			<td class="wikicell"> </td>
 			<td class="wikicell" colspan="2">function that decides (probabilistic) if a tree is serotinous. The variable is the age of the tree, expected return is a number between 0 and 1.
 
 			empty: [serotiny](serotiny.qmd) not active</td>
 		</tr>
 		<tr>
 			<td class="wikicell">serotinyFecundity</td>
-			<td class="wikicell"> </td>
+			<td class="wikicell"> </td>
 			<td class="wikicell" colspan="2">
 
 			multiplier that increases fecundity for post-fire seed rain of serotinous species</td>
@@ -390,7 +390,7 @@ Species parameter are defined for each species in the input database. The *Name*
 		</tr>
 		<tr>
 			<td class="wikicell">estSOLthickness</td>
-			<td class="wikicell"> </td>
+			<td class="wikicell"> </td>
 			<td class="wikicell">effect of thickness of the soil organic layer on establishment probability. Multiplier calculated as exp( -estSOLthickness * SOLdepth[cm](cm.qmd)). Null or 0 disables effect.</td>
 			<td class="wikicell">0</td>
 		</tr>
@@ -399,7 +399,7 @@ Species parameter are defined for each species in the input database. The *Name*
 		</tr>
 		<tr>
 			<td class="wikicell">sapHeightGrowthPotential</td>
-			<td class="wikicell"> </td>
+			<td class="wikicell"> </td>
 			<td class="wikicell">[expression](expression.qmd) to calculate the maximum height of the sapling for the next timestep. see [sapling growth and competition](sapling-growth-and-competition.qmd). The first variable is interpreted as "height" (m).</td>
 			<td class="wikicell">40*[1-(h/40](1-h4013.qmd))[(1/3](1-h4013.qmd)*exp(-0.1))3</td>
 		</tr>
@@ -435,9 +435,9 @@ Species parameter are defined for each species in the input database. The *Name*
 		</tr>
 		<tr>
 			<td class="wikicell">sapSproutGrowth</td>
-			<td class="wikicell"> </td>
+			<td class="wikicell"> </td>
 			<td class="wikicell">multiplier for accelerated height growth of resprouted tree cohorts in the regeneration layer. Resprouting is enabled, when the value of <code>sapSproutGrowth</code> is not empty and &gt;0. See [sprouts](sprouts.qmd).</td>
-			<td class="wikicell"> </td>
+			<td class="wikicell"> </td>
 		</tr>
 		<tr>
 			<td class="wikicell" colspan="4">**Snags and carbon dynamics**</td>
@@ -468,7 +468,7 @@ Species parameter are defined for each species in the input database. The *Name*
 		</tr>
 		<tr>
 			<td class="wikicell">browsingProbability</td>
-			<td class="wikicell"> </td>
+			<td class="wikicell"> </td>
 			<td class="wikicell">annual probability that saplings (up to 2m height) are browsed by game and ungulates. See [browsing](browsing.qmd).</td>
 			<td class="wikicell">0.1</td>
 		</tr>
@@ -476,4 +476,4 @@ Species parameter are defined for each species in the input database. The *Name*
 </table>
 
 
- 
+ 

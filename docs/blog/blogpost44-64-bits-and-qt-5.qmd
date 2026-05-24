@@ -1,0 +1,57 @@
+---
+title: "64 bits and Qt 5"
+date: "2013-06-06"
+author: "Werner Rammer"
+---
+
+
+### Qt 5
+
+Qt 5 was released a couple of month ago (end of 2012) and now [Qt 5.1 (beta)](http://blog.qt.digia.com/blog/2013/05/14/qt-5-1-beta-released/) is here - which is exciting since 5.1 promises more stability and includes, most notably, Qt desktop components (besides the Android and iOS stuff). The desktop components allow creating QML based user interfaces using ready made standard, ahem, components like buttons, tool bars, and menus. The GUI of iLand is currently based on the "traditional" Qt widgets (which work well), and there are no plans to change this now. But in the long run, who knows...
+
+Equally important: Qt comes now in more precompiled (binary) flavors taking away the need to compile Qt yourself (which is a pain and requires a lot of messing around with compilers, configurations, ... just google the topic). Interestingly, there is now a 64bit MSVC 2012 version available (MSVC is the microsoft visual c++ compiler which is free when you use just the compiler without visual studio itself). The Qt guys use MVSC as default compiler for windows, so I decided to give the setup a try. In order to use MSVC you have to install the compiler and the debugging tools for Windows (look for instance [here](http://stackoverflow.com/questions/14089572/how-to-install-open-source-qt-libraries-5-binary-version-for-windows/14089968#14089968)). Having done that, the integration in Qt Creator works very well.
+
+### Porting from Qt 4 to Qt 5
+
+Porting iLand from Qt 4 to Qt 5 was actually not a big deal. There are a lot of more or less helpful resources on the net (like [this](http://www.kdab.com/porting-from-qt-4-to-qt-5/)or [that](http://qt-project.org/doc/qt-5.0/qtdoc/portingguide.html)). One thing was hard to find, though. iLand uses [statically linked plugins](http://qt-project.org/doc/qt-5.0/qtcore/plugins-howto.html)  for its disturbance [modules](blogpost42-iland-is-burning.qmd). And the way plugins are handled changed slightly, but significantly - there are new macros (like Q_PLUGIN_METADATA) which you need to add to your code, and there is one nasty issue I'd like to share: Somewhere in the main application, you need to import the plugin, using the Q_IMPORT_PLUGIN macro:
+
+```
+Q_IMPORT_PLUGIN(PluginName)
+```
+
+As the documentation states (and as it was the case in Qt 4), PluginName was the name that was specified as the build target in the .pro file (in our case, e.g., iland_fire). This does **not** work and you get "unresolved externals" linker errors. Hours later, I found that you need to specify the class name of the plugin class instead: in our case e.g., FirePlugin. There seems to be some disucssion internally (https://bugreports.qt-project.org/browse/QTBUG-24496) and using the class name could be also only a workaround - we'll see.
+
+Using MSVC on windows speeds up the compilation process enormously (compared to gcc) - what used to take minutes is now a matter of 30 seconds (like, rebuilding the whole iLand application).
+
+### going to 64 bits
+
+When we did the simulations for the HJ Andrews landscape (e.g., for [this paper](http://dx.doi.org/10.1016/j.ecolmodel.2012.02.015)), we ran into the memory limiations of 32bit software. With the help of some tricks (-Wl,--large-address-aware), we were barely able to run the HJA, and since then it was clear that at some point we need to switch to a 64 bit architecture. I had the expectation, that the process will be a bit bumpy and that some memory saving micro-optimizations will bite back. Interestingly, nothing like that happened. Compilation was smooth and iLand worked as expected.
+
+And even better: iLand is now considerably faster. There were a couple of optimizations that went into Qt 5, and MVSC seems to outperform GCC (at least for the Qt libraries). And there is maybe also some gain in using 64 bit CPU as such (maybe an increased used of SSE instructions, more registers, ...). The table shows the increase for HJ Andrews simulation (6400ha, 500 simulated years, starting from bare ground, including fire disturbances, Core i5-2500, Windows 7, 64bit). 
+
+iLand version
+
+simulation time
+
+32bit GCC Qt4
+
+50min
+
+64bit MSVC Qt5
+
+32min 
+
+Thats awsome! 
+
+### Deploying applications based on Qt 5
+
+The process of deploying Qt based applications (i.e., including all the necessary DLLs and other files) is always time consuming and a bit frustrating. This has not changed with Qt 5. And the documentation in this regard is far from perfect. What you need to have is the following:
+
+* in the application directory you need to need the icudt51.dll, icuin51.dll and icuuc51.dll (which provide some unicode support and are required for webkit, but for some reason you need to include this for every qt application). They are alone about 25MB which really sucks. I hope this will be fixed in future versions.
+
+* You need to have "platforms" subfolder with "qminimal.dll" and "qwindows.dll". You find the files in the plugins/platforms folder of Qt.
+
+### Conclusion
+
+For iLand, going to 64bit and Qt 5 was not a big effort, but brought improved performance!
+

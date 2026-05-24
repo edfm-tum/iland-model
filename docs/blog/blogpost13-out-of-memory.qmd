@@ -1,0 +1,18 @@
+---
+title: "out of memory?"
+date: "2009-11-06"
+author: "Rupert Seidl"
+---
+
+Computers are getting faster and faster and memory is hardly ever a problem any more- and this technical fast track is definitely an important factor in making a project such as [iLand](../wiki/iland.qmd) possible.
+
+But despite its headline this post is not about technical limitations of modeling. It is about our own limitations in dealing with the larger amounts of information that we are digesting from day to day. In the context of a modeling project- we're now 6 month down the road, and important parts of the basic model design are pieced together and already implemented. And although there is still a lot ahead of us and six months is not a very long period we find it increasingly important to organize and document the thinking, research and development that has been going on over the last month. Or, in other words: in modeling (and many other things) it is often all about the details, but our own limitations make us forget these details rather quickly, once we turn our attention to other things.
+
+In order not to loose this detail, and to conserve the thoughts and reasoning we arrived at in working on the model, we put quite an emphasis on documentation and communication in our project. A centerpiece of this effort is this webpage. The project collaborators section by now contains 72 wiki pages as of today, documenting what we've been working on. The beauty of the [wiki](http://en.wikipedia.org/wiki/Wiki) system lies in two aspects for this task:
+
+* First, documentation as we see it is a continuous process rather then something you write once the model is "done". The reason for that view is, among other things, the above mentioned inability to keep all the details and reasoning present. What the wiki allows us is to start a documentation parallel to development, and track all changes that might happen down the road. As the project progresses we'll not just have the current state properly documented but also the development that led to this state.
+* Secondly, lo and behold the beauty of hypertext. The wiki documentation currently contains more than 100 unique references to scientific literature, embedding the model concept into its scientific context, linking to further information on technical details or giving reference to previously developed concepts that we adopted and adapted in iLand. But rather than an ordinary reference list, the hypertext allows the reader is only one click away from the articles fulltext , opening up a new dimension of reading (thanks to such handy tools as the [doi](http://www.doi.org/).)
+
+In addition to this conceptual level of documentation, software versioning and documentation is evolving as the model code grows. In [iLand](../wiki/iland.qmd) we use the software version control system [Subversion](http://subversion.tigris.org/) and the documentation system [Doxygen](http://subversion.tigris.org/). Code documentation frequently links to the description of the concept in the related wiki pages, coherently adding another level of documentation. Overall, this system allows us to extract, retrace, and analyze any state (previous or current) in the model development.
+
+And yes, it takes some effort to engage in this continuous documentation. However, we feel that this pays back easily in not having to laboriously re-construct previous thoughts and decisions a few month down but having them readily at hand for re-evaluation, extension or adaptation. Furthermore, such a comprehensive suite of model documentation can significantly enhance the value of a tool for potential users and collaborators in the future.

@@ -2,7 +2,7 @@
 title: "bark beetle disturbance"
 ---
 
-This page provides a detailed description of the iLand bark beetle sub module. A more technical description is given by the [barkbeetle module](barkbeetle-module.qmd) page.
+This page provides a detailed description of the iLand bark beetle sub module. A more technical description is given by the [barkbeetle module](barkbeetle-module.qmd) page.
 
 The iLand bark beetle module dynamically simulates the interactions between climate, bark beetle disturbance, and forest development. It explicitly considers bark beetle phenology and development, spatially explicit dispersal of the beetles, colonization and tree defense reactions, as well as temperature-related overwintering success and predation by antagonists. The design of the models follows recent findings on multi-scale drivers of bark beetle outbreaks, considering drivers at the tree (defense, susceptibility), stand (thermal requirements and beetle phenology), landscape (host distribution, beetle dispersal) and regional (climate variation and extremes as triggers of outbreaks) scale. It is a process-based model, using specific findings from the literature to parameterize individual processes. The iLand bark beetle model is currently parameterized and implemented to simulate the Norway spruce (*Picea abies*) – European spruce bark beetle (*Ips typographus* L.) system, but is general enough that adaptation to other host – bark beetle systems is possible with moderate efforts.
 
@@ -16,7 +16,7 @@ The iLand bark beetle module dynamically simulates the interactions between clim
 
 
 
-## Initiation of an outbreak
+## Initiation of an outbreak
 
 
 An annual probability for the occurrence of a bark beetle disturbance *P<sub>base</sub>* is derived from the observed disturbance rotation period (DRP) for bark beetles. This can either be specified as a single (i.e., spatially uniform) probability for the entire landscape, but can also be supplied as map that accounts for spatial differences on the simulated landscape. However, even if a spatially uniform outbreak probability is supplied to the model the realized bark beetle disturbance regime in the simulation will vary strongly for landscapes that feature strong climatic gradients, as a result of the explicit effect of climate on beetle development – see below. To derive *P<sub>base</sub>* for the simulation from DRP, the average size of a bark beetle outbreak area per year (*size*) and the reference size of the calculation (here 100 × 100 m cells, =1ha) (*area*) need to be accounted for as described in Eq. 1:
@@ -34,14 +34,14 @@ $$
 {odds}_{base}=\frac{P_{base}}{1-P_{base}}
 $$
 
- 
+ 
 
 
 $$
 {odds}_{bb}={odds}_{base}\cdot r_c
 $$
 
- 
+ 
 
 
 $$
@@ -52,7 +52,7 @@ $$
 The climate modifier *r<sub>c</sub>* is related to interannual climate variation at the regional level and is thus uniform over the landscape. It is a measure of relative change, where the baseline (i.e., a value of 1) is related to the climate conditions for which *P<sub>base</sub>* was specified (e.g., the long-term mean climate over the disturbance observation period). It can be determined using climate-sensitive outbreak relationships that are derived either based on detailed modeling analyses by means of meta-modeling (e.g., [Seidl et al. 2009](http://dx.doi.org/10.1007/s10113-008-0068-2)), or from empirical analyses of the large-scale climatic drivers of bark beetle outbreaks (e.g., [Seidl et al. 2011](http://dx.doi.org/10.1111/j.1365-2486.2011.02452.x)). For the *P. abies – I. typographus* system currently parameterized in iLand we followed the in-depth analysis of [Seidl et al. (2016)](http://dx.doi.org/10.1111/1365-2664.12540) and related outbreak probability to regional variation in summer precipitation.
 
 If a wind disturbance event is simulated *P<sub>bb</sub>* is increased by the probability that windfelled and –broken trees are colonized by bark beetles, currently set to 0.30, based on previous empirical analyses ([Eriksson et al. 2005](http://dx.doi.org/10.1016/j.foreco.2005.05.044); [Eriksson et al. 2008](http://dx.doi.org/10.1016/j.foreco.2007.10.043)). Salvaging windthrown trees can thus strongly dampen the probability of outbreak initiation in the simulation (see also [Stadelmann et al. 2013](http://dx.doi.org/10.1016/j.foreco.2013.06.003)). Bark beetle outbreaks are initiated by drawing a random number and comparing it against *P<sub>bb</sub>*. A prerequisite for initiation at a given location on the landscape is the availability of viable host trees, defined as Norway spruce trees exceeding a certain threshold diameter (here set to 15 cm dbh). The spatial grain of the simulation of outbreak initiation and spread are 10 x 10 m cells (i.e., the approximate area covered by the crown of an old-growth tree ([Lexer and Hönninger 2001](http://dx.doi.org/10.1016/S0378-1127(00)). For these cells the dominant Norway spruce tree is evaluated in order to determine whether the cell is a potential host cell for the beetle.
- 
+ 
 
 
 
@@ -60,7 +60,7 @@ If a wind disturbance event is simulated *P<sub>bb</sub>* is increased by the pr
 
 
 Bark beetle development is simulated by means of a phenology-based process model ([Seidl et al. 2007](http://dx.doi.org/10.1016/j.ecolmodel.2007.04.002); [Baier et al. 2007](http://dx.doi.org/10.1016/j.foreco.2007.05.020)). A cumulative sum of maximum air temperature of 140.3 degree days above the beetles’ lower developmental threshold (DTL = 8.3 ◦C; ([Wermelinger and Seifert 1998](http://dx.doi.org/10.1111/j.1439-0418.1998.tb01482.x))) accumulated from the April 1<sup>st</sup> onward is used to predict the onset of spring swarming and first colonization of trees. Beetles only swarm on days with air temperature maxima of >16.5°C. Essential for brood development, however, is bark temperature rather than ambient temperature. To derive bark temperature, a previously established empirical relationship between bark temperature, air temperature, incoming radiation above the canopy, and relative light level (the latter derived here from the local leaf area index simulated in iLand) is employed ([Baier et al. 2007](http://dx.doi.org/10.1016/j.foreco.2007.05.020)). Brood development is estimated using upper and lower temperature thresholds (8.3 and 38.9°C, respectively) and a non-linear function for calculating effective bark temperatures and thermal sums necessary for successful bark beetle development ([Wermelinger and Seifert 1998](http://dx.doi.org/10.1111/j.1439-0418.1998.tb01482.x); [Wermelinger and Seifert 1999](http://dx.doi.org/10.1046/j.1365-2311.1999.00175.x)). If the effective bark temperature sum reaches the heat sum of 557 degree days beetle development is completed. If the maximum air temperature exceeds the required lower limit of swarming (16.5°C), and day length is still >14.5 h, beetles disperse (see below) and start sister broods (i.e., new broods established by the initial parental generation of beetles) and/ or a new filial generation. If the accumulated effective bark temperature exceeds beetle 278.5 degree days and the swarming requirements are met a sister brood is initiated. Sister broods develop in analogy to the main filial generations using the same developmental thresholds. Beetle development stops either through bark temperatures below the lower developmental threshold or through day lengths of <14.5 h ([Seidl et al. 2007](http://dx.doi.org/10.1016/j.ecolmodel.2007.04.002); [Baier et al. 2007](http://dx.doi.org/10.1016/j.foreco.2007.05.020)).
- 
+ 
 
 
 
@@ -73,7 +73,7 @@ In a first step, beetle flight follows a symmetrical dispersal kernel (see e.g.,
 
 The aggregation behavior of beetles via their chemical communication is not simulated explicitly in iLand. Rather than simulating the dispersal of pioneer beetles and the subsequent attraction of followers via pheromones, which eventually exhausts tree defenses and leads to a successful attack ([Wermelinger 2004](http://dx.doi.org/10.1016/j.foreco.2004.07.018); [Kausrud et al. 2012](http://dx.doi.org/10.1111/j.1469-185X.2011.00183.x)), we here aggregate this dynamics by simulating the dispersal of beetle cohorts, with a cohort defined as the minimum number of beetles that are jointly able to kill a tree (estimated to be 30 beetles in the case of *I. typographus*, ([Kautz et al. 2014](http://dx.doi.org/10.1016/j.ecolmodel.2013.11.022))). Every cell for which a successful brood is simulated disperses multiple beetle cohorts, with the number determined by the reproductive success of the beetle. For *I. typographus*, for instance, it can be assumed that 45 larvae are hatched per female colonizing beetle ([Fahse and Heurich 2011](http://dx.doi.org/10.1016/j.ecolmodel.2011.03.014)), representing the upper limit of the reproductive rate. However, if also mortality and density-dependent competition for resources within a brood are considered, the reproductive rate of beetles is likely considerably lower than that (estimated to range between 4 and 24 by [Wermelinger and Seifert (1999)](http://dx.doi.org/10.1046/j.1365-2311.1999.00175.x), and set to 20 in [Seidl and Rammer (2016)](http://dx.doi.org/10.1007/s10980-016-0396-4)). The reproductive success is a user-defined parameter in the model that can be parameterized based on empirical data and specified separately for main generations and sister broods.
 
- 
+ 
 
 
 ## Host colonization
@@ -89,10 +89,10 @@ $$
 
 with SI is the C-balance derived stress index [0,1]. Windthrown trees are assumed to be essentially defenseless, and area assigned a *P<sub>colonize</sub>* of 1.0. A uniform random number is compared against *P<sub>colonize</sub>* to determine whether a tree is successfully colonized by an attacking cohort of beetles. Please note that during any given dispersal wave multiple beetle cohorts can attack a tree.
 
- 
+ 
 
 
-## Overwintering of the beetle
+## Overwintering of the beetle
 
 
 Only the last beetle generation developing in a year is assumed to overwinter. Of that generation, all immature beetles are assumed to experience 100% winter mortality ([Faccoli 2002](http://dx.doi.org/10.1034/j.1399-5448.2002.02017.x); [Jönsson et al. 2012](http://dx.doi.org/10.1016/j.agrformet.2012.07.012)). For mature beetles, simulated winter mortality consists of two components: First, a background winter mortality rate (*M<sub>bg</sub>*) is assumed, i.e., a fixed proportion of adult beetles is killed every winter (here set to *M<sub>bg</sub>*= 0.40, following [Jönsson et al. (2012)](http://dx.doi.org/10.1016/j.agrformet.2012.07.012)). Second, additional mortality is caused by exposure to strong winter frost. Specifically, days with minimum temperatures below -15 °C are assumed as frost days (*fd*), and beetle mortality (*M<sub>w</sub>*) increases with days of exposure (Eq. 6):
@@ -105,10 +105,10 @@ $$
 
 The empirical parameter *a<sub>1</sub>* was estimated to be -0.1005 by [Koštál et al. (2011)](http://dx.doi.org/10.1016/j.jinsphys.2011.03.011) under wet conditions, with more than 95% of the beetles dying from 30 days of frost exposure.
 
- 
+ 
 
 
-## Collapse of outbreaks
+## Collapse of outbreaks
 
 
 How and why bark beetle outbreaks stop is not yet fully understood. However, observations for the *P. abies – I. typographus* system show that regional eruptions of beetles die down regularly after six years on average ([Kautz et al. 2011](http://dx.doi.org/10.1016/j.foreco.2011.04.023); [Tomiczek et al. 2012](http://bfw.ac.at/rz/bfwcms.web?dok=9355); [Lausch et al. 2013](http://dx.doi.org/10.1016/j.ecolind.2012.07.026); [Seidl et al. 2016](http://dx.doi.org/10.1111/1365-2664.12540)). Antagonists, such as predatory beetles (*Cleridae*) and flies (*Dolichopodidae*), as well as parasitic wasps (*Pteromalidae, Braconidae*) and birds, play an important role in mitigating and containing bark beetle outbreaks ([Wermelinger 2002](http://dx.doi.org/10.1046/j.1439-0418.2002.00707.x); [Wermelinger 2004](http://dx.doi.org/10.1016/j.foreco.2004.07.018)). A further aspect in the collapse of outbreaks is likely to be a decreased fitness of individual beetles due to intraspecific competition and density-dependent feedbacks ([Marini et al. 2013](http://dx.doi.org/10.1111/j.1600-0706.2013.00431.x); [Kautz et al. 2014](http://dx.doi.org/10.1016/j.ecolmodel.2013.11.022)). However, modeling population dynamics of the diverse community of antagonists as well as the fitness level of individual beetles was beyond the scope of the iLand bark beetle disturbance module. Consequently, we assumed a fixed negative feedback in later stages of bark beetle outbreaks, parameterized to mimic the observed pattern of periodic collapses of bark beetle populations. Specifically, we defined the effect of negative feedbacks (as represented by an additional beetle mortality component *M<sub>nf</sub>*) to depend on the time elapsed since the initiation of an outbreak spot (*t<sub>ob</sub>*), following Eq. 7,

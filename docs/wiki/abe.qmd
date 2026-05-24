@@ -4,7 +4,7 @@ title: "ABE"
 
 
 
-# ABE - the Agent Based management Engine for iLand
+# ABE - the Agent Based management Engine for iLand
 
 
 
@@ -12,28 +12,28 @@ The ABE model provides a framework to dynamically simulate adaptive forest manag
 
 
 
-## Building blocks of ABE
+## Building blocks of ABE
 
 
- 
+ 
 
 
 
-### [Agent and agent types](abe-agents.qmd)
+### [Agent and agent types](abe-agents.qmd)
 
 
 In ABE, all forest managers are represented by [Agents](abe-agents.qmd). *Agents* are responsible for the management of a specific part of the landscape. Each Agent is of a certain *Agent Type*. An *Agent Type* corresponds to a manager archetype such as “farmer” or “forest company”, while an *Agent* represents an individual manager with specific properties, e.g., the agents’ age.
 
 
 
-### [Stand treatment programs](abe-stp.qmd)
+### [Stand treatment programs](abe-stp.qmd)
 
 
 A *stand treatment program* consists basically of a collection of activity objects, which typically cover the silvicultural treatments to regenerate, tend and thin, and harvest a stand. In addition, the *STP* includes a definition of a time window for each activity, from which ABE autonomously derives the sequence and preliminary time of execution for each activity.
 
 
 
-### [Management activities](abe-activities.qmd)
+### [Management activities](abe-activities.qmd)
 
 
 Activities are the core element of forest management in ABE, as they are the elements that actually change the forest state in the ecosystem model by removing or planting trees.ABE provides a [library of pre-defined activities](abe-activities.qmd) that cover the most important aspects of forest management. Yet, the activity library can be easily extended by providing user-defined activities. Activities are fetched from the library by specifying the name of the activity type and by further defining the properties of the activity (Box 4).
@@ -43,13 +43,13 @@ Activities are the core element of forest management in ABE, as they are the ele
 ## Using ABE
 
 
- 
+ 
 
 * [Spatial setup of ABE](abe-spatial-setup.qmd): documentation of the setup procedures
 * [Creating a "minimal" ABE](abe-minimal-setup.qmd): a guide for a minimal ABE
 * [ABE Outputs](abe-outputs.qmd): the outputs of ABE
 * [ABE Interactive use and debugging](abe-debugging.qmd): tipps and tricks for using ABE
- 
+ 
 
 
 
@@ -58,11 +58,11 @@ Activities are the core element of forest management in ABE, as they are the ele
 
 
 * [ABE Javascript API](../apidoc/index.qmd): Documentation of the JavaScript API
- 
+ 
 
 
 ::: {.callout-note title="citation"}
 [Rammer, W., Seidl, R., 2015](http://dx.doi.org/10.1016/j.gloenvcha.2015.10.003). Coupling human and natural systems: Simulating adaptive management agents in dynamically changing forest landscapes. Global Environmental Change, 35, 475-485.
 :::
 
- 
+ 

@@ -1,0 +1,86 @@
+---
+title: "iLand 1.0 release (in numbers)"
+date: "2016-11-16"
+author: "Werner Rammer"
+---
+
+
+
+# iLand 1.0 Release (in numbers)
+
+
+
+When we began working on iLand - around 2009 - we knew we that we set out for a longer journey. Today, more than 7 years after those first steps, we are proud to release version 1.0  - which is an excellent opportunity to look at the history and the current state of the project.
+
+
+
+### iLand website
+
+
+Scientific publications are a key factor of a usable model documentation, but alone insufficient. A complex ecosystem model includes much more process and implementation details which cannot be stuffed into research articles. But those details need to be **somewhere**, and hey - full text search would be awsome, too! So, quite naturally, we designed the iLand documentation to be online (this site).
+ The internet develops really at a fast pace, both technically and visually. We went online with our wiki site using the TikiWiki version 3 in 2009. While the content of the site grew steadily, the site saw only smaller adjustments and additions (e.g., iLand downloads). Again, version 1.0 is a big milestone as we took the opportunity for a larger (and well due) overhaul of the whole infrastructure (this starts with upgrading outdated Ubuntu server versions ;) ). Some key features of the updated site (which you are likely visiting right now) are:
+
+* mobile friendly: reading iLand blogs or docs on your mobile device is now a breeze
+* switching to MathJax for rendering equations (we used a free online service to render equations to images before - thanks to [John Forkosh](http://forkosh.com) for providing this free service for years!!)
+* visual upgrade: the updated site design improves readability by larger fonts and more white space; by the way: the picture of the "forest" that we used for the banner on the top of the page was shot in the Rhodope mountains in southern Bulgaria (which is a great place for a hike!)
+
+ Below (for future reference) are screenshots from the former and the current iLand web site:
+<img src="/img/wiki_new.jpg" alt="Image" class="img-fluid" /><img src="/img/wiki_old.jpg" alt="Image" class="img-fluid" />
+
+
+
+### Publications
+
+
+iLand is primarily a research tool, therefore publications in scientific journals are a key part of the project. So far, 10 iLand related papers have been published (4 focusing on modeling, 6 more on applications, though distinction is somewhat blurry) that have been cited >150 times. Things seem to accelerate: the first paper came out three years after the start of the project ([Seidl et al. 2012](http://dx.doi.org/10.1016/j.ecolmodel.2012.02.015)), but we managed to put out 4 papers alone in 2016 . And more papers are in the pipeline... so stay tuned!
+
+
+
+### Downloads
+
+
+Since the very beginning we believed that open access to scientific tools and the reproducibility of scientific results are cornerstones of the scientific project. Consequently, iLand has always been (and will be) released under an open source library (GPL) and can be freely downloaded and shared. Since the first public release in March 2012, around 200 people around the globe did exactly this:
+
+<img src="/img/downloads.png" alt="Image" class="img-fluid" />
+
+Most downloads originated in Europe, followed by Asia and North America (see Table).
+We found the highest downloads per capita-ratio for Austria (0.0002%, a total of 10% of the downloads), most likely because iLand "headquarters" are located in Austria.
+
+
+| Region | % of Downloads |
+| --- | --- |
+| Europe | 58% |
+| Asia and Oceania | 22% |
+| North America | 16% |
+| South Ameria | 3% |
+| Afrika | 1 % |
+
+
+
+
+### Releases
+
+
+The current release 1.0 is the 5th official iLand release. The following table provides an overview over those releases (see this page for details about [previous releases](../wiki/iland-previous-releases.qmd)).
+
+| Release | Release Month | Downloads | Description |
+| --- | --- | --- | --- |
+| 0.3 | 2012/03 | 30 | iLand core processes ([paper](http://dx.doi.org/10.1016/j.ecolmodel.2012.02.015)) |
+| 0.69 | 2012/09 | 36 | landscape processes ([paper](http://dx.doi.org/10.1007/s10021-012-9587-2)) |
+| 0.7 | 2013/10 | 27 | wind module ([paper](http://dx.doi.org/10.1016/j.envsoft.2013.09.018)) |
+| 0.8 | 2014/07 | 106 | fire module ([paper](http://dx.doi.org/10.1890/14-0255.1)) |
+| 1.0 | 2016/11 | tbc! | bark beetle and management modules |
+
+
+
+
+### Counting lines of code
+
+
+We used the CLOC tool to count the lines of code that are in the iLand code base. The tool can strip away all empty and comment lines, counting only lines that "do something". As of now, iLand contains 29,875 lines of C++ code (LOC). This is a marked increase compared to earlier versions (release 0.3: 12,723 LOC, 0.69: 16, 841 LOC): iLand is still growing. And since we are at it: the new [forest management module](../wiki/abe.qmd) (ABE) is quite heavy (5,942 LOC), compared to the all disturbance modules combined (3,142 LOC). Interestingly, each disturbance module has a similar line count: wildfire: 932, LOC, wind: 1,027 LOC, bark beetle: 1,177 LOC.
+
+
+
+
+
+

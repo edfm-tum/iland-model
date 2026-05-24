@@ -1,0 +1,36 @@
+---
+title: "How iLand works - in a nutshell"
+---
+
+This section gives a brief overview of iLand's design principles. For more details, consult the [iLand publications](iland-publications.qmd) and the other sections of this documentation.
+
+## Design Principles
+
+### Individual-based modeling
+iLand simulates each tree within the forest individually. This allows the model to capture how unique trees interact with each other (e.g., competition for light) and their individual growth over time. As a result, forest structure and organization emerge inherently from the simulation. Individual-based models permit tracking detailed effects of forest disturbances and offer realistic simulations of forest resilience.
+
+### Process-based modeling
+iLand models the underlying processes in a forest, like how trees convert sunlight into energy and grow. This means the model can be more reliable when simulating how a forest will react to changes in its environment. Process-based models are founded on physiological and physical principles (e.g., radiation use efficiency, water cycle dynamics), rather than purely empirical growth-and-yield relationships.
+
+### Multi-scale modeling
+iLand considers the forest at many scales, both in space and time. It can simulate events happening over minutes (tree damage in a storm), days (effects of daily weather), or years (tree growth). The model also looks at areas from square meters (regeneration and tree competition) up to hectares (resource units sharing climate and soil characteristics) and the landscape scale (disturbances and management). This multi-scale approach allows fine-scale processes to influence the larger forest and vice versa.
+
+### Modeling for application
+iLand was designed to be flexible to serve different scientific research needs. Users have extensive control over outputs (by selecting specific data tables required at various scales), processes (by turning model components on or off for experiments), and scenarios (using the built-in JavaScript engine for customized events and management logic).
+
+### Transparent and efficient software design
+iLand balances scientific detail with high performance. It uses specialized algorithms (e.g., Lightroom for light calculation) and is written in C++ using the Qt framework to handle millions of trees efficiently. By being open-source, developers around the world can review, verify, and extend its capabilities.
+
+## Model Design Hierarchy
+
+Processes in iLand operate on three distinct hierarchical levels:
+*   **Environment**: The level of homogeneous climate and topography (typically tens to hundreds of hectares).
+*   **Resources**: The level of above- and belowground resource dynamics, influenced by environmental factors and aggregated tree-level structure (the 1-hectare resource unit).
+*   **Individuals**: The level of individual tree dynamics, affected by local resources and environmental drivers.
+
+## Technical Design & Performance
+
+The software implementation of iLand is optimized for large-scale, high-resolution simulations:
+*   **Performance & Memory**: Designed for a low RAM footprint by loading simulation states directly into memory, enabling the simulation of millions of individual trees over large landscapes.
+*   **Parallel Computing**: Native support for multi-threading to utilize multiple CPU cores efficiently, with potential extension to GPGPU and high-performance computing (HPC) clusters.
+*   **Core Technologies**: Built using the Qt development framework (C++), using SQLite for lightweight, relational data output storage, and the Mersenne Twister algorithm for high-quality pseudo-random number generation.

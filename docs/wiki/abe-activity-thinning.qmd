@@ -13,7 +13,7 @@ The property *thinning* specifies the type of the thinning. Each thinning type h
 | custom | Custom thinning which gives the user a lot of control over the tree selection. Generally, trees are selected based on dbh (or volume) classes. |
 | selection | (not implemented yet) |
 
- 
+ 
 
 
 
@@ -29,7 +29,7 @@ Figure 1. Example with 5 classes based on percentiles (a) and as relative classe
 
 Class values can relate to relative or to absolute values, and refer either to trees that should be removed or trees that should remain on site. The requested behavior is controlled by the parameters -+remove+- and -+relative+-.
 
- 
+ 
 
 
 | **property** | **Description** | **Default** |
@@ -115,7 +115,7 @@ function calcBasalAreaToRemove() {
 }
 ```
 
- 
+ 
 This example shows:
 
 * The thinning repeats every 10 yrs
@@ -126,16 +126,16 @@ This example shows:
 
 
 
-### Setting target species composition
+### Setting target species composition
 
 
 During tending phases, one of the major goals of forest management is to modify the species composition to better comply to the target species composition. In reality, this process is quite complex and includes many detailed decisions (which trees to keep and/or liberate, should extra trees be planted, and if so, where, ...). An approach to mimic this in iLand is given in [this example](abe-example-setting-target-species-composition.qmd). This also demonstrates some advanced interactions between custom Javascript, ABE and iLand.
 
- 
+ 
 
 
 ::: {.callout-note title="citation"}
 [Rammer, W., Seidl, R., 2015](http://dx.doi.org/10.1016/j.gloenvcha.2015.10.003). Coupling human and natural systems: Simulating adaptive management agents in dynamically changing forest landscapes. Global Environmental Change, 35, 475-485.
 :::
 
- 
+ 

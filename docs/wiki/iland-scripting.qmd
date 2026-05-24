@@ -3,41 +3,29 @@ title: "iLand scripting"
 ---
 
 
-
-
 This page describes the use of Javascript as the scripting language used in iLand. Other important ways to interact with the model are, of course, using the [iLand Software](iland-software.qmd) and the [project settings](project-file.qmd).
 
-
-<h2 class="showhide_heading">technology</h2>
-
+## technology
 
 The scripting approach used in iLand relies on the [scripting capabilities of the Qt-framework](http://doc.qt.nokia.com/latest/qtscript.html). Qt includes a fully ECMA compatible Javascript engine. Script execution is fast due to just-in-time compilation. Qt uses Googles V8-engine (powering the Google Chrome browser).
 
-With Qt, it is quite easy to expose some dedicated functionality of C++ classes to the scripting context. In practise, this linking is done via specialized wrapper-code instead of exposing "full" model classes. 
+With Qt, it is quite easy to expose some dedicated functionality of C++ classes to the scripting context. In practise, this linking is done via specialized wrapper-code instead of exposing "full" model classes. 
 
+## using scripting
 
-<h2 class="showhide_heading">using scripting</h2>
-
-<h3 class="showhide_heading">management</h3>
-
+### management
 
 iLand includes two sub-systems that handle forest management:
 
+* [the Agent Based management Engine (ABE)](abe.qmd) is a powerful module that allows to simulate multiple management agents on a landscape. Agents can react to changes in the environment by changing management plans and can apply a variety of different management activities in a dynamically scheduled manner. The setup and application of ABE, however, is somewhat complex.
 
-<ul><li>[the Agent Based management Engine (ABE)](abe.qmd) is a powerful module that allows to simulate multiple management agents on a landscape. Agents can react to changes in the environment by changing management plans and can apply a variety of different management activities in a dynamically scheduled manner. The setup and application of ABE, however, is somewhat complex.</li>
-	<li>the "base" [management](management.qmd)is simpler, but still versatile and allows a wide range of altering the forest in the model (extracting of trees, planting of trees, ...)</li>
-</ul>
-The approach in iLand relies on using Javascript as the "scripting language". The model exposes a set of objects and functions allowing a management script to interact with the model. ABE utilizes Javascript, but uses a more hybrid approach where computationally heavy parts are performed by C++ code.
+* the "base" [management](management.qmd)is simpler, but still versatile and allows a wide range of altering the forest in the model (extracting of trees, planting of trees, ...)
 
-
-
+The approach in iLand relies on using Javascript as the "scripting language". The model exposes a set of objects and functions allowing a management script to interact with the model. ABE utilizes Javascript, but uses a more hybrid approach where computationally heavy parts are performed by C++ code.
 
 For the base management, good starting points are the [Object Management](../apidoc/classes/iland/management.qmd) and [Object Globals](../apidoc/classes/iland/globals.qmd) API documentation as well as available demo examples (like [this](management-example-parallel-management.qmd) or [that](management-example-hja-fire-history.qmd)).
 
-
-In base management, a single javascript file is defined in the [Project file](project-file.qmd) and loaded during startup of the model. Every year the function *manage()* is called by iLand. The example shows a very simple and not particularly useful management routine:
-
-
+In base management, a single javascript file is defined in the [Project file](project-file.qmd) and loaded during startup of the model. Every year the function *manage()* is called by iLand. The example shows a very simple and not particularly useful management routine:
 
 ```javascript
 function manage(year)
@@ -46,76 +34,59 @@ function manage(year)
 }
 ```
 
-
-
-The user needs to provide his or her own way of dispatching events over time. Examples of how this can be done are shown in the examples: [management example: parallel management](management-example-parallel-management.qmd) or [management example: HJA fire history](management-example-hja-fire-history.qmd).
-
+The user needs to provide his or her own way of dispatching events over time. Examples of how this can be done are shown in the examples: [management example: parallel management](management-example-parallel-management.qmd) or [management example: HJA fire history](management-example-hja-fire-history.qmd).
 
 **Note:** the management happens quite [early in a year](simulation-sequence.qmd).
 
-
-<h3 class="showhide_heading">controlling model output</h3>
-
+### controlling model output
 
 The sheer amount of possible result data produced by models like iLand is potentially frightening, therefore a fine grained control over which results should be produced when is a useful weapon against drowning in data.
 
 You can:
 
+* enable and disable [Outputs](outputs.qmd)
 
-<ul><li>enable and disable [Outputs](outputs.qmd)</li>
-	<li>enable and disable [Debug Outputs](debug-outputs.qmd)</li>
-	<li>produce and save screenshots as image files</li>
-	<li>export grids (e.g., the LIF-grid) as a ESRI ASCII file for later use in GIS applications</li>
-</ul>
+* enable and disable [Debug Outputs](debug-outputs.qmd)
 
+* produce and save screenshots as image files
+
+* export grids (e.g., the LIF-grid) as a ESRI ASCII file for later use in GIS applications
 
 See the [Object Globals](../apidoc/classes/iland/globals.qmd) for more details.
 
-
-<h2 class="showhide_heading">access points for scripts</h2>
-
+## access points for scripts
 
 iLand provides several ways how your scripts can be engaged by iLand.
 
+### user interface
 
-<h3>user interface</h3>
+The [iLand user interface](iland-viewer.qmd) includes a simple "scripting console" that allows calling of Javascript functions. iLand can load automatically Javascript source code, when set in the *system.javascript* section of the [Project file](project-file.qmd). In addition, the user can load Javscript source from the iLand user interface. 
 
-
-The [iLand user interface](iland-viewer.qmd) includes a simple "scripting console" that allows calling of Javascript functions. iLand can load automatically Javascript source code, when set in the *system.javascript* section of the [Project file](project-file.qmd). In addition, the user can load Javscript source from the iLand user interface. 
-
-
-<h3 class="showhide_heading">time events</h3>
-
+### time events
 
 iLand provides an [mechanism](time-events.qmd) that updates the values of model settings[?](project-file.qmd) automatically over time. A typical use is to update the ambient CO2 concentration over time. The same mechanism can also be applied to inform iLand to call javascript functions at specific times.
 
 The called function must be present in the context of the management script (i.e., be part of or be included from the management script file). One (small) difference to the management scripts (described above) is that [time events](time-events.qmd) occur even earlier in the [year](simulation-sequence.qmd).
 
-
-<h3 class="showhide_heading">event handler</h3>
-
+### event handler
 
 An *event handler* in the context of iLand is a Javascript function that is called when a specific event happens (technically an expression is evaluated in the scripting context of the management script). The following events are available in every iLand simulation:
 
+Handler
+Description
+onAfterCreate
+Called immediately before the first simulation year is executed. 
+onBeforeDestroy
+Called after the simulation has ended and the model is shut down.
+onYearBegin
+called at the beginning of each simulation year.
+onYearEnd
+called after each simulated year.
 
-<table border="1" cellpadding="1" cellspacing="1" style="width:500px;"><tbody><tr><td>Handler</td>
-			<td>Description</td>
-		</tr><tr><td>onAfterCreate</td>
-			<td>Called immediately before the first simulation year is executed. </td>
-		</tr><tr><td>onBeforeDestroy</td>
-			<td>Called after the simulation has ended and the model is shut down.</td>
-		</tr><tr><td>onYearBegin</td>
-			<td>called at the beginning of each simulation year.</td>
-		</tr><tr><td>onYearEnd</td>
-			<td>called after each simulated year.</td>
-		</tr></tbody></table>
- 
-
+ 
 
 In addition, this mechanism is used in the [fire module](fire-module.qmd) to allow some evaluation work after a fire happened.
 
-
-<h3 class="showhide_heading">interactive mode</h3>
-
+### interactive mode
 
 The iLand GUI allows for calling javascript functions when the model execution is paused (or before the model starts to run). This provides an easy way to, for instance, start script based evaluation tasks (an example is described [in this blog post](../blog/blogpost31-vegetation-snapshots-and-javascript.qmd).

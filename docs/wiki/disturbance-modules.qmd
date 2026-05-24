@@ -13,7 +13,7 @@ However, from a model user point of view, a module does not differ from the core
 
 
 
-## list of modules
+## list of modules
 
 
 
@@ -26,14 +26,14 @@ A special disturbance module in iLand is [BITE](bite.qmd) (the BIotic disTurbanc
 
 
 
-## Setting module specific settings
+## Setting module specific settings
 
 
 The [project file](project-file.qmd) contains a special section (*modules*) that contains options for each module in a sub section. See the documentation of the respective module for details. Each subsection provides at least an *enabled* switch, e.g. *modules.fire.enabled* is used to toggle on/off the [fire module](fire-module.qmd).
 
 
 
-## Module specific outputs
+## Module specific outputs
 
 
 Modules may include specific outputs similar to core iLand [organizing outputs](organizing-outputs.qmd). Like iLand core outputs, settings for module specific outputs are located in the *output* section. Again, details can be found in the module documentations.
@@ -45,11 +45,11 @@ Modules may include specific outputs similar to core iLand [organizing outputs](
 
 Modules are 'activated' or run once a year. This happens late in the [simulation sequence](simulation-sequence.qmd), immediately before aggregating final stand statistics. If more than one modules is active, for each year the sequence of module activation is randomly varied and applied for the whole landscape.
 
- 
+ 
 
 
 
-## technical implementation details
+## technical implementation details
 
 
 The implementation of 'modules' in iLand is heavily based on the [plugin mechanism of Qt](http://doc.qt.nokia.com/4.7/qpluginloader.html) and the use of interface classes in C++. Currently, all available modules are linked statically into the main executable of iLand and optionally enabled.
@@ -58,4 +58,4 @@ A module has three main entry points (defined in the *DisturbanceInterface*)
 * *setup()*: general setup of the module. The function is called after the model space is allocated but before initialization. Another interface function (*setupResourceUnit()*) (installed by adding the *SetupResourceUnitInterface*) can be used to handle specific setup per resource unit. This allows using the [environment file mechanism](simulation-extent.qmd).
 * *beginYear()*: is invoked at the beginning of every year - the dedicated slot to do some cleanup/setup.
 * *run()*: the main function of the module (see also above)
- 
+ 

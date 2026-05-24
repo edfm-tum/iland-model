@@ -5,18 +5,18 @@ title: "management"
 iLand includes two sub-systems that handle forest management:
 
 * the "base" [management] is a rather simple, but still versatile approach which allows a wide range of altering the forest in the model (extracting of trees, planting of trees, ...).
-* iLand includes also [the Agent Based management Engine (ABE)](abe.qmd), which is a powerful module that allows to simulate multiple management agents on a landscape. Agents can react to changes in the environment by changing management plans and can apply a variety of different management activities in a dynamically scheduled manner. The setup and application of ABE, however, is somewhat complex.
+* iLand includes also [the Agent Based management Engine (ABE)](abe.qmd), which is a powerful module that allows to simulate multiple management agents on a landscape. Agents can react to changes in the environment by changing management plans and can apply a variety of different management activities in a dynamically scheduled manner. The setup and application of ABE, however, is somewhat complex.
 
 Choosing between those management approaches is handled by keys in the [project file](project-file.qmd):
 
 * Use "base" management by setting *enabled* to *true* and *abeEnabled* to *false* in the [#management|management](project-file.qmd) section.
 * to use only ABE, set *enabled* to *false* and *abeEnabled* to *true* in the [#management|management](project-file.qmd) section (it is technically possible to use both mechanisms at the same time).
 
-The management approach in iLand relies on using Javascript as the "scripting language". The model exposes a set of objects and functions allowing a management script to interact with the model. 
+The management approach in iLand relies on using Javascript as the "scripting language". The model exposes a set of objects and functions allowing a management script to interact with the model. 
 
 For the base management, good starting points are the [Object Management] and [Object Globals] API documentation as well as available demo examples (like [this](management-example-parallel-management.qmd) or [that](management-example-hja-fire-history.qmd)).
 
-In base management, a single javascript file is defined in the [Project file](project-file.qmd) and loaded during startup of the model. Every year the function *manage()* is called by iLand. The example shows a very simple and not particularly useful management routine:
+In base management, a single javascript file is defined in the [Project file](project-file.qmd) and loaded during startup of the model. Every year the function *manage()* is called by iLand. The example shows a very simple and not particularly useful management routine:
 
 
 ```javascript
@@ -26,6 +26,6 @@ function manage(year)
 }
 ```
 
-The user needs to provide his or her own way of dispatching events over time. Examples of how this can be done are shown in the examples: [management example: parallel management] or [management example: HJA fire history].
+The user needs to provide his or her own way of dispatching events over time. Examples of how this can be done are shown in the examples: [management example: parallel management] or [management example: HJA fire history].
 
 **Note:** the management happens quite [early in a year](simulation-sequence.qmd).

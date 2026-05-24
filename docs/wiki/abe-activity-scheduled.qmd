@@ -2,7 +2,7 @@
 title: "ABE activity scheduled"
 ---
 
- The “Scheduled” activity is a general purpose activity that makes use of the ABE Scheduler. The activity defines two phases: in the first phase ($onEvalulate$) trees are selected for removal, and in the second phase ($onExecute$) the planned harvest is executed. The timing of the execution is controlled by the ABE Scheduler.
+ The “Scheduled” activity is a general purpose activity that makes use of the ABE Scheduler. The activity defines two phases: in the first phase ($onEvalulate$) trees are selected for removal, and in the second phase ($onExecute$) the planned harvest is executed. The timing of the execution is controlled by the ABE Scheduler.
 
 
 | **Property** | **Description** |

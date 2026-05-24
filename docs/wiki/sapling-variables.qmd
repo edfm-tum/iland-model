@@ -4,7 +4,7 @@ title: "sapling variables"
 
 A list of variables provided by the sapling cohorts.
 These variable names are used when binding a sapling to an [expression].
-See also: [tree variables](tree-variables.qmd) and [resource unit variables](resource-unit-variables.qmd).
+See also: [tree variables](tree-variables.qmd) and [resource unit variables](resource-unit-variables.qmd).
 
 
 
@@ -24,4 +24,4 @@ See also: [tree variables](tree-variables.qmd) and [resource unit variables](
 | x~ | ~x-coordinate of the sapling (meters, iLand reference system) |
 | y~ | ~y-coordinate of the sapling (meters, iLand reference system) |
 
- 
+ 

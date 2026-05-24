@@ -16,7 +16,7 @@ title: "team"
 [Werner Rammer](https://www.edfm.wzw.tum.de/en/staff/rammer.html) holds an PhD in forestry and is currently senior scientist at the Ecosystem Dynamics and Forest Management Group at TU Munich. In addition, he received an education as software developer and has gathered expertise in the field of environmental computing both in academia and the private sector. Besides developing iLand he worked in many projects related to forest ecosystems and their management, mostly bridging the gap between biology and its representation in data and software.
 :::
 
- 
+ 
 
 ## iLand collaborators
 

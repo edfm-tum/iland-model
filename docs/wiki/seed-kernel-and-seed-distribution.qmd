@@ -16,7 +16,7 @@ The modeling of the seed dispersal process consists of three steps:
 
 
 
-## Seed production capacity of a source cell
+## Seed production capacity of a source cell
 
 
 Conceptually, the fecundity parameter is the number of potential seedlings that can establish from seeds originating from one square meter of crown area (of mature trees). Since a seed source cell (20x20m) is not necessarily fully covered by mature trees of a species, we calculate the fraction of the productive area $f_{cell}$ as a function of the leaf area of mature trees on the cell. The leaf area index (LAI) for a given species on the source cell is calculated (by summing up the leaf area of all mature trees of the species on the cell, Eq. 1)
@@ -26,7 +26,7 @@ $$
 LAI_{cell}= \frac{\sum LA_{species}}{20\cdot20}
 $$
 
- 
+ 
 If the $LAI_{cell}$>3, the full seed production potential is assumed, otherwise the potential is linearly scaled between 0 and 1 (Eq. 2).
 
 

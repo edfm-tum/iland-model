@@ -16,18 +16,18 @@ The model in the paper uses two approaches for the water cycle:
 * an estimation of the water holding capacity (WHC)
 * a calculation of the soil water potential (SWP) at any given level of water within the “bucket”
 
-While the WHC calculation uses Kilopascal as the resulting unit, the SWP uses Megapascal. Unfortunately, the original iLand code erroneously assumed also KPa for the SWP calculation; consequently, the plant usable water is retrieved from the power function not between 15-4000 KPa, but between 15-4000 MPa. Due to this error the resulting water holding capacity in iLand was too low (about a factor of two for most textures, and for very sandy soils even higher).
+While the WHC calculation uses Kilopascal as the resulting unit, the SWP uses Megapascal. Unfortunately, the original iLand code erroneously assumed also KPa for the SWP calculation; consequently, the plant usable water is retrieved from the power function not between 15-4000 KPa, but between 15-4000 MPa. Due to this error the resulting water holding capacity in iLand was too low (about a factor of two for most textures, and for very sandy soils even higher).
 
- The calculation of [evapotranspiration](water-cycle.qmd) in iLand is based on the implementation of the Penman-Monteith equation in the original 3-PG model (Landsberg and Waring). A key parameter is the maximum canopy conductance (“maxCanopyConductance” in m/s). The literature suggests no significant differences between species ([Körner 1994](https://link.springer.com/chapter/10.1007/978-3-642-79354-7_22)), and [Keliher et al (1995)](https://doi.org/10.1016/0168-1923(94) report values for conifers (0.0212 +- 0.0071) and deciduous temperate forests (0.0207 +- 0.0065). (Figure 1).
+ The calculation of [evapotranspiration](water-cycle.qmd) in iLand is based on the implementation of the Penman-Monteith equation in the original 3-PG model (Landsberg and Waring). A key parameter is the maximum canopy conductance (“maxCanopyConductance” in m/s). The literature suggests no significant differences between species ([Körner 1994](https://link.springer.com/chapter/10.1007/978-3-642-79354-7_22)), and [Keliher et al (1995)](https://doi.org/10.1016/0168-1923(94) report values for conifers (0.0212 +- 0.0071) and deciduous temperate forests (0.0207 +- 0.0065). (Figure 1).
 
 The previous parameterization of the “maxCanopyConductance” parameter in iLand (for Europe) was 0.015 for most species (and 0.014 for very drought tolerant species such as Pinus sylvestris and oak species).
 
 <img src="/img/gcmax_keliher.png" alt="Image" class="img-fluid" />
- Figure 1. Reported values for maximum canopy conductance (Gsmax) in Keliher et al 1995.
+ Figure 1. Reported values for maximum canopy conductance (Gsmax) in Keliher et al 1995.
 
 
 
-## Fix for the problem
+## Fix for the problem
 
 
 
@@ -39,7 +39,7 @@ A fix for the bug is to update the SWP equation to work with KPa. The equation (
 
 This fix is included in all iLand versions with a SVN number >=1397.
 
-To facilitate testing iLand with the "buggy" water cylce, the model includes a setting *model.settings.waterUseLegacyCalculation *that, when set to true uses the old (faulty) formulation. (Note: this setting will be removed again).
+To facilitate testing iLand with the "buggy" water cylce, the model includes a setting *model.settings.waterUseLegacyCalculation *that, when set to true uses the old (faulty) formulation. (Note: this setting will be removed again).
 
 
 

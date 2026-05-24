@@ -54,18 +54,24 @@ Get the iLand executable package from the [download](download.qmd) page, select 
 Note that support for Mac is experimental. Here some infomation:
 
 Sometimes it is necessary to install Xcode (available on Mac App Store / installation with Terminal).
-Additionally, you need a package manager, such as home-brew. Therefore the following terminal-command can be used:
-^
-	/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-^
-Test your home-brew version /installation:
-^
-	brew --version
-^
-After installing home-brew, "freeimage" is necessary, therefore use terminal to install with the following command:
-^
-	brew install freeimage
-^
+Additionally, you need a package manager, such as Homebrew. Therefore, the following terminal command can be used:
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+Test your Homebrew version/installation:
+
+```bash
+brew --version
+```
+
+After installing Homebrew, "freeimage" is necessary. Use terminal to install with the following command:
+
+```bash
+brew install freeimage
+```
+
 We shortly tested iLand on functionality, bugs can occur. Tests done on Apple Silicon (M-chip).
 
 NOTE: If your Mac displays an error message saying that the file is corrupt, this may be due to security restrictions that prevent the execution of apps downloaded outside the official App Store. In this case, you need to adjust the security label of the file manually. To do so, open the .dmg file and drag the contained app into your Applications folder. Then, open the Terminal and run the following command:

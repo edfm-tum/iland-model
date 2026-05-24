@@ -2,10 +2,10 @@
 title: "how to: setup of a landscape"
 ---
 
-This page provides some tips & tricks for the process of setting up a landscape in iLand (in addition to already existing documentation pages such as [simulation extent](simulation-extent.qmd), [initialization hub](initialization.qmd) or [landscape setup](landscape-setup.qmd)).
- 
+This page provides some tips & tricks for the process of setting up a landscape in iLand (in addition to already existing documentation pages such as [simulation extent](simulation-extent.qmd), [initialization hub](initialization.qmd) or [landscape setup](landscape-setup.qmd)).
+ 
 
-The most common setup is described on the [landscape setup](landscape-setup.qmd) page and consists of the following elements:
+The most common setup is described on the [landscape setup](landscape-setup.qmd) page and consists of the following elements:
 
 
 
@@ -22,7 +22,7 @@ a definition of the project area as a GIS grid (10m resolution): this is very of
 
 You can visualize the stand grid in iLand via ja<x>vascript:
 
- 
+ 
 ```javascript
 // create a javascript object that represents the stand grid
 var stand_map = Factory.newMap();
@@ -51,13 +51,13 @@ An environment grid is often used for defining site and climate conditions with 
 :::
 
 
-^ **Tips**
+::: {.callout-note}
+### Tips
 
 * use the same projection in GIS for all spatial input data in iLand
 * the grids can be larger than the intended simulation area: for instance, if the environment grid is larger than the simulated area, all unused area is discarded. Similiarly, the stand grid should be large enough to cover the relevant out-of-project areas (used e.g. for [external seeds](external-seeds.qmd)).
 * iLand uses the center point of each resource unit to query the environment grid. Since the layout of the resource units is not necessarily aligned with the environment grid (see discussion below), the origin of the project area should be set with care.
-
-^
+:::
 
 
 
@@ -87,4 +87,4 @@ Again, there are several ways to set up the initial state of the forest, but a p
 
 
 Both ways of forest [management](management.qmd) in iLand can operate on the spatial entities defined in the stand grid. When the [agent based forest management](abe.qmd) module is used then stands can be grouped to management units, and agents and stand treatment programs can be assigned to a stand (see [ABE spatial setup](abe-spatial-setup.qmd)).
- 
+ 

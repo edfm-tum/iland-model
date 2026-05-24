@@ -2,76 +2,56 @@
 title: "abe-library"
 ---
 
-<h1 class="showhide_heading" id="ABE_Management_Library">ABE Management Library</h1>
 
-<h2 class="showhide_heading" id="Introduction">Introduction</h2>
+# ABE Management Library
 
+## Introduction
 
 The iLand Management Library (ABE Library) simplifies the implementation of management activities in the iLand forest landscape model. It provides a collection of pre-defined management functions that can be customized by adjusting key variables, making it easier for users to include management strategies, such as shelterwood or femel systems, or introducing new tree species, into their simulations. The ABE Library is a collection of real-world forest management approaches, implemented in Javascript and built on top of the ABE system of iLand. It offers a simplified interface to ABE, hiding much of the underlying complexity while retaining flexibility.
 
-
-<h2 class="showhide_heading" id="Key_Concepts">Key Concepts</h2>
-
+## Key Concepts
 
 The library organizes management activities into major phases:
 
+* Planting
 
-<ul>
-	<li>Planting</li>
-	<li>Thinning</li>
-	<li>Harvest</li>
-</ul>
+* Thinning
 
+* Harvest
 
 Users can compose an individual forest management "menu" by selecting pre-defined options for each phase, which can then be further customized and interact with each other. Just like ordering two desserts but no main dish, it's not required to use all phases. All selected options are then combined to an actual Stand Treatment Program (STP).
 
-
-<h3>API-Documentation</h3>
-
+### API-Documentation
 
 The detailed API documentation of the JavaScript library is here:
 
+#### [[abe-lib](abe-lib.qmd)](abe-lib/modules/abe-lib.html)
 
-<h4>[[abe-lib](abe-lib.qmd)](abe-lib/modules/abe-lib.html)</h4>
-
-<h3 class="showhide_heading" id="How_to_Use">How to Use</h3>
-
+### How to Use
 
 The ABE library is compatible with the ABE system of iLand. A typical setup involves:
 
+* A Javascript file containing code to build specific management programs using the ABE library, defining one or several uniquely named STPs. This file is usually referenced from the project file.
 
-<ul>
-	<li>A Javascript file containing code to build specific management programs using the ABE library, defining one or several uniquely named STPs. This file is usually referenced from the project file.</li>
-	<li>A CSV table defining the STP for each stand and holding additional information for each stand (like rotation age).</li>
-	<li>Stands defined via a `standgrid`.</li>
-</ul>
+* A CSV table defining the STP for each stand and holding additional information for each stand (like rotation age).
 
+* Stands defined via a `standgrid`.
 
 The library can be included in a project by either loading the copy bundled with iLand or by using a local copy:
-
-
 
 ```javascript
 // Load the copy of the library that is bundled with iLand
 Globals.include(':/abe-lib/ABE-library.js');
 ```
 
-
-
 Or, if using a local copy (e.g., in a "scripts" folder):
-
-
 
 ```javascript
 // Assume your copy of the library is in the "scripts" folder of your project:
 Globals.include(Globals.path('scripts/abe-lib/ABE-library.js'));
 ```
 
-
-
 Management programs are built by combining pre-defined management options and then creating an STP. For example:
-
-
 
 ```javascript
 Globals.include(':/abe-lib/ABE-library.js');
@@ -85,34 +65,24 @@ const ShelterwoodHarvest = lib.harvest.shelterwood();
 lib.createSTP('ShelterwoodSystem', Tending, ThinningFromBelow, ShelterwoodHarvest);
 ```
 
-
-<h3 class="showhide_heading" id="Options_and_Default_Values">Options and Default Values</h3>
-
+### Options and Default Values
 
 Each management option has customizable settings with default values. Options are passed as a Javascript object. For example:
-
-
 
 ```javascript
 const planting = lib.planting.general({species='piab'}); // Plant spruce, other options at default
 const planting_later  = lib.planting.general({species='piab', schedule: 10}); // Plant spruce in year 10
 ```
 
+### Scheduling
 
-<h3 class="showhide_heading" id="Scheduling">Scheduling</h3>
-
-<p class="code">Management options often have default execution times. This can be customized by providing a <span style="color:#2980b9;">`schedule`</span> object within the options:
-
-
+Management options often have default execution times. This can be customized by providing a `schedule` object within the options:
 
 ```javascript
 const thinning = lib.thinning.fromBelow( { schedule: { optRel: 0.25 }  }); // Thinning starts at 25% of rotation age
 ```
 
-
-<p class="showhide_heading" id="Introspection">To let management options react to each other, users can use *`Signals`*. As the name says, those are iLand internal signals, that each management option can send out (<span style="color:#2980b9;">`sendSignal`</span>), when certain activities are executed and the scheduler of other management options can wait for those signals. For example:
-
-
+To let management options react to each other, users can use *`Signals`*. As the name says, those are iLand internal signals, that each management option can send out (`sendSignal`), when certain activities are executed and the scheduler of other management options can wait for those signals. For example:
 
 ```javascript
 const SelectPatches = lib.selectOptimalPatches({
@@ -124,13 +94,9 @@ const SelectPatches = lib.selectOptimalPatches({
 const FemelHarvestPatches = lib.harvest.femel({ schedule: { signal: 'PatchesSelected' } }) ;
 ```
 
+### Introspection
 
-<h3 class="showhide_heading">Introspection</h3>
-
-
-Management options have a <span style="color:#2980b9;">`description`</span> property. The library also provides a human-readable description of a full STP:
-
-
+Management options have a `description` property. The library also provides a human-readable description of a full STP:
 
 ```javascript
 const my_stand_id = 1;
@@ -139,181 +105,132 @@ Globals.alert( lib.formattedSTP( my_stand_id ) ); // Show description in a popup
 console.log( lib.formattedSTP(my_stand_id) ); // Log description to console
 ```
 
+## 
 
-<h2 class="showhide_heading"> </h2>
-
-<h2 class="showhide_heading" id="Structure_of_the_ABE_Library">Structure of the ABE Library</h2>
-
+## Structure of the ABE Library
 
 Management activities are organized into sections (sub-libraries):
 
+* *'Planting*': Activities for establishing new trees.
 
-<ul>
-	<li>*'Planting*': Activities for establishing new trees.</li>
-	<li>*'Thinning*': Activities for selective tree removal to reduce competition.</li>
-	<li>*'Harvest*': Activities for final timber extraction.</li>
-</ul>
+* *'Thinning*': Activities for selective tree removal to reduce competition.
 
+* *'Harvest*': Activities for final timber extraction.
 
- 
+ 
 
+## Management Operations
 
-<h2 class="showhide_heading" id="Management_Operations">Management Operations</h2>
+ 
 
-
- 
-
-
-<h3 class="showhide_heading" id="Planting_Operations">Planting Operations</h3>
-
+### Planting Operations
 
 The planting library includes management operations related to artificial and natural regeneration.
 
+##### *'lib.planting.general*': Schedules a general planting activity.
 
-<h5>*'lib.planting.general*': Schedules a general planting activity.</h5>
+**Description:** Plants a specified `species` with defined `spacing`, `fraction` of area, initial `treeHeight`, and optional `pattern`. Can `clear` existing vegetation before planting.
 
+##### *'lib.planting.dynamic*': Dynamically schedules planting activities based on provided options.
 
-**Description:** Plants a specified <span style="color:#2980b9;">`species`</span> with defined <span style="color:#2980b9;">`spacing`</span>, <span style="color:#2980b9;">`fraction`</span> of area, initial <span style="color:#2980b9;">`treeHeight`</span>, and optional <span style="color:#2980b9;">`pattern`</span>. Can <span style="color:#2980b9;">`clear` </span>existing vegetation before planting.
+**Description:** Allows for flexible planting where species and their properties are determined at runtime, often based on `speciesSelectivity` (which can be an object or a function) and `speciesDefaults`. Planting can be restricted to specific `patches`.
 
+ 
 
-<h5 class="showhide_heading" id="lib.planting.dynamic_:_Dynamically_schedules_planting_activities_based_on_provided_options.">*'lib.planting.dynamic*': Dynamically schedules planting activities based on provided options.</h5>
-
-
-**Description:** Allows for flexible planting where species and their properties are determined at runtime, often based on <span style="color:#2980b9;">`speciesSelectivity`</span> (which can be an object or a function) and <span style="color:#2980b9;">`speciesDefaults`</span>. Planting can be restricted to specific <span style="color:#2980b9;">`patches`</span>.
-
-
- 
-
-
-<h3 class="showhide_heading" id="Thinning_Operations">Thinning Operations</h3>
-
+### Thinning Operations
 
 The thinning module includes activities for thinning operations.
 
+##### *'lib.thinning.tending*': Tending operation.
 
-<h5 class="showhide_heading" id="lib.thinning.tending_:_Tending_operation.">*'lib.thinning.tending*': Tending operation.</h5>
+**Description:** Performs `times` tending actions at a defined `interval`, influencing species composition and growth of the regeneration through `speciesSelectivity` and `intensity`.
 
+##### *'lib.thinning.fromBelow*': Thinning from below.
 
-**Description:** Performs <span style="color:#2980b9;">`times`</span> tending actions at a defined <span style="color:#2980b9;">`interval`</span>, influencing species composition and growth of the regeneration through <span style="color:#2980b9;">`speciesSelectivity`</span> and <span style="color:#2980b9;">`intensity`</span>.
+**Description:** Implements thinning from below by removing a `thinningShare` of trees based on `ranking` (e.g., '*basalarea*') across specified `thinningClasses`. This is repeated `times` times at a given `interval`. Can be `*simple*` or `*dynamic*` (where `thinningShare` can be a function) and can incorporate `speciesSelectivity`.
 
+##### *'lib.thinning.selectiveThinning*': Selective thinning operation.
 
-<h5 class="showhide_heading">*'lib.thinning.fromBelow*': Thinning from below.</h5>
+**Description:** Marks a number of crop trees (`nTrees`) based on `speciesSelectivity` and a `preferenceFunction`. For each crop tree it then marks `nCompetitors`. Competitors are removed over several (`times`) thinning events at a specified `interval`. Can operate in `*simple*` or `*dynamic*` mode (affecting if `nTrees`, `nCompetitors`, etc., are determined generally or for each stand using specific `stand.flags`).
 
+##### *'lib.thinning.plenter*': Plenter thinning operation (selection system).
 
-**Description:** Implements thinning from below by removing a <span style="color:#2980b9;">`thinningShare`</span> of trees based on <span style="color:#2980b9;">`ranking`</span> (e.g., '*basalarea*') across specified <span style="color:#2980b9;">`thinningClasses`</span>. This is repeated <span style="color:#2980b9;">`times`</span> times at a given <span style="color:#2980b9;">`interval`</span>. Can be `*simple*` or `*dynamic*` (where <span style="color:#2980b9;">`thinningShare`</span> can be a function) and can incorporate <span style="color:#2980b9;">`speciesSelectivity`</span>.
+**Description:** Aims to maintain a target diameter distribution (`plenterCurve`) by periodically (every `interval`) comparing the current stand structure (in `dbhSteps`) to the target and removing surplus trees with a certain `intensity`.
 
+ 
 
-<h5 class="showhide_heading" id="lib.thinning.selectiveThinning_:_Selective_thinning_operation.">*'lib.thinning.selectiveThinning*': Selective thinning operation.</h5>
-
-
-**Description:** Marks a number of crop trees (<span style="color:#2980b9;">`nTrees`</span>) based on <span style="color:#2980b9;">`speciesSelectivity`</span> and a <span style="color:#2980b9;">`preferenceFunction`</span>. For each crop tree it then marks <span style="color:#2980b9;">`nCompetitors`</span>. Competitors are removed over several (<span style="color:#2980b9;">`times`</span>) thinning events at a specified <span style="color:#2980b9;">`interval`</span>. Can operate in `*simple*` or `*dynamic*` mode (affecting if <span style="color:#2980b9;">`nTrees`</span>, <span style="color:#2980b9;">`nCompetitors`</span>, etc., are determined generally or for each stand using specific <span style="color:#2980b9;">`stand.flags`</span>).
-
-
-<h5 class="showhide_heading" id="lib.thinning.plenter_:_Plenter_thinning_operation_selection_system_.">*'lib.thinning.plenter*': Plenter thinning operation (selection system).</h5>
-
-
-**Description:** Aims to maintain a target diameter distribution (<span style="color:#2980b9;">`plenterCurve`</span>) by periodically (every <span style="color:#2980b9;">`interval`</span>) comparing the current stand structure (in <span style="color:#2980b9;">`dbhSteps`</span>) to the target and removing surplus trees with a certain <span style="color:#2980b9;">`intensity`</span>.
-
-
- 
-
-
-<h3 class="showhide_heading">Harvest Operations</h3>
-
+### Harvest Operations
 
 The harvest library includes management operations related to harvesting.
 
-
-<h5 class="showhide_heading" id="lib.harvest.noHarvest_:_No_harvest_management.">*'lib.harvest.noManagement*: No management.</h5>
-
+##### *'lib.harvest.noManagement*: No management.
 
 **Description:** Implements a scenario with no activities. It's a general activity that repeats at a long interval with no specific action.
 
+##### *'lib.harvest.clearcut*': A clearcut operation that removes all trees above a minimum diameter.
 
-<h5 class="showhide_heading">*'lib.harvest.clearcut*': A clearcut operation that removes all trees above a minimum diameter.</h5>
+**Description:** Removes all trees with a specified `preferenceFunction` (e.g., `*dbh &gt; 0*`). The timing is controlled by a `schedule` object. It's marked as a final harvest.
 
+**Note:** By using the preference function, the clearcut operation can be used in multiple ways, e.g.: '*species=saca*' would remove all salix trees within the stand.
 
-**Description:** Removes all trees with a specified <span style="color:#2980b9;">`preferenceFunction`</span> (e.g., `*dbh &gt; 0*`). The timing is controlled by a <span style="color:#2980b9;">`schedule`</span> object. It's marked as a final harvest.
+##### *'lib.harvest.stripCut*': Strip cut system.
 
+**Description:** Divides the stand into strips of `stripWidth` and harvests them over time based on `harvestIntensities` for each harvest cycle on a strip, repeated at a specified `interval`. The `harvestDirection` and `nStrips` (number of strips before the pattern repeats) can also be defined.
 
-**Note:** By using the preference function, the clearcut operation can be used in multiple ways, e.g.: '*species=saca*' would remove all salix trees within the stand.
+##### *'lib.harvest.CoppiceWithStandard*': Coppice with standards management system.
 
+**Description:** Periodically harvests trees above a `targetDBH` and most other trees, leaving a specified number of `nStandards` per hectare, selected based on a `preferenceFunction`. This repeats at a defined `interval`.
 
-<h5 class="showhide_heading" id="lib.harvest.stripCut_:_Strip_cut_system.">*'lib.harvest.stripCut*': Strip cut system.</h5>
+##### *'lib.harvest.shelterwood*': A shelterwood harvest system.
 
+**Description:** Selects seed trees and removes all other trees in multiple harvest activities over time. It involves selecting a number of seed trees (`nTrees`) based on `speciesSelectivity` and a `preferenceFunction`. Non-seed trees are removed over several `times` at a given `interval`. A final harvest removes the seed trees.
 
-**Description:** Divides the stand into strips of <span style="color:#2980b9;">`stripWidth`</span> and harvests them over time based on <span style="color:#2980b9;">`harvestIntensities`</span> for each harvest cycle on a strip, repeated at a specified <span style="color:#2980b9;">`interval`</span>. The <span style="color:#2980b9;">`harvestDirection`</span> and <span style="color:#2980b9;">`nStrips`</span> (number of strips before the pattern repeats) can also be defined.
+##### *'lib.harvest.femel*': Femel management system.
 
-
-<h5 class="showhide_heading" id="lib.harvest.CoppiceWithStandard_:_Coppice_with_standards_management_system.">*'lib.harvest.CoppiceWithStandard*': Coppice with standards management system.</h5>
-
-
-**Description:** Periodically harvests trees above a <span style="color:#2980b9;">`targetDBH` </span>and most other trees, leaving a specified number of <span style="color:#2980b9;">`nStandards`</span> per hectare, selected based on a <span style="color:#2980b9;">`preferenceFunction`</span>. This repeats at a defined <span style="color:#2980b9;">`interval`</span>.
-
-
-<h5 class="showhide_heading">*'lib.harvest.shelterwood*': A shelterwood harvest system.</h5>
-
-
-**Description:** Selects seed trees and removes all other trees in multiple harvest activities over time. It involves selecting a number of seed trees (<span style="color:#2980b9;">`nTrees`</span>) based on <span style="color:#2980b9;">`speciesSelectivity`</span> and a <span style="color:#2980b9;">`preferenceFunction`</span>. Non-seed trees are removed over several <span style="color:#2980b9;">`times`</span> at a given <span style="color:#2980b9;">`interval`</span>. A final harvest removes the seed trees.
-
-
-<h5 class="showhide_heading" id="lib.harvest.femel_:_Femel_management_system.">*'lib.harvest.femel*': Femel management system.</h5>
-
-
-**Description:** Implements a femel (group selection) harvest by harvesting the previously defined initial patches, then repeatedly enlarging and harvesting them over a defined number of <span style="color:#2980b9;">`steps` </span>and `<span style="color:#2980b9;">interval`</span>. Optionally, it can <span style="color:#2980b9;">`harvestAll`</span> remaining trees outside the final femel area after the final step.
-
+**Description:** Implements a femel (group selection) harvest by harvesting the previously defined initial patches, then repeatedly enlarging and harvesting them over a defined number of `steps` and `<span style="color:#2980b9;">interval`. Optionally, it can `harvestAll` remaining trees outside the final femel area after the final step.
 
 **Note:** Patches for harvesting the initial femels must be defined previously using *'lib.selectOptimalPatches()'* (see helper functions). Here, the signals are really handy.
 
+##### *'lib.harvest.targetDBH*': Target diameter harvesting system.
 
-<h5 class="showhide_heading">*'lib.harvest.targetDBH*': Target diameter harvesting system.</h5>
+**Description:** A repeating harvest operation that removes trees exceeding a species-specific target DBH, defined in `dbhList`. If a species is not in `dbhList`, a general `targetDBH` is used.
 
+##### *'lib.harvest.salvage*': Disturbance response and salvaging operation.
 
-**Description:** A repeating harvest operation that removes trees exceeding a species-specific target DBH, defined in<span style="color:#2980b9;"> `dbhList`</span>. If a species is not in <span style="color:#2980b9;">`dbhList`</span>, a general <span style="color:#2980b9;">`targetDBH`</span> is used.
+**Description:** Handles post-disturbance scenarios. It can salvage trees based on a `salvageCondition`. If disturbance severity exceeds `thresholdReset`, the stand can be cleared (e.g., simple clearcut if `clearAll` is true) or a custom function (`onClear`) can be executed. A signal (`sendSignal`) can be emitted upon clearing.
 
+ 
 
-<h5 class="showhide_heading">*'lib.harvest.salvage*': Disturbance response and salvaging operation.</h5>
-
-
-**Description:** Handles post-disturbance scenarios. It can salvage trees based on a <span style="color:#2980b9;">`salvageCondition`</span>. If disturbance severity exceeds <span style="color:#2980b9;">`thresholdReset`</span>, the stand can be cleared (e.g., simple clearcut if <span style="color:#2980b9;">`clearAll`</span> is true) or a custom function (<span style="color:#2980b9;">`onClear`</span>) can be executed. A signal (<span style="color:#2980b9;">`sendSignal`</span>) can be emitted upon clearing.
-
-
- 
-
-
-<h3 class="showhide_heading" id="Helper_Functions">Helper Functions</h3>
-
+### Helper Functions
 
 The library provides helper functions to build and inspect STPs, manage logging, and perform other utility tasks.
 
+* *'lib.createSTP*': Takes one or several activities and creates an STP with a given name in iLand. If the STP exists, it's updated.
 
-<ul>
-	<li>*'lib.createSTP*': Takes one or several activities and creates an STP with a given name in iLand. If the STP exists, it's updated.</li>
-	<li>*'lib.changeSTP*': Switches the active Stand Treatment Program (STP) for a stand to a new `STP` name.
-	<ul>
-		<li>**Description:** Allows dynamic changing of the STP applied to a stand, triggered by a `schedule` (e.g., a signal or absolute time).</li>
-	</ul>
-	</li>
-	<li>*'lib.buildProgram*': Combines one or multiple library function results (activity definitions) into a single Javascript object representing a program, before it's added to iLand as an STP.</li>
-	<li>*'lib.initStandObj*': Initializes the `stand.obj.lib` Javascript object for the current stand, used for library-internal communication and data storage.</li>
-	<li>*'lib.initAllStands*': Initializes `stand.obj.lib` for all stands in the simulation.</li>
-	<li>*'lib.log*' / *'lib.dbg*': Internal logging functions controlled by `lib.loglevel`.</li>
-	<li>*'lib.mergeOptions*': Combines default options with user-provided options for activities, ensuring only valid options are used.</li>
-	<li>*'lib.selectOptimalPatches*': Selects optimal patches within a stand based on criteria like light availability or a custom function, useful for spatially explicit management.
-	<ul>
-		<li>**Description:** Identifies <span style="color:#2980b9;">`N`</span> patches per hectare of a given <span style="color:#2980b9;">`patchsize`</span>, potentially with <span style="color:#2980b9;">`spacing`</span>, based on a <span style="color:#2980b9;">`criterium`</span> (e.g., '*max_light*', '*min_basalarea*') or a <span style="color:#2980b9;">`customPrefFunc`</span>. Selected patches are assigned a <span style="color:#2980b9;">`patchId`</span> and an optional <span style="color:#2980b9;">`sendSignal`</span> can be emitted.</li>
-	</ul>
-	</li>
-	<li>*'lib.repeater*': Creates a repeater activity that repeatedly triggers a specified <span style="color:#2980b9;">`signal`</span>.
-	<ul>
-		<li>**Description:** Useful for executing activities multiple times. It triggers a <span style="color:#2980b9;">`signal`</span> for a <span style="color:#2980b9;">`count`</span> number of times at a specified <span style="color:#2980b9;">`interval`</span>. Can <span style="color:#2980b9;">`block`</span> other activities and pass a <span style="color:#2980b9;">`parameter`</span> with the signal.</li>
-	</ul>
-	</li>
-	<li>*'lib.buildRareSpeciesFilter*': Constructs an iLand expression for filtering trees based on the proportion of target species, aiming to protect rare species by reducing their harvest probability if their combined relative basal area is below a `threshold`.</li>
-</ul>
+* *'lib.changeSTP*': Switches the active Stand Treatment Program (STP) for a stand to a new `STP` name.
+    * **Description:** Allows dynamic changing of the STP applied to a stand, triggered by a `schedule` (e.g., a signal or absolute time).
 
-<ul>
-	<li>*'lib.activityLog*': Internal function to populate a management history for a stand, storing activity name, year, and optional extra details.</li>
-	<li>*'lib.formattedLog*': Returns the activity log for the current stand as formatted HTML.</li>
-	<li>*'lib.formattedSTP*': Returns a readable HTML description of the planned activities for the current stand's STP, indicating active/inactive status and planned timing.</li>
-</ul>
+* *'lib.buildProgram*': Combines one or multiple library function results (activity definitions) into a single Javascript object representing a program, before it's added to iLand as an STP.
+
+* *'lib.initStandObj*': Initializes the `stand.obj.lib` Javascript object for the current stand, used for library-internal communication and data storage.
+
+* *'lib.initAllStands*': Initializes `stand.obj.lib` for all stands in the simulation.
+
+* *'lib.log*' / *'lib.dbg*': Internal logging functions controlled by `lib.loglevel`.
+
+* *'lib.mergeOptions*': Combines default options with user-provided options for activities, ensuring only valid options are used.
+
+* *'lib.selectOptimalPatches*': Selects optimal patches within a stand based on criteria like light availability or a custom function, useful for spatially explicit management.
+    * **Description:** Identifies `N` patches per hectare of a given `patchsize`, potentially with `spacing`, based on a `criterium` (e.g., '*max_light*', '*min_basalarea*') or a `customPrefFunc`. Selected patches are assigned a `patchId` and an optional `sendSignal` can be emitted.
+
+* *'lib.repeater*': Creates a repeater activity that repeatedly triggers a specified `signal`.
+    * **Description:** Useful for executing activities multiple times. It triggers a `signal` for a `count` number of times at a specified `interval`. Can `block` other activities and pass a `parameter` with the signal.
+
+* *'lib.buildRareSpeciesFilter*': Constructs an iLand expression for filtering trees based on the proportion of target species, aiming to protect rare species by reducing their harvest probability if their combined relative basal area is below a `threshold`.
+
+* *'lib.activityLog*': Internal function to populate a management history for a stand, storing activity name, year, and optional extra details.
+
+* *'lib.formattedLog*': Returns the activity log for the current stand as formatted HTML.
+
+* *'lib.formattedSTP*': Returns a readable HTML description of the planned activities for the current stand's STP, indicating active/inactive status and planned timing.
+

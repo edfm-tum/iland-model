@@ -1,0 +1,59 @@
+---
+title: "Object Map"
+---
+
+
+::: {.callout-warning title="Note"}
+The API documentation for this object moved: [Map object](../apidoc/classes/iland/map.qmd).
+This page is deprecated, and will be removed.
+:::
+
+
+The Map object encapsulates a "GIS" grid. The grid is internally mapped to a 10x10m grid. Internally, a "spatial index" is created allowing for fast access to trees that lie on specific pixels. See also [landscape setup](landscape-setup.qmd).
+The loaded map can be used, e.g., to specifically apply management on specific areas.
+
+Example:
+
+```javascript
+function loadMap()
+{
+  var path = Globals.defaultDirectory("script"); // get project script folder; see also the "currentDir" property of "Globals". defaultDirectory() adds already a slash
+  // var stand_map = new Map(); // Qt4
+  var stand_map = Factory.newMap(); // Qt5
+  stand_map.load(path + "test.txt");
+  // now load all trees on pixels with value '2020' in the "test.txt" grid
+  management.loadFromMap(stand_map, 2020);
+  // ... now do something ....
+
+  var map = new Map();
+  // select all trees on stand with id 127 of the 'system' stand grid
+  management.loadFromMap(map, 127);
+}
+```
+
+
+
+
+## Methods
+
+
+**constructor new**
+a "empty" map (without a call to *load()*) points to the global stand grid defined in the [project file](project-file.qmd).
+
+**int load(string file_name)**
+Load a grid (provided in ESRI textformat) from disk. See [landscape setup](landscape-setup.qmd) for information about projections.
+
+**double area(int id)**
+retrieves the area of the polygon *id* in square meters (m2). Returns -1, if *id* invalid.
+
+**paint(min_value, max_value)**
+visualization of the map in the Viewers' main window (if present). Map values are colorized between *min_value* (blue) and *max_value* (red).
+Default values: min_value: 0, max_value: 1.
+
+
+
+## Properties
+
+
+**string name**
+the filename for successfully loaded grids or 'invalid'.

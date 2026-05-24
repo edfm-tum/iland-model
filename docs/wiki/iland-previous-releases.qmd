@@ -8,18 +8,20 @@ This page contains older official releases of the iLand software and example pac
 
 
 <!-- download box -->
-<div class="panel expandable">
-<div class="panel-heading" style="text-align: left; font-weight: normal; cursor: pointer"><img src="/img/button_download.png" alt="Image" style="margin: 5px" align="left"/><div style="margin-left: 120px">
-<h3>iLand version 2.0 for Windows</h3>
-This is the iLand version 2.0 (released 2024-07-17).  </br>
+
+::: {.callout-note collapse="true" title="iLand version 2.0 for Windows"}
+
+This is the iLand version 2.0 (released 2024-07-17).  
+
 Check out more details on this release on the iLand  blog [here](../blog/blogpost60-release-of-iland-20.qmd).
 
 The download package includes the executables and all required libraries. Just unzip and run, no need for installation. Source code available at: https://github.com/edfm-tum/iland-model/releases/tag/v2.0
 A download link for the demo landscape is given at the top of this page!
 
-
 iLand is a research and software development effort free of charge. The software is GPL-licencsed, which means you can use, modify and redistribute your modifications. See our [terms and conditions](terms-and-conditions.qmd) for more details.
 The download should start after clicking the "submit" button.
+
+```{=html}
 <form action="/get_iland/iland_download.php" name="downloadform100" onsubmit="return validateDownloadForm('downloadform100');" method="post">
 <input type="hidden" name="file" value="iLandPackage2.0.zip">
 <table>
@@ -33,35 +35,26 @@ The download should start after clicking the "submit" button.
 <tr><td></td><td><input type="submit" style="padding: 0px 50px; font-size: 1em; "></td></tr>
 </table>
 </form>
+```
+:::
 
-</form>
+::: {.callout-note collapse="true" title="iLand version 1.0 for Windows"}
 
-
-</div>
-</div>
-
-
-
-<!-- download box -->
-<div class="panel expandable">
-<div class="panel-heading" style="text-align: left; font-weight: normal; cursor: pointer"><img src="/img/button_download.png" alt="Image" style="margin: 5px" align="left"/><div style="margin-left: 120px">
-<h3>iLand version 1.0 for Windows</h3>
 This is the iLand version 1.0 (released 2016-11-16), i.e. the model version that is "feature complete" in the sense that it includes all major processes that were originally planned.
-Compared to the last major public release, this version includes the agent based forest mangement engine and the bark beetle disturbance module. </br>
+Compared to the last major public release, this version includes the agent based forest mangement engine and the bark beetle disturbance module. 
+
 Check out more details on this release on the iLand  blog [here](../blog/blogpost58-iland-10-released.qmd) and [here](../blog/blogpost57-iland-10-release-in-numbers.qmd).
 
 The download package includes:
-<ul>
-<li>The executable and all required libraries. Just unzip and run, no need for installation</li>
-<li>The full C++ source code of iLand (sourcecode.zip).</li>
-<li>An example landscape including a species parameter set for Europe</li>
-</ul>
-</div></div>
-<div class="panel-body" style="display: none">
 
+* The executable and all required libraries. Just unzip and run, no need for installation
+* The full C++ source code of iLand (sourcecode.zip).
+* An example landscape including a species parameter set for Europe
 
 iLand is a research and software development effort free of charge. The software is GPL-licencsed, which means you can use, modify and redistribute your modifications. See our [terms and conditions](terms-and-conditions.qmd) for more details.
 The download should start after clicking the "submit" button.
+
+```{=html}
 <form action="/get_iland/iland_download.php" name="downloadform100" onsubmit="return validateDownloadForm('downloadform100');" method="post">
 <input type="hidden" name="file" value="iLandPackage1.0.zip">
 <table>
@@ -69,36 +62,28 @@ The download should start after clicking the "submit" button.
 <tr><td>Country:</td><td><input type="text" name="country" size="60"></input></td></tr>
 <tr><td>e-Mail:</td><td><input type="text" name="email" size="60"></input></br>
 <small>(Optional; if you provide an e-mail address, we'll notify you when new major releases come out.)</small></td></tr>
-<tr><td> </td><td>Just to make sure you are human: what is the square root of nine?
+<tr><td> </td><td>Just to make sure you are human: what is the square root of nine?
 <input type="text" name="answer" size=6></input></br></td></tr>
 <tr><td></td><td><input type="checkbox" name="agree" value="Bike" /> I accept the [terms and conditions](terms-and-conditions.qmd) for downloading and using iLand.</td></tr>
 <tr><td></td><td><input type="submit" style="padding: 0px 50px; font-size: 1em; "></td></tr>
 </table>
 </form>
+```
+:::
 
-</form>
+::: {.callout-note collapse="true" title="iLand version 0.8 for Windows"}
 
-
-</div>
-</div>
-
-
-<div class="panel expandable">
-<div class="panel-heading" style="text-align: left; font-weight: normal; cursor: pointer"><img src="/img/button_download.png" alt="Image" style="margin: 5px" align="left"/><div style="margin-left: 120px">
-<h3>iLand version 0.8 for Windows</h3>
 This is the iLand version 0.8 (released 2014-08-01), i.e. the model version used for the study "Seidl R, Rammer W, Spies TA, 2014: Disturbance lagacies increase the resilience of forest ecosystem structure, composition, and functioning, , Ecol. Appl., [dx.doi.org/10.1890/14-0255.1](http://dx.doi.org/10.1890/14-0255.1)". This iLand version includes the fire disturbance module and many other improvements and fixes.
 More details on the [iLand news blog](../blog/index.qmd) and on the iLand [tech blog](../blog/index.qmd).
 The download package includes:
-<ul>
-<li>The executable and all required libraries. Just unzip and run, no need for installation</li>
-<li>The full C++ source code of iLand (src.zip).</li>
-</ul>
-</div></div>
-<div class="panel-body" style="display: none">
 
+* The executable and all required libraries. Just unzip and run, no need for installation
+* The full C++ source code of iLand (src.zip).
 
 iLand is a research and software development effort free of charge. The software is GPL-licencsed, which means you can use, modify and redistribute your modifications. See our [terms and conditions](terms-and-conditions.qmd) for more details.
 The download should start after clicking the "submit" button.
+
+```{=html}
 <form action="/get_iland/iland_download.php" name="downloadform080" onsubmit="return validateDownloadForm('downloadform080');" method="post">
 <input type="hidden" name="file" value="iLandPackage0.8.zip">
 <table>
@@ -106,117 +91,88 @@ The download should start after clicking the "submit" button.
 <tr><td>Country:</td><td><input type="text" name="country" size="60"></input></td></tr>
 <tr><td>e-Mail:</td><td><input type="text" name="email" size="60"></input></br>
 <small>(Optional; if you provide an e-mail address, we'll notify you when new major releases come out.)</small></td></tr>
-<tr><td> </td><td>Just to make sure you are human: what is the square root of nine?
+<tr><td> </td><td>Just to make sure you are human: what is the square root of nine?
 <input type="text" name="answer" size=6></input></br></td></tr>
 <tr><td></td><td><input type="checkbox" name="agree" value="Bike" /> I accept the [terms and conditions](terms-and-conditions.qmd) for downloading and using iLand.</td></tr>
 <tr><td></td><td><input type="submit" style="padding: 0px 50px; font-size: 1em; "></td></tr>
 </table>
 </form>
+```
+:::
 
-</form>
+::: {.callout-note collapse="true" title="iLand version 0.7 for Windows"}
 
-
-</div>
-</div>
-
-
-
-<div class="panel expandable">
-<div class="panel-heading" style="text-align: left; font-weight: normal; cursor: pointer"><img src="/img/button_download.png" alt="Image" style="margin: 5px" align="left"/><div style="margin-left: 120px">
-<h3>iLand version 0.7 for Windows</h3>
 This is the iLand version 0.7 (released 2013-10-14), i.e. the model version used for the study "Seidl R, Rammer W, Blennow K, 2013: Simulating wind disturbance impacts on forest landscapes: Tree-level heterogeneity matters. Environ. Model. Software,  [doi:10.1016/j.envsoft.2013.09.018](http://dx.doi.org/10.1016/j.envsoft.2013.09.018)". This version includes the first iLand disturbance module (wind). More details on the [iLand news blog](../blog/index.qmd) and on the iLand [tech blog](../blog/index.qmd).
 The download package includes:
-<ul>
-<li>The executable and all required libraries. Just unzip and run, no need for installation</li>
-<li>The full C++ source code of iLand (src.zip).</li>
-</ul>
-</div></div>
-<div class="panel-body" style="display: none">
 
+* The executable and all required libraries. Just unzip and run, no need for installation
+* The full C++ source code of iLand (src.zip).
 
 iLand is a research and software development effort free of charge. The software is GPL-licencsed, which means you can use, modify and redistribute your modifications. See our [terms and conditions](terms-and-conditions.qmd) for more details. Since we are curious as to who is using the model we kindly ask you to fill in the mini-survey below.  The download should start after clicking the "submit" button.
+
+```{=html}
 <form action="/get_iland/iland_download.php" name="downloadform070" onsubmit="return validateDownloadForm('downloadform070');" method="post">
 <input type="hidden" name="file" value="iLandPackage0.7.zip">
 <table>
 <tr><td>Name:</td><td><input type="text" name="name" size="60"></input></td></tr>
 <tr><td>Country:</td><td><input type="text" name="country" size="60"></input></td></tr>
 <tr><td>e-Mail:</td><td><input type="text" name="email" size="60"></input></br><small>(Optional; if you provide an e-mail address, we'll notify you when new major releases come out.)</small></td></tr>
-<tr><td> </td><td>Just to make sure you are human: what is the square root of nine?
+<tr><td> </td><td>Just to make sure you are human: what is the square root of nine?
 <input type="text" name="answer" size=6></input></br></td></tr>
 <tr><td></td><td><input type="checkbox" name="agree" value="Bike" /> I accept the [terms and conditions](terms-and-conditions.qmd) for downloading and using iLand.</td></tr>
 <tr><td></td><td><input type="submit" style="padding: 0px 50px; font-size: 1em; "></td></tr>
 </table>
 </form>
+```
+:::
 
-</div>
-</div>
+::: {.callout-note collapse="true" title="iLand 0.6.9 for Windows"}
 
-<div class="panel expandable">
-<div class="panel-heading" style="text-align: left; font-weight: normal; cursor: pointer"><img src="/img/button_download.png" alt="Image" style="margin: 5px" align="left"/><div style="margin-left: 120px">
-<h3>iLand 0.6.9 for Windows</h3>
 iLand version 0.6.9 (released 2012-09-26), i.e. the model version applied for the study described in  [Seidl et al. (2012b)](http://dx.doi.org/10.1007/s10021-012-9587-2). More details on [new features](../blog/blogpost40-iland-v069-whats-new.qmd) as well as [technical release notes](../blog/blogpost39-iland-069-the-new-kid-on-the-block.qmd) can be found at the [iLand blogs](../blog/index.qmd). The download package includes:
-<ul>
-<li>The executable and all required libraries. Just unzip and run, no need for installation</li>
-<li>The full C++ source code of iLand (src.zip).</li>
-</ul>
-</div></div>
-<div class="panel-body" style="display: none">
 
+* The executable and all required libraries. Just unzip and run, no need for installation
+* The full C++ source code of iLand (src.zip).
 
 iLand is a research and software development effort free of charge. The software is GPL-licencsed, which means you can use, modify and redistribute your modifications. See our [terms and conditions](terms-and-conditions.qmd) for more details. Since we are curious as to who is using the model we kindly ask you to fill in the mini-survey below.  The download should start after clicking the "submit" button.
+
+```{=html}
 <form action="/get_iland/iland_download.php" name="downloadform069" onsubmit="return validateDownloadForm('downloadform069');" method="post">
 <input type="hidden" name="file" value="iLandPackage0.69.zip">
 <table>
 <tr><td>Name:</td><td><input type="text" name="name" size="60"></input></td></tr>
 <tr><td>Country:</td><td><input type="text" name="country" size="60"></input></td></tr>
 <tr><td>e-Mail:</td><td><input type="text" name="email" size="60"></input></br><small>(Optional; if you provide an e-mail address, we'll notify you when new major releases come out.)</small></td></tr>
-<tr><td> </td><td>Just to make sure you are human: what is the square root of nine?
+<tr><td> </td><td>Just to make sure you are human: what is the square root of nine?
 <input type="text" name="answer" size=6></input></br></td></tr>
 <tr><td></td><td><input type="checkbox" name="agree" value="Bike" /> I accept the [terms and conditions](terms-and-conditions.qmd) for downloading and using iLand.</td></tr>
 <tr><td></td><td><input type="submit" style="padding: 0px 50px; font-size: 1em; "></td></tr>
 </table>
 </form>
+```
+:::
 
-</form>
+::: {.callout-note collapse="true" title="iLand 0.3 for Windows"}
 
-
-</div>
-</div>
-
-
-<!-- download box -->
-<div class="panel expandable">
-<div class="panel-heading" style="text-align: left; font-weight: normal; cursor: pointer"><img src="/img/button_download.png" alt="Image" style="margin: 5px" align="left"/><div style="margin-left: 120px">
-<h3>iLand 0.3 for Windows</h3>
 iLand version 0.3 (released 2012-03-21), i.e. the model version applied for the simulations presented in [Seidl et al. (2012)](http://dx.doi.org/10.1016/j.ecolmodel.2012.02.015). More infos about the release can be found at the [iLand blog](../blog/blogpost35-iland-release.qmd). The download package includes:
-<ul>
-<li>The executable and all required libraries. Just unzip and run, no need for installation</li>
-<li>Example application including exemplarily stand and climate data for a simulation experiment in Oregon, USA</li>
-<li>The full C++ source code of iLand (src.zip).</li>
-</ul>
-</div></div>
-<div class="panel-body" style="display: none">
 
+* The executable and all required libraries. Just unzip and run, no need for installation
+* Example application including exemplarily stand and climate data for a simulation experiment in Oregon, USA
+* The full C++ source code of iLand (src.zip).
 
 iLand is a research and software development effort free of charge. The software is GPL-licencsed, which means you can use, modify and redistribute your modifications. See our [terms and conditions](terms-and-conditions.qmd) for more details. Since we are curious as to who is using the model we kindly ask you to fill in the mini-survey below.  The download should start after clicking the "submit" button.
+
+```{=html}
 <form action="/get_iland/iland_download.php" name="downloadform03" onsubmit="return validateDownloadForm('downloadform03');" method="post">
 <input type="hidden" name="file" value="iLandPackage0.3.zip">
 <table>
 <tr><td>Name:</td><td><input type="text" name="name" size="60"></input></td></tr>
 <tr><td>Country:</td><td><input type="text" name="country" size="60"></input></td></tr>
 <tr><td>e-Mail:</td><td><input type="text" name="email" size="60"></input></br><small>(Optional; if you provide an e-mail address, we'll notify you when new major releases come out.)</small></td></tr>
-<tr><td> </td><td>Just to make sure you are human: what is the square root of nine?
+<tr><td> </td><td>Just to make sure you are human: what is the square root of nine?
 <input type="text" name="answer" size=6></input></br></td></tr>
 <tr><td></td><td><input type="checkbox" name="agree" value="Bike" /> I accept the [terms and conditions](terms-and-conditions.qmd) for downloading and using iLand.</td></tr>
 <tr><td></td><td><input type="submit" style="padding: 0px 50px; font-size: 1em; "></td></tr>
 </table>
 </form>
-
-</form>
-
-
-</div>
-</div>
-
-
-
+```
+:::

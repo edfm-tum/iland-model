@@ -1,0 +1,91 @@
+---
+title: "iLand hub"
+---
+
+
+
+## About the model
+
+
+
+iLand is a model of forest ecosystem dynamics, simulating the processes [growth], [mortality] and [regeneration] on watershed to landscape scale. Individual tree [competition for resources](resource-availability-and-competition.qmd) and [environmental influences](constraints-to-resource-utilization.qmd) on forest processes are explicitly modeled by iLand. The model is designed to investigate effects of [climatic changes](constraints-to-resource-utilization.qmd) on forest ecosystem dynamics with particular focus on [natural disturbances](mortality.qmd). It aims at harnessing these capacities for questions of [sustainable forest management](management.qmd) under [changing environmental conditions](constraints-to-resource-utilization.qmd).
+
+
+::: {.callout-note title="Quick Links"}
+
+| resources & growth | mortality & regeneration | application |
+| --- | --- | --- |
+| [growth](growth.qmd) | [mortality](mortality.qmd) | [| ((resource availability and competition](parameterization.qmd) | [regeneration](regeneration.qmd) | [evaluation](evaluation.qmd) |
+| [constraints to resource utilization](constraints-to-resource-utilization.qmd) | [management](management.qmd) | [scaling](scaling.qmd) |
+| [soil dynamics](soil-dynamics.qmd) |  |  |
+
+:::
+
+ 
+
+
+
+## About the implementation
+
+
+The iLand modeling software is a software tool to simulating individual trees at landscape level. It is based on [open source] technologies and written in C++ using the [Qt](qt.qmd) toolkit. Special [development goals](how-it-works.qmd) are performance, a rich GUI and extended scripting facilities.
+<img src="/img/screen_species.PNG" alt="Image" width="400" class="img-fluid" />
+The following table provides means for navigation to often used content.
+
+
+::: {.callout-note}
+#### References
+
+
+
+| [project file](project-file.qmd) | main configuration file for simulated landscapes (XML format) |
+| --- | --- |
+| [species parameter](species-parameter.qmd) | description of species specific parameters in iLand |
+| [tree variables](tree-variables.qmd) and [resource unit variables](resource-unit-variables.qmd) | reference of accessible tree/resource unit variables (via scripting and expressions) |
+| [outputs](outputs.qmd) and [debug outputs](debug-outputs.qmd) | description of iLand outputs |
+| [Javascript API](http://iland-model.org/apidoc) | iLand Javascript API reference |
+
+
+
+
+
+## Frequent tasks
+
+
+
+| [Scripting](scripting.qmd) | all things related to Javascript in iLand |
+| --- | --- |
+| [initialization](initialization.qmd) | setting up iLand landscapes |
+| [iLand Software](iland-software.qmd) | the components of the iLand, most notably [iLand viewer](iland-viewer.qmd) and [iLand console](iland-console.qmd) |
+
+
+
+
+
+## Content
+
+
+
+| [disturbance modules](disturbance-modules.qmd) | iLand modules for fire, wind, and bark beetles |
+| --- | --- |
+| [ABE](abe.qmd) | the agent based management engine |
+
+:::
+
+ 
+
+
+
+
+### [iland-book](https://iland-model.org/iland-book)
+
+
+The "book" is a useful resource for both beginners and advanced users of iLand. It provides guidelines for getting to know the model, and covers advanced topics such as parameterization of new species. It complements this Wiki in providing a compact and accessible way to working with iLand.
+
+
+
+### iLand discord
+
+
+The community of iLand users is growing over the years and it was alway a pleasure to interact with. To facilitate further communication between iLanders we provide a Discord channel.
+Invite <https://discord.gg/e5trneUKav> or <https://tinyurl.com/iland-model-discord>

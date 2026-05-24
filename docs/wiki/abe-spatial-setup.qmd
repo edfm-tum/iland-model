@@ -57,11 +57,11 @@ An agent may select a STP from a list of available STPs for the polygon dynamica
 
 The effective rotation length (U) can be set differently. First, the value of the "U" column in the CSV file is used; if not set, then the default U of the assigned STP is used (if a STP is assigned in the data file). Else the U value of the unit is assigned (which is the U of the default STP from the managing agent). In addition to that, U can be set programmatically via Javascript.
 
- 
+ 
 
 
 ::: {.callout-note title="citation"}
 [Rammer, W., Seidl, R., 2015](http://dx.doi.org/10.1016/j.gloenvcha.2015.10.003). Coupling human and natural systems: Simulating adaptive management agents in dynamically changing forest landscapes. Global Environmental Change, 35, 475-485.
 :::
 
- 
+ 

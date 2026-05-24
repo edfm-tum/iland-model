@@ -4,7 +4,7 @@ title: "project file"
 
 
 
-## The project file
+## The project file
 
 
 The project file is the main spot to control iLand. The file contains settings that define which *world* to create (i.e. the spatial configuration, climate data, etc), but also how iLand should operate - this includes switches defining the behaviour of the model, but also which kind of output data should be created (and where it should be stored).
@@ -64,7 +64,7 @@ iLand uses primarily the SQLite database system, which stores all tables of a da
 | out | database file | result (see Outputs) are written to this database. |
 | climate | database file | the SQLite database containing the [climate data](climatedata.qmd) |
 
- 
+ 
 
 
 
@@ -82,7 +82,7 @@ iLand uses primarily the SQLite database system, which stores all tables of a da
 | expressionLinearizationEnabled | boolean | if true, specific expressions (user defined formulas, e.g. for light response) use a [| debugOutput | integer | defined the active debug outputs. Each output is coded by a single bit. Find a list of currently available outputs under the *debug data* menu of the iLand application. e.g: a value of 17 (=16+1) would enable the water output (16) and the Tree NPP output (1). |
 | debugOutputAutoSave | boolean | if *true*, csv-output files are created for each active debug output and saved to the *temp* directory (see Path-section). |
 
- 
+ 
 
 
 
@@ -108,7 +108,7 @@ This section deals with Javascript-script files that are loaded into the models'
 | --- | --- | --- |
 | fileName | string | the filename of a javascript file to load. Default location is the "scripts"-directory. |
 
- 
+ 
 
 
 
@@ -160,7 +160,7 @@ This section deals with Javascript-script files that are loaded into the models'
 | enabled | boolean | If *true*, the stand grid is loaded and used. |
 | fileName | string | path to the stand grid file (ESRI ASCII format, relative to the project root). See also the section *location*, and [landscape setup](landscape-setup.qmd). |
 
- 
+ 
 
 
 
@@ -200,7 +200,7 @@ Site variables define the project site in a non spatially explicit manner.
 | youngRefractoryAbovegroundFraction | numeric | fraction (0..1) of C in the yR pool from aboveground sources (branches, stems) |
 | soilHumificationRate | numeric | humification rate |
 
- 
+ 
 
 
 
@@ -223,7 +223,7 @@ Source and properties of the used climate (see also [ClimateData](climatedata.qm
 | randomSamplingEnabled | boolean | if true, only the first *batchYears* of the climate file are loaded (but see *filter*). The actual climate for each year is the sampled from this climate data. See also *randomSamplingList*. (default=*false*) |
 | randomSamplingList | string | if this key contains a list of 0-based indices (e.g. "3, 12, 14, 0, 3, 14", the random sampling (if enabled) uses this sequence of years. Note: the index is 0-based (in the example the 4th year would be used first). Use any non-word characters as delimiters. The list will be recycled if more years are simulated than present in the list. The index values are to be between 0 and *batchYears*-1. If invalid indices are in the list, an error is reported. If the key is empty or not present, each year a climate year is selected randomly from the list of loaded years. default=*empty* |
 
- 
+ 
 
 
 ### settings
@@ -312,7 +312,7 @@ These settings affect the size of the area that is handled by long distance disp
 | LDDSeedlings | double | For LDD, the parameter defines $p$, the number of seedlings that is dispersed per discrete LDD-package. (default: 0.5) |
 | rings | integer | ‘rings’ defines the number of rings for which LDD dispersal is calculated.(default: 5) |
 
- 
+ 
 
 
 
@@ -342,7 +342,7 @@ This section contains parameters for the ICBM/2N carbon and nitrogen cycling sub
 | swdDBHClass12 | double | class break between classes 1 and 2 for standing snags (dbh, cm) |
 | swdDBHClass23 | double | class break between classes 2 and 3 for standing snags (dbh, cm) |
 
- 
+ 
 
 
 
@@ -359,7 +359,7 @@ This section contains settings related to the ground vegetation (grass and herbs
 | maxTimeLag | numeric | number of years needed by the grass/herb layer to grow from 0 to full cover. This settings defines the growth speed, i.e. how fast new openings are occupied by ground vegetation. |
 | grassEffect | string | formula describing the probability of **prohibiting** regeneration as a function of grass level. Parameter: the current grass level on the pixel [0..1]. |
 
- 
+ 
 
 
 
@@ -374,7 +374,7 @@ This section contains settings related to the browsing effect by ungulate game s
 | enabled | boolean | if *false* the browsing module is disabled, i.e. no effect is calculated. |
 | browsingPressure | numeric | scaling factor modifying the base probability (see above). |
 
- 
+ 
 
 
 
@@ -460,14 +460,14 @@ The section *sprouting* defines options for species that resprout.
 | --- | --- | --- |
 | adultSproutProbability | numeric | annual probability that one adjacent 2x2m pixel is colonized by lateral sprouts of adults (&gt;4m) |
 
- 
+ 
 
 
 
 ### initialization
 
 
- 
+ 
 
 
 | **key** | **datatype** | **description** |
@@ -527,7 +527,7 @@ This section contains settings related to the agent based management module of i
 | file | string | Filename of the main Javascript file of ABE (relative paths are relative to the project root). |
 | agentDataFile | string | filename of the data file for the [spatial setup of ABE](abe-spatial-setup.qmd) (relative paths are relative to the project root). |
 
- 
+ 
 
 
 
@@ -545,7 +545,7 @@ This section contains various switches and settings and provide fine grained con
 | gpp_per_year | numeric | if set, the production module is short-cut and this amound of NPP (kg/ha) is available for growth. |
 | debugDumpStamps | boolean | if true, the content of the LIP-files is dumped to the console. This feature is provided for debugging purposes. |
 
- 
+ 
 
 
 

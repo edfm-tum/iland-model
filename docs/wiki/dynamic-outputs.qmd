@@ -19,7 +19,7 @@ A more general approach is the *customagg* output. This output - or more specifi
 
 The general structure of within the [project+file](project-file.qmd) is as follows:
 
- 
+ 
 
 ```xml
 <customagg>
@@ -38,7 +38,7 @@ The general structure of within the [project+file](project-file.qmd) is as follo
 ```
 
 
- A detailed description of the elements is given below:
+ A detailed description of the elements is given below:
 
 
 

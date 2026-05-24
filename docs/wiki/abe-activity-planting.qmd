@@ -12,7 +12,7 @@ The activity defines one or more “planting items” that define details of the
 | --- | --- |
 | items | A planting item or an array of planting items. An item defines properties for the planting of one species. See below for details. |
 
- 
+ 
 
 
 
@@ -30,11 +30,11 @@ Trees are planted (more or less) regularly spread over the full area of the stan
 | clear | Boolean switch; if true, *all* sapling trees on the pixel are cleared before the tree is planted. |
 | fraction | Defines a fraction [0..1] of 2x2m pixels for which to plant trees of the given species. The `fraction` is interpreted as a probability, i.e. for each 2x2m pixel a random number decides whether to plant or not. |
 
- 
+ 
 
 
 
-## Planting in groups
+## Planting in groups
 
 
 Trees are grouped in small patches on the landscape. Already established regeneration can either be kept or removed. The user can select from a number of pre-defined planting patterns (i.e. patch sizes). The spatial distribution of the patches can either be random or regularly spaced.
@@ -51,11 +51,11 @@ Trees are grouped in small patches on the landscape. Already established regener
 | spacing | If random is false, spacing defines the width (and height) in meters of the grid that defines the origin for the planted patches. For example, if spacing is 50, then every 50m the given pattern will be applied. If spacing is omitted or 0, then only a single instance of the pattern (shifted by "offset") will be planted. |
 | offset | The offset shifts the spacing grid (defined by spacing) both in x- and y-direction (in meters). For example, if spacing is 50 and offset is 25, then patters are applied (relative to the bounding box of the stand) at coordinates: 25/25, 75/25, 125/25, ...25/75, ... |
 
- 
+ 
 
 
 
-### List of available patterns
+### List of available patterns
 
 
 The following pre-defined patterns are available:
@@ -85,7 +85,7 @@ The planting activity uses an onEvaluate event to determine if a planting should
 ## Examples
 
 
- 
+ 
 
 
 ```
@@ -96,11 +96,11 @@ var a_planting = { type: "planting",
 { species: "fasy", fraction: 0.4,  height: 0.5}] };
 ```
 
- 
+ 
 
 
 ::: {.callout-note title="citation"}
 [Rammer, W., Seidl, R., 2015](http://dx.doi.org/10.1016/j.gloenvcha.2015.10.003). Coupling human and natural systems: Simulating adaptive management agents in dynamically changing forest landscapes. Global Environmental Change, 35, 475-485.
 :::
 
- 
+ 

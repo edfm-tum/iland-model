@@ -111,7 +111,7 @@ The JavaScript object "deadTrees" can now accessed from a "BITE-Cell", i.e. *cel
 
 ```javascript
 var ag = Bite.agent('Pinewood nematode');
-var cell = ag.cell(2,2);  // access a single cell
+var cell = ag.cell(2,2);  // access a single cell
 
 cell.reloadDeadTrees(); // -> loads the dead trees for the cell
 console.log(cell.deadTrees.sum('biomass')) // access

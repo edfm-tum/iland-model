@@ -9,7 +9,7 @@ Activities are the core element of forest management in ABE, as they are the ele
 
 
 
-### List of available activities
+### List of available activities
 
 
 
@@ -21,7 +21,7 @@ Activities are the core element of forest management in ABE, as they are the ele
 
 [Javascript API documentation for Activity](../apidoc/classes/abe/activity.qmd)
 
- 
+ 
 
 
 
@@ -46,7 +46,7 @@ The block below gives an schematic example of how an activity definition looks l
 var activity  =  {type: , schedule: , constraint: , enabledIf:  …:  …: }
 ```
 
- 
+ 
 
 
 
@@ -70,7 +70,7 @@ The Activities of the iLand management system provide an “Events” mechanism 
 Events are added to an activity by simple providing a correctly named Javascript function in the activity definition. Note the syntax for adding Javascript functions to a Javascript object:
 
 function-name: function() { }
- 
+ 
 
 
 ```javascript
@@ -82,7 +82,7 @@ onEnter: function() { fmengine.log('entered activity for stand ' + stand.id)},
 }
 ```
 
- 
+ 
 
 
 
@@ -110,7 +110,7 @@ The Schedule object describes the “when” of an activity. The scheduling of a
 Short form:
 If the schedule property is only a single number, it is interpreted as the “opt” property.
 
- 
+ 
 
 
 
@@ -129,11 +129,11 @@ constraint: “stand.volume>100”
 constraint: [‘stand.hmean > 12 and stand.volume>250', function(){return stand.hmean>10;}]
 ```
 
- 
+ 
 
 
 ::: {.callout-note title="citation"}
 [Rammer, W., Seidl, R., 2015](http://dx.doi.org/10.1016/j.gloenvcha.2015.10.003). Coupling human and natural systems: Simulating adaptive management agents in dynamically changing forest landscapes. Global Environmental Change, 35, 475-485.
 :::
 
- 
+ 

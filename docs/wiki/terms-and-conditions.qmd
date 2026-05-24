@@ -2,50 +2,36 @@
 title: "terms and conditions"
 ---
 
-
-<span style="font-size:16px;">**iLand - **the <u>i</u>ndividual-based forest <u>lan</u>dscape and <u>d</u>isturbance model</span>
-
+**iLand - **the <u>i</u>ndividual-based forest <u>lan</u>dscape and <u>d</u>isturbance model
 
 iLand is a research tool and software for non-commercial use, developed to study forest landscape dynamics at individual tree resolution. It is designed to investigate questions on the interactions between climate (change), disturbance regimes, vegetation, and management in complex forest landscapes. Its initial development was funded by the European Commission under a Marie Curie International Outgoing Fellowship (grant 237085), and a number of additional research grants have contributed to model development and testing.
 
-
 **Copyright notice**
 
+Copyright © Rupert Seidl | Werner Rammer,
 
-<div class="simplebox">Copyright © Rupert Seidl | Werner Rammer,</div>
+[Ecosystem Dynamics Group](https://edfm.ls.tum.de)
 
-<div class="simplebox">[Ecosystem Dynamics Group](https://edfm.ls.tum.de)</div>
+TUM School of Life Science
 
-<div class="simplebox">TUM School of Life Science</div>
+Technical University of Munich
 
-<div class="simplebox">Technical University of Munich</div>
-
-<div class="simplebox"> </div>
-
+ 
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
-
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
-
-You should have received a copy of the GNU General Public License along with this program.  If not, see [http://www.gnu.org/licenses/gpl.html](http://www.gnu.org/licenses/gpl.html).
-
+You should have received a copy of the GNU General Public License along with this program.  If not, see [http://www.gnu.org/licenses/gpl.html](http://www.gnu.org/licenses/gpl.html).
 
 iLand should be cited in publications and presentations using one or several of the [scientific papers related to iLand](iland-publications.qmd). Good starting points are:
 
+* [**Rammer, W., Thom, D., Baumann, M., Braziunas, K., Dollinger, C., Kerber, J., Mohr, J., Seidl, R., 2024**](https://doi.org/10.1016/j.ecolmodel.2024.110785)The individual-based forest landscape and disturbance model iLand: Overview, progress, and outlook. Ecological Modelling 495, [https://doi.org/10.1016/j.ecolmodel.2024.110785](https://doi.org/10.1016/j.ecolmodel.2024.110785)
 
-<ul>
-	<li>[**Rammer, W., Thom, D., Baumann, M., Braziunas, K., Dollinger, C., Kerber, J., Mohr, J., Seidl, R., 2024**](https://doi.org/10.1016/j.ecolmodel.2024.110785)The individual-based forest landscape and disturbance model iLand: Overview, progress, and outlook. Ecological Modelling 495, [https://doi.org/10.1016/j.ecolmodel.2024.110785](https://doi.org/10.1016/j.ecolmodel.2024.110785)</li>
-	<li>[**Seidl, R., Rammer, W., Scheller, R.M., Spies, T.A., 2012**](http://dx.doi.org/10.1016/j.ecolmodel.2012.02.015) An individual-based process model to simulate landscape-scale forest ecosystem dynamics. Ecol. Model. 231, 87-100, [http://dx.doi.org/10.1016/j.ecolmodel.2012.02.015](http://dx.doi.org/10.1016/j.ecolmodel.2012.02.015)</li>
-</ul>
+* [**Seidl, R., Rammer, W., Scheller, R.M., Spies, T.A., 2012**](http://dx.doi.org/10.1016/j.ecolmodel.2012.02.015) An individual-based process model to simulate landscape-scale forest ecosystem dynamics. Ecol. Model. 231, 87-100, [http://dx.doi.org/10.1016/j.ecolmodel.2012.02.015](http://dx.doi.org/10.1016/j.ecolmodel.2012.02.015)
 
-
- 
-
+ 
 
 If you have modified the iLand code or software, you may not publish data from it using the name iLand or any iLand variants unless you have either coordinated your changes with the Developers, or publish enough details about your changes so that they could be replicated.
-
-
 
 The exclusive place of jurisdiction for any and all disputes arising from and in connection with this software license shall be the court competent for the matter is Germany. The Agreement shall be governed by German and European law, excluding the conflict-of-law rules.

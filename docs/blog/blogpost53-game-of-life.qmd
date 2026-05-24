@@ -1,0 +1,83 @@
+---
+title: "Game of life"
+date: "2014-11-20"
+author: "Werner Rammer"
+---
+
+We are currently working on a bark beetle disturbance module for iLand (see [disturbance+modules] for a list of already existing modules). One important aspect here is the spread of bark beetle infestations – and here many possible approaches exist. While scribbling at the whiteboard, we realized, however, that we are not able to fully understand the dynamic behavior of those approaches. Therefore, we started by creating a very general “playing field” based on a “grid” of pixels that allows playing around with different algorithms.
+
+Luckily, we could re-use components that we developed earlier (such as the module-structure of iLand, or the visualization capabilities of the GUI), or facilitate already familiar techniques such as using Javascript. The result is a yet simple but quite powerful “general cellular automaton engine”. The algorithm and rules are written in Javascript using a very simple interface to query values of pixels and to change the state of pixels. In fact, this engine can be used for much more than toying around with bark beetle spread. Theoretically, the things that run in that engine may even be totally unrelated to forests (almost unthinkable!). Actually, it appeared to me that it would be perfectly suited for the famous “Conways game of life”. This simple cellular automaton inspired and fascinated many, many people (including a younger me): how can such a simple set of rules lead to an immense variety of life-like patterns? And – looking for example at http://www.conwaylife.com/, the appeal has not ceased.
+
+I – obviously – could not resist and hacked together a version of the “game of life”. The combination of iLand and Javascript showed again its strength –the iLand GUI is neat for visualizing the game, and using Javascript the development (or rather prototyping) cycles are very short. As the iLand GUI contains also a basic Javascript-shell (at least a command history), the whole process is quite interactive and fun. I am really wondering if such a setup could make sense in teaching…
+Anyway, here is a quick example of a running a „game of life“ – it is a 100x100 pixels  grid; starting conditions are  random and simulation time is 100 iterations. You can see a bunch of oscillators, gliders, and more (the [Game of life wiki](http://www.conwaylife.com/wiki/Main_Page) contains a collection of &gt;750 named patterns).
+
+<img src="/img/game_of_life.gif" alt="Image" class="img-fluid" />
+
+And, just in case you are interested, here is also the source code....
+
+
+```
+// Conways GAME OF LIFE
+// Werner Rammer, 2014
+var engine = BarkBeetle; // just to have a nicer named link to iLand
+
+var offset_x = [-1, 1, 0, 0, -1, 1, -1, 1];
+var offset_y = [0, 0, -1, 1, -1, -1, 1, 1];
+function count_neighbors(x,y)
+{
+		var found = 0;
+		for (var nb=0;nb&lt;8;nb++) {
+			if (engine.pixelValue(x + offset_x[nb], y + offset_y[nb]) % 2 ==1) {
+				found++;
+			}
+		}
+		return found;
+}
+
+
+function step(x,y)
+{
+	var state = engine.pixelValue(x,y) % 2;
+	var n = count_neighbors(x,y);
+	// birth
+	if (state==0 &amp;&amp; n==3)
+		engine.setPixelValue(x,y, 10); // live in next round
+	// death
+	if (state==1 &amp;&amp; (n&lt;2 || n&gt;3))
+		engine.setPixelValue(x,y, 11); // die in next round
+
+}
+
+function finalize(x,y) {
+	var state = engine.pixelValue(x,y);
+	if (state==10)
+		engine.setPixelValue(x,y, 1);
+	if (state==11)
+		engine.setPixelValue(x,y, 0);
+
+}
+
+var n_iter = 0;
+function start() {
+    // initialize with a random population
+	engine.init( function(x,y) { if (Math.random()&lt;0.1) return 1; return 0;} );
+	Globals.repaint();
+	n_iter = 0;
+}
+function iteration() {
+
+    engine.run( step );
+
+	engine.run( finalize );
+
+	Globals.repaint();
+	Globals.screenshot(Globals.defaultDirectory("home")+"image/img"+n_iter+".png"); n_iter++;
+}
+
+function run(n) {
+	for (var i=0;i &lt; n;++i) {
+		iteration();
+		//if you want to slow down: Globals.wait(50);
+	}
+}
+```

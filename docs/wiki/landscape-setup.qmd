@@ -8,7 +8,7 @@ This page describes the required steps and concepts for setting up a real landsc
 
 
 
-## Defining the project area
+## Defining the project area
 
 
 A real world project area is defined by a mix of GIS based data and other parameters/data. The GIS capabilities of iLand are limited: basically iLand is able to read grid files in the [ESRI text-based grid format](http://en.wikipedia.org/wiki/Esri_grid). The real world coordinates of the grid are transformed to the internal local coordinate system of iLand. The transformation is defined by the keys in the *model.world.location* section of the project file. The coordinate transformation is defined once and used for all grid files loaded for a model run. iLand performs no GIS projections and assumes flat metric coordinates.
@@ -17,7 +17,7 @@ Note that the same type of spatial input files is not only used for the set up o
 
 
 
-## Setting up the stand grid
+## Setting up the stand grid
 
 
 
@@ -35,11 +35,11 @@ The following snipped shows how to load this landscape into iLand:
 <!-  below the "model.world" node --> -39539 215800 0 0  true  gis/landscape_grid.txt
 ```
 
- 
+ 
 
 
 
-## Setting up tree vegetation
+## Setting up tree vegetation
 
 
 
@@ -67,7 +67,7 @@ id;filename
 107;init_107.csv
 ```
 
- 
+ 
 
 
 
@@ -92,7 +92,7 @@ The iLand-screenshot shows the 10m dominance grid; blank areas are outside of th
 
 
 
-## Handling of border areas
+## Handling of border areas
 
 
 Generally, the stand grid (see section above) defines the project area, i.e. all 10m pixels with a dedicated stand are considered as active part of the simulation area. All other pixels are "outside". "Outside" pixels cannot grow trees, they are not considered when collecting radiation, etc. However, iLand distinguishes two types of outside area: namely forested and non-forested areas. The values of the stand input grid decide on the type of area: a grid value of -1 or the defined NO_DATA_VALUE (defaulting to -9999) means "non-forested outside pixel", a value less than -1 (e.g. -2) indicates a "forested outside" pixel. If a outside pixel is "forested" some differences apply:
@@ -104,7 +104,7 @@ Generally, the stand grid (see section above) defines the project area, i.e. all
 
 
 
-## Metrics of landscape area
+## Metrics of landscape area
 
 
 Landscape area is - at first sight - a very easy concept, but it has its intricacies (perhaps similarly to the difficulties determining the shore length of Great Britain).
@@ -113,16 +113,16 @@ iLand uses mainly the **stockable **area: This is area where trees can potential
 
 Most output variables on resource unit level are scaled to fully stockable area. For example: A RU with a stockable area of 0.25 may have a standing volume of 100 m³ (located on the 0.25 ha). The output value m³/ha in the [#Stand_by_species_RU|stand-output](outputs.qmd) would be 400m³/ha (to get the actual volume on site calculate volume * area_ha). This allows meaningful maps and distributions of values across space. However, landscape averages need to take the fractional resource units into account! (This is, for instance, done for the landscape output).
 
-Focusing only on the stockable area has, however, also some drawbacks. For instance, small unstockable patches are usually not excluded from forest maps and therefore also included in average stand statistics. Exluding such patches in iLand can therefore lead to an overestimation of simulated stand values. 
+Focusing only on the stockable area has, however, also some drawbacks. For instance, small unstockable patches are usually not excluded from forest maps and therefore also included in average stand statistics. Exluding such patches in iLand can therefore lead to an overestimation of simulated stand values. 
 
 Every landscape is different (as is the underlying data), so general recommendations are not easy. As a guidance the [#Landscape_aggregates_per_species|landscape output](outputs.qmd) contains two different columns for area: "**area**" is the total stockable area that is simulated (based on the 10m grid), while "**area_100m**" is the total simulated ared based on the 100m resource-unit grid. Particular atttention should be given to "landscape size" when both metrics differ significantly.
 
- 
+ 
 
- 
+ 
 
 
-## Initializing other parameters
+## Initializing other parameters
 
 
 The initialization of various other parameters (e.g. soil properties, mapping to climate, initialization of snags and soil pools) are on a per resource-unit basis. This is handled by the mechanism with environment files described [here](simulation-extent.qmd).

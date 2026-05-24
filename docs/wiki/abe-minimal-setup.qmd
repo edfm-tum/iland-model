@@ -11,7 +11,7 @@ The absolute minimum setup for ABE is quite simple:
 * A Javascsript file that contains the code of ABE. This file needs to include at least a basic definition of a stand treatment program.
 * Set up ABE in the project file
 
- 
+ 
 
 The following R code shows how a minimal ["abeDataFile"](abe-spatial-setup.qmd) can be created from a GIS raster. This basically is a list of all stands and a associated stand treatment program (with the name 'stp' - see below).
 
@@ -74,11 +74,11 @@ In the project file, ABE must be enabled:
 true   abe/abe.js   abe/abedata.csv
 ```
 
- 
+ 
 
 
 ::: {.callout-note title="citation"}
 [Rammer, W., Seidl, R., 2015](http://dx.doi.org/10.1016/j.gloenvcha.2015.10.003). Coupling human and natural systems: Simulating adaptive management agents in dynamically changing forest landscapes. Global Environmental Change, 35, 475-485.
 :::
 
- 
+ 

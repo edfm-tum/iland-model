@@ -17,4 +17,4 @@ Serotiny is controlled by two species parameters *serotinyFormula *and *serotiny
 Hansen, W.D., Braziunas, K.H., Rammer, W., Seidl, R. and Turner, M.G. (2018), It takes a few to tango: changing climate and fire regimes can cause regeneration failure of two subalpine conifers. Ecology, 99: 966-977. https://doi.org/10.1002/ecy.2181
 :::
 
- 
+ 

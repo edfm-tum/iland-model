@@ -11,18 +11,18 @@ iLand includes a special output for assessing the development stage of forested 
 
 The 'devstage' output is configured in the 'output' section of the [project file.](project-file.qmd) See also the [outputs](outputs.qmd) page.
 
- 
+ 
 
 
 | Setting | description |
 | --- | --- |
-| cellsize | defines the cell size in meters. The value need to align with the 100m / 10m cells.  Possible values are therfore: 10, 20, 50, 100 |
+| cellsize | defines the cell size in meters. The value need to align with the 100m / 10m cells.  Possible values are therfore: 10, 20, 50, 100 |
 | handler | The name of the Javascript object that is handling the calculation of development stages. See below. |
 | filter | filter to limit output to specific years (variable: simulation year, e.g., 'in(year, 100, 200, 300)' |
 | enabled | boolean switch to turn output on / off (true / false) |
 
 
- 
+ 
 
 
 
@@ -31,7 +31,7 @@ The 'devstage' output is configured in the 'output' section of the [project file
 
 The 'devstage' mechanism expects a Javascript object in the global Javascript workspace (loaded e.g. via the `system.javascript` setting of the project file). The Javascsript object should have the the following properties / functions:
 
- 
+ 
 
 
 | name | description |
@@ -42,18 +42,18 @@ The 'devstage' mechanism expects a Javascript object in the global Javascript wo
 | grid() | grid() returns the full development stage grid as a [Javascript grid](../apidoc/classes/iland/grid.qmd). Use in combination with the 'on<x>finished' callback. |
 
 
- 
+ 
 
 
 
-## The cell object
+## The cell object
 
 
 The cell object provides access to a fixed set of properties pertaining to a given cell. Extending this list of properties requires adding properties in C++ (see devstageout.h / devstageout.cpp).
 
 The properties are either related to the trees on the cell (<4m, e.g., DBHMean), related to carbon pools (e.g., deadwoodShare), or special attributes (e.g., crown projection area CPA).
 
- 
+ 
 
 
 | Property | Description |
@@ -64,11 +64,11 @@ The properties are either related to the trees on the cell (<4m, e.g., DBHMean),
 | HMean, HMedian, HMax | Mean / median / max tree height over all trees (>4m) on the cell (m). |
 | NQD | variation in DBH expressed as 100 * interquartile distance / median. Interquartile distance: 75th - 25th percentile of DBH on the cell. (trees >4m). |
 | N_ha | number of trees (>4m) per hectare (includes transformation from the cell size, but not stockable area within the cell) |
-| CPA | crown projection area (0..1). Calculates the crown projection of all trees (>4m) on a 2m grid using the tree crown radii. See also [SpatialAnalysis.html.](../apidoc/classes/iland/spatialanalysis.qmd) All 2m cells with more than 50% crown area are counted and the CPA is then calculated  as #total area of cells >50% crown cover / #stockable area. |
+| CPA | crown projection area (0..1). Calculates the crown projection of all trees (>4m) on a 2m grid using the tree crown radii. See also [SpatialAnalysis.html.](../apidoc/classes/iland/spatialanalysis.qmd) All 2m cells with more than 50% crown area are counted and the CPA is then calculated  as #total area of cells >50% crown cover / #stockable area. |
 | deadwoodShare | share of standing / lying (aboveground) deadwood relative to (aboveground) living biomass (Carbon). Values for standing / lying deadwood C are retrieved from the resource units (100m). Only the aboveground fraction of snags and coarse woody debris is counted. The deadwoodShare is calculated as: deadwood_carbon / living_aboveground_carbon(incl.regeneration). Note that deadwoodShare can become > 1. |
 | Pct_PMugo | percentage (0..100) of the (stockable) cell area, that is covered with trees of Pinus mugo with a height > 1.3m. |
 
- 
+ 
 
 
 
@@ -79,14 +79,14 @@ The database output 'devstage' is described on the [outputs page.](outputs.qmd)
 
 To save the development stages as a grid, you can use JavaScript (see in the example below).
 
- 
+ 
 
 
 
 ## Example
 
 
- 
+ 
 Below is an example of a classification (adapted after Zenner et al).
 
 The code contains the definition of stages (including names and colors), the actual classifcation tree ('run()'), and some auxiliary code. The latter shows how cell variables can be logged to a csv file for testing (see (and uncomment) the 'dumpCell()' function), as well as a mechanism that fills an extra grid with custom values and writes that also to disk.
@@ -201,8 +201,8 @@ var devStage =  {
 };
 ```
 
- 
+ 
 
- 
+ 
 
- 
+ 

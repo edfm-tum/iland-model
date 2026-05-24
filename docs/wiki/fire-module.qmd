@@ -78,11 +78,11 @@ These fire-module specific parameters can be set in the [project file](project-f
 | on<x>afterFire | string | If provided, the Javascript expression is called immediately after a fire event. The id of the fire can be accessed via the *id* propery of the *Fire* javascript object (see below). Default: "" | global |
 | allowBurnIn | boolean | a value of 'true' is required for burn-ins (if true, iLand builds a map of edge pixels) |  |
 
- 
+ 
 
 
 
-## Fire specific visualization
+## Fire specific visualization
 
 
 The iLand GUI provides some means to visually inspect various fire-related variables during a iLand simulation. The visualization is based on resource units and (usually) cumulative, i.e. each fire event simply paints over the affected area.
@@ -99,11 +99,11 @@ The iLand GUI provides some means to visually inspect various fire-related varia
 * combustibleFuel: "available combustible fuel (current KBDI, forest floor + dwd) kg/ha
 * nFire: cumulative count of fire events on a resource unit
 * lastFireYear: simulation year of the last fire event on a RU
- 
+ 
 
 
 
-## Fire specific JavaScript
+## Fire specific JavaScript
 
 
 The fire module sports a JavaScript binding allowing extended control on fire processes. When the fire module is active, the JavaScript engine contains a global variable ***Fire*** supporting the following functions and properties:
@@ -206,7 +206,7 @@ This function saves a fire specific grid (specified by *gridtype*) in ESRI raste
 * *dbh*: average dbh (cm) of burning pixels, limited with the threshold dbh. RU-Level
 * *crownkill* average crownkill fraction of all burning pixels on RU. (0..1) (see [wildfire](wildfire.qmd) for details)
 * *baseIgnition* base probability of an annual fire ignition event for a cell on RU level (depending on fire-return-interval and average fire size)
- 
+ 
 
 
 ```javascript
@@ -225,7 +225,7 @@ Returns a grid of given *gridtype* (string) as a Javascript Object. See [Grid Ja
   spread_grid.save(Globals.path('temp/grid1.asc'));
 ```
 
- 
+ 
 
 
 
@@ -256,10 +256,10 @@ see above.
 
 
 
-## Fire specific outputs
+## Fire specific outputs
 
 
- 
+ 
 
 
 
@@ -289,7 +289,7 @@ Fire event aggregates per fire event. The output contains a row for each (ignite
 | windDirection | double | current wind direction during the event (°) |
 
 
- 
+ 
 
 
 
@@ -374,11 +374,11 @@ Fire.gridToFile('border', 'temp/border_with_fire.asc'); // save a grid with edge
 // now a value of 2 indicates ignited edges (1 normal edges)
 ```
 
- 
+ 
 
 
 ::: {.callout-note title="citation"}
 [Seidl, R., Rammer, W., Spies, T.A. 2014](http://dx.doi.org/10.1890/14-0255.1). Disturbance legacies increase the resilience of forest ecosystem structure, composition, and functioning. Ecol. Appl., in press. http://dx.doi.org/10.1890/14-0255.1
 :::
 
- 
+ 

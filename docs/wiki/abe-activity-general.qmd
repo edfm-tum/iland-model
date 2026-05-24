@@ -4,7 +4,7 @@ title: "ABE activity general"
 
 The “General” activity is the most basic, general purpose activity that can be used for all kinds of activities.
 
- 
+ 
 
 | **Property** | **Description** |
 | --- | --- |

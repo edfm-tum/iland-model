@@ -166,7 +166,7 @@ To grant consistency with the iLand fire occurence algorithms we intermit the fi
 
 
 
-# fire severity and effects
+# fire severity and effects
 
 
 Fire severity is modeled following the parsimonious approach presented by [Schumacher et al. (2006)](http://dx.doi.org/10.1007/s10980-005-2165-7), which accounts for the effect of fuel availability, fuel moisture, as well as tree size- and species-specific resistance, while not simulating fire intensity explicitly.
@@ -201,11 +201,11 @@ where *bt* is the bark thickness (cm), and *P<sub>mort</sub>* the individual tre
 
 Fire effects on forest floor and *DWD *pools are calculated from Eq. 15, i.e. the portion of the respective pools that is assumed fuel is also consumed by fire. We assumed that the C/N ratio of the fuel pools remained constant, i.e. that the released nitrogen will be quickly lost from the system (REF). For the trees killed by fire, pool-specific consumption rates are defined (*kfc4*: foliage, *kfc5*: branches, *kfc6*: stem wood), and the pools of fire-killed trees are updated accordingly. The remaining C is added to the respective standing and downed detritus pools and treated as the C of trees that died from [stress-related or chance mortality](snag-dynamics.qmd). All trees in the sapling layer are killed by a fire, and the consumption rate is defined as *kfc7*, with the remaining C routed to the litter pool. Soil organic matter is generally not assumed to be fuel in iLand (cf.[Schumacher et al. 2006](http://dx.doi.org/10.1007/s10980-005-2165-7), [Keane et al. 2011](http://www.treesearch.fs.fed.us/pubs/37464)), but a small percentage is assumed to be lost within the fire perimeter due to erosion (*kfc8*, see [Campbell et al. 2007](http://dx.doi.org/10.1029/2007JG000451), [Bormann et al. 2008](http://dx.doi.org/10.1139/X08-136)). No seeds are allowed to establish within the fire perimeter in the year of the burn. In addition, the effect of serotinous cones or resprouting could be added if required.
 
- 
+ 
 
 
 ::: {.callout-note title="citation"}
 [Seidl, R., Rammer, W., Spies, T.A. 2014](http://dx.doi.org/10.1890/14-0255.1). Disturbance legacies increase the resilience of forest ecosystem structure, composition, and functioning. Ecol. Appl., in press. http://dx.doi.org/10.1890/14-0255.1
 :::
 
- 
+ 

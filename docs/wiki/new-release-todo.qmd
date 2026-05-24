@@ -3,41 +3,39 @@ title: "new release todo"
 ---
 
 
+a todo-list for new iLand software releases.
 
-	a todo-list for new iLand software releases.
+## Source-code/SVN
 
-<h2>
-	Source-code/SVN</h2>
-<ul><li>
-		create tag/branch in the repository</li>
-	<li>
-		link the publicsvn websvn to the branch (see [sourcecode](sourcecode.qmd))</li>
-	<li>
-		create and upload doxygen-documentation</li>
-</ul><h2>
-	Wiki</h2>
-<ul><li>
-		check for private wiki-pages that should go now public</li>
-	<li>
-		add/ update the suggested citation of wiki pages</li>
-	<li>
-		write blog entries with technical and conceptual release notes</li>
-</ul><h2>
-	Software package</h2>
-<ul><li>
-		create software-package (executable, DLLs, ...)</li>
-	<li>
-		update the "Getting started" (word) document</li>
-	<li>
-		provide an example application (and update it'S description in the "Getting started" document)</li>
-	<li>
-		save the package to the /get_iland/content folder (see [sourcecode](sourcecode.qmd) for details)</li>
-	<li>
-		move the old release package to the release-archive-wiki-page</li>
-</ul><h2>
-	Community</h2>
-<ul><li>
-		update iLand mailinglist</li>
-	<li>
-		write email with release notes to the folks on the iLand email list</li>
-</ul>
+* create tag/branch in the repository
+
+* link the publicsvn websvn to the branch (see [sourcecode](sourcecode.qmd))
+
+* create and upload doxygen-documentation
+
+## Wiki
+
+* check for private wiki-pages that should go now public
+
+* add/ update the suggested citation of wiki pages
+
+* write blog entries with technical and conceptual release notes
+
+## Software package
+
+* create software-package (executable, DLLs, ...)
+
+* update the "Getting started" (word) document
+
+* provide an example application (and update it'S description in the "Getting started" document)
+
+* save the package to the /get_iland/content folder (see [sourcecode](sourcecode.qmd) for details)
+
+* move the old release package to the release-archive-wiki-page
+
+## Community
+
+* update iLand mailinglist
+
+* write email with release notes to the folks on the iLand email list
+
