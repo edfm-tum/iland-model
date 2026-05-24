@@ -31,3 +31,4 @@ writes a string representation of the Javascript object `obj` to the console.
 
 * ### `run(int year)`
 executes Bite (all agents). `year` is used internally as the curernt year (note: might be different than `Globals.year`)
+

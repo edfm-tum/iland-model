@@ -541,5 +541,111 @@ def generate_docs():
     
     print("API Documentation generation completed successfully.")
 
+def generate_bite_docs():
+    source_dir = os.path.join(SCRIPT_DIR, "../../src/apidoc/bite")
+    output_dir = os.path.join(SCRIPT_DIR, "../bite")
+    img_dest_dir = os.path.join(SCRIPT_DIR, "../img")
+    
+    if not os.path.exists(source_dir):
+        print(f"BITE source directory not found at: {source_dir}")
+        return
+        
+    os.makedirs(output_dir, exist_ok=True)
+    os.makedirs(img_dest_dir, exist_ok=True)
+    
+    # Copy images
+    source_img_dir = os.path.join(source_dir, "img")
+    if os.path.exists(source_img_dir):
+        import shutil
+        for f in os.listdir(source_img_dir):
+            src_file = os.path.join(source_img_dir, f)
+            if os.path.isfile(src_file):
+                dest_file = os.path.join(img_dest_dir, f)
+                shutil.copy2(src_file, dest_file)
+                print(f"Copied BITE image {f} to {img_dest_dir}")
+                
+    # Define mapping of files to title metadata
+    titles = {
+        "readme.md": "Bite Submodule Overview",
+        "variables.md": "Bite Variables, Expressions & Events",
+        "codeexamples.md": "Bite Code Examples"
+    }
+    
+    # Process each markdown file
+    for f in os.listdir(source_dir):
+        if not f.endswith('.md') or f == '_navbar.md':
+            continue
+            
+        src_path = os.path.join(source_dir, f)
+        
+        # Determine output filename
+        if f.lower() == 'readme.md':
+            out_name = 'index.qmd'
+        else:
+            out_name = f.lower().replace('.md', '.qmd')
+            
+        dest_path = os.path.join(output_dir, out_name)
+        
+        # Determine title
+        f_lower = f.lower()
+        if f_lower in titles:
+            title = titles[f_lower]
+        else:
+            class_name = f[:-3] # Strip '.md'
+            title = f"{class_name} Class"
+            
+        with open(src_path, 'r', encoding='utf-8', errors='ignore') as file:
+            content = file.read()
+            
+        # 1. Translate internal links: e.g. [BiteAgent](BiteAgent.md) -> [BiteAgent](biteagent.qmd)
+        def link_repl(match):
+            label = match.group(1)
+            target = match.group(2)
+            if target.lower() == 'readme':
+                return f"[{label}](index.qmd)"
+            else:
+                return f"[{label}]({target.lower()}.qmd)"
+                
+        content = re.sub(r'\[([^\]]+)\]\(([^)]+)\.md\)', link_repl, content)
+        
+        # 2. Resolve image paths:
+        # e.g. ![Bite](img/bite_overview.png ':size=600') -> ![Bite](/img/bite_overview.png){width=600px}
+        def img_repl(match):
+            alt = match.group(1)
+            filename = match.group(2)
+            size = match.group(3)
+            if size:
+                return f"![{alt}](/img/{filename}){{width={size}px}}"
+            else:
+                return f"![{alt}](/img/{filename})"
+                
+        content = re.sub(r'!\[([^\]]*)\]\(img/([^\s\)]+)(?:\s+[\'\"]+:size=(\d+)[\'\"])?\)', img_repl, content)
+        
+        # 3. Fix code fences: convert empty code fences ``` to ```javascript
+        lines = content.split('\n')
+        new_lines = []
+        in_code = False
+        for line in lines:
+            if line.strip() == '```':
+                if not in_code:
+                    new_lines.append('```javascript')
+                    in_code = True
+                else:
+                    new_lines.append('```')
+                    in_code = False
+            else:
+                new_lines.append(line)
+        content = '\n'.join(new_lines)
+        
+        # Write file with frontmatter
+        with open(dest_path, 'w', encoding='utf-8') as out:
+            out.write(f"---\ntitle: \"{title}\"\n---\n\n")
+            out.write(content)
+            out.write("\n")
+            
+        print(f"Generated BITE page: {out_name}")
+
 if __name__ == "__main__":
     generate_docs()
+    generate_bite_docs()
+

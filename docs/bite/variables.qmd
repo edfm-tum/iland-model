@@ -77,7 +77,7 @@ is also part of the agents `info()` dump. To see all variables:
 
 ```javascript
 Bite.log( agent.variables);
-``` 
+```
 
 Variable values are accessed in Expressions simply via the variable name, e.g. `agentBiomass*10`. An error is reported if 
 the variable does not exist. 
@@ -119,4 +119,5 @@ new BiteAgent({
 });
 
 ```
+
 

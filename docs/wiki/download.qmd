@@ -64,7 +64,7 @@ See [download statistics](download-statistics.qmd) for details.
     <div class="download-container" style="display: flex; flex-direction: column; gap: 20px;">
 
       <div class="download-info-row" style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
-        <img src="/img/download.png" width="80" alt="Download iLand" style="flex-shrink: 0;"/>
+        <img src="/img/b_download.png" width="80" alt="Download iLand" style="flex-shrink: 0;"/>
         <div>
             <h3 style="margin-top: 0; margin-bottom: 10px;">iLand version 2.1 for Windows, macOS & Linux</h3>
             <p style="margin: 0;">

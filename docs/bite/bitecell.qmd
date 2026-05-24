@@ -107,7 +107,7 @@ A cell is the smalled spatial execution unit of an agent. Each agent has a grid 
         | rad      | daily radiation sum (MJ/m2)                    |
 
 
-        ```javascript
+```javascript
 
             // test GDD calculation
 
@@ -157,7 +157,7 @@ A cell is the smalled spatial execution unit of an agent. Each agent has a grid 
                 }
             }
 
-            ```
+```
 
 
             Running `testPerf` for 100,000 times yields the following results (on my laptop):\
@@ -185,3 +185,4 @@ A cell is the smalled spatial execution unit of an agent. Each agent has a grid 
     ### `die()`
 
     lets the agent on a cell die (i.e. set biomass to 0, `active` and `spreading` to `false`).
+

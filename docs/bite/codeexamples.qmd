@@ -128,7 +128,7 @@ function randomSpread(n, gr) {
     gr.setValue(125,125,1);
 	}
 }
-```
+```javascript
 ## Gypsy moth
 
 European gypsy moth (from hereafter gypsy moth) is a defoliator native to Europe where it causes substantial disturbance especially on oaks (Mcmanus and Csóka, 2007). In 1869 it was also introduced to North America, where it became an invasive pest seriously threatening oak forests in the Northeastern USA (Elkinton and Liebhold, 1990). Adult gypsy moths are poor dispersers, but the first instar larvae spread passively over short distances via wind (Hunter and Elkinton, 2000). However, human-aided long distance dispersal is driving the invasion in North America (Liebhold et al., 1992). The development of a gypsy moth from egg to adult takes one season and during that development, each larvae consume about 3–4 g of foliage (Sharov and Colbert, 1996). Outbreaks of gypsy moth typically last for several years and occur both in Europe and North America in 8 – 12 year intervals (Johnson et al., 2005). Gypsy moth dispersal was approximated with a Gaussian dispersal kernel in BITE (Elderd et al., 2013), and its population dynamics was simulated with a logistic growth equation based on growth rates modified from Lustig et al. (2017). The simulated impact was consumption of foliage biomass, with preference for small over tall trees.   
@@ -283,7 +283,7 @@ growth: new BiteBiomass({
 	onYearEnd: function(agent) { agent.saveGrid('yearsLiving', 'temp/roedeer_base.asc'); }
 
 });
-```
+```javascript
 
 ## Ash dieback
 
@@ -466,11 +466,11 @@ function ABELink(standId, damage,threshold) {
 }
 
 
-```
+```javascript
 
 In the agent-based management module of iLand (https://iland-model.org/ABE) we used the following JavaScript description to cut all the trees in a stand affected by the biotic agent and exceeding the threshold given above:
 
-```javascript
+```
 var a_disturbance_response = { type: 'general',
                      schedule: 1000, // not reached 
                      action: function() {
@@ -481,7 +481,7 @@ var a_disturbance_response = { type: 'general',
 						 console.log('ABE: disturbance response');
 					 }
 }
-``` 
+```javascript
 ## Mastodon
 
 Mastodons were large mammals distantly related to elephants, inhabiting the forests of North America and Eurasia until their extinction ~10–11,000 years ago. Compared to mammoths (Mammuthus sp.), which were grazers, mastodons were forest-dwelling browsers with Picea spp. forming a significant part of their diet (Birks et al., 2018; Teale and Miller, 2012). Their estimated body mass was ~8000 kg, mastodons were thus slightly heavier than modern elephants although their shoulder height was roughly comparable (Larramendi, 2015). We assumed mastodons to inhabit the whole test landscape with an initial density of 1.5 individuals per 100 ha, corresponding to the estimated densities of Pleistocene megaherbivores (120 kg ha-1) (Bakker et al., 2016). Mastodon population growth rate was assumed to be 1% yr-1 using a logistic growth model. We assumed that mastodons were able to browse trees up to 4 m height, with a preference for trees between 0-2 m (Guy, 1976) and the occasional uprooting of trees, similar to modern elephants (Scheiter and Higgins, 2012; Shannon et al., 2008). The diet was assumed to consist of 20% Norway spruce (Picea abies (L.) Karst.). 
@@ -554,7 +554,7 @@ Alternative Impact 1. Here, the impact on fraction of trees is varying with the 
 
 		]
 	}),
-```
+```javascript
 Alternative Impact 2. Here, the fractions are the same, but instead of diameter, we use the tree heigth as a classifying variable. 
 ```javascript
 	impact: new BiteImpact({ 
@@ -581,4 +581,5 @@ Alternative Impact 3. And here, the diameter classes and fractions have been cha
 
 		]
 	}),
-```
+```javascript
+

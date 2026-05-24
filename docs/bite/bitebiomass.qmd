@@ -1,5 +1,5 @@
 ---
-title: "BiteBiomass Item"
+title: "BiteBiomass Class"
 ---
 
 # BiteBiomass
@@ -113,6 +113,7 @@ of the function. Is only used when no `growthFunction` is present.
 * ### `onMortality(cell)` 
 The handler is invoked *if* the cell dies (i.e. only if the random choice based on the probability (see `mortality`)
 decides the death of the agent on the cell).
+
 
 
 

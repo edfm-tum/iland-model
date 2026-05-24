@@ -1,5 +1,5 @@
 ---
-title: "BiteLifeCycle Item"
+title: "BiteLifeCycle Class"
 ---
 
 # BiteLifeCycle
@@ -108,4 +108,5 @@ The `onSetup` event is triggered after the setup of the item.
 The `onSetup` event is triggered after the setup of the item. 
 
 `item` is the `BiteLfeCycle` object.
+
 

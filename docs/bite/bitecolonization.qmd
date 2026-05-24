@@ -1,5 +1,5 @@
 ---
-title: "BiteColonization Item"
+title: "BiteColonization Class"
 ---
 
 # BiteColonization
@@ -71,5 +71,6 @@ called after all filters have been passed already. The cell is not colonized, if
 returns `false`.
 
 `cell` is the Cell object.
+
 
 

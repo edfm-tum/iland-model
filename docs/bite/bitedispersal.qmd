@@ -1,5 +1,5 @@
 ---
-title: "BiteDispersal Item"
+title: "BiteDispersal Class"
 ---
 
 # BiteDispersal
@@ -93,5 +93,6 @@ newly infested cells.
 called immediately after the spreading algorithm is executed. Useful for inspecting or modifying the post-spread state.
 
 `item` is the BiteDispersal object.
+
 
 

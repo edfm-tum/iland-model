@@ -1,5 +1,5 @@
 ---
-title: "BiteImpact Item"
+title: "BiteImpact Class"
 ---
 
 # BiteImpact
@@ -96,5 +96,6 @@ If `true` no trees are harmed.
 * ### `onImpact(cell)` 
 The `onImpact` event is responsible to implement the agents impact on a cell and should
 return the number of killed trees during the calculation. 
+
 
 

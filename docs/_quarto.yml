@@ -71,11 +71,11 @@ website:
           contents:
             - section: "About iLand"
               contents:
-                - wiki/why-developed.qmd
-                - wiki/how-it-works.qmd
                 - wiki/introduction.qmd
+                - wiki/how-it-works.qmd
+                - wiki/why-developed.qmd
                 - wiki/ecological-complexity.qmd
-                - wiki/project-team.qmd
+                - wiki/team.qmd
             - section: "Physiological Processes"
               contents:
                 - wiki/resource-availability-and-competition.qmd
@@ -268,7 +268,7 @@ website:
 format:
   html:
     theme:
-      light: flatly
+      light: zephyr
       dark: darkly
     css: custom.css
     toc: true

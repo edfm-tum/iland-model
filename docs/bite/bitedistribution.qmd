@@ -1,5 +1,5 @@
 ---
-title: "BiteDistribution Item"
+title: "BiteDistribution Class"
 ---
 
 # BiteDistribution
@@ -41,6 +41,7 @@ The `onSetup` event is triggered after the setup of the item.
 called when the item is executed.
 
 `item` is the BiteDistribution object.
+
 
 
 

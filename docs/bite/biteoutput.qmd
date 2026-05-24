@@ -1,5 +1,5 @@
 ---
-title: "BiteOutput Item"
+title: "BiteOutput Class"
 ---
 
 
@@ -65,4 +65,5 @@ The table name in the output database used for cell level output of the agent.
 * ### `columns` (array of expressions)
 The `columns` property is an array of expressions. For each expression a column in the output table is created in addition to 
 the fixed columns (see above). The expressions are evaluated in the cell context (i.e. all cell variables including user-defined variables are available).
+
 
