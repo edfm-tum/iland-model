@@ -7,7 +7,9 @@ project:
 website:
   title: "iLand"
   navbar:
+    logo: img/iland-logo.png
     logo-href: /wiki/startpage.qmd
+    title: false
     background: primary
     left:
       - text: "About"
@@ -55,8 +57,16 @@ website:
           - text: "Bite Module"
             href: bite/index.qmd
           - text: "Scripting Overview"
-            href: wiki/scripting.qmd
+            href: wiki/iland-scripting.qmd
     right:
+      - text: "Version"
+        menu:
+          - text: "latest (2.1)"
+            href: /
+          - text: "dev"
+            href: /dev/
+          - text: "2.0"
+            href: /2.0/
       - icon: github
         href: https://github.com/edfm-tum/iland-model
 
@@ -268,9 +278,10 @@ website:
 format:
   html:
     theme:
-      light: zephyr
-      dark: darkly
+      light: [zephyr, custom-light.scss]
+      dark: [zephyr, custom-dark.scss]
     css: custom.css
+    include-after-body: version-switcher.html
     toc: true
     toc-depth: 3
     html-math-method: mathjax

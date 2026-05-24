@@ -96,7 +96,7 @@ html.dark .tag-type {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background-color: #007bff;
+  background-color: #42825a;
   color: #ffffff !important;
   text-decoration: none !important;
   padding: 6px 14px;
@@ -108,7 +108,7 @@ html.dark .tag-type {
 }
 
 .quick-link-btn:hover {
-  background-color: #0056b3;
+  background-color: #366d4a;
   color: #ffffff !important;
 }
 
@@ -210,4 +210,12 @@ html.dark .hp_box {
   margin-bottom: 1.5rem;
   padding-bottom: 0.5rem;
 }
+
+/* Navbar logo size styling */
+.navbar-logo {
+  max-height: 40px;
+  width: auto;
+  margin-right: 8px; /* Spacing between logo and "iLand" title */
+}
+
 

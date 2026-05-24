@@ -58,6 +58,7 @@ See [download statistics](download-statistics.qmd) for details.
 
 
 
+```{=html}
 <div class="panel expandable">
   <div class="panel-heading" style="text-align: left; font-weight: normal; cursor: pointer">
 
@@ -68,11 +69,10 @@ See [download statistics](download-statistics.qmd) for details.
         <div>
             <h3 style="margin-top: 0; margin-bottom: 10px;">iLand version 2.1 for Windows, macOS & Linux</h3>
             <p style="margin: 0;">
-                **Release Date:**2025-08-08.**</br>
-                Source code is available on [GitHub](https://github.com/edfm-tum/iland-model/releases/tag/v2.1).</br>
-                Find more details on the iLand [blog](../blog/blogpost61-release-iland-21.qmd).
-
-
+                <strong>Release Date:</strong> 2025-08-08.<br>
+                Source code is available on <a href="https://github.com/edfm-tum/iland-model/releases/tag/v2.1">GitHub</a>.<br>
+                Find more details on the iLand <a href="../blog/blogpost61-release-iland-21.qmd">blog</a>.
+            </p>
         </div>
       </div>
 
@@ -91,16 +91,13 @@ See [download statistics](download-statistics.qmd) for details.
           </div>
 
           <div id="win-info" class="os-info" style="border: 1px solid #cce5ff; background-color:#f0f8ff; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
-            <p style="margin:0;">**Info:** iLand 2.1 for Windows.
-
+            <p style="margin:0;"><strong>Info:</strong> iLand 2.1 for Windows.</p>
           </div>
           <div id="mac-info" class="os-info" style="display: none; border: 1px solid #cce5ff; background-color:#f0f8ff; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
-            <p style="margin:0;">**Info:** See also [installation notes for Mac](iland-software.qmd#mac).
-
+            <p style="margin:0;"><strong>Info:</strong> See also <a href="iland-software.qmd#mac">installation notes for Mac</a>.</p>
           </div>
           <div id="linux-info" class="os-info" style="display: none; border: 1px solid #cce5ff; background-color:#f0f8ff; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
-            <p style="margin:0;">**Info:** We are working on a installation package for Linux, but it is not ready yet - sorry! In the meanwhile consider compiling iLand from source on Linux (it is not that hard, see the [iLand development chapter](https://iland-model.org/iland-book/Building_iLand.html) in the book)
-
+            <p style="margin:0;"><strong>Info:</strong> We are working on an installation package for Linux, but it is not ready yet - sorry! In the meanwhile consider compiling iLand from source on Linux (it is not that hard, see the <a href="https://iland-model.org/iland-book/Building_iLand.html">iLand development chapter</a> in the book).</p>
           </div>
 
           <label style="display: block; margin-bottom: 10px; font-weight: bold;">2. Enter your Details</label>
@@ -117,7 +114,7 @@ See [download statistics](download-statistics.qmd) for details.
 
           <div style="margin-bottom: 20px;">
             <input type="checkbox" id="agree100" name="agree" value="Bike" style="vertical-align: middle;">
-            <label for="agree100" style="vertical-align: middle;"> I accept the [terms and conditions](terms-and-conditions.qmd).</label>
+            <label for="agree100" style="vertical-align: middle;"> I accept the <a href="terms-and-conditions.qmd">terms and conditions</a>.</label>
           </div>
 
           <input type="submit" value="Download iLand" style="width: 100%; background-color: #2a8442; color: white; padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 1.2em; font-weight: bold;">
@@ -164,6 +161,7 @@ See [download statistics](download-statistics.qmd) for details.
     }
   }
 </script>
+```
 
 
 See [iLand - previous releases](iland-previous-releases.qmd) for earlier releases of iLand!
