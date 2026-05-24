@@ -560,8 +560,8 @@ An example for the project file node:
 <speciesProportions>Pico,Abal</speciesProportions>
 <disturbanceHistory>2 </disturbanceHistory>
 </indicators>
-
 ```
+
 
 | **caption** | **datatype** | **description** |
 | --- | --- | --- |
