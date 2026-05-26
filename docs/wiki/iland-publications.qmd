@@ -95,10 +95,6 @@ Anthropogenic climate change has the potential to impact a variety of natural pr
 %%%
 :::
 
- 
-
-        *
- 
 
 
 
@@ -339,9 +335,6 @@ Forest ecosystems are the most important terrestrial carbon (C) storage globally
 ***Keywords:*** forest carbon storage, old-growth forests, climate change mitigation, ecosystem structure and functioning, functional diversity, forest stand dynamics, airborne Lidar, individual-based modeling, iLand
 :::
 
-
-        *
- 
 
 
 ## Japan

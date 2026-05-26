@@ -216,6 +216,8 @@ html.dark .hp_box {
   max-height: 40px;
   width: auto;
   margin-right: 8px; /* Spacing between logo and "iLand" title */
+  filter: brightness(0) invert(1); /* Render logo in solid white for modern, high-contrast look */
+  opacity: 0.95; /* Soften the pure white slightly for better blending */
 }
 
 

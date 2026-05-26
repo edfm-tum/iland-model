@@ -2,7 +2,10 @@
 pagetitle: "iLand"
 ---
 
-<h2 class="homepage-title">iLand - the individual-based forest landscape and disturbance model</h2>
+<h2 class="homepage-title" style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap; margin-bottom: 1.5rem;">
+  <img src="/img/iland-logo.png" alt="iLand Logo" style="height: 55px; width: auto;" />
+  <span>iLand - the individual-based forest landscape and disturbance model</span>
+</h2>
 
 <div class="quick-links-row">
   <span class="quick-links-label">Quick links:</span>
