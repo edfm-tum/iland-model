@@ -6,6 +6,7 @@ This page is a hub for scripting, that provides links to Javascript (general) an
 Click here, for [general concepts](iland-scripting.qmd) of how the models behavior can be influenced by scripting.
 
 The iLand Scripting API page:[iland-model.org/apidoc/index.html](../apidoc/index.qmd)
+
 ::: {.callout-note}
 We recently (2016) remodeled the API-documentation: since the start of iLand, the Javascript API was located on specific wiki pages (e.g., [Globals](../apidoc/classes/iland/globals.qmd)). The new system puts the documentation of the API closer to the source code (i.e. within the source code tree), and uses [YUIdoc](http://yui.github.io/yuidoc/) to generate the documentation pages (with better cross links, better syntax highlighting, etc.).
 
@@ -59,4 +60,4 @@ access to functions of the iLand [barkbeetle] module.
 
 [management example: parallel management](management-example-parallel-management.qmd)
 [management example: HJA fire history](management-example-hja-fire-history.qmd)
-((management example: restoration area (modern Javascript) ))
+[management example: restoration area (modern JavaScript)](management-example-restoration-area-modern-javascript.qmd)

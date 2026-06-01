@@ -12,9 +12,9 @@ See also the list of variables available at resource unit level [resource unit v
 
 
 
-| **Name**~ | ~**Description** |
+| **Name** | **Description** |
 | --- | --- |
-| year~ | ~current simulation year. |
+| year | current simulation year. |
 
 
 
@@ -23,33 +23,33 @@ See also the list of variables available at resource unit level [resource unit v
 
 
 
-| **Name**~ | ~**Description** |
+| **Name** | **Description** |
 | --- | --- |
-| id~ | ~Unique id (integer) of the tree. |
-| dbh~ | ~diameter at breast height (cm) |
-| height~ | ~height (m) |
-| ruindex~ | ~ID of the RessourceUnit the tree belongs to |
-| x~ | ~position of the tree (x-direction) (m) |
-| y~ | ~position of the tree (y-direction) (m) |
-| volume~ | ~volume of the tree bole (m3) |
-| lri~ | ~current LightRessourceIndex (0..1) |
-| leafarea~ | ~current leafarea (m2) |
-| lightresponse~ | ~LightResonse (f(LRI)) (0..1) |
-| stemmass~ | ~stem biomass (kg ODM) |
-| branchmass~ | ~branch biomass (kg ODM) |
-| rootmass~ | ~root biomass (kg ODM) (fine + coarse roots) |
-| foliagemass~ | ~biomass of foliage (kg ODM) linked to leafarea by fixed conversion factor |
-| age~ | ~Age of tree (years) |
-| opacity~ | ~opacity factor of tree crown (based on leafarea and crown radius) |
-| dead~ | ~1: tree is dead, 0: tree is alive |
-| stress~ | ~stress level of tree (0..1), 0: no stress, 1: high stress |
-| deltad~ | ~last year's dbh increment (cm) |
-| afoliagemass~ | ~foliage mass dervied from allometric equation |
-| species~ | ~index of tree species within this simulation. 0..n. Note, that species names are available as constants within expressions, thus e.g., 'species=Psme' is valid. |
-| basalarea~ | ~basal area (m2) of the individual tree. |
-| crownarea~ | ~area of the crown (m2) (derived from LIP-stamp crown radius) |
-| markharvest~ | ~1 if trees is flagged for (future) harvests (0 otherwise) |
-| markcut~ | ~1 if trees is flagged for (future) cut-down (0 otherwise) |
-| markcrop~ | ~1 if trees is flagged as being a crop tree (0 otherwise) |
-| markcompetitor~ | ~1 if trees is flagged as a competitor (to a crop tree) (0 otherwise) |
+| id | Unique id (integer) of the tree. |
+| dbh | diameter at breast height (cm) |
+| height | height (m) |
+| ruindex | ID of the RessourceUnit the tree belongs to |
+| x | position of the tree (x-direction) (m) |
+| y | position of the tree (y-direction) (m) |
+| volume | volume of the tree bole (m3) |
+| lri | current LightRessourceIndex (0..1) |
+| leafarea | current leafarea (m2) |
+| lightresponse | LightResonse (f(LRI)) (0..1) |
+| stemmass | stem biomass (kg ODM) |
+| branchmass | branch biomass (kg ODM) |
+| rootmass | root biomass (kg ODM) (fine + coarse roots) |
+| foliagemass | biomass of foliage (kg ODM) linked to leafarea by fixed conversion factor |
+| age | Age of tree (years) |
+| opacity | opacity factor of tree crown (based on leafarea and crown radius) |
+| dead | 1: tree is dead, 0: tree is alive |
+| stress | stress level of tree (0..1), 0: no stress, 1: high stress |
+| deltad | last year's dbh increment (cm) |
+| afoliagemass | foliage mass dervied from allometric equation |
+| species | index of tree species within this simulation. 0..n. Note, that species names are available as constants within expressions, thus e.g., 'species=Psme' is valid. |
+| basalarea | basal area (m2) of the individual tree. |
+| crownarea | area of the crown (m2) (derived from LIP-stamp crown radius) |
+| markharvest | 1 if trees is flagged for (future) harvests (0 otherwise) |
+| markcut | 1 if trees is flagged for (future) cut-down (0 otherwise) |
+| markcrop | 1 if trees is flagged as being a crop tree (0 otherwise) |
+| markcompetitor | 1 if trees is flagged as a competitor (to a crop tree) (0 otherwise) |
 

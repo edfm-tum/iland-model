@@ -8,7 +8,7 @@ website:
   title: "iLand"
   navbar:
     logo: img/iland-logo.png
-    logo-href: /wiki/startpage.qmd
+    logo-href: /index.qmd
     title: false
     background: primary
     left:
@@ -25,7 +25,7 @@ website:
       - text: "Model Documentation"
         menu:
           - text: "Documentation Hub"
-            href: index.qmd
+            href: hub.qmd
           - text: "Physiological Processes"
             href: wiki/resource-availability-and-competition.qmd
           - text: "Demographic Processes"
@@ -50,6 +50,8 @@ website:
             href: wiki/project-file.qmd
           - text: "Species Parameters"
             href: wiki/species-parameter.qmd
+          - text: "Expressions and Variables"
+            href: wiki/expressions-and-variables.qmd
       - text: "APIs & Scripting"
         menu:
           - text: "JavaScript API"
@@ -76,7 +78,7 @@ website:
       style: "docked"
       collapse-level: 2
       contents:
-        - index.qmd
+        - hub.qmd
         - section: "Part 1: Model Documentation"
           contents:
             - section: "About iLand"
@@ -203,6 +205,8 @@ website:
           contents:
             - wiki/project-file.qmd
             - wiki/species-parameter.qmd
+            - wiki/expressions-and-variables.qmd
+            - wiki/expression.qmd
             - wiki/tree-variables.qmd
             - wiki/sapling-variables.qmd
             - wiki/resource-unit-variables.qmd
@@ -213,8 +217,6 @@ website:
             - wiki/dynamic-outputs.qmd
             - wiki/iland-publications.qmd
             - wiki/terms-and-conditions.qmd
-            - wiki/history.qmd
-            - wiki/contact-information.qmd
             - wiki/release-notes.qmd
 
     - id: apidoc

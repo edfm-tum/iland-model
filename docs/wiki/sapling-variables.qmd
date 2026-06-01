@@ -12,16 +12,16 @@ See also: [tree variables](tree-variables.qmd) and [resource unit variables](res
 
 
 
-| **Name**~ | ~**Description** |
+| **Name** | **Description** |
 | --- | --- |
-| year~ | ~current simulation year. |
-| species~ | ~cohort species. The species is a numeric constant (you can use species codes such as 'fasy') |
-| height~ | ~height of the cohort (m) |
-| age~ | ~age of the cohort cell (yrs) |
-| dbh~ | ~dbh (cm) of the cohort (calculated via HD ratio) |
-| nrep~ | ~number of trees represented by the cohort (calculated via the Reineke equation) |
-| foliagemass~ | ~foliage mass (kg) of each tree of the cohort (i.e. to calculate total foliage mass: foliagemass*nrep) |
-| x~ | ~x-coordinate of the sapling (meters, iLand reference system) |
-| y~ | ~y-coordinate of the sapling (meters, iLand reference system) |
+| year | current simulation year. |
+| species | cohort species. The species is a numeric constant (you can use species codes such as 'fasy') |
+| height | height of the cohort (m) |
+| age | age of the cohort cell (yrs) |
+| dbh | dbh (cm) of the cohort (calculated via HD ratio) |
+| nrep | number of trees represented by the cohort (calculated via the Reineke equation) |
+| foliagemass | foliage mass (kg) of each tree of the cohort (i.e. to calculate total foliage mass: foliagemass*nrep) |
+| x | x-coordinate of the sapling (meters, iLand reference system) |
+| y | y-coordinate of the sapling (meters, iLand reference system) |
 
  

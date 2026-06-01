@@ -60,7 +60,7 @@ The “permafrost” section is a sub-section of “*model.settings*”. Example
 | initialGroundTemperature | numeric | Initial temperature in depth ‘groundBaseDepth’ below the active layer: at depth "groundBaseDepth" the temperature is assumed to remain +- constant within a year and to follow MAT with a 10yr delay. The initial value is given with 'initialGroundTemperature'. and the depth from which thermal energy flows |
 | initialDepthFrozen | numeric | depth (m) up to which the soil is frozen at the start of the simulation (1st of January). For permanent permafrost the value is capped at 2m. |
 | groundBaseDepth | numeric | depth (m) of the zone below the active layer from where the secondary heat flux (from below) originates |
-| lambdaOrganicLayer | numeric | thermal conductivity [W/m*K](wmk.qmd) of soil organic layer and moss |
+| lambdaOrganicLayer | numeric | thermal conductivity W/m*K of soil organic layer and moss |
 | organicLayerDensity | numeric | density (kg/m3) of the soil organic layer (default: 50) |
 | organicLayerDefaultDepth | numeric | depth of the soil organic layer (m) (only relevant when dynamic carbon cycle is disabled) (default: 0.1) |
 | maxFreezeThawPerDay | numeric | cap for daily freezing and thawing (mm water column) |
@@ -131,7 +131,7 @@ Daily values for the state of permafrost (per resource unit) are in the water-de
 | pffreezeback | depth (m) up to which the soil is frozen again (in autumn) |
 | delta_mm | change of water (mm within iLand water bucket), freezing is negative |
 | delta_soil | change of ice layer (m) (within iLand water bucket), freezing is negative |
-| thermalConductivity | Current conductivity of mineral soil [W / m2 / K](w-m2-k.qmd) |
+| thermalConductivity | Current conductivity of mineral soil W / m2 / K |
 | soilfrozen | depth of soil (m) that is currently frozen (this is a part of the soil plant accessible soil) |
 | waterfrozen | amount of water (mm) trapped currently in ice |
 | current_capacity | Current field capacity of the (non-frozen) soil bucket (mm) |

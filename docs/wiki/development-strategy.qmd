@@ -2,7 +2,7 @@
 title: "development strategy"
 ---
 
-*Note that this page is part of a collection of [iLand history](history.qmd) pages and does not necessarily represent the current state of model development!*
+*Note that this page is part of a collection of iLand history pages and does not necessarily represent the current state of model development!*
 
 
 We see model development as a continuous cycle of various phases and steps with feedbacks and interactions between all of them (cf. [Grimm and Railsback 2005](http://tinyurl.com/nj757y)). iLand development advances in three phases, from initial parameterization and testing to large scale [Bayesian calibration](http://treephys.oxfordjournals.org/cgi/reprint/25/7/915) and evaluation in specific application cases.

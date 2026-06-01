@@ -2,7 +2,7 @@
 title: "project abstract"
 ---
 
-*Note that this page is part of a collection of [iLand history](history.qmd) pages and does not necessarily represent the current state of model development!*
+*Note that this page is part of a collection of iLand history pages and does not necessarily represent the current state of model development!*
 
 
 

@@ -15,7 +15,7 @@ a {
   overflow-x: auto;
 }
 
-html.dark .math.display {
+html.dark .math.display, body.quarto-dark .math.display {
   background-color: rgba(255, 255, 255, 0.05);
 }
 
@@ -33,7 +33,7 @@ html.dark .math.display {
   font-weight: 600;
 }
 
-html.dark .table th {
+html.dark .table th, body.quarto-dark .table th {
   background-color: rgba(255, 255, 255, 0.07);
 }
 
@@ -52,7 +52,7 @@ html.dark .table th {
   color: #856404;
 }
 
-html.dark .tag-readonly {
+html.dark .tag-readonly, body.quarto-dark .tag-readonly {
   background-color: #856404;
   color: #ffeebe;
 }
@@ -62,7 +62,7 @@ html.dark .tag-readonly {
   color: #385723;
 }
 
-html.dark .tag-type {
+html.dark .tag-type, body.quarto-dark .tag-type {
   background-color: #385723;
   color: #e2f0d9;
 }
@@ -144,9 +144,9 @@ html.dark .tag-type {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-html.dark .hp_box {
-  background-color: #1e1e24;
-  border-color: #2d2d35;
+html.dark .hp_box, body.quarto-dark .hp_box {
+  background-color: #1a1a22;
+  border-color: #262630;
 }
 
 .hp_box:hover {

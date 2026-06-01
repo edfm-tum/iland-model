@@ -13,20 +13,20 @@ This page provides the list of available variables in [expressions](expression.q
 These variables are aggregates per stand. Typically, they are accessed via `stand.<varname>`.
 
 
-| **Name**~ | ~**Description** |
+| **Name** | **Description** |
 | --- | --- |
-| basalArea~ | ~total basal area (m2/ha) |
-| age~ | ~basal area weighted mean age of the stand |
-| absoluteAge~ | ~number of years since the beginning of the rotation (not based on tree age) |
-| nspecies~ | ~number of species (>4m) |
-| volume~ | ~total standing volume (m³/ha) |
-| dbh~ | ~basal area weighted mean dbh (trees taller 4m) in cm |
-| height~ | ~basal area weighted mean height (trees >4m) in m |
-| annualIncrement~ | ~mean annual increment (MAI), m3 timber/ha for the full rotation period |
-| elapsed~ | ~years since last execution of an activity for the stand (yrs) |
-| topHeight~ | ~mean height of the thickest 100 trees/ha (m) |
-| area~ | ~stand area (ha) |
-| year~ | ~current simulation year |
+| basalArea | total basal area (m2/ha) |
+| age | basal area weighted mean age of the stand |
+| absoluteAge | number of years since the beginning of the rotation (not based on tree age) |
+| nspecies | number of species (>4m) |
+| volume | total standing volume (m³/ha) |
+| dbh | basal area weighted mean dbh (trees taller 4m) in cm |
+| height | basal area weighted mean height (trees >4m) in m |
+| annualIncrement | mean annual increment (MAI), m3 timber/ha for the full rotation period |
+| elapsed | years since last execution of an activity for the stand (yrs) |
+| topHeight | mean height of the thickest 100 trees/ha (m) |
+| area | stand area (ha) |
+| year | current simulation year |
 
 
 

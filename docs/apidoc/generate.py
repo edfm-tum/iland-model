@@ -415,7 +415,6 @@ def generate_docs():
         
         with open(qmd_filepath, 'w', encoding='utf-8') as out:
             out.write(f"---\ntitle: \"Class: {class_name}\"\nsidebar: apidoc\n---\n\n")
-            out.write(f"# {class_name} Class\n\n")
             
             class_desc = convert_indented_code_blocks(replace_crosslinks(class_data['description'], category))
             out.write(f"{class_desc}\n\n")
@@ -536,7 +535,6 @@ def generate_docs():
         
         with open(qmd_filepath, 'w', encoding='utf-8') as out:
             out.write(f"---\ntitle: \"{module_data['title'] or module_name}\"\nsidebar: apidoc\n---\n\n")
-            out.write(f"# {module_data['title'] or module_name}\n\n")
             
             mod_desc = convert_indented_code_blocks(replace_crosslinks(module_data['description'], category))
             out.write(f"{mod_desc}\n\n")

@@ -45,7 +45,7 @@ $navbar-dark-hover-color: #5fa375;
 /*-- scss:rules --*/
 
 // Add custom overrides for dark mode elements if needed
-html.dark {
+html.dark, body.quarto-dark {
   // Fix sidebar backgrounds
   #quarto-sidebar {
     background-color: #121216;
