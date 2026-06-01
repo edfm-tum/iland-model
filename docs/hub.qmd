@@ -23,8 +23,7 @@ Welcome to the central portal for navigating the **iLand** (individual-based for
         <div class="d-flex flex-wrap gap-2 mt-3 justify-content-center">
           <a href="wiki/why-developed.html" class="btn btn-sm btn-primary">Why iLand</a>
           <a href="wiki/how-it-works.html" class="btn btn-sm btn-primary">Design Principles</a>
-          <a href="wiki/technical-design.html" class="btn btn-sm btn-outline-secondary">Technical Design</a>
-          <a href="wiki/iland-model-complexity-and-its-niche-in-the-landscape-of-models.html" class="btn btn-sm btn-outline-secondary">Introduction</a>
+          <a href="wiki/technical-design.html" class="btn btn-sm btn-primary">Technical Design</a>
         </div>
       </div>
     </div>
@@ -179,9 +178,9 @@ Welcome to the central portal for navigating the **iLand** (individual-based for
 <div class="row">
   <!-- Card 7: iLand Software -->
   <div class="col-md-4 mb-4">
-    <div class="card h-100 shadow-sm border-success">
+    <div class="card h-100 shadow-sm border-primary">
       <div class="card-body">
-        <h4 class="card-title text-success"><i class="bi bi-display"></i> iLand Software</h4>
+        <h4 class="card-title text-primary"><i class="bi bi-display"></i> iLand Software</h4>
         <p class="card-text small">
           Executing simulations in GUI interactive mode or on headless high-performance computing clusters.
         </p>
@@ -198,9 +197,9 @@ Welcome to the central portal for navigating the **iLand** (individual-based for
 
   <!-- Card 8: Landscape Setup -->
   <div class="col-md-4 mb-4">
-    <div class="card h-100 shadow-sm border-success">
+    <div class="card h-100 shadow-sm border-primary">
       <div class="card-body">
-        <h4 class="card-title text-success"><i class="bi bi-map"></i> Landscape Setup</h4>
+        <h4 class="card-title text-primary"><i class="bi bi-map"></i> Landscape Setup</h4>
         <p class="card-text small">
           Configuring landscape extents, soil files, weather datasets, and vegetation parameters.
         </p>
@@ -219,9 +218,9 @@ Welcome to the central portal for navigating the **iLand** (individual-based for
 
   <!-- Card 9: Scripting & Developer API -->
   <div class="col-md-4 mb-4">
-    <div class="card h-100 shadow-sm border-success">
+    <div class="card h-100 shadow-sm border-primary">
       <div class="card-body">
-        <h4 class="card-title text-success"><i class="bi bi-code-slash"></i> Scripting</h4>
+        <h4 class="card-title text-primary"><i class="bi bi-code-slash"></i> Scripting</h4>
         <p class="card-text small">
           Using scripting to orchestrate landscape-wide activities, write custom outputs, or extend core C++ code.
         </p>
@@ -247,9 +246,9 @@ Welcome to the central portal for navigating the **iLand** (individual-based for
 <div class="row">
   <!-- Card 10: Reference Tables -->
   <div class="col-md-4 mb-4">
-    <div class="card h-100 shadow-sm border-info">
+    <div class="card h-100 shadow-sm border-primary">
       <div class="card-body">
-        <h4 class="card-title text-info"><i class="bi bi-journal-text"></i> Core Reference</h4>
+        <h4 class="card-title text-primary"><i class="bi bi-journal-text"></i> Core Reference</h4>
         <ul class="small ps-3">
           <li><a href="wiki/project-file.html">Project File (XML Schema)</a></li>
           <li><a href="wiki/species-parameter.html">Species Parameters list</a></li>
@@ -266,9 +265,9 @@ Welcome to the central portal for navigating the **iLand** (individual-based for
 
   <!-- Card 11: API Reference -->
   <div class="col-md-4 mb-4">
-    <div class="card h-100 shadow-sm border-info">
+    <div class="card h-100 shadow-sm border-primary">
       <div class="card-body">
-        <h4 class="card-title text-info"><i class="bi bi-terminal"></i> API Documentation</h4>
+        <h4 class="card-title text-primary"><i class="bi bi-terminal"></i> API Documentation</h4>
         <p class="card-text small">
           Syntactical API details for iLand scripting interfaces.
         </p>
@@ -285,9 +284,9 @@ Welcome to the central portal for navigating the **iLand** (individual-based for
 
   <!-- Card 12: Community & Support -->
   <div class="col-md-4 mb-4">
-    <div class="card h-100 shadow-sm border-info">
+    <div class="card h-100 shadow-sm border-primary">
       <div class="card-body">
-        <h4 class="card-title text-info"><i class="bi bi-chat-left-text"></i> Support & Publications</h4>
+        <h4 class="card-title text-primary"><i class="bi bi-chat-left-text"></i> Support & Publications</h4>
         <p class="card-text small">
           Connect with other iLand developers or browse model applications.
         </p>

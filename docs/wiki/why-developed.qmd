@@ -10,3 +10,6 @@ iLand explicitly simulates the principal adaptive agents in forest ecosystems, i
 
 1. Employing a pattern-based rendering of ecological field theory to efficiently model spatially explicit resource availability at the landscape scale (see [Competition for Light](competition-for-light.qmd)).
 2. Integrating local resource competition and physiological resource use (see [Primary Production](primary-production.qmd)) via a hierarchical multi-scale framework (see [Scaling across space and time](scaling.qmd)).
+
+See also: [iLand complexity and its niche in the landscape of models](iland-model-complexity-and-its-niche-in-the-landscape-of-models.qmd)
+

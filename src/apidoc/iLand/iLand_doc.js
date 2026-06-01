@@ -26,9 +26,10 @@ Globals.set("model.settings.seedDispersal", false);
 
 #### 2. Querying and Filtering Trees
 ```javascript
-// Run a query on adult trees inside Stand 12
-var trees = Management.filter(12, "dbh > 10 and species == 'piab'");
-console.log("Found " + trees.length + " spruce trees with DBH > 10cm");
+// Run a query on adult trees
+management.load('dbh>30');
+var trees = management.count;
+console.log("Found " + trees.length + " spruce trees with DBH > 30cm");
 ```
 
 #### 3. Reading and Writing Data

@@ -24,6 +24,7 @@ iLand balances scientific detail with high performance. It uses specialized algo
 ## Model Design Hierarchy
 
 Processes in iLand operate on three distinct hierarchical levels:
+
 *   **Environment**: The level of homogeneous climate and topography (typically tens to hundreds of hectares).
 *   **Resources**: The level of above- and belowground resource dynamics, influenced by environmental factors and aggregated tree-level structure (the 1-hectare resource unit).
 *   **Individuals**: The level of individual tree dynamics, affected by local resources and environmental drivers.
@@ -31,6 +32,7 @@ Processes in iLand operate on three distinct hierarchical levels:
 ## Technical Design & Performance
 
 The software implementation of iLand is optimized for large-scale, high-resolution simulations:
+
 *   **Performance & Memory**: Designed for a low RAM footprint by loading simulation states directly into memory, enabling the simulation of millions of individual trees over large landscapes.
 *   **Parallel Computing**: Native support for multi-threading to utilize multiple CPU cores efficiently, with potential extension to GPGPU and high-performance computing (HPC) clusters.
 *   **Core Technologies**: Built using the Qt development framework (C++), using SQLite for lightweight, relational data output storage, and the Mersenne Twister algorithm for high-quality pseudo-random number generation.

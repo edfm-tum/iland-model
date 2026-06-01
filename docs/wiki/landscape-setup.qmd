@@ -11,7 +11,7 @@ This page describes the required steps and concepts for setting up a real landsc
 ## Defining the project area
 
 
-A real world project area is defined by a mix of GIS based data and other parameters/data. The GIS capabilities of iLand are limited: basically iLand is able to read grid files in the [ESRI text-based grid format](http://en.wikipedia.org/wiki/Esri_grid). The real world coordinates of the grid are transformed to the internal local coordinate system of iLand. The transformation is defined by the keys in the *model.world.location* section of the project file. The coordinate transformation is defined once and used for all grid files loaded for a model run. iLand performs no GIS projections and assumes flat metric coordinates.
+A real world project area is defined by a mix of GIS based data and other parameters/data. The GIS capabilities of iLand support grid files in the [ESRI text-based grid format](http://en.wikipedia.org/wiki/Esri_grid) as well as **GeoTIFF** files (supporting `INT16`, `INT32`, `FLOAT`, and `DOUBLE` data types). GeoTIFF files are much more memory-efficient and faster to process. iLand automatically extracts projection information from the first GeoTIFF it encounters, so it is important that all loaded GIS files share the same projection. The real world coordinates of the grid are transformed to the internal local coordinate system of iLand. The transformation is defined by the keys in the *model.world.location* section of the project file. The coordinate transformation is defined once and used for all grid files loaded for a model run. iLand performs no GIS projections and assumes flat metric coordinates.
 The spatial resolution for input map files is not fixed; however, in most cases an internal grid aligned with the 10m height grid and clipped to the project area is derived from the input grid.
 Note that the same type of spatial input files is not only used for the set up of the initial stand structure, but also for, e.g., management.
 
@@ -31,8 +31,13 @@ Also indicated are the metric coordinates of the lower left corner of the projec
 The following snipped shows how to load this landscape into iLand:
 
 
-```
-<!-  below the "model.world" node --> -39539 215800 0 0  true  gis/landscape_grid.txt
+```xml
+<!-- below the "model.world" node in the project XML file -->
+<location x="-39539" y="215800" z="0" rotation="0" />
+<standGrid enabled="true">gis/landscape_grid.txt</standGrid>
+
+<!-- GeoTIFF files are also supported: -->
+<!-- <standGrid enabled="true">gis/landscape_grid.tif</standGrid> -->
 ```
 
  
