@@ -42,8 +42,6 @@ $$
 
 The amount of precipitation per event exceeding the interception storage capacity is directly routed to soil (and if applicable: snow) pools. Evaporation of intercepted water from the canopy is calculated using the Penman-Monteith equation (see Eq. 7 below), with the canopy conductance set to infinity (cf. [Landsberg and Gower 1997](http://tinyurl.com/yzlyp7b)). The water not evaporated within one day is eventually channeled to the soil water pool as stemflow and drip.
 
-        *
-
 
 
 
@@ -51,8 +49,6 @@ The amount of precipitation per event exceeding the interception storage capacit
 
 
 If the daily mean temperature *T<sub>d</sub>*≤0°C, precipitation falls as snow and is routed to the snow water pool. On days with *T<sub>d</sub>*&gt;0°C the snow water pool looses water to the soil water pool at a rate of 0.7 mm°C<sup>-1</sup>day<sup>-1</sup> ([Running and Coughlan 1988](http://dx.doi.org/10.1016/0304-3800(88)). It has to be noted that this representation of snow focuses on the snow water storage but does not give an accurate estimate of snow depth.
-
-        *
 
 
 
@@ -75,8 +71,6 @@ $$
 *Θ<sub>sat</sub>*, *Ψ<sub>sat</sub>* and *b<sub>s</sub>* can be derived by laboratory analysis of soil samples if available, but have also been estimated from large soil databases based on physical soil properties. In the absence of specific soil data we use the estimates of [Cosby et al. (1984)](http://tinyurl.com/yhz5aan), who employed sand, clay and silt content as predictors. Their data has recently been successfully applied in the process-based forest model of [Schwalm and Ek (2004)](http://dx.doi.org/10.1016/j.ecolmodel.2004.04.016).
 
 By means of effective rooting depth (i.e. the constraining value of maximum rooting depth and soil depth; for a compilation of species-specific max. rooting depth see [Breuer et al. 2003](http://dx.doi.org/10.1016/S0304-3800(03)), an important site variable, water input from throughfall and snowmelt can be converted to soil water potentials. Water exceeding the field capacity is simulated to percolate out of the system. For every day, the soil water potential *Ψ*, used as proxy for [tree response to soil water status](soil-water-response.qmd), can be derived following Eq. 6.
-
-        *
 
 
 
@@ -129,8 +123,6 @@ with *T/E* the rate between daily transpiration and evaporation rates (Eq. 7). T
 
 iLand explictly models the leaf area from mature trees (&gt;4m height) but also considers the effect of saplings (cohorts of trees) and - in the absence of trees - a ground vegetation layer. More details on saplings and ground vegetation is linked to the water cylce is given on the [transpiration and conductance in saplings](transpiration-and-conductance-in-saplings.qmd) page.
 
-        *
-
 
 
 
@@ -144,6 +136,8 @@ iLand explictly models the leaf area from mature trees (&gt;4m height) but also 
 1. *P* is added to the soil water container. Excess water is transferred to the Runoff/trickle off pool
 1. Evaporation *E* and transpiration *T* is calculated using the (relative) current water content at this point
 1. *T* is removed from the soil water pool, and intercepted water which was not evaporated is added to the soil water.
+
+See also: [iLand water cycle issue 2019](iland-water-cycle-issue-2019.qmd) for details on the water cycle parameterization correction and bug fix.
 
 
 

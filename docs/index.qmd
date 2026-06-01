@@ -24,7 +24,7 @@ Welcome to the central portal for navigating the **iLand** (individual-based for
           <a href="wiki/why-developed.html" class="btn btn-sm btn-primary">Why iLand</a>
           <a href="wiki/how-it-works.html" class="btn btn-sm btn-primary">Design Principles</a>
           <a href="wiki/technical-design.html" class="btn btn-sm btn-outline-secondary">Technical Design</a>
-          <a href="wiki/introduction.html" class="btn btn-sm btn-outline-secondary">Introduction</a>
+          <a href="wiki/iland-model-complexity-and-its-niche-in-the-landscape-of-models.html" class="btn btn-sm btn-outline-secondary">Introduction</a>
         </div>
       </div>
     </div>
@@ -160,6 +160,9 @@ Welcome to the central portal for navigating the **iLand** (individual-based for
           </a>
           <a href="wiki/ground-vegetation.html" class="list-group-item list-group-item-action bg-transparent px-0 py-2">
             <i class="bi bi-tree-fill text-muted"></i> <strong>Understory & Grass:</strong> Forest floor vegetation layer competition with young tree cohorts.
+          </a>
+          <a href="wiki/svd.html" class="list-group-item list-group-item-action bg-transparent px-0 py-2">
+            <i class="bi bi-graph-up text-warning"></i> <strong>Scaling Vegetation Dynamics (SVD):</strong> Deep-learning based framework for upscaling vegetation transitions.
           </a>
         </div>
       </div>

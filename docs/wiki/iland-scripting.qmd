@@ -34,7 +34,13 @@ function manage(year)
 }
 ```
 
-The user needs to provide his or her own way of dispatching events over time. Examples of how this can be done are shown in the examples: [management example: parallel management](management-example-parallel-management.qmd) or [management example: HJA fire history](management-example-hja-fire-history.qmd).
+The user needs to provide his or her own way of dispatching events over time.
+
+### Scripting Examples
+Several detailed scripting examples demonstrate various aspects of the scripting capabilities:
+* **[Parallel Management](management-example-parallel-management.qmd)**: Demonstrates handling parallel, stand-level events over time.
+* **[HJA Fire History](management-example-hja-fire-history.qmd)**: Shows how to reconstruct historical fire events on a landscape.
+* **[Restoration Area (Modern JavaScript)](management-example-restoration-area-modern-javascript.qmd)**: Illustrates how to read custom tabular data files (such as CSVs), filter/manipulate this data in memory, and dynamically execute operations (like planting) based on it.
 
 **Note:** the management happens quite [early in a year](simulation-sequence.qmd).
 

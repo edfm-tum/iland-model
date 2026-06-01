@@ -35,7 +35,7 @@ website:
           - text: "Forest Management"
             href: wiki/management.qmd
           - text: "Submodules"
-            href: wiki/permafrost.qmd
+            href: wiki/submodules.qmd
       - text: "Working with iLand"
         menu:
           - text: "iLand Software"
@@ -81,7 +81,7 @@ website:
           contents:
             - section: "About iLand"
               contents:
-                - wiki/introduction.qmd
+                - wiki/iland-model-complexity-and-its-niche-in-the-landscape-of-models.qmd
                 - wiki/how-it-works.qmd
                 - wiki/why-developed.qmd
                 - wiki/ecological-complexity.qmd
@@ -163,9 +163,11 @@ website:
                     - wiki/management-example-parallel-management.qmd
             - section: "Submodules"
               contents:
+                - wiki/submodules.qmd
                 - wiki/permafrost.qmd
                 - wiki/browsing.qmd
                 - wiki/ground-vegetation.qmd
+                - wiki/svd.qmd
         - section: "Part 2: Working with iLand"
           contents:
             - section: "iLand Software"

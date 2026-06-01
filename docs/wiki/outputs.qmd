@@ -2,7 +2,7 @@
 title: "Outputs"
 ---
 
-More general information concerning storage locations and filename conventions is described in [organizing outputs](organizing-outputs.qmd). See also [Debug Outputs](debug-outputs.qmd) for available high-resolution outputs (usually for debugging). Outputs related to the agent based forest management engine are described at the [ABE outputs](abe-outputs.qmd) page. See also [dynamic outputs](dynamic-outputs.qmd) for a highly customizable output.
+More general information concerning storage locations and filename conventions is described in [organizing outputs](organizing-outputs.qmd). See also [Debug Outputs](debug-outputs.qmd) for available high-resolution outputs (usually for debugging). Outputs related to the agent based forest management engine are described at the [ABE outputs](abe-outputs.qmd) page. See also [dynamic outputs](dynamic-outputs.qmd) for a highly customizable output, and the [development stages](development-stages.qmd) output for mapping structural forest stages.
 
 
 <!-- GENERATED-CODE-START -->
