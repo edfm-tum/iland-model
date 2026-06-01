@@ -41,7 +41,7 @@ pagetitle: "iLand"
 <div class="hp_box">
   <a href="download.html"><img src="/img/iLand_gfx6.png" align="right" alt="Can I use it?" /></a>
   <span class="hpcaption">Can I use it?</span>
-  <p class="hptext">Sure! iLand is a research tool already used by a growing number of scientists in the US and Europe. The iLand software is released under the GNU General Public License and <a href="download.html">freely available.</a></p>
+  <p class="hptext">Sure! iLand is a research tool already used by a growing number of scientists around the world. The iLand software is released under the GNU General Public License and <a href="download.html">freely available.</a></p>
 </div>
 
 <div class="hp_box">

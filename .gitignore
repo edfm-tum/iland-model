@@ -11,3 +11,5 @@ project_file.xml
 build/
 .DS_Store
 _site
+.obsidian/
+.Rhistory

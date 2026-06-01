@@ -1,3 +1,7 @@
+# iLand JavaScript API Reference Generator
+# For instructions on setting up Quarto, local preview, and documentation contribution,
+# see the main contributor guide: [docs/README.md](file:///home/werner/dev/iland-model/docs/README.md)
+
 import os
 import re
 import sys

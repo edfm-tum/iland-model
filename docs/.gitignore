@@ -1,0 +1,5 @@
+/.quarto/
+**/*.quarto_ipynb
+/apidoc/classes/
+/img/img_unused_backup/
+/img/wiki_up_unused_backup/
