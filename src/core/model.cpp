@@ -328,8 +328,10 @@ void Model::setupSpace()
                     if (*p != 0) {
                         QString err_msg = QString("Setup of landscape: The resource unit " \
                                                   "with center point (%1/%2) is null (according to environment grid), " \
-                                                  "but the stand grid seems to have valid stands there. This is not good. \n" \
-                                                  "Check for overlap of your stand grid / environment grid, and the log file.").
+                                                  "but the stand grid seems to have valid stands there.\n" \
+                                                  "This can happen when grids for environment, stands and the world origin do not align. " \
+                                                  "Recommendation: env/stand grid should have the same origin, offset from environment grid to location.X and location.Y should be multiples of 100m, and every pixel on the stand grid needs to be within a valid resource unit. \n" \
+                                                  "Check the log file, and https://discord.com/channels/1149281788204691497/1498657149713121280").
                                           arg(r.center().x()).arg(r.center().y());
                         throw IException(err_msg);
                     }
