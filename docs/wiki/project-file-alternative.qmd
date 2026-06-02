@@ -1,0 +1,547 @@
+---
+title: "Project File Settings Reference (Hierarchical)"
+---
+
+::: {.callout-note}
+This settings reference is dynamically compiled from the core iLand engine metadata. It displays settings in their exact XML hierarchical tree structure.
+:::
+
+## Overview
+
+Project settings are organized by their XML element path hierarchy. The first level represents the root tag (e.g. `system`, `model`), the second level represents the main submodule, and deeper levels represent nested configurations. Settings attributes are formatted with their types, default values, and description tooltips.
+
+
+# Model Settings (`model`)
+
+
+## Climate Configurations (`model.climate`)
+
+- **`batchYears`** (Type: *numeric*, Default: `10`, Label: "Batch years") — For performance reasons the access to the climate database accesses is performed bulked. This setting specifies how many years are loaded at once.
+- **`co2concentration`** (Type: *numeric*, Default: `380`, Label: "CO2 concentration") — Current value of the atmospheric CO2 concentration. Default value is 380ppm. A time series may be implementing using the Time-Event feature. See also section world.species.CO2Response
+- **`co2pathway`** (Type: *combo dropdown [options: No, RCP2.6, RCP4.5, RCP6.0, RCP8.5]*, Default: `No`, Label: "CO2 pathway") — Selects a pre-defined CO2 concentration pathway, default is no change ('No').
+- **`co2startYear`** (Type: *numeric*, Default: `1840`, Label: "CO2 start year") — If a co2pathway is used, then co2startYear defines the starting point of CO2 concentration within the simulation.
+- **`filter`** (Type: *string*, Default: `filter expression`, Label: "Filter") — An optional filter criterion that is added to the where clause of the SQL for reading the climate data. This can be useful e.g. for skipping parts of the climate records. Example: 'year>2000 and year<2010' limits used climate data to the years 2001 to 2009.
+- **`microclimate`**
+  - **`barkbeetle`** (Type: *boolean (true/false)*, Default: `true`, Label: "Effect on bark beetles") — Enables the effect of microclimate buffering for overwintering success of Spruce bark beetles
+  - **`decomposition`** (Type: *boolean (true/false)*, Default: `true`, Label: "Effect on decomposition") — Enables the microclimate buffering effect for decomposition of dead wood and litter
+  - **`enabled`** (Type: *boolean (true/false)*, Default: `false`, Label: "Enable") — Enables the submodule
+  - **`establishment`** (Type: *boolean (true/false)*, Default: `true`, Label: "Effect on establishment") — Enables the effect of microclimate buffering for tree establishment
+- **`precipitationShift`** (Type: *numeric*, Default: `1`, Label: "Precipitation shift") — Simple option to modify the climate. The daily precipitation is multiplied for each day with this value. (default = 1).
+- **`randomSamplingEnabled`** (Type: *boolean (true/false)*, Default: `false`, Label: "Enable random sampling") — if true, only the first batchYears of the climate file are loaded (but see filter). The actual climate for each year is the sampled from this climate data. See also randomSamplingList. (default=false)
+- **`randomSamplingList`** (Type: *string*, Default: `empty`, Label: "Random sampling list") — if this key contains a list of 0-based indices (e.g. "3, 12, 14, 0, 3, 14", the random sampling (if enabled) uses this sequence of years. Note: the index is 0-based (in the example the 4th year would be used first). Use any non-word characters as delimiters. The list will be recycled if more years are simulated than present in the list. The index values are to be between 0 and batchYears-1. If invalid indices are in the list, an error is reported. If the key is empty or not present, each year a climate year is selected randomly from the list of loaded years. default=empty
+- **`tableName`** (Type: *string*, Default: `name sqlite table`, Label: "Table name") — Name of the SQLite table within the defined climate database to load (system.database.climate).
+- **`temperatureShift`** (Type: *numeric*, Default: `0`, Label: "Temperature shift") — Simple option to modify the climate. The value is added to each daily temperature (default = 0)
+
+
+## Initialization Options (`model.initialization`)
+
+- **`file`** (Type: *file selection*, Default: `path to initialization file`, Label: "File") — Path of the initialization file to be loaded. In mode unit this key needs to be overwritten by the environment file. If blank, no trees are loaded.
+- **`heightGrid`**
+  - **`enabled`** (Type: *boolean (true/false)*, Default: `false`, Label: "Enable") — If true, the top height grid is used.
+  - **`fileName`** (Type: *file selection*, Default: `default system.path.init`, Label: "File name") — the ESRI ASCII file that holds the tree top heights (default path is system.path.init).
+  - **`fitFormula`** (Type: *string*, Default: `polygon(x,0,0,0.8,1,1.1,1,1.25,0)`, Label: "Fit formula") — Equation that estimates the suitability of a target 10m cell based on the relative height of the tree compared to the top canopy height. default: polygon(x, 0,0, 0.8,1, 1.1, 1, 1.25,0).
+  - **`maxTries`** (Type: *numeric*, Default: `10`, Label: "Max. tries") — The maximum number of attempts to find a suitable cell for a tree (default: 10).
+- **`mapFileName`** (Type: *file selection*, Default: `file for init and matching stands`, Label: "Map File Name") — When using the 'map' mode, the matching of stands and init files is defined in this file.
+- **`mode`** (Type: *combo dropdown [options: single, unit, map, standgrid, snapshot]*, Default: `single`, Label: "Mode") — type of intialization (e.g., from single files or a snapshot).
+- **`randomFunction`** (Type: *string*, Default: `function expression`, Label: "Random Function", View: *advanced*) — Defines the function (as an expression) used when estimating positions for individual trees (for init files of type distribution).
+- **`saplingFile`** (Type: *file selection*, Default: `path to sapling file`, Label: "Sapling File") — Path of the initialization file for saplings (see initialize trees). If blank, no saplings are loaded.
+- **`snags`**
+  - **`otherAbovegroundFraction`** (Type: *numeric*, Default: `0.4`, Label: "Other Aboveground Fraction") — Initial fraction (0..1) of C in the other pool from aboveground (branches).
+  - **`otherC`** (Type: *numeric*, Default: `string`, Label: "Carbon Content Other Wood Pools") — Initial carbon content in the pools for other wood (i.e. branches and coarse roots). (kg/ha.). This content is split up into the five parts.
+  - **`otherCN`** (Type: *numeric*, Default: `string`, Label: "C/N Ratio Branches,Roots") — CN ratio of 'otherC' (branches, coarse roots).
+  - **`swdC`** (Type: *numeric*, Default: `5`, Label: "string") — initial carbon content in (standing) snags (kg/ha)
+  - **`swdCN`** (Type: *numeric*, Default: `0.1`, Label: "C/N Ratio") — CN ratio of snags
+  - **`swdCount`** (Type: *numeric*, Default: `100`, Label: "Number Snags") — number of snags
+  - **`swdDecompRate`** (Type: *numeric*, Default: `0.1`, Label: "Decay rate standing snags") — decay rate of standing snags (i.e. ksw)
+  - **`swdHalfLife`** (Type: *numeric*, Default: `10`, Label: "Halflife initial snags") — halflife attached to initial snags (years)
+  - **`woodDecompRate`** (Type: *numeric*, Default: `0.1`, Label: "Decay rate wood") — string
+- **`type`** (Type: *combo dropdown [options: distribution, single]*, Default: `distribution`, Label: "Type") — Describes the type of a initialization file. Possible values: distribution or single (see also: initialize trees ).
+
+
+## Forest Management & ABE (`model.management`)
+
+- **`abe`**
+  - **`agentDataFile`** (Type: *file selection*, Default: `data file for the spatial ABE setup`, Label: "Agent data file") — Filename of the data file for the spatial setup of ABE (relative paths are relative to the project root).
+  - **`file`** (Type: *file selection*, Default: `javascript file of ABE`, Label: "Javacsript file") — Filename of the main Javascript file of ABE (relative paths are relative to the project root).
+- **`abeEnabled`** (Type: *boolean (true/false)*, Default: `false`, Label: "Enable ABE") — Switch for turning the agent based management engine on/off.
+- **`enabled`** (Type: *boolean (true/false)*, Default: `false`, Label: "Enable Management") — Management is disabled if the value is false. This switch relates to the "base" management subsystem.
+- **`file`** (Type: *file selection*, Default: `javascript file`, Label: "Javacsript file") — Filename of the Javascript file to load (default path is the script path provided in the paths section).
+
+
+## Advanced Parameters (`model.parameter`)
+
+- **`debugDumpStamps`** (Type: *boolean (true/false)*, Default: `false`, Label: "Dump stamps", View: *advanced*) — If true, the content of the LIP-files is dumped to the console. This feature is provided for debugging purposes.
+- **`debug_clear`** (Type: *boolean (true/false)*, Default: `false`, Label: "Clear debug", View: *advanced*) — If true, text debug will be cleared after each simulation year. If set to false, the debug info is kept to provide time series information.
+- **`debug_tree`** (Type: *string*, Default: `ruindex=2 and dbh>30`, Label: "Debug tree", View: *advanced*) — A filter expression executed for trees during initialization. Textual debug output is generated only for those trees passing the filter. (e.g.: "ruindex=2 and dbh>30"). Providing an empty string is the fastest option when the debug data is not used. To enable debug output for all trees, set the value to '1' or 'true'.
+- **`gpp_per_year`** (Type: *numeric*, Default: `10`, Label: "GPP per year", View: *advanced*) — If set, the production module is short-cut and this amound of NPP (kg/ha) is available for growth.
+- **`torus`** (Type: *boolean (true/false)*, Default: `false`, Label: "Torus landscape") — If true, the simulation space is treated as a torus, where any influence (e.g. a light influence pattern) leaving on one side again enters at the opposite site. This is especially useful for small simulated areas to provide a continuous environment without edge effects. [https://iland-model.org/simulation+extent?highlight=torus#single_resource_units_and_the_torus](https://iland-model.org/simulation+extent?highlight=torus#single_resource_units_and_the_torus)
+
+
+## Model Submodule Settings (`model.settings`)
+
+- **`airDensity`** (Type: *numeric*, Default: `1`, Label: "Air density", View: *advanced*) — Density of air [kg/m3]
+- **`boundaryLayerConductance`** (Type: *numeric*, Default: `0.2`, Label: "Boundary Layer Conductance", View: *advanced*) — Boundary layer conductance for the evaporation calculation. Default value: 0.2 m/s
+- **`browsing`**
+  - **`browsingPressure`** (Type: *numeric*, Default: `0.1`, Label: "Browsing Pressure") — scaling factor modifying the base probability
+  - **`enabled`** (Type: *boolean (true/false)*, Default: `false`, Label: "Enable") — If false the browsing module is disabled, i.e. no effect is calculated.
+- **`carbonCycleEnabled`** (Type: *boolean (true/false)*, Default: `false`, Label: "Carbon Cycle") — If true, the snag dynamics and soil CN cycling sub-modules are enabled.
+- **`epsilon`** (Type: *numeric*, Default: `1.8`, Label: "Epsilon", View: *advanced*) — 3PG's maximum efficiency in GPP production (default value: 1.8).
+- **`grass`**
+  - **`LIFThreshold`** (Type: *numeric*, Default: `0.1`, Label: "LIF Threshold") — string
+  - **`enabled`** (Type: *boolean (true/false)*, Default: `false`, Label: "Enable Grass") — enable/disable the submodule. Default is false.
+  - **`grassDuration`** (Type: *function*, Default: `string`, Label: "Duration") — string
+  - **`grassEffect`** (Type: *function*, Default: `formula for grass effect`, Label: "Effect") — Formula describing the probability of prohibiting regeneration as a function of grass level. Parameter: the current grass level on the pixel 0..1.
+  - **`grassPotential`** (Type: *function*, Default: `polygon(lif,0.1,0,0.7,1)`, Label: "Potential") — Function defining the potential grass cover 0..1 as a function of the light level of each 2x2m pixel value. The parameter is the light influence field (LIF), i.e. it is close to 1 for unobstructed conditions, and reach almost 0 within dense forests. See competition for light. Default value: polygon(lif, 0.1,0, 0.7,1)
+  - **`maxTimeLag`** (Type: *numeric*, Default: `2`, Label: "Cover Time Lag") — Number of years needed by the grass/herb layer to grow from 0 to full cover. This settings defines the growth speed, i.e. how fast new openings are occupied by ground vegetation.
+  - **`type`** (Type: *combo dropdown [options: pixel, continuous, simplified]*, Default: `pixel`, Label: "Type") — string
+- **`groundVegetationLAI`** (Type: *numeric*, Default: `1`, Label: "LAI ground vegetation", View: *advanced*) — minimum LAI that is assumed to be provided by ground vegetation in absence of tree vegetation
+- **`groundVegetationPsiMin`** (Type: *numeric*, Default: `-1.5`, Label: "PsiMin of ground vegetation", View: *advanced*) — [https://iland-model.org/transpiration+and+conductance+in+saplings](https://iland-model.org/transpiration+and+conductance+in+saplings)
+- **`growthEnabled`** (Type: *boolean (true/false)*, Default: `true`, Label: "Growth") — If false, trees will apply/read light patterns, but do not grow.
+- **`interceptionStorageBroadleaf`** (Type: *numeric*, Default: `2`, Label: "Interception storage (broadleafed)", View: *advanced*) — Asymptotic crown storage capacity for intercepted rain water of deciduous trees. (default: 2).
+- **`interceptionStorageNeedle`** (Type: *numeric*, Default: `4`, Label: "Interception storage (needle)", View: *advanced*) — Asymptotic crown storage capacity for intercepted rain water of confiers. (default: 4).
+- **`laiThresholdForClosedStands`** (Type: *numeric*, Default: `3`, Label: "LAI Threshold Closed Stands", View: *advanced*) — For the calculation of the maximum canopy conductance a ramp is assumed for LAI values below this threshold. Default: 3
+- **`lightExtinctionCoefficient`** (Type: *numeric*, Default: `0.5`, Label: "Light Extinction Coefficient", View: *advanced*) — "k" parameter (beer lambert) used for calc. of absorbed light on resourceUnit level
+- **`lightExtinctionCoefficientOpacity`** (Type: *numeric*, Default: `0.5`, Label: "Light Extinction Coefficient Opacity", View: *advanced*) — "k" for beer lambert used for opacity of single trees
+- **`mortalityEnabled`** (Type: *boolean (true/false)*, Default: `true`, Label: "Mortality") — If false, tree mortaliy (intrinsic and stress related) will not be executed. Management works.
+- **`permafrost`**
+  - **`enabled`** (Type: *boolean (true/false)*, Default: `false`, Label: "Enable") — Permafrost sub module switched on when true
+  - **`groundBaseDepth`** (Type: *numeric*, Default: `3`, Label: "Ground base depth") — Depth (m) of the zone below the active layer from where the secondary heat flux (from below) originates.
+  - **`initialDepthFrozen`** (Type: *numeric*, Default: `2`, Label: "Initial depth frozen") — Depth (m) up to which the soil is frozen at the start of the simulation (1st of January). For permanent permafrost the value is capped at 2m.
+  - **`initialGroundTemperature`** (Type: *numeric*, Default: `4`, Label: "Initial ground temperature") — Initial temperature in depth ‘groundBaseDepth’ below the active layer: at depth "groundBaseDepth" the temperature is assumed to remain +- constant within a year and to follow MAT with a 10yr delay. The initial value is given with 'initialGroundTemperature' and the depth from which thermal energy flows.
+  - **`lambdaOrganicLayer`** (Type: *numeric*, Default: `1`, Label: "Lambda organic layer") — Thermal conductivity W/m*K of soil organic layer and moss
+  - **`lambdaSnow`** (Type: *numeric*, Default: `0.5`, Label: "Lambda snow") — Thermal conductivity W/m*K of snow
+  - **`maxFreezeThawPerDay`** (Type: *numeric*, Default: `10`, Label: "Max. freeze/thaw per day") — Cap for daily freezing and thawing (mm water column)
+  - **`moss`**
+    - **`CNRatio`** (Type: *numeric*, Default: `0.5`, Label: "CNRatio litter", View: *advanced*) — CN-ratio of moss litter entering the litter pool of iLand.
+    - **`biomass`** (Type: *numeric*, Default: `100`, Label: "Biomass", View: *advanced*) — Initial life moss in kg/ha
+    - **`bulk_density`** (Type: *numeric*, Default: `0.8`, Label: "Bulk density", View: *advanced*) — Density of the moss layer in kg/m3.
+    - **`light_comp`** (Type: *numeric*, Default: `0.3`, Label: "Light compensation point", View: *advanced*) — Light level (proportion of light above canopy) above which photosynthesis is possible.
+    - **`light_k`** (Type: *numeric*, Default: `0.75`, Label: "Light extinction coeff.", View: *advanced*) — Light extinction coefficient used for tree canopy and moss.
+    - **`light_sat`** (Type: *numeric*, Default: `0.3`, Label: "Light saturation point", View: *advanced*) — Light level (proportion of light above canopy) above which an increase in light does not increase GPP
+    - **`r_deciduous_inhibition`** (Type: *numeric*, Default: `0.45`, Label: "Inhibition effect decid. litter", View: *advanced*) — Parameter to calculate inhibition effect of fresh broadleaved litter (default: 0.45)
+    - **`r_decomp`** (Type: *numeric*, Default: `0.1`, Label: "Decomposition rate litter", View: *advanced*) — Decomposition rate of moss litter that enters the litter pool of iLand
+    - **`respiration_b`** (Type: *numeric*, Default: `5`, Label: "Biomass loss respiration", View: *advanced*) — Annual loss of moss biomass due to respiration (flux to atmosphere).
+    - **`respiration_q`** (Type: *numeric*, Default: `10`, Label: "Biomass loss turnover", View: *advanced*) — Annual loss of moss biomass due to turnover (flux to litter).
+  - **`onlySimulate`** (Type: *booelan*, Default: `false`, Label: "Only simulate") — If true, permafrost is calculated but has no effect on water cycle
+  - **`organicLayerDefaultDepth`** (Type: *numeric*, Default: `0.1`, Label: "Organic layer default depth") — Depth of the soil organic layer (m) (only relevant when dynamic carbon cycle is disabled) (default: 0.1)
+  - **`organicLayerDensity`** (Type: *numeric*, Default: `50`, Label: "Organic layer density") — Density (kg/m3) of the soil organic layer (default: 50).
+- **`regenerationEnabled`** (Type: *boolean (true/false)*, Default: `false`, Label: "Regeneration") — If true, the regeneration submodule is enabled (seed production, seed dispersal, establishment, sapling growth, recruitment).
+- **`seedDispersal`**
+  - **`dumpSeedMapsEnabled`** (Type: *boolean (true/false)*, Default: `true`, Label: "Enable Dump Seed Maps", View: *advanced*) — If "true", seed-kernels are stored per species as .CSV file, and seedmaps are dumped per species and year as a pair of images (one image before actual dispersal, indicating seed availability, and one after seed dispersal)
+  - **`dumpSeedMapsPath`** (Type: *directory selection*, Default: `target directory seed maps`, Label: "Path Seed Maps", View: *advanced*) — target directory for seed maps / seed kernel dumps
+  - **`externalSeedBackgroundInput`** (Type: *string*, Default: `Psme`, Label: "External Seed Background Input") — Specifies a list of species together with a probability for each species. If a species is in the list, then a global background seed input is assumed (see external seeds).
+  - **`externalSeedBuffer`** (Type: *string*, Default: `string`, Label: "External Seed Buffer", View: *advanced*) — This specifies a species-specific special "buffer", i.e. it defines the distance between the external seed input and the edge of the simulation area. Unit is "seed pixels", i.e. currently 20m. Specify as a ',' separated list of alternately species name and buffer-width (e.g. "Psme, 2, Abmi, 1" -> 40m for Psme, 20m for Abmi). No special buffer is used for species not in the list. Note: the remaining seed source must be >1px due to an implementation detail of the dispersal routine.
+  - **`externalSeedEnabled`** (Type: *boolean (true/false)*, Default: `false`, Label: "Enable External Seeds") — If "true" external seeds are produced by species listed under externalSeedSpecies. If external seeds are enabled, the buffer-area of the simulation area is considered as a source of seeds.
+  - **`externalSeedSource`** (Type: *string*, Default: `N,W`, Label: "External Seed Source") — Cardinal directions of external seed input. Specify as list of N,E,S,W (i.e.. north, east, south, west). If empty or missing, seeds enter from all directions. e.g.: "E,S" -> seed from east and south direction.
+  - **`externalSeedSpecies`** (Type: *string*, Default: `Psme,Abmi`, Label: "External Seed Species") — list of species (case sensitive!) with external seed input (e.g., "Psme, Abmi").
+  - **`longDistanceDispersal`**
+    - **`LDDSeedlings`** (Type: *numeric*, Default: `0.5`, Label: "LDD Seedlings", View: *advanced*) — For LDD, the parameter defines p, the number of seedlings that is dispersed per discrete LDD-package. (default: 0.5).
+    - **`rings`** (Type: *integer*, Default: `5`, Label: "Rings", View: *advanced*) — ‘Rings’ defines the number of rings for which LDD dispersal is calculated.(default: 5)
+    - **`thresholdArea`** (Type: *numeric*, Default: `0.0001`, Label: "Threshold Area", View: *advanced*) — The threshold defines the density of potential seedlings per m² up to which a full kernel is used (default: 0.0001).
+    - **`thresholdLDD`** (Type: *numeric*, Default: `0.0000001`, Label: "Threshold LDD", View: *advanced*) — The threshold (again, seedlings per m²) defines the maximum distance of long-distance-dispersal (default: 0.0000001).
+  - **`recruitmentDimensionVariation`** (Type: *numeric*, Default: `0.2`, Label: "Recruitment Dimension Variation", View: *advanced*) — Defines the range of variation (r) for recruited trees compared to the dimensions of the cohrt. tree_dbh = cohort_dbh * rnd(1-r, 1+r), tree_h = cohort_h * rnd(1-r, 1+r) (e.g: r=0.2 -> random number from 0.8 to 1.2). Note: this setting is slightly misplaced and affects all recruitments (transitions from saplings to trees)
+  - **`seedBelt`**
+    - **`enabled`** (Type: *boolean (true/false)*, Default: `false`, Label: "Enable") — The submodule is only active if enabled is true.
+    - **`sizeX`** (Type: *numeric*, Default: `3`, Label: "Size x", View: *advanced*) — The number of sectors in x-direction. Sectors are used to specify fine grained species distribution within the belt.
+    - **`sizeY`** (Type: *numeric*, Default: `3`, Label: "Size y", View: *advanced*) — The number of sectors in y-direction. Sectors are used to specify fine grained species distribution within the belt.
+    - **`width`** (Type: *numeric*, Default: `5`, Label: "Width", View: *advanced*) — The width of the seed belt (in pixels of the seed maps, currently 20m). E.g., a value of 10 would lead to a seed belt with a width of 200m.
+- **`snowDensity`** (Type: *numeric*, Default: `300`, Label: "Snow density", View: *advanced*) — Density of snow in kg/m3 (default: 300)
+- **`snowInitialDepth`** (Type: *numeric*, Default: `0`, Label: "Snow initial depth", View: *advanced*) — Depth of the snow pack (in m) at the start of the simulation (default: 0).
+- **`snowMeltTemperature`** (Type: *numeric*, Default: `0`, Label: "Snow melt temperature", View: *advanced*) — Threshold temperature for snow (degree Celsius). Precipitation on days with mean temperature below this threshold is modeled as snow; snow melts at mean temperatures above the threshold. default: 0°C.
+- **`soil`**
+  - **`decayClassThresholds`** (Type: *string*, Default: `0.2, 0.4, 0.7, 0.9`, Label: "Thresholds for decay classes") — comma-separated list of 4 values defining the decay thresholds (based on remaining biomass) for the five decay classes for individual SWD/DWD.
+  - **`el`** (Type: *numeric*, Default: `0.1`, Label: "Microbal Eff. Labile Pool") — microbal efficiency in the labile pool, auxiliary parameter (see parameterization example)
+  - **`er`** (Type: *numeric*, Default: `0.1`, Label: "Microbal Eff. Refractory Pool") — microbal efficiency in the refractory pool, auxiliary parameter (see parameterization example)
+  - **`leaching`** (Type: *numeric*, Default: `0.5`, Label: "Soil Leaching") — How many percent of the mineralized nitrogen in O is not available for plants but is leached (0..1)?
+  - **`nitrogenDeposition`** (Type: *numeric*, Default: `0`, Label: "Nitrogen Deposition") — To account for external nitrogen input, a nitrogen deposition (kgN/ha*yr) is added to the available nitrogen which is derived by the dynamic soil module calculations. Default: 0. Note that nitrogen deposition is *not* added if the static world.site.availableNitrogen value is used.
+  - **`qb`** (Type: *numeric*, Default: `0.2`, Label: "C/N Ratio Soil Microbes") — C/N ratio of soil microbes
+  - **`qh`** (Type: *numeric*, Default: `0.2`, Label: "C/N Ratio SOM") — C/N ratio of SOM
+  - **`swdDBHClass12`** (Type: *numeric*, Default: `10`, Label: "Dbh Class break 1-2") — class break between classes 1 and 2 for standing snags (dbh, cm)
+  - **`swdDBHClass23`** (Type: *numeric*, Default: `20`, Label: "Dbh Class break 2-3") — class break between classes 2 and 3 for standing snags (dbh, cm)
+  - **`swdDBHSingle`** (Type: *numeric*, Default: `1000`, Label: "Threshold Single trees") — Trees with a larger DBH are treated as individual snags (dbh, cm)
+  - **`useDynamicAvailableNitrogen`** (Type: *boolean (true/false)*, Default: `false`, Label: "Use Dynamic Available Nitrogen") — If true, iLand utilizes the plant available N from the soil model to calculate species responses. If false, the static value world.site.availableNitrogen will be used.
+- **`svdStates`**
+  - **`enabled`** (Type: *boolean (true/false)*, Default: `false`, Label: "Enable SVD States") — enable/disable the submodule (necessary for SVDIndicator output!). Default is false.
+  - **`functioning`** (Type: *combo dropdown [options: 3, 5]*, Default: `3`, Label: "Type") — Number of LAI classes (3/5)
+  - **`structure`** (Type: *combo dropdown [options: 2m, 4m]*, Default: `2m`, Label: "Type") — Class width for dominant height classes (m)
+- **`temperatureTau`** (Type: *numeric*, Default: `300`, Label: "Temperature tau", View: *advanced*) — "tau"-value for delayed temperature calculation acc. to Mäkela 2008
+- **`usePARFractionBelowGroundAllocation`** (Type: *boolean (true/false)*, Default: `true`, Label: "Use PAR Fraction Below Ground Allocation", View: *advanced*) — Changes the behavior of belowground allocation. If true, the ratio of utilized total radiation is used, otherwise this ratio is considered to be 1. (default=true)
+- **`waterUseSoilSaturation`** (Type: *boolean (true/false)*, Default: `false`, Label: "Water Use Soil Saturation", View: *advanced*) — If true, plants can access the water up to the saturation point (0kPa). If false, the accessible water is limited with the field capacity (-15kPa). Default is false.
+
+
+## Site & Soil Properties (`model.site`)
+
+- **`availableNitrogen`** (Type: *numeric*, Default: `60`, Label: "Available nitrogen") — Fertility of the site, expressed as plant available nitrogen (kg/ha/year)
+- **`pctClay`** (Type: *numeric*, Default: `string`, Label: "Clay") — Percentange of clay (0..100) in soil.
+- **`pctSand`** (Type: *numeric*, Default: `string`, Label: "Sand") — Percentange of sand (0..100) in soil.
+- **`pctSilt`** (Type: *numeric*, Default: `string`, Label: "Silt") — Percentange of silt (0..100) in soil.
+- **`soilDepth`** (Type: *numeric*, Default: `20`, Label: "Soil depth [cm]") — Depth of (rock-free) root accessible soil in cm.
+- **`soilHumificationRate`** (Type: *numeric*, Default: `0.3`, Label: "Soil humification rate") — humification rate
+- **`somC`** (Type: *numeric*, Default: `100000`, Label: "Carbon content") — (Initial) carbon content of oC (soil organic matter) soil pool (kg/ha)
+- **`somDecompRate`** (Type: *numeric*, Default: `0.1`, Label: "Decomposition rate") — Decomposition rate for soil organic matter (i.e. the "old" pool sensu ICBM)
+- **`somN`** (Type: *numeric*, Default: `100`, Label: "Nitrogen content") — (Initial) nitrogen content of oN (soil organic matter) soil pool (kg/ha)
+- **`youngLabileAbovegroundFraction`** (Type: *numeric*, Default: `0.7`, Label: "Fraction of C") — (Initial) fraction of aboveground C in the litter (yL) layer (foliage).
+- **`youngLabileC`** (Type: *numeric*, Default: `10000`, Label: "Carbon content") — (Initial) carbon content of ylC (i.e. litter) soil pool (kg/ha).
+- **`youngLabileDecompRate`** (Type: *numeric*, Default: `0.2`, Label: "Decomposition rate") — (Initial) decomposition rate of yr pool.
+- **`youngLabileN`** (Type: *numeric*, Default: `500`, Label: "Nitrogen content") — (Initial) nitrogen content of ylC soil pool (kg/ha).
+- **`youngRefractoryAbovegroundFraction`** (Type: *numeric*, Default: `0.7`, Label: "Aboveground fraction") — Fraction (0..1) of C in the yR pool from aboveground sources (branches, stems)
+- **`youngRefractoryC`** (Type: *numeric*, Default: `30000`, Label: "Carbon content [kg/ha]") — (Initial) carbon content of yrC (woody) soil pool (kg/ha)
+- **`youngRefractoryDecompRate`** (Type: *numeric*, Default: `string`, Label: "Decomposition rate") — (Initial) decomposition rate of yr pool
+- **`youngRefractoryN`** (Type: *numeric*, Default: `100`, Label: "Nitrogen content") — (Initial) nitrogen content of yrC (woody) soil pool (kg/ha)
+
+
+## World & Spatial Setup (`model.world`)
+
+- **`DEM`** (Type: *file selection*, Default: `DEM file`, Label: "DEM file") — If not empty, a digital elevation model is read from a file (ESRI ASCII raster).
+- **`areaMask`**
+  - **`enabled`** (Type: *boolean (true/false)*, Default: `false`, Label: "Enable", View: *all*) — If checked, the mask of valid project area is retrieved from an image (located at imageFile).
+  - **`imageFile`** (Type: *string*, Default: `image file name`, Label: "Image file", View: *all*) — Filename of the image file used for the overlay.
+- **`buffer`** (Type: *numeric*, Default: `60`, Label: "Buffer") — A buffer zone with the given width is attached to the rectangle of the simulation area (defined by width and height).
+- **`cellSize`** (Type: *numeric*, Default: `2`, Label: "Cell size", View: *advanced*) — The size of pixels of the light grid (m). The default is 2m, change not recommended.
+- **`environmentEnabled`** (Type: *boolean (true/false)*, Default: `false`, Label: "Enable") — If checked, the spatial distribution of several model parameters is loaded from an environment file. See keys below and the pages initialization and simulation extent for details.
+- **`environmentFile`** (Type: *file selection*, Default: `environment filename`, Label: "File") — filename of the environment file. Default path is the project path.
+- **`environmentGrid`** (Type: *file selection*, Default: `grid filename`, Label: "Grid") — Filename of the GIS grid which is used in grid-mode. The grid contains integer IDs which are used to map the parameter values in the environment file to resource units within the landscape.
+- **`environmentMode`** (Type: *combo dropdown [options: grid, matrix]*, Default: `grid`, Label: "Mode") — This settings determines how the environment file is interpreted. Possible values are grid and matrix. In grid-mode a GIS grid defines the spatial pattern, in matrix mode resource units are addressed using the resource unit index.
+- **`height`** (Type: *numeric*, Default: `100`, Label: "Height") — The vertical (north-south) extent of the simulation area (m).
+- **`latitude`** (Type: *numeric*, Default: `45`, Label: "Latitude") — Latitude of project area (in degree). Used for day of length calculation.
+- **`location`**
+  - **`rotation`** (Type: *numeric*, Default: `0`, Label: "Rotation", View: *all*) — A value for rotation rotates the GIS-based input data. Note that this can have side-effects with e.g. the orientation of LIP-patterns. rotation is given in degrees.
+  - **`x`** (Type: *numeric*, Default: `0`, Label: "x") — Offset in x-direction
+  - **`y`** (Type: *numeric*, Default: `0`, Label: "y") — Offset in y-direction
+  - **`z`** (Type: *numeric*, Default: `0`, Label: "z", View: *all*) — Offset in z-direction
+- **`resourceUnitsAsGrid`** (Type: *boolean (true/false)*, Default: `true`, Label: "RU as grid", View: *advanced*) — If checked, each resource unit is a 100x100 pixel.default is true.
+- **`standGrid`**
+  - **`enabled`** (Type: *boolean (true/false)*, Default: `false`, Label: "Enable") — If checked, the stand grid is loaded and used.
+  - **`fileName`** (Type: *file selection*, Default: `stand grid file`, Label: "File path") — Path to the stand grid file (ESRI ASCII format, relative to the project root). See also the section location, and landscape setup.
+- **`timeEventsEnabled`** (Type: *boolean (true/false)*, Default: `false`, Label: "Enable") — If true, the time event mechanism is enabled. Similar to the spatial parameter distribution, project settings can be linked to specific year to change.
+- **`timeEventsFile`** (Type: *string*, Default: `time event file name`, Label: "Time event file") — filename of the "time events" file. This is a simple CSV-style file with a fixed column year and user-defined columns with column names of valid project file keys.
+- **`width`** (Type: *numeric*, Default: `100`, Label: "Width") — The horizontal (east-west) extent of the simulation area (m).
+
+
+# Module Settings (`modules`)
+
+
+## Barkbeetle (`modules.barkbeetle`)
+
+- **`backgroundInfestationProbability`** (Type: *string*, Default: `string`, Label: "Background") — string
+- **`baseWinterMortality`** (Type: *string*, Default: `string`, Label: "Base Mortality") — string
+- **`cohortsPerGeneration`** (Type: *string*, Default: `string`, Label: "Per generation") — string
+- **`cohortsPerSisterbrood`** (Type: *string*, Default: `string`, Label: "Per sisterbrood") — string
+- **`colonizeProbabilityFormula`** (Type: *string*, Default: `string`, Label: "Colonalization probability formula") — string
+- **`deadTreeSelectivity`** (Type: *string*, Default: `string`, Label: "Dead tree selectivity") — string
+- **`enabled`** (Type: *boolean (true/false)*, Default: `false`, Label: "Enable") — string
+- **`initialInfestationProbability`** (Type: *string*, Default: `string`, Label: "Initial") — string
+- **`minimumDbh`** (Type: *string*, Default: `string`, Label: "Minimum Dbh") — string
+- **`onAfterBarkbeetle`** (Type: *string*, Default: `Javascript function`, Label: "Run after") — Javascript function that is called after bark beetle module (e.g. for specific aggregagations)
+- **`outbreakClimateSensitivityFormula`** (Type: *string*, Default: `string`, Label: "Climate Sensitivity Formula") — string
+- **`outbreakDurationMax`** (Type: *string*, Default: `string`, Label: "Duration max.") — string
+- **`outbreakDurationMin`** (Type: *string*, Default: `string`, Label: "Duration min.") — string
+- **`outbreakDurationMortalityFormula`** (Type: *string*, Default: `string`, Label: "Duration Mortality Formula") — string
+- **`referenceClimate`** (Type: *table*, Default: `seasonalPrecipSum;seasonalTemperatureAverage`, Label: "1") — 2
+  - **`seasonalPrecipSum`** (Type: *numeric*, Default: `1;2;3;4`, Label: "Precipitation sum") — Tool tip seasonal prcip sum
+  - **`seasonalTemperatureAverage`** (Type: *numeric*, Default: `12.3;4354.23`, Label: "Temperature average") — Tool tip temperature average
+  - **`tableName`** (Type: *string*, Default: `Type in table name`, Label: "Table Name") — Tool tip
+- **`spreadKernelFormula`** (Type: *string*, Default: `string`, Label: "Formula") — string
+- **`spreadKernelMaxDistance`** (Type: *string*, Default: `string`, Label: "Max. distance") — string
+- **`stormInfestationProbability`** (Type: *string*, Default: `string`, Label: "Storm related") — string
+- **`winterMortalityFormula`** (Type: *string*, Default: `string`, Label: "Formula") — string
+
+
+## Bite (`modules.bite`)
+
+- **`enabled`** (Type: *boolean (true/false)*, Default: `false`, Label: "Enable") — Enable the BITE module
+- **`file`** (Type: *file selection*, Default: `Source code`, Label: "BITE code") — JavaScript file that contains the definition of BITE agents.
+
+
+## Fire (`modules.fire`)
+
+- **`KBDIref`** (Type: *numeric*, Default: `200`, Label: "KBDI Ref.") — Reference value for the site specific KBDI (Keetch Byram Drought Index)
+- **`allowBurnIn`** (Type: *boolean (true/false)*, Default: `true`, Label: "Allow Burn In") — A value of 'true' is required for burn-ins (If checked, iLand builds a map of edge pixels)
+- **`averageFireSize`** (Type: *numeric*, Label: "Average Fire Size") — Average fire size in m2
+- **`burnBranchFraction`** (Type: *numeric*, Default: `0.5`, Label: "Branch Fraction") — Fraction of branch biomass (0..1) of died trees that is combusted
+- **`burnFoliageFraction`** (Type: *numeric*, Default: `1`, Label: "Foliage Fraction") — Fraction of foliage biomass (0..1) of died trees that is combusted
+- **`burnSOMFraction`** (Type: *numeric*, Default: `0`, Label: "SOM Fraction") — Fraction (0..1) of SOM biomass that is assumed to be lost by a fire. 0=no biomass lost
+- **`burnStemFraction`** (Type: *numeric*, Default: `0.1`, Label: "Stem Fraction") — Fraction of stem biomass (0..1) of died trees that is combusted
+- **`crownKill1`** (Type: *numeric*, Default: `0.21111`, Label: "1") — Parameter kCK1 to calculate fraction of crown kill
+- **`crownKill2`** (Type: *numeric*, Default: `-0.00445`, Label: "2") — Parameter kCK2 to calculate fraction of crown kill
+- **`crownKillDbh`** (Type: *numeric*, Default: `40`, Label: "Dbh") — Dbh-threshold (cm) dbh_thres used in crown kill calculations
+- **`enabled`** (Type: *boolean (true/false)*, Default: `false`, Label: "Enable") — Turn fire simulation on or off
+- **`fireExtinctionProbability`** (Type: *numeric*, Default: `0`, Label: "Fire Ext. Probability") — Probability that a the fire on a burning pixel extincts without a chance to spread further
+- **`fireReturnInterval`** (Type: *numeric*, Default: `100`, Label: "Fire Return Interval") — Average number of years between two fires affecting a single pixel. A value of e.g. 100 means, that, on average, a pixel burns every 100 years"
+- **`fireSizeSigma`** (Type: *numeric*, Label: "Fire Size Sigma") — ""
+- **`fuelKFC1`** (Type: *numeric*, Default: `0.8`, Label: "KFC1") — Parameter kfC1 for calculation of fuel amount using compartment specific moisture relations
+- **`fuelKFC2`** (Type: *numeric*, Default: `0.2`, Label: "KFC2") — Parameter kfC2 for calculation of fuel amount using compartment specific moisture relations
+- **`fuelKFC3`** (Type: *numeric*, Default: `0.4`, Label: "KFC3") — Parameter kfC3 for calculation of fuel amount using compartment specific moisture relations
+- **`maxFireSize`** (Type: *numeric*, Label: "Maximum Fire Size") — Maximum fire size (m2).
+- **`meanAnnualPrecipitation`** (Type: *numeric*, Default: `240`, Label: "Mean Annual Precipitation") — Mean annual precipitation (mm)
+- **`minFireSize`** (Type: *numeric*, Label: "Minimum Fire Size") — Minimum fire size (m2). If minFireSize is set to a very high value, the fire size distribution has effectively no limiting effect on the simulated fire sizes.
+- **`onlySimulation`** (Type: *boolean (true/false)*, Default: `false`, Label: "Only Simulation") — Only if value is string real effects of fire (on trees, snags, soil pools) are simulated (default: string). A value of true can be useful for testing purposes."
+- **`rFireSuppression`** (Type: *numeric*, Default: `1`, Label: "r Fire Suppress.") — A scalar for fire suppression
+- **`rLand`** (Type: *numeric*, Default: `1`, Label: "r Land") — "Multiplier for the fire spread probability for the resource unit (0..1). If below the (default) value of 1, fire spreads with a reduced probability (e.g. for riparian areas)"
+- **`wind`**
+  - **`direction`** (Type: *numeric*, Default: `0`, Label: "Direction") — The main wind direction (in degrees). North=0, East=90, South=180, West=270. For each fire event the wind direction is calculated as direction +- 45°"
+  - **`speedMax`** (Type: *numeric*, Default: `10`, Label: "Max. speed") — Maximum wind speed (m/s). The wind speed is randomly selected between speedMin and speedMax for each fire event
+  - **`speedMin`** (Type: *numeric*, Default: `0`, Label: "Min. speed") — Minimum wind speed (m/s)
+
+
+## Wind (`modules.wind`)
+
+- **`LRITransferFunction`** (Type: *string*, Default: `max(min(3.733-6.467*LRI,3.41),0.5)`, Label: "LRI Transfer function") — Expression to compute the Hegyi concurrency index from the trees' LRI. Default: max(min(3.733-6.467*LRI,3.41),0.5)
+- **`dayOfYear`** (Type: *numeric*, Default: `0-365`, Label: "Day of year") — Day of the year (0..365) of the storm event (used to calculate soil temperature).
+- **`direction`** (Type: *numeric*, Default: `90`, Label: "Main") — Main cardinal direction of the storm in degrees (0°: north, 90°: east, 180°: south, 270°: west). The direction of the wind may be modified for individual pixels (see directionVariation)
+- **`directionVariation`** (Type: *numeric*, Default: `5`, Label: "Variation") — variation in wind direction (°) for fetch calculation; current wind direction = direction + rnd(-x, +x)
+- **`duration`** (Type: *numeric*, Default: `in min`, Label: "Duration") — Duration of the wind event in minutes. Internally, duration is transformed to a number of iterations (see also durationPerIteration).
+- **`durationPerIteration`** (Type: *numeric*, Default: `duration in minutes`, Label: "Duration per iteration") — duration (minutes) of one iteration of the model, i.e. how long it takes to advance the frontline of the storm to the next (10m) pixel. The factor is used to scale the duration to a number of iterations used internally by the model.
+- **`edgeAgeBaseValue`** (Type: *numeric*, Label: "Age Base Value") — Tool tip about Base Value goes here
+- **`edgeBackgroundProbability`** (Type: *numeric*, Label: "Background Probability") — Hi
+- **`edgeDetectionThreshold`** (Type: *numeric*, Label: "Detection Threshold") — Guggug
+- **`edgeProbability`** (Type: *numeric*, Label: "Probability") — Something about probability
+- **`enabled`** (Type: *boolean (true/false)*, Default: `true`, Label: "Enable") — Turn wind simulation on or off
+- **`factorEdge`** (Type: *numeric*, Label: "Factor") — Factor Edge
+- **`gustModifier`** (Type: *numeric*, Default: `numeric factor`, Label: "Gust modifier") — Defines the variation of the global wind speed between iterations of the model. The gustModifier is given as a fraction (e.g. 0.05). The base wind speed is modified for each iteration with a value from the range +/- gustModifier (e.g.: multiplied by 0.95 - 1.05).
+- **`onAfterWind`** (Type: *string*, Default: `javascript expression`, Label: "on AfterWind") — Javascript function that is called after every wind event (e.g. for postprocessing). For example, you can provide myTestFunction() in XML, and defined a myTestFunction within the iLand Javascript engine. (Note: it is "on AfterWind" (no space) not "onafterWind" - the wiki does not allow the correct term )
+- **`onBeforeWind`** (Type: *string*, Default: `javascript expression`, Label: "on BeforeWind") — Javascript expression evaluated before a wind event is executed. For example, you could define a function that sets an event-specifc topo grid. (Note: it is "on BeforeWind" (without space) not "onbeforeWind" - the wiki does not allow the correct term)
+- **`soilFreezeMode`** (Type: *combo dropdown [options: yes, no, auto]*, Default: `yes`, Label: "Soil Freeze Mode") — Switch to define how to determine the state of the soil. Possible values are the strings yes: always frozen, no: never frozen, auto: the state is determined by calculating the soil temperature; if the temperature in 10cm depth is below 0°, the soil is considered as frozen.
+- **`speciesParameter`** (Type: *string*, Default: `species name`, Label: "Species parameter") — Table name of the species parameter table for the wind module
+- **`speed`** (Type: *numeric*, Default: `in m/s`, Label: "Speed") — Hourly mean above-canopy wind speed (10m above canopy, m/s). This general wind speed is modified by topography and may be modified during a event.
+- **`topexModifierType`** (Type: *combo dropdown [options: multiplicative, additive]*, Default: `multiplicative`, Label: "Modifier Type") — Specifies the calculation mode for values for the topoModifier. Possible values are "additive" and "multiplicative", which is the default. If "additive", the 10m-wind speed is calculated as (speed + topoModifier) * gustModifier.
+- **`topoGridFile`** (Type: *file selection*, Label: "Grid File") — Specifies a ASCII grid file containing the topoModifier. Modifier values are sampled for 10m pixels. File paths are relative to the project root folder.
+- **`topoModifier`** (Type: *numeric*, Label: "Modifier") — Multiplier accounting for differences in local wind speed. The modifier is either resource unit specific (see simulation extent) or defined by 10m pixel (see setting topoGridFile). The actual wind speed for a pixel is calculated by multiplying the modifier with the speed.
+- **`triggeredByTimeEvent`** (Type: *boolean (true/false)*, Default: `false`, Label: "Time triggers wind") — If checked, then wind events are triggered by time events (i.e. defined in an external input file).
+
+
+# Output Settings (`output`)
+
+
+## Abestand (`output.abeStand`)
+
+- **`condition`** (Type: *function*, Default: `mod(year,10)=1`, Label: "ABE stand eval. cond.") — Limits the execution to certain years.
+- **`enabled`** (Type: *boolean (true/false)*, Default: `false`, Label: "Enabled") — This output provides details about the forest state on stand level. The timber is provided as standing timber per hectare. The output is rather performance critical, condition for evaluation can be applied.
+
+
+## Abestanddetail (`output.abeStandDetail`)
+
+- **`condition`** (Type: *function*, Default: `mod(year,10)=1`, Label: "ABE Standdetail eval. cond.") — Limits the execution to certain years.
+- **`enabled`** (Type: *boolean (true/false)*, Default: `false`, Label: "Enabled") — This output provides details about the forest state on species- and stand level. This output is more detailed than the abeStand output. The output is rather performance critical, condition for evaluation can be applied.
+
+
+## Abestandremoval (`output.abeStandRemoval`)
+
+- **`enabled`** (Type: *boolean (true/false)*, Default: `false`, Label: "Enabled") — This output provides details about realized timber harvests on stand level. The timber is provided as standing timber per hectare. The total harvest on the stand is the sum of thinning and final.
+
+
+## Abeunit (`output.abeUnit`)
+
+- **`enabled`** (Type: *boolean (true/false)*, Default: `false`, Label: "Enabled") — The output provides planned and realized harvests on the level of planning units. Note that the planning unit area, mean age, mean volume and MAI are only updated every 10 years. Harvested timber is given as 'realizedHarvest', which is the sum of 'finalHarvest' and 'thinningHarvest.' The 'salvageHarvest' is provided extra, but already accounted for in the 'finalHarvest' column.
+
+
+## Barkbeetle (`output.barkbeetle`)
+
+- **`enabled`** (Type: *boolean (true/false)*, Default: `false`, Label: "Enable barkbeetle") — Output results from barkbeetle module
+
+
+## Bite (`output.bite`)
+
+- **`enabled`** (Type: *boolean (true/false)*, Default: `false`, Label: "Enable bite") — The output provides annual statistics for each simulated biotic agent.
+
+
+## Carbon (`output.carbon`)
+
+- **`condition`** (Type: *function*, Default: `condition carbon`, Label: "Condition") — Controls if the output should be created for the current year(see also dynamic stand output).
+- **`conditionRU`** (Type: *function*, Default: `condition carbon RU`, Label: "Condition RU") — can be used to suppress resource-unit-level details; eg. specifying 'in(year,100,200,300)' limits output on reosurce unit level to the years 100,200,300 (leaving 'conditionRU' blank enables details per default).
+- **`enabled`** (Type: *boolean (true/false)*, Default: `false`, Label: "Enabled") — Carbon and nitrogen pools (C and N) per resource unit / year and/or by landsacpe/year. On resource unit level, the outputs contain aggregated above ground pools (kg/ha) and below ground pools (kg/ha). For landscape level outputs, all variables are scaled to kg/ha stockable area. The area column contains the stockable area (per resource unit / landscape) and can be used to scale to values to the actual value on the ground.
+
+
+## Carbonflow (`output.carbonflow`)
+
+- **`condition`** (Type: *function*, Default: `condition carbonflow`, Label: "Condition") — Limits the output execution to specific years (variable 'year').
+- **`conditionRU`** (Type: *function*, Default: `condition carbonflow RU`, Label: "Condition RU") — Used to suppress resource-unit-level details; eg. specifying 'in(year,100,200,300)' limits output on reosurce unit level to the years 100,200,300 (leaving 'conditionRU' blank enables details per default).
+- **`enabled`** (Type: *boolean (true/false)*, Default: `true`, Label: "Enabled") — Carbon fluxes per resource unit and year and/or aggregated for the full landscape. All values are reported on a per hectare basis (use the area provided in carbon or stand outputs to scale to realized values on the respective resource unit). For results limited to the project area, the data values need to be scaled to the stockable area. For landsacpe level outputs, data is always given per ha of (stockable) project area (i.e. scaling with stockable area is already included). Furthermore, the following sign convention is used in iLand: fluxes from the atmosphere to the ecosystem are positive, while C leaving the ecosystem is reported as negative C flux.
+
+
+## Customagg (`output.customagg`)
+
+- **`enabled`** (Type: *boolean (true/false)*, Default: `true`, Label: "Enabled") — Output of dynamic
+
+
+## Devstage (`output.devstage`)
+
+- **`cellsize`** (Type: *combo dropdown [options: 10, 20, 50, 100]*, Default: `10`, Label: "Cellsize") — Defines the cell size in meters. The value need to align with the 100m / 10m cells. Possible values are therefore: 10, 20, 50, 100
+- **`enabled`** (Type: *boolean (true/false)*, Default: `true`, Label: "Enable") — Output of dynamic
+- **`filter`** (Type: *string*, Default: `in(year,100,200,300)`, Label: "Filter") — Filter to limit output to specific years (variable: simulation year, e.g., 'in(year, 100, 200, 300)'
+- **`handler`** (Type: *string*, Default: `JavaScript handler file`, Label: "Handler") — The name of the Javascript object that is handling the calculation of development stages.
+
+
+## Dynamic (`output.dynamic`)
+
+- **`columns`** (Type: *string*, Default: `enter column names here`, Label: "Columns") — A list of columns to include
+- **`enabled`** (Type: *boolean (true/false)*, Default: `true`, Label: "Enabled") — Output of dynamic
+
+
+## Dynamicstand (`output.dynamicstand`)
+
+- **`by_ru`** (Type: *boolean (true/false)*, Default: `false`, Label: "Filter by RU") — true: outputs for all resource units are created, false: aggregate over the full project area is created
+- **`by_species`** (Type: *boolean (true/false)*, Default: `false`, Label: "Filter by species") — true: for each species a row is created
+- **`columns`** (Type: *string*, Default: `dyanmic stand columns`, Label: "Columns") — Each field is defined as: field.aggregation (separated by a dot). A field is a valid Expression. Aggregation is one of the following: mean, sum, min, max, p25, p50, p75, p5, 10, p80, p85, p90, p95 (pXX=XXth percentile), sd (std.dev.). Complex expression are allowed, e.g: if(dbh>50,1,0).sum (-> counts trees with dbh>50). Note that the column names in the output table may be slightly different, as dots (and other special characsters) are not allowed in column names und substituted.
+- **`condition`** (Type: *function*, Default: `condition dynamic stand`, Label: "Condition") — When present, the condition is evaluated and output is executed only when condition=true (variable='year').This can be used to constrain the output to specific years (e.g. 'in(year,100,200,300)' produces output only for the given year.
+- **`conditionRU`** (Type: *function*, Default: `in(year,50,100,150,200)`, Label: "Condition RU") — With this, calculation of RU level can be triggered even if filter by_ru is set to false (variable='year'). Note that in this case landscape level outputs are generated always, RU-level outputs only for certain years.
+- **`enabled`** (Type: *boolean (true/false)*, Default: `false`, Label: "Enabled") — Userdefined outputs for tree aggregates for each stand or species. Technically, each field is calculated 'live', i.e. it is looped over all trees, and eventually the statistics (percentiles) are calculated. The aggregated values are not scaled to any area unit.
+- **`rufilter`** (Type: *function*, Default: `dynamic stand ru filter`, Label: "RU filter") — Reduces the output to a subset of resource units
+- **`treefilter`** (Type: *function*, Default: `dynamic stand tree filter`, Label: "Tree filter") — Reduces the output to a subset of trees, e. g. a treefilter of 'speciesindex=0' reduces the output to just one species.
+
+
+## Ecoviz (`output.ecoviz`)
+
+- **`binary`** (Type: *boolean (true/false)*, Default: `false`, Label: "binary") — if true, a binary file (version 3) is written (*.pdbb), a text file otherwise (*.pdb)
+- **`condition`** (Type: *function*, Label: "condition") — filter for execution of output
+- **`enabled`** (Type: *boolean (true/false)*, Default: `true`, Label: "ecoviz") — Output of vegetatition data for Ecoviz tool
+- **`fileName`** (Type: *string*, Default: `output/pdb_$.pdb`, Label: "fileName") — file name pattern for output files. "$" is replaced with simulation year
+
+
+## Fire (`output.fire`)
+
+- **`enabled`** (Type: *boolean (true/false)*, Default: `false`, Label: "Enable fire") — Fire event aggregates per fire event. The output contains a row for each (ignited) fire event.
+
+
+## Landscape (`output.landscape`)
+
+- **`condition`** (Type: *function*, Default: `condition landscape`, Label: "Condition") — Controls if the output should be created for the current year(see also dynamic stand output).
+- **`enabled`** (Type: *boolean (true/false)*, Default: `false`, Label: "Enabled") — Output of aggregates on the level of landscape x species. Values are always aggregated per hectare. The output is created after the growth of the year, i.e. output with year=2000 means effectively the state of at the end of the year 2000. The initial state (without any growth) is indicated by the year 'startyear-1'.
+
+
+## Landscape_Removed (`output.landscape_removed`)
+
+- **`enabled`** (Type: *boolean (true/false)*, Default: `false`, Label: "Enabled") — Aggregates of all removed trees due to 'natural' death, harvest, or disturbance per species and reason. All values are totals for the whole landscape. The user can select with options whether to include 'natural' death and harvested trees (which may slow down the processing).
+- **`includeHarvest`** (Type: *boolean (true/false)*, Default: `false`, Label: "Include harvest") — true/false: include/exclude trees that died due to natural mortality
+- **`includeNatural`** (Type: *boolean (true/false)*, Default: `false`, Label: "Include natural") — true/false: include/exclude harvested trees
+
+
+## Management (`output.management`)
+
+- **`enabled`** (Type: *boolean (true/false)*, Default: `true`, Label: "Enable Management") — Aggregates for trees that are removed in current year on the level of RU x species. All values are scaled to one hectare.The output is created after the growth of the year, i.e. the growth of the year in which trees are dying, is included!
+
+
+## Production_Month (`output.production_month`)
+
+- **`condition`** (Type: *string*, Label: "Capling", View: *advanced*) — Condition to limit execution for specific years with the variable 'year' (the current year).
+- **`enabled`** (Type: *boolean (true/false)*, Default: `false`, Label: "Enabled") — Details about the 3PG production submodule on monthly basis and for each species and resource unit.
+
+
+## Sapling (`output.sapling`)
+
+- **`condition`** (Type: *function*, Default: `ru and year`, Label: "Sapling") — Condition to limit execution for specific time/area with the variable 'ru' (resource unit id) and 'year' (the current year).
+- **`enabled`** (Type: *boolean (true/false)*, Default: `true`, Label: "Enabled") — Output of the establishment/sapling layer per resource unit and species. The output covers trees between a dbh of 1cm (height>1.3m) and the recruitment threshold (i.e. a height of 4m).Cohorts with a dbh < 1cm are counted in 'cohort_count_ha' but not used for average calculations.
+
+
+## Saplingdetail (`output.saplingdetail`)
+
+- **`condition`** (Type: *function*, Default: `details`, Label: "Condition details") — Condition to limit execution for specific time/area with the variable 'ru' (resource unit id) and 'year' (the current year).
+- **`enabled`** (Type: *boolean (true/false)*, Default: `true`, Label: "Enabled") — Detailed output on indidvidual sapling cohorts. For each occupied and living 2x2m pixel, a row is generated, unlessthe tree diameter is below the 'minDbh' threshold (cm).
+- **`minDbh`** (Type: *numeric*, Default: `5`, Label: "Detail minDbh") — Only trees with Dbh larger than the specified minDbh value (in cm) are considered.
+
+
+## Soilinput (`output.soilinput`)
+
+- **`enabled`** (Type: *boolean (true/false)*, Default: `false`, Label: "Enabled") — The output contains all carbon inputs to the soil layer (per RU) and the climate modifier re. The data of the output can be used for estimating soil carbon parameters.
+
+
+## Stand (`output.stand`)
+
+- **`byRU`** (Type: *function*, Default: `id number`, Label: "Filter by RU") — Limit the output to resource units that satisfy the given condition (e.g. 'id=3', or 'leafAreaIndex<2'). For more information see iLand-Wiki on resource unit variables.
+- **`condition`** (Type: *function*, Default: `Stand condition`, Label: "Condition") — Controls if the output should be created for the current year (see dynamic stand output).
+- **`enabled`** (Type: *boolean (true/false)*, Default: `false`, Label: "Enabled") — Output of aggregates on the level of RU x species. Values are always aggregated per hectare (of stockable area). Use the 'area' column to scale to the actual values on the resource unit. The output is created after the growth of the year, i.e. output with year=2000 means effectively the state of at the end of the year 2000. The initial state (without any growth) is indicated by the year 'startyear-1'.
+
+
+## Standdead (`output.standdead`)
+
+- **`enabled`** (Type: *boolean (true/false)*, Default: `true`, Label: "Enabled") — Died trees in current year on the level of RU x species. The output is created after the growth of the year, i.e. the growth of year trees are dying in is included! NPP and NPP_kg are not recorded for trees that are removed during management.
+
+
+## Svdgpp (`output.svdgpp`)
+
+- **`enabled`** (Type: *boolean (true/false)*, Default: `false`, Label: "Enable GPP") — GPP potential (as conditioned by climate/site) per species and m2.
+
+
+## Svdindicator (`output.svdindicator`)
+
+- **`enabled`** (Type: *boolean (true/false)*, Default: `false`, Label: "Enable Indicator") — Indicator data per resource unit as used by SVD. The selection of indicators is triggered by keys in the project file
+
+
+## Svdstate (`output.svdstate`)
+
+- **`enabled`** (Type: *boolean (true/false)*, Default: `false`, Label: "Enable State") — Forest state (for SVD). The output contains fixed columns and adds two extra columns for every active tree species. Those species columns hold the species share 0..1 for the local and the mid-range-neighborhood. Former have 'l_' and latter 'm_' as prefix (e.g. 'l_piab', 'm_piab'). Note that the sum of all shares is <=1, but can be lower than 1. See also the 'svduniquestate' output.
+
+
+## Svduniquestate (`output.svduniquestate`)
+
+- **`condition`** (Type: *string*, Default: `condition`, Label: "Unique State Condition") — List of forest states for the current simulation (for SVD). Each state is defined by a unique numerical Id ('stateId') which is used as a key in the 'svdstate' output.
+- **`enabled`** (Type: *boolean (true/false)*, Default: `false`, Label: "Enable Unique State") — List of forest states for the current simulation (for SVD). Each state is defined by a unique numerical Id ('stateId') which is used as a key in the 'svdstate' output.
+
+
+## Tree (`output.tree`)
+
+- **`enabled`** (Type: *boolean (true/false)*, Default: `true`, Label: "Enabled") — Output of indivdual trees. Use the filter property to reduce amount of data (filter by resource-unit, year, species, ...). The output is triggered after the growth of the current season. Initial values (without any growth) are output as 'startyear-1'.
+- **`filter`** (Type: *function*, Default: `1`, Label: "Filter") — filter expression, tree variables
+
+
+## Treeremoved (`output.treeremoved`)
+
+- **`enabled`** (Type: *boolean (true/false)*, Default: `true`, Label: "Enabled") — Output of removed indivdual trees. Use the filter property to select subsets of trees to record. The output is triggered immediately when a tree is removed due to mortality or management.
+- **`filter`** (Type: *numeric*, Default: `1`, Label: "Filter") — The filter is a binary combination of the following values: TreeDead=1, TreeDebugging=2, TreeDeadBarkBeetle=16, TreeDeadWind=32, TreeDeadFire=64, TreeDeadKillAndDrop=128, TreeHarvested=256, MarkForCut=512, MarkForHarvest=1024, MarkCropTree=2048, MarkCropCompetitor=4096, TreeAffectedBite=8192
+
+
+## Water (`output.water`)
+
+- **`condition`** (Type: *function*, Default: `condition water`, Label: "Condition") — Limits the output execution to specific years (variable 'year').
+- **`conditionRU`** (Type: *function*, Default: `condition water RU`, Label: "Condition RU") — Used to suppress resource-unit-level details; eg. specifying 'in(year,100,200,300)' limits output on reosurce unit level to the years 100,200,300 (leaving 'conditionRU' blank enables details per default).
+- **`enabled`** (Type: *boolean (true/false)*, Default: `true`, Label: "Enabled") — Annual water cycle output on resource unit/landscape unit. The output includes annual averages of precipitation, evapotranspiration, water excess, snow cover, and radiation input. The difference of precip - (evapotranspiration + excess) is the evaporation from intercepted precipitation. The spatial resolution is landscape averages and/or resource unit level (i.e. 100m pixels). Landscape level averages are indicated by -1 for the 'ru' and 'index' columns. Columns related to permafrost are 0 when permafrost module is disabled. The given values for depth are independent from the soil depth of iLand (e.g., soil depth can be 0.5m, but maxDepthFrozen can be 1.5m).
+
+
+## Wind (`output.wind`)
+
+- **`enabled`** (Type: *boolean (true/false)*, Default: `false`, Label: "Enable wind") — The output contains information about wind impacts
+
+
+# System Settings (`system`)
+
+
+## Databases (`system.database`)
+
+- **`climate`** (Type: *file selection*, Default: `climate database file`, Label: "Climate") — The SQLite database containing the climate data driving the simulation [https://iland-model.org/ClimateData](https://iland-model.org/ClimateData)
+- **`in`** (Type: *file selection*, Default: `input database file`, Label: "Input") — Defines the main input database, that primarily stores the species parameter. [https://iland-model.org/species+parameter](https://iland-model.org/species+parameter)
+- **`out`** (Type: *file selection*, Default: `output database file`, Label: "Output") — Results of simulations are written to this database [https://iland-model.org/organizing+outputs](https://iland-model.org/organizing+outputs)
+
+
+## Javascript Options (`system.javascript`)
+
+- **`fileName`** (Type: *file selection*, Default: `javascript file name`, Label: "File name") — The filename of a javascript file to load.
+
+
+## Logging (`system.logging`)
+
+- **`flush`** (Type: *boolean (true/false)*, Default: `false`, Label: "Flush log", View: *advanced*) — Log information is immediately written to the logfile when flush is true. This can be useful for debugging purposes (but might slow down execution).
+- **`logFile`** (Type: *file selection*, Default: `log file name`, Label: "Log file") — Log-output is stored in this file. If the filename contains the string "$date$", it is replaced by a timestamp (yyyymmdd__hrmiss). The default location is the log-path. A new file is created whenever the model created (e.g. after clicking "Create Model" or "Reload").
+- **`logTarget`** (Type: *combo dropdown [options: console, file]*, Default: `console`, Label: "Log target") — If file the log output is stored in a file (see logFile). If console the log output is printed in the log window of the iLand main application.
+
+
+## File Paths (`system.path`)
+
+- **`database`** (Type: *directory selection*, Default: `database directory`, Label: "Database") — Directory containing the databases. Default: "database"
+- **`home`** (Type: *directory selection*, Default: `project's home directory`, Label: "Home") — The project's home directory. If empty, the directory containing the project file is the home folder.
+- **`init`** (Type: *directory selection*, Default: `init`, Label: "init", View: *all*) — default for init files. Deprecated.
+- **`lip`** (Type: *directory selection*, Default: `LIP file directory`, Label: "LIP files") — Directory containing the binary LIP files. See [https://iland-model.org/Lightroom](https://iland-model.org/Lightroom) about creating LIPS! Default: "lip"
+- **`output`** (Type: *directory selection*, Default: `output directory`, Label: "Output") — Default path for the output database(s). Default: "output"
+- **`script`** (Type: *directory selection*, Default: `script`, Label: "script", View: *all*) — default for script files. Deprecated.
+- **`temp`** (Type: *directory selection*, Default: `temp`, Label: "temp", View: *all*) — default path for temporary files. Deprecated.
+
+
+## System Settings (`system.settings`)
+
+- **`debugOutput`** (Type: *numeric*, Default: `1`, Label: "Debug Output") — Defines the active debug outputs. Each output is coded by a single bit. Find a list of currently available outputs under the debug data menu of the iLand application. e.g: a value of 17 (=16+1) would enable the water output (16) and the Tree NPP output (1).
+- **`debugOutputAutoSave`** (Type: *boolean (true/false)*, Default: `true`, Label: "Debug output autosave") — If checked, csv-output files are created for each active debug output and saved to the temp directory (see Path-section).
+- **`expressionLinearizationEnabled`** (Type: *boolean (true/false)*, Default: `false`, Label: "Expression Linearization", View: *advanced*) — If checked, specific expressions (user defined formulas, e.g. for light response) use a interpolation approach to increase the calculation performance.
+- **`logLevel`** (Type: *combo dropdown [options: Warning, Debug, Info, Error]*, Default: `Warning`, Label: "Log level") — This setting defines the logging intensity. When running on the Debug logging level, the log output contains many details that may slow down the application. Default is Debug. Note: this setting is in system.settings!
+- **`multithreading`** (Type: *boolean (true/false)*, Default: `true`, Label: "Multithreading") — If checked, iLand will use several threads to perform its calculations (if more than 10 RessourceUnits are defined).
+- **`randomSeed`** (Type: *numeric*, Default: `0`, Label: "Random seed") — Non-zero values are used as the seed for the random number generator. This results in a reproducible series of (pseudo)-random numbers. Empty or 0 causes different random numbers for each run and therefore stochastic variation between runs. Note: this does not work when multi threading is enabled. Default value is 0.
+- **`responsive`** (Type: *boolean (true/false)*, Default: `true`, Label: "Responsive", View: *advanced*) — If checked, iLand is more responsive during lengthy calculations (i.e. the user interface freezes less frequently)
+- **`threadCount`** (Type: *numeric*, Default: `-1`, Label: "ThreadCount") — Number of used threads if multithreading is enabled. -1 uses all available CPU cores.
