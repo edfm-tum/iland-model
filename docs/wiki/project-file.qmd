@@ -1,606 +1,251 @@
 ---
-title: "project file"
+title: "Project File Structure"
 ---
 
+The project file is the main configuration file for running iLand. It defines the simulation extent (the *world*), site characteristics, climate data, initialization states, disturbance modules, and outputs.
 
+For the project file we use an XML-based structure which gives great flexibility and adaptability.
 
-## The project file
+There are two primary ways of editing the project file:
 
+1. **Graphical Editor**: Click **Edit Settings** in the iLand User Interface to open a dialog matching the hierarchical XML structure.
+2. **Text Editor**: Directly edit the XML file. Editors with XML schema validation or syntax highlighting (like VS Code or Notepad++) are recommended.
 
-The project file is the main spot to control iLand. The file contains settings that define which *world* to create (i.e. the spatial configuration, climate data, etc), but also how iLand should operate - this includes switches defining the behaviour of the model, but also which kind of output data should be created (and where it should be stored).For the project file we choose a XML based structure which gives great flexibility and adaptability. 
+You can add comments directly above a setting in the XML file using standard XML comments: `<!-- comment -->`. The iLand C++ graphical settings dialog parses and displays these comments (indicated by a pen icon).
 
-There are two primary ways of editing the project file: one is to use the user 
-interface ("Edit Settings") which provides a graphical interface for *most* 
-settings. The dialog is structured the same way as the hierarchical XML (see below).
-The second approach is to directly edit the XML file with an editor. There are
-some tools that help with the syntax, e.g. Notepad++, or VS Code. 
+For a complete tabular list of all settings, including defaults, data types, and C++ tooltips, see the [Project Settings Reference](project-file-reference.qmd).
 
-You can add comments / notes to the project file, which allows you commenting on
-the reasons for a change, different alternative values, literature sources, etc.
-Comments are stored as XML-comments (`<-- comment -->`-blocks) directly *above* 
-a specific setting. The user interface allows you to edit comments as well (see
-the little pen symbol, which is dark if comments are available).
+## Example Files
 
-In addition, the project file includes space for a free-text description, where
-you can describe briefly the project itself. The description is stored in the
-project file, as a (series of) comments at the very top (below the `<xml version='1.0' encoding='utf-8'>` header line). You can use HTML for formatting.
+A complete example project file is provided with the [example landscape](download.qmd).
 
+---
 
-The [project settings reference](project-file-reference.qmd) provides a complete list of settings.
+## Main Sections
 
+Each valid XML project file starts with a fixed header, and all sections are nested within the root `<project>` element:
 
-### Example files
-
-
-An example file is provided with the [example landscape](download.qmd).
-
-
-
-## Main sections
-
-
-The project file consists of five main sections:
-
-* system: settings like file path, database locations, or logging
-* model:main settings of the models: extent (*world*), *site* specific setting, used *climate*, model *initialization* and *management*
-* modules: settings related to the [disturbance modules](disturbance-modules.qmd) of iLand
-* output: definition of which outputs should be created by the model
-* user: this section can be used for user-defined settings (which may be used in Javascript)
-
-Each valid XML project file starts with a fixed header, and all sections are below the top node *project*:
-
-
-```XML/HTML
+```xml
 <?xml version="1.0" encoding="utf-8"?>   
 <!-- project description -->
 <project>
-...    
-...    
-...    
-...    
+  <system> ... </system>
+  <model> ... </model>
+  <modules> ... </modules>
+  <output> ... </output>
+  <user> ... </user>
 </project>
 ```
 
+* **system**: Core settings like file paths, database locations, logging, and script file inclusions.
+* **model**: Settings for the world extent, site/soil properties, climate, initialization, and management.
+* **modules**: Configurations for the active [disturbance modules](disturbance-modules.qmd).
+* **output**: Toggles and execution conditions for SQLite and debug outputs.
+* **user**: Custom settings that can be accessed via JavaScript during the simulation.
 
+---
 
-## System settings
+## System Settings (`system`)
 
+The system section controls the environment paths, databases, logging, and Javascript engine parameters.
 
+* **Paths (`system.path`)**: Defines default paths for files. See the [File Paths Settings Reference](project-file-reference.qmd#file-paths-systempath) and the [Filenames and Paths guide](filenames-and-paths.qmd).
+* **Databases (`system.database`)**: Links the input, output, and climate SQLite database files. See the [Databases Settings Reference](project-file-reference.qmd#databases-systemdatabase).
+* **System Settings (`system.settings`)**: Low-level technical configuration (multithreading, thread counts, random seeds, expression linearization). See the [System Settings Reference](project-file-reference.qmd#system-settings-systemsettings).
+* **Logging (`system.logging`)**: Configures log targets, files, and flush policies. See the [Logging Settings Reference](project-file-reference.qmd#logging-systemlogging).
+* **JavaScript (`system.javascript`)**: Specifies JavaScript scripts to load at model startup. See the [JavaScript Options Reference](project-file-reference.qmd#javascript-options-systemjavascript) and the [scripting guide](iland-scripting.qmd).
 
+---
 
-### path
+## Model Settings (`model`)
 
+The model section defines biophysical environment configurations, physiological parameters, management options, and initialization routines.
 
-This section defines the default directories for different types of files. More [details can be found here](filenames-and-paths.qmd).
+### World (`model.world`)
 
+Describes the size, shape, and geographic orientation of the simulation area. 
 
-
-### database
-
-
-iLand uses primarily the SQLite database system, which stores all tables of a database within a single database file. This database files are considered to be located in the *database* location defined in the path section.
-
-
-| **key** | **datatype** | **description** |
-| --- | --- | --- |
-| in | database file | defines the input database. Stored in this database are e.g. species parameter. |
-| out | database file | result (see Outputs) are written to this database. |
-| climate | database file | the SQLite database containing the [climate data](climatedata.qmd) |
-
- 
-
-
-
-### settings
-
-
-
-| **key** | **datatype** | **description** |
-| --- | --- | --- |
-| multithreading | boolean | if *true*, iLand will use several threads to perform its calculations (if more than 10 [[[[RessourceUnits]] are defined) |
-| threadCount | integer | number of used threads if multithreading is enabled. -1 uses all available CPU cores. |
-| responsive | boolean | if *true* iLand is more responsive during lengthy calculations (i.e. the user interface freezes less frequently) |
-| randomSeed | integer | Non-zero values are used as the seed for the random number generator. This results in a reproducible series of (pseudo)-random numbers. Empty or 0 causes different random numbers for each run and therefore stochastic variation between runs. Note: this does not work when multi threading is enabled ([more](http://iland-model.org/tiki-view_tracker_item.php?itemId=34&amp;trackerId=1&amp;show=view&amp;reloff=3&amp;cant=4&amp;status=op&amp;trackerId=1&amp;sort_mode=lastModif_asc)). Default value is 0. |
-| logLevel | string | This setting defines the logging intensity. Possible values are *Debug*, *Info*, *Warning* and *Error*. When running on the *Debug* logging level, the log output contains many details that may slow down the application. Default is *Debug*. |
-| expressionLinearizationEnabled | boolean | if true, specific expressions (user defined formulas, e.g. for light response) use a [| debugOutput | integer | defined the active debug outputs. Each output is coded by a single bit. Find a list of currently available outputs under the *debug data* menu of the iLand application. e.g: a value of 17 (=16+1) would enable the water output (16) and the Tree NPP output (1). |
-| debugOutputAutoSave | boolean | if *true*, csv-output files are created for each active debug output and saved to the *temp* directory (see Path-section). |
-
- 
-
-
-
-### logging
-
-
-
-| **key** | **datatype** | **description** |
-| --- | --- | --- |
-| logTarget | string | either *console* or *file*. If *file* the log output is stored in a file (see *logFile*). If *console* the log output is printed in the log window of the iLand main application. default=*console* |
-| logFile | string | Log-output is stored in this file. If the filename contains the string $date$, it is replaced by a timestamp (yyyymmdd__hrmiss). The default location is the *log*-path. A new file is created whenever the model created (e.g. after clicking "Create Model" or "Reload"). |
-| flush | boolean | log information is immediately written to the logfile when *flush* is *true*. This can be useful for debugging purposes (but might slow down execution). (default: false) |
-
-
-
-### javascript
-
-
-This section deals with Javascript-script files that are loaded into the models' script engine at startup. Note that you can load multiple files by using the [Object Globals|Globals.include(](.qmd#linearization)) javascript function.
-
-
-| **key** | **datatype** | **description** |
-| --- | --- | --- |
-| fileName | string | the filename of a javascript file to load. Default location is the "scripts"-directory. |
-
- 
-
-
-
-## Model settings
-
-
-
-
-### world
-
-
-
-| **key** | **datatype** | **description** |
-| --- | --- | --- |
-| cellSize | numeric | The size of pixels of the light grid (m). The default is 2m |
-| width | numeric | horizontal (east-west) extent of the simulation area (m) |
-| height | numeric | vertical (north-south) extent (meter) |
-| buffer | numeric | a buffer zone with the given width is attached to the rectangle of the simulation area (defined by width and height). |
-| resourceUnitsAsGrid | boolean | if true, each resource unit is a 100x100m pixel. |
-| latitude | numeric | Latitude of project area (in degree). Used for day of length calculation. |
-| environmentEnabled | boolean | if *true*, the spatial distribution of several model parameters is loaded from an *environment file*. See keys below and the pages [initialization](initialization.qmd) and [simulation extent] for details. |
-| environmentFile | string | filename of the environment file. Default path is the project path. See [for more details](simulation-extent.qmd). |
-| environmentMode | string | This settings determines how the environment file is interpreted. Possible values are *grid* and *matrix*. In *grid*-mode a GIS grid defines the spatial pattern, in *matrix* mode resource units are addressed using the resource unit index. See [for details](simulation-extent.qmd). |
-| environmentGrid | string | Filename of the GIS grid which is used in *grid*-mode. The grid contains integer IDs which are used to map the parameter values in the environment file to resource units within the landscape. |
-| timeEventsEnabled | bool | if *true*, the time event mechanism is enabled. Similar to the spatial parameter distribution (see above), project settings can be linked to specific year to change. |
-| timeEventsFile | string | filename of the "time events" file. This is a simple CSV-style file with a fixed column *year* and user-defined columns with column names of valid project file keys. |
-| DEM | string | if not empty, a digital elevation model is read from a file (ESRI ASCII raster, relative to the project root). See also [simulation extent](simulation-extent.qmd). |
-
-**subsection: areaMask** (i.e. *model.world.areaMask*)
-
-| **key** | **datatype** | **description** |
-| --- | --- | --- |
-| enabled | bool | if *true*, the mask of valid project area is retrieved from an image (located at *imageFile*). See [for more](simulation-extent.qmd). |
-| imageFile | string | filename of the image file used for the [overlay](simulation-extent.qmd). |
-
-**subsection: location** (i.e. *model.world.location*)
-
-| **key** | **datatype** | **description** |
-| --- | --- | --- |
-| x | numeric | The following keys (*x, y, z, rotation*) specify the location of the 0/0 point of the local iLand coordinate in the (metric) coordinate system of GIS-based input data. See [landscape setup](landscape-setup.qmd) for details. *x* is the offset in x-direction. |
-| y | numeric | See above. *y* is the offset in y-direction. |
-| z | numeric | See above. *z* is the offset in z-direction (height). Usually 0. |
-| rotation | numeric | See above. A value for *rotation* rotates the GIS-based input data. Note that this can have side-effects with e.g. the orientation of LIP-patterns. *rotation* is given in degrees. |
-
-**subsection: standGrid** (i.e. *model.world.standGrid*)
-
-| **key** | **datatype** | **description** |
-| --- | --- | --- |
-| enabled | boolean | If *true*, the stand grid is loaded and used. |
-| fileName | string | path to the stand grid file (ESRI ASCII format, relative to the project root). See also the section *location*, and [landscape setup](landscape-setup.qmd). |
-
- 
-
-
-
-### site
-
-
-Site variables define the project site in a non spatially explicit manner.
-
-
-| **key** | **datatype** | **description** |
-| --- | --- | --- |
-| availableNitrogen | numeric | plant available nitrogen kg/ha/year |
-
-**soil properties - water cycle**
-
-| **key** | **datatype** | **description** |
-| --- | --- | --- |
-| soilDepth | numeric | Depth of root accessible soil in cm |
-| pctSand | numeric | Percentange of sand (0..100) in soil. See [water cycle](water-cycle.qmd). |
-| pctSilt | numeric | Percentange of silt (0..100) in soil. See [water cycle](water-cycle.qmd). |
-| pctClay | numeric | Percentange of clay (0..100) in soil. See [water cycle](water-cycle.qmd) |
-
-**soil properties - carbon and nitrogen cycling**
-
-| **key** | **datatype** | **description** |
-| --- | --- | --- |
-| youngLabileC | numeric | (initial) carbon content of ylC (i.e. litter) soil pool (kg/ha) |
-| youngLabileN | numeric | (initial) nitrogen content of ylC soil pool (kg/ha) |
-| youngLabileDecompRate | numeric | (initial) decomposition rate of yl pool |
-| youngLabileAbovegroundFraction | numeric | (initial) fraction of aboveground C in the litter (yL) layer (foliage) |
-| youngRefractoryC | numeric | (initial) carbon content of yrC (woody) soil pool (kg/ha) |
-| youngRefractoryN | numeric | (initial) nitrogen content of yrC (woody) soil pool (kg/ha) |
-| youngRefractoryDecompRate | numeric | (initial) decomposition rate of yr pool |
-| somC | numeric | (initial) carbon content of oC (soil organic matter) soil pool (kg/ha) |
-| somN | numeric | (initial) nitrogen content of oN (soil organic matter) soil pool (kg/ha) |
-| somDecompRate | numeric | decomposition rate for soil organic matter (i.e. the "old" pool sensu ICBM) |
-| youngRefractoryAbovegroundFraction | numeric | fraction (0..1) of C in the yR pool from aboveground sources (branches, stems) |
-| soilHumificationRate | numeric | humification rate |
-
- 
-
-
-
-### climate
-
-
-Source and properties of the used climate (see also [ClimateData](climatedata.qmd)).
-
-
-| **key** | **datatype** | **description** |
-| --- | --- | --- |
-| tableName | string | Name of the SQLite table within the defined climate database to load (*system.database.climate*). |
-| filter | string | an optional filter criterion that is added to the *where* clause of the SQL for reading the climate data. This can be useful e.g. for skipping parts of the climate records. Example: 'year&gt;2000 and year&lt;2010' limits used climate data to the years 2001 to 2009. See also *randomSamplingEnabled*. |
-| co2concentration | numeric | current value of the atmospheric CO2 concentration. Default value is 380ppm. A time series may be implementing using the Time-Event feature. See also section *world.species.CO2Response* |
-| co2pathway | string | selects a pre-defined CO2 concentration pathway, one of 'RCP2.6', 'RCP4.5', 'RCP6.0', 'RCP8.5', and 'No' (for no change, is the default). See also [ClimateData](climatedata.qmd) |
-| co2startYear | numeric | if a *co2pathway* is used, then *co2startYear* defines the starting point of CO2 concentration within the simulation. See also [ClimateData](climatedata.qmd) |
-| batchYears | integer | for performance reasons the access to the climate database accesses is performed bulked. This setting specifies how many years are loaded at once. |
-| temperatureShift | double | simple option to modify the climate. The value is added to each daily temperature (default = 0) |
-| precipitationShift | double | simple option to modify the climate. The daily precipitation is multiplied for each day with this value. (default = 1). |
-| randomSamplingEnabled | boolean | if true, only the first *batchYears* of the climate file are loaded (but see *filter*). The actual climate for each year is the sampled from this climate data. See also *randomSamplingList*. (default=*false*) |
-| randomSamplingList | string | if this key contains a list of 0-based indices (e.g. "3, 12, 14, 0, 3, 14", the random sampling (if enabled) uses this sequence of years. Note: the index is 0-based (in the example the 4th year would be used first). Use any non-word characters as delimiters. The list will be recycled if more years are simulated than present in the list. The index values are to be between 0 and *batchYears*-1. If invalid indices are in the list, an error is reported. If the key is empty or not present, each year a climate year is selected randomly from the list of loaded years. default=*empty* |
-
- 
-
-
-### settings
-
-
-This section is about global model settings.
-
-
-
-**General switches**
-
-| **key** | **datatype** | **description** |
-| --- | --- | --- |
-| growthEnabled | boolean | if false, trees will apply/read light patterns, but do not grow |
-| mortalityEnabled | boolean | if false, tree mortaliy (intrinsic and stress related) will not be executed. Management works. |
-| regenerationEnabled | boolean | if true, the [regeneration] submodule is enabled (seed production, seed dispersal, establishment, sapling growth, recruitment) |
-| carbonCycleEnabled | boolean | if true, the [snag dynamics] and [soil CN cycling](soil-c-and-n-cycling.qmd) sub-modules are enabled. |
-
-**Light calculations**
-
-| **key** | **datatype** | **description** |
-| --- | --- | --- |
-| lightExtinctionCoefficient | numeric | "k" parameter (beer lambert) used for calc. of absorbed light on resourceUnit level |
-| lightExtinctionCoefficientOpacity | numeric | "k" for beer lambert used for opacity of single trees |
-| temperatureTau | numeric | "tau"-value for delayed temperature calculation acc. to Mäkela 2008 |
-
-**Production**
-
-| **key** | **datatype** | **description** |
-| --- | --- | --- |
-| epsilon | numeric | 3PG's maximum efficiency in GPP production (default value: 1.8). |
-| usePARFractionBelowGroundAllocation | bool | changes the behavior of belowground allocation. If true, the ratio of utilized total radiation is used, otherwise this ratio is considered to be 1. (default=true) |
-
-**Water cycle**
-
-| **key** | **datatype** | **description** |
-| --- | --- | --- |
-| airDensity | numeric | density of air (kg / m3) |
-| laiThresholdForClosedStands | numeric | For the calculation of the maximum canopy conductance a ramp is assumed for LAI values below this threshold. Default: 3 |
-| boundaryLayerConductance | numeric | boundary layer conductance for the evaporation calculation. Default value: 0.2 m/s |
-| waterUseSoilSaturation | bool | if true, plants can access the water up to the saturation point (0kPa). If false, the accessible water is limited with the field capacity (-15kPa). Default is *false*. |
-| interceptionStorageNeedle | numeric | asymptotic crown storage capacity for [intercepted](water-cycle.qmd) rain water of confiers. (default: 4). |
-| interceptionStorageBroadleaf | numeric | asymptotic crown storage capacity for [intercepted](water-cycle.qmd) rain water of deciduous trees. (default: 2). |
-| snowMeltTemperature | numeric | threshold temperature for snow (degree Celsius). Precipitation on days with mean temperature below this threshold is modeled as snow; snow melts at mean temperatures above the threshold. default: 0°C. |
-| groundVegetationLAI | numeric | the minimum leaf area index of a resource unit for the [water cycle](water-cycle.qmd). See [transpiration and conductance in saplings](transpiration-and-conductance-in-saplings.qmd). |
-| groundVegetationPsiMin | numeric | the assumed $\Psi_{min}$ of ground vegetation. See [transpiration and conductance in saplings](transpiration-and-conductance-in-saplings.qmd). |
-| heatCapacityAir | **deprecated** | Specific heat capacity of air (J /(kg °C)) |
-| airPressure | **deprecated** | atmospheric average pressure (mbar) |
-
-**Seed Dispersal**
-settings for external seed input and high-detailed outputs during seed dispersal are configured in a sub-section *seedDispersal* of the *"model.settings"* section. See also [external seeds](external-seeds.qmd).
-
-
-| **key** | **datatype** | **description** |
-| --- | --- | --- |
-| dumpSeedMapsEnabled | boolean | if "true", seed-kernels are stored per species as .CSV file, and seedmaps are dumped per species and year as a pair of images (one image before actual dispersal, indicating seed availability, and one after seed dispersal) |
-| dumpSeedMapsPath | string | target directory for seed maps / seed kernel dumps |
-| externalSeedEnabled | boolean | if "true" external seeds are produced by species listed under *externalSeedSpecies*. If external seeds are enabled, the *buffer*-area of the simulation area is considered as a source of seeds. |
-| externalSeedSpecies | string | list of species (case sensitive!) with external seed input (e.g., "Psme, Abmi"). |
-| externalSeedSource | string | cardinal directions of external seed input. Specify as list of N,E,S,W (i.e.. north, east, south, west). If empty or missing, seeds enter from all directions. e.g.: "E,S" -&gt; seed from east and south direction. |
-| externalSeedBuffer | string | This specifies a species-specific special "buffer", i.e. it defines the distance between the external seed input and the edge of the simulation area. Unit is "seed pixels", i.e. currently 20m. Specify as a ',' separated list of alternately species name and buffer-width (e.g. "Psme, 2, Abmi, 1" -&gt; 40m for Psme, 20m for Abmi). No special buffer is used for species not in the list. Note: the remaining seed source must be &gt;1px due to an implementation detail of the dispersal routine. |
-| externalSeedBackgroundInput | string | specifies a list of species together with a probability for each species. If a species is in the list, then a global background seed input is assumed (see [external seeds](external-seeds.qmd)). |
-| recruitmentDimensionVariation | double | defines the range of variation (r) for recruited trees compared to the dimensions of the cohrt. tree_dbh = cohort_dbh * rnd(1-r, 1+r), tree_h = cohort_h * rnd(1-r, 1+r) (e.g: r=0.2 -&gt; random number from 0.8 to 1.2) |
-
-**Seed Dispersal - Seed Belt**
-Settings for the specifying an [seed belt](external-seeds.qmd). The section is a sub section of *model.settings.seedDispersal*.
-
-
-| **key** | **datatype** | **description** |
-| --- | --- | --- |
-| enabled | boolean | the submodule is only active if *enabled* is *true*. |
-| width | numeric | the width of the seed belt (in pixels of the seed maps, currently 20m). E.g., a value of 10 would lead to a seed belt with a width of 200m. |
-| sizeX | numeric | the number of sectors in x-direction. *Sectors* are used to specify fine grained species distribution within the belt. |
-| sizeY | numeric | the number of sectors in y-direction. *Sectors* are used to specify fine grained species distribution within the belt. |
-| species__ | string | specifies species and proportion of a given sector. The *x* and *y* in the key specify the coordinates of the sector. *x* and *y* are between 0 and *sizeX* and *sizeY*, respectively. 0/0 is the lower left corner (south west), *sizeX-1 / sizeY-1* the upper right (north east) corner. The string is a list of species code and the fraction of pixels that should act as a seed source for that species. The information is specified as a space-delimited list:     ... Example: a value for the key *species_0_0* of "Psme 0.7 Abmi 0.2" means: in the sector (0/0), 70% of the seed pixels in the belt should be populated with Psme, 20% with Abmi. Note that the sum of fractions need not to be 1. |
-
-
-**Seed Dispersal - Long Distance Dispersal**
-These settings affect the size of the area that is handled by long distance dispersal. See [seed kernel and seed distribution](seed-kernel-and-seed-distribution.qmd). The section is a sub-section of *model.settings.seedDispersal*.
-
-
-| **key** | **datatype** | **description** |
-| --- | --- | --- |
-| thresholdArea | double | The threshold defines the density of potential seedlings per m² up to which a full kernel is used (default: 0.0001) |
-| thresholdLDD | double | The threshold (again, seedlings per m²) defines the maximum distance of long-distance-dispersal (default: 0.0000001) |
-| LDDSeedlings | double | For LDD, the parameter defines $p$, the number of seedlings that is dispersed per discrete LDD-package. (default: 0.5) |
-| rings | integer | ‘rings’ defines the number of rings for which LDD dispersal is calculated.(default: 5) |
-
- 
-
-
-
-### settings.soil
-
-
-This section contains parameters for the ICBM/2N carbon and nitrogen cycling sub model. Find more details on the model and the parameters on the pages [soil C and N cycling](soil-c-and-n-cycling.qmd) and [soil parametrization and initialization](soil-parametrization-and-initialization.qmd).
-
-
-
-**soil dynamics settings**
-
-| **key** | **datatype** | **description** |
-| --- | --- | --- |
-| useDynamicAvailableNitrogen | bool | if true, iLand utilizes the plant available N from the soil model to calculate species responses. If false, the static value *world.site.availableNitrogen* will be used. |
-| nitrogenDeposition | double | To account for external nitrogen input, a nitrogen deposition (kgN/ha*yr) is added to the available nitrogen which is derived by the dynamic soil module calculations. Default: 0. Note that nitrogen deposition is *not* added if the static *world.site.availableNitrogen* value is used. |
-| qb | double | C/N ratio of soil microbes |
-| qh | double | C/N ratio of SOM |
-| leaching | double | how many percent of the mineralized nitrogen in O is not available for plants but is leached (0..1) |
-| el | double | microbal efficiency in the labile pool, auxiliary parameter (see parameterization example) |
-| er | double | microbal efficiency in the refractory pool, auxiliary parameter (see parameterization example) |
-
-**snag settings** (click for [more](snag-dynamics.qmd) details)
-
-| **key** | **datatype** | **description** |
-| --- | --- | --- |
-| swdDBHClass12 | double | class break between classes 1 and 2 for standing snags (dbh, cm) |
-| swdDBHClass23 | double | class break between classes 2 and 3 for standing snags (dbh, cm) |
-
- 
-
-
-
-### settings.grass
-
-
-This section contains settings related to the ground vegetation (grass and herbs) and its effect on regeneration success. See also XXX.
-
-
-| **key** | **datatype** | **description** |
-| --- | --- | --- |
-| enabled | boolean | enable/disable the submodule. Default is false. |
-| grassPotential | string | function defining the potential grass cover [0..1] as a function of the light level of each 2x2m pixel value. The parameter is the light influence field (LIF), i.e. it is close to 1 for unobstructed conditions, and reach almost 0 within dense forests. See [competition for light](competition-for-light.qmd). Default value: polygon(lif, 0.1,0, 0.7,1) |
-| maxTimeLag | numeric | number of years needed by the grass/herb layer to grow from 0 to full cover. This settings defines the growth speed, i.e. how fast new openings are occupied by ground vegetation. |
-| grassEffect | string | formula describing the probability of **prohibiting** regeneration as a function of grass level. Parameter: the current grass level on the pixel [0..1]. |
-
- 
-
-
-
-### settings.browsing
-
-
-This section contains settings related to the browsing effect by ungulate game species. See also [browsing](browsing.qmd).
-
-
-| **key** | **datatype** | **description** |
-| --- | --- | --- |
-| enabled | boolean | if *false* the browsing module is disabled, i.e. no effect is calculated. |
-| browsingPressure | numeric | scaling factor modifying the base probability (see above). |
-
- 
-
-
-
-### species
-
-
-
-This section identifies the source of the (many) species parameters, and some general parameters on this level.
-
-
-| **key** | **datatype** | **description** |
-| --- | --- | --- |
-| source | database table | Defines the table in the input database that contains the species parameters (see [species parameter](species-parameter.qmd) for a detailed description) |
-| reader | LIP file | link to a binary LIP file containing the "reader"-matrices, i.e. a matrix for each crown radius class used to calculate the[LightResourceIndex](individual-tree-light-availability.qmd). |
-| nitrogenResponseClasses | structure | contains detailed parameters of the parameterization of nitrogen response classes. For syntax and expected key names see table below. |
-| CO2Response | structure | detailed parameters for the calculation of CO2 response. For expected variable names see table below. |
-| lightResponse | structure | define the shade tolerant and shade intolerant [expression](expression.qmd)s for light responses as f(LRI). See table below. |
-| phenology | structure | definition of the available phenology types (e.g. broadleaved). See table below. |
-
-
-
-**Nitrogen classes**
-Each of the three classes is defined by two coefficients (*a* and *b*):
-
-
-```'xml'
--0.045  2.5  -0.055  25  -0.065  40
+* See the [World & Spatial Setup Reference](project-file-reference.qmd#world-spatial-setup-modelworld) for grid settings.
+* Learn more about setting up landscape dimensions in the [Simulation Extent guide](simulation-extent.qmd).
+
+### Site (`model.site`)
+
+Defines biophysical variables like site fertility and soil horizons (sand, clay, young refractory carbon, som pools).
+
+* See the [Site & Soil Properties Reference](project-file-reference.qmd#site-soil-properties-modelsite).
+* Detailed soil parameterization is documented in the [Soil Parameterization guide](soil-parametrization-and-initialization.qmd).
+
+### Climate (`model.climate`)
+
+Defines the SQLite database tables and daily weather shift variables.
+
+* See the [Climate Configurations Reference](project-file-reference.qmd#climate-configurations-modelclimate) for all settings.
+* Learn more in the [Climate Data guide](climatedata.qmd).
+
+### Settings (`model.settings`)
+
+Controls main submodules (mortality, growth, regeneration, carbon cycle), radiation absorption formulas, water cycle parameters, seed dispersal, and grass competition.
+
+* See the [Model Settings Reference](project-file-reference.qmd#model-settings-modelsettings).
+* Includes dedicated settings for:
+    * **Seed Dispersal**: See [Seed Dispersal Reference](project-file-reference.qmd#seed-dispersal-modelsettingsseeddispersal).
+    * **Grass Cover**: See [Grass Cover Settings Reference](project-file-reference.qmd#grass-cover-settings-modelsettingsgrass).
+    * **Ungulate Browsing**: See [Browsing Settings Reference](project-file-reference.qmd#browsing-settings-modelsettingsbrowsing).
+    * **Soil ICBM Pools**: See [Soil Settings Reference](project-file-reference.qmd#soil-settings-modelsettingssoil).
+    * **Permafrost**: See [Permafrost Settings Reference](project-file-reference.qmd#permafrost-settings-modelsettingspermafrost).
+
+#### Seed Dispersal - Seed Belt Configuration
+
+The seed belt specifies a custom seed source zone surrounding the simulated landscape. You can define fine-grained species proportions within designated coordinate sectors (defined by `sizeX` and `sizeY`).
+
+* Keys are formatted dynamically as `species_X_Y` where `X` is the column index and `Y` is the row index.
+* *Example value for key `species_0_0`*: `"Psme 0.7 Abmi 0.2"` specifies that 70% of the seed belt pixel at index (0,0) is populated with Douglas-fir, and 20% with Grand fir.
+
+### Species Parameters (`model.species`) {#species}
+
+Identifies the source of tree species parameters, and configures response classes. Because some settings (such as nitrogen response and phenology groups) use repeated elements or custom attributes, they cannot be handled by the graphical settings editor and must be edited directly in the XML project file.
+
+* See the [Species Parameters Reference](project-file-reference.qmd#species-parameters-modelspecies) for the list of simple settings.
+* Complete lists of static database species parameters can be found in the [Species Parameters List](species-parameter.qmd).
+
+#### XML Example for Complex Species Settings:
+
+Below is a section of an active XML project file showing the structure of complex species settings:
+
+```xml
+<project>
+  <model>
+    <species>
+      <!-- Source table and LIP reader configuration -->
+      <source>species</source>
+      <reader>lip/reader.lip</reader>
+
+      <!-- 1. Nitrogen Response Classes -->
+      <!-- Defines the soil fertility response curve for classes 1, 2, and 3. -->
+      <!-- Each class is defined by coefficients 'a' and 'b'. -->
+      <nitrogenResponseClasses>
+          <class_1_a>-0.045</class_1_a>
+          <class_1_b>10</class_1_b>
+          <class_2_a>-0.055</class_2_a>
+          <class_2_b>25</class_2_b>
+          <class_3_a>-0.065</class_3_a>
+          <class_3_b>40</class_3_b>
+      </nitrogenResponseClasses>
+
+      <!-- 2. CO2 Response Parameters -->
+      <!-- Base concentration, compensation points, and doubled RUE multiplier (beta0) -->
+      <CO2Response>
+          <p0>1</p0>
+          <baseConcentration>380</baseConcentration>
+          <compensationPoint>80</compensationPoint>
+          <beta0>0.3</beta0>
+      </CO2Response>
+
+      <!-- 3. Light Response Formulas -->
+      <!-- Equations describing light response for shade-tolerant (class 1) and -->
+      <!-- shade-intolerant (class 5) species. Intermediate classes are interpolated. -->
+      <lightResponse>
+          <shadeTolerant>min(10*lri,max(0.1613*lri+0.7871,lri))</shadeTolerant>
+          <shadeIntolerant>1-exp(-5.5*(lri-0.05))</shadeIntolerant>
+          <LRImodifier>exp(ln(lri)/0.5*(1-0.5*relH))</LRImodifier>
+      </lightResponse>
+
+      <!-- 4. Phenology Groups -->
+      <!-- Defines leaf phenology groups using Jolly model limits. -->
+      <!-- Group 0 is reserved for evergreen species. -->
+      <phenology>
+          <!-- (Note: phenology groups are not supported by the settings editor GUI) -->
+          <type id="1">
+              <!-- deciduous broadleaved -->
+              <vpdMin>0.9</vpdMin>
+              <vpdMax>4.1</vpdMax>
+              <dayLengthMin>10</dayLengthMin>
+              <dayLengthMax>11</dayLengthMax>
+              <tempMin>-2</tempMin>
+              <tempMax>5</tempMax>
+          </type>
+          <type id="2">
+              <!-- deciduous coniferous -->
+              <vpdMin>1</vpdMin>
+              <vpdMax>4.1</vpdMax>
+              <dayLengthMin>10</dayLengthMin>
+              <dayLengthMax>11</dayLengthMax>
+              <tempMin>-4</tempMin>
+              <tempMax>3</tempMax>
+          </type>
+      </phenology>
+
+      <!-- Sprouting options -->
+      <sprouting>
+          <adultSproutProbability>0</adultSproutProbability>
+      </sprouting>
+    </species>
+  </model>
+</project>
 ```
 
+#### Detailed Description of Complex Parameters:
 
-**CO2 Response**
-The calculation of the CO2 response is based on the following parameters:
+* **Nitrogen Response Classes** (`<nitrogenResponseClasses>`): Soils are classified into three classes mapping available nitrogen responses. The parameters `<class_X_a>` and `<class_X_b>` (where `X` is 1, 2, or 3) define the slope ($a$) and intercept ($b$) coefficients for Class 1, 2, and 3 response calculations. The response is calculated using the saturating exponential function:
+  $$y = 1 - e^{a \cdot (\text{availableNitrogen} - b)}$$
+  If the available nitrogen is less than or equal to $b$, the response is $0$.
 
+* **CO2 Response** (`<CO2Response>`): Defines the parameters for calculating productivity changes under different atmospheric $\text{CO}_2$ concentrations following Friedlingstein et al. (1995):
+  * `p0`: Starting multiplier (typically 1).
+  * `baseConcentration`: Atmospheric $\text{CO}_2$ concentration (in ppm) at which baseline Radiation Use Efficiency (RUE) is measured (typically 380 ppm).
+  * `compensationPoint`: Atmospheric $\text{CO}_2$ concentration (in ppm) below which net canopy production drops to zero (typically 80 ppm).
+  * `beta0`: Relative increase in RUE expected when doubling the baseline $\text{CO}_2$ concentration (typically 0.3).
 
-```'xml'
-1  340  80  0.3
-```
+* **Light Response** (`<lightResponse>`): Equations are evaluated dynamically using tree Light Resource Index (`lri`) and height relative to canopy top (`relH`):
+  * `shadeTolerant`: Mathematical formula defining the response of shade-tolerant species (class 1) as a function of Light Resource Index (`lri`).
+  * `shadeIntolerant`: Mathematical formula defining the response of shade-intolerant species (class 5) as a function of Light Resource Index (`lri`).
+  * `LRImodifier`: Mathematical formula describing the Light Resource Index (LRI) modifier as a function of LRI and relative tree height (`relH`).
 
-where:
+* **Phenology Groups** (`<phenology>`): Defines leaf phenology groups using Jolly et al. (2005) climatic constraints to calculate the daily Growing Season Index (GSI). Groups are defined under `<type id="...">` tags, where group 0 is reserved for evergreen species. Jolly parameters represent climatic limits:
+  * `vpdMin` / `vpdMax`: Vapor Pressure Deficit constraints (kPa) defining the linear ramp range for dry air stress.
+  * `dayLengthMin` / `dayLengthMax`: Photoperiod thresholds (hours) defining the linear ramp range for day length.
+  * `tempMin` / `tempMax`: Temperature limits (°C) defining the linear ramp range for minimum daily temperature stress.
 
-* baseConcentration = base CO2 conceptration (for which the base RUE is derived- maybe average over 1961-1990, as most RUE observations/ studies relate to this period?) in ppm
-* compensationPoint = compensation point of CO2 concentration (no production below) in ppm
-* beta0 = relative productivity increase when doubling CO2 concentration (base beta (cf. Norby et al. 2005, Berthelot et al. 2005)) (unitless)
-* p0 = relative starting point for multiplication (e.g. GPP) (unitless)
+---
 
-**lightResponse**
-Tree species have a specific light response class in the range from 1 to 5. In the project file functions are defined for classes 1 and 5 respectively. Values between are linearly interpolated.
+### Initialization (`model.initialization`)
 
+Sets up the initial tree vegetation, snags, and remote-sensing LiDAR top height grids.
 
-```'xml'
-1-exp(-6*(lri-0.05))  1-exp(-3*(lri-0.01))
-```
+* See the [Initialization Options Reference](project-file-reference.qmd#initialization-options-modelinitialization).
+* Detailed instructions are in [Initialize Trees](initialize-trees.qmd).
 
+### Forest Management (`model.management`)
 
-**Phenology**
-In this section, the available phenology groups are defined. Each tree species is linked to one of these groups due to a species parameter. The number of available group is not limited. A group is identified by a numeric "id" which is also used to link species to phenology groups. The special id *0* is reserved for evergreen species. The Ids of the following groups start with 1.
-Each group is identified by the following parameters used in the Jolly (Jolly et al 2005) model:
+Configures scripting parameters for forest harvesting, thinning, planting, and the Agent-Based Management Engine (ABE).
 
+* See the [Forest Management & ABE Reference](project-file-reference.qmd#forest-management-abe-modelmanagement).
+* Detailed documentation can be found in the [Forest Management Guide](management.qmd) and the [ABE documentation](abe.qmd).
 
-| **Parameter** | **description** |
-| --- | --- |
-| vpdMin | VPD minimum kPa. |
-| vpdMax | VPD maximum kPa. |
-| dayLengthMin | minimum day length in hours. |
-| dayLengthMax | maximum day length in hours. |
-| tempMin | minimum temperature in °. |
-| tempMax | maximum temperature in °. |
+### Advanced Parameters (`model.parameter`)
 
+Contains low-level switches (torus wraps, debug tree filters, console stamp dumps).
 
-The *id* of a group is an attribute of the *type*-tag. An XML-example looks like:
+* See the [Advanced Parameters Reference](project-file-reference.qmd#advanced-parameters-modelparameter).
 
+---
 
-```'xml'
-0.9  4.1  10  11  2  9     ...
-```
+## Module Settings (`modules`)
 
+Settings related to [disturbance modules](disturbance-modules.qmd) are configured under their own XML nodes below the `<project>` root element. 
 
-**Sprouting**
-The section *sprouting* defines options for species that resprout.
+See the dedicated documentation for individual modules:
 
+* [Wind Module](wind-module.qmd)
+* [Wildfire Module](fire-module.qmd)
+* [Bark Beetle Module](barkbeetle-module.qmd)
+* [BITE (Biotic Disturbance Engine)](bite.qmd)
 
-| **key** | **datatype** | **description** |
-| --- | --- | --- |
-| adultSproutProbability | numeric | annual probability that one adjacent 2x2m pixel is colonized by lateral sprouts of adults (&gt;4m) |
+---
 
- 
+## Output Settings (`output`)
 
+Defines which outputs should be recorded, output formats, and execution filters.
 
-
-### initialization
-
-
- 
-
-
-| **key** | **datatype** | **description** |
-| --- | --- | --- |
-| mode | string | describes the general mode. Following options: 'copy': initalize 1 resource unit, then copy to all others, 'unit': separate initailization for each resource unit, 'single': one initialization for the full area, 'map': init-files for each stand (defined by a map), 'snapshot': load from a database snapshot. See [initialize trees](initialize-trees.qmd) for details. |
-| type | string | describes the type of the expected initialization file. Possible values: distribution or single (see also: [initialize trees](initialize-trees.qmd) ). |
-| mapFileName | string | when using the *map* mode, the matching of stands and init files is defined in this file (see also: [landscape setup](landscape-setup.qmd) ). |
-| randomFunction | string | defines the function (as an [expression](expression.qmd)) used when estimating positions for individual trees (for init files of type *distribution*). |
-| file | string | path of the initialization file to be loaded. In mode *unit* this key needs to be overwritten by the environment file. If blank, no trees are loaded. |
-| saplingFile | string | path of the initialization file for saplings (see [initialize trees](initialize-trees.qmd)). If blank, no saplings are loaded. |
-
-**subsection: snags** (i.e.: model.initialization.snags)
-
-| **key** | **datatype** | **description** |
-| --- | --- | --- |
-| swdC | double | initial carbon content in (standing) snags (kg/ha) |
-| swdCN | double | CN ratio of snags |
-| swdCount | double | number of snags |
-| otherC | double | initial carbon content in the pools for other wood (i.e. branches and coarse roots). (kg/ha.). This content is split up into the five parts. |
-| otherCN | double | CN ratio of 'otherC' (branches, coarse roots). |
-| otherAbovegroundFraction | double | initial fraction (0..1) of C in the other pool from aboveground (branches) |
-| swdDecompRate | double | decay rate of standing snags (i.e. ksw) |
-| swdHalfLife | double | halflife attached to initial snags (years) |
-
-**subsection: heightGrid (i.e.: model.initialization.heightGrid)**
-
-| **key** | **datatype** | **description** |
-| --- | --- | --- |
-| enabled | boolean | if *true* the top height grid is used |
-| fileName | string | the ESRI ASCII file that holds the tree top heights (default path is *system.path.init*). See also: [| maxTries | numeric | The maximum number of attempts to find a suitable cell for a tree (default: 10) |
-| fitFormula | string | Equation that estimates the suitability of a target 10m cell based on the relative height of the tree compared to the top canopy height. default: polygon(x, 0,0, 0.8,1, 1.1, 1, 1.25,0) |
-
-
-
-### management
-
-
-The [Object Management|management](.qmd#using-lidar-based-maximum-tree-heights) section controls the Javascript based management subsytem of iLand. See also [management](management.qmd). Note that, the Javascript interface can be 'misused' for other (i.e., not management related) tasks as well.
-
-
-| **key** | **datatype** | **description** |
-| --- | --- | --- |
-| enabled | bool | Management is disabled if the value is *false*. This switch relates to the "base" management subsystem. |
-| file | string | filename of the Javascript file to load (default path is the *script* path provided in the paths section). |
-| abeEnabled | bool | Switch for turning the [agent based management](abe.qmd) engine on/off. ABE details are specified in the sub section *abe*. |
-
-
-
-### management.abe
-
-
-This section contains settings related to the agent based management module of iLand.
-
-
-| **key** | **datatype** | **description** |
-| --- | --- | --- |
-| file | string | Filename of the main Javascript file of ABE (relative paths are relative to the project root). |
-| agentDataFile | string | filename of the data file for the [spatial setup of ABE](abe-spatial-setup.qmd) (relative paths are relative to the project root). |
-
- 
-
-
-
-### parameter
-
-
-This section contains various switches and settings and provide fine grained control over iLand.
-
-
-| **key** | **datatype** | **description** |
-| --- | --- | --- |
-| torus | boolean | if true, the simulation space is treated as a torus, where any influence (e.g. a light influence pattern) leaving on one side again enters at the opposite site. This is especially useful for small simulated areas to provide a continuous environment without edge effects. |
-| debug_tree | expression | a filter expression executed for trees during initialization. Textual debug output is generated only for those trees passing the filter. (e.g.: "ruindex=2 and dbh&gt;30"). Providing an empty string is the fastest option when the debug data is not used. To enable debug output for all trees, set the value to '1' or 'true'. |
-| debug_clear | boolean | if true, text debug will be cleared after each simulation year. If set to false, the debug info is kept to provide time series information. |
-| gpp_per_year | numeric | if set, the production module is short-cut and this amound of NPP (kg/ha) is available for growth. |
-| debugDumpStamps | boolean | if true, the content of the LIP-files is dumped to the console. This feature is provided for debugging purposes. |
-
- 
-
-
-
-## Module settings
-
-
-This section of the XML file consists of [module specific settings](disturbance-modules.qmd). A specific module has a dedicated node in the project file below the *project* top node. The general layout for a module named 'module_name' is as follows:
-
-
-```'xml'
-......  true  ... module specific settings..........
-```
-
-
-See the module specific documentation for details of the parameters and the [disturbance modules](disturbance-modules.qmd) page for an overview.
-
-
-
-## Output settings
-
-
-
-
-### output
-
-
-The output section defines which types of outputs should be created during model runs. Additionally, the behaviour of some of the outputs can be further fine-tuned.
-Generally, this section contains for each **type** of output a section. This list holds only general settings applicable to all outputs. Details to output specific settings are provided [elsewhere](outputs.qmd).
-
-
-| **key** | **datatype** | **description** |
-| --- | --- | --- |
-| enabled | boolean | true for active outputs. |
-| mode | string | set to 'file' to create a text file (file name is the same as the table name), any other value creates a database table |
-| condition | string | provides a way to constrain the output to selected years (not available for all outputs, see [Outputs](outputs.qmd) for details). |
+* See the [Output Settings Reference](project-file-reference.qmd#output-settings-output).
+* Details on specific output databases can be found in the [Outputs guide](outputs.qmd).

@@ -3,7 +3,7 @@ title: "Project File Settings Reference"
 ---
 
 ::: {.callout-note}
-This settings reference is dynamically compiled from the core iLand engine metadata. It displays settings in tabular format organized by submodules.
+This page is a detailed tabular reference of all XML settings keys. For a general overview of the project file structure and its sections, see the [Project File Structure Guide](project-file.qmd).
 :::
 
 ## Overview
@@ -326,6 +326,24 @@ Here are options related to SVD states
 | `enabled` | boolean | `false` | **Enable SVD States**: enable/disable the submodule (necessary for SVDIndicator output!). Default is false. |
 | `structure` | combo dropdown [options: 2m, 4m] | `2m` | **Type**: Class width for dominant height classes (m) |
 | `functioning` | combo dropdown [options: 3, 5] | `3` | **Type**: Number of LAI classes (3/5) |
+
+
+## Species Parameters (`model.species`)
+
+This section identifies the source of the species parameters and configures climate response parameters. Note that nitrogenResponseClasses and phenology settings cannot be edited in this GUI settings editor and must be edited directly in the XML project file. For details on these complex settings, see [Project File](project-file.qmd#species)
+
+| **XML Key** | **Type** | **Default Value** | **Description** |
+| :--- | :--- | :--- | :--- |
+| `source` | string | `species` | **Species Table Source**: Defines the table in the input database that contains the species parameters. |
+| `reader` | file selection | `lip/reader.lip` | **LIP Reader file**: Path to a binary LIP file containing the "reader"-matrices, i.e., a matrix for each crown radius class used to calculate the Light Resource Index (LRI). |
+| `CO2Response.p0` | numeric | `1` | **CO2 p0**: Relative starting point for multiplication (e.g. GPP). |
+| `CO2Response.baseConcentration` | numeric | `380` | **CO2 Base Concentration**: Base atmospheric CO2 concentration (in ppm) for which the base radiation use efficiency (RUE) is derived. |
+| `CO2Response.compensationPoint` | numeric | `80` | **CO2 Compensation Point**: Compensation point of CO2 concentration (no production below this value, in ppm). |
+| `CO2Response.beta0` | numeric | `0.3` | **CO2 beta0**: Relative productivity increase when doubling CO2 concentration. |
+| `lightResponse.shadeTolerant` | function | `1-exp(-6*(lri-0.05))` | **Light Response Shade Tolerant**: Mathematical formula defining the light response of shade tolerant species (class 1) as a function of Light Resource Index (LRI). |
+| `lightResponse.shadeIntolerant` | function | `1-exp(-3*(lri-0.01))` | **Light Response Shade Intolerant**: Mathematical formula defining the light response of shade intolerant species (class 5) as a function of Light Resource Index (LRI). |
+| `lightResponse.LRImodifier` | function | `exp(ln(lri)/0.5*(1-0.5*relH))` | **LRI Modifier**: Formula describing LRI modification as a function of LRI and relative tree height (relH). |
+| `sprouting.adultSproutProbability` | numeric | `0` | **Adult Sprout Probability**: Annual probability that one adjacent 2x2m pixel is colonized by lateral sprouts of adult trees (>4m). |
 
 
 ## Forest Management & ABE (`model.management`)

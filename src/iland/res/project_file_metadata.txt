@@ -1,7 +1,49 @@
-; This file contains all the nodes of the XML project file that iLand is actively using
-; The list is used to check existing XML files.
-; Format:
-; setting = type|defaultValue|labelName|toolTip|filterView, with setting the setting name with dot-notation (e.g. model.world.size)
+; ==============================================================================
+; iLand Project File Metadata & Documentation Registry
+; ==============================================================================
+; This file is the central source of documentation and validation for all 
+; XML project settings used by the iLand model engine. It is parsed by:
+; 1. The C++ engine at startup/runtime to validate XML settings and render the
+;    settings dialog layout dynamically.
+; 2. The Python documentation generator (docs/apidoc/generate.py) to compile the 
+;    online Project Settings Reference page (docs/wiki/project-file-reference.qmd).
+;
+; ------------------------------------------------------------------------------
+; Syntax and Rules:
+; ------------------------------------------------------------------------------
+; 1. Comments:
+;    Any line starting with a semicolon (;) is treated as a comment and ignored
+;    by the documentation generator and settings validator.
+;
+; 2. Layout Annotations:
+;    Used to group settings into tabs/sections in the C++ UI and doc table headers:
+;    - gui.layout = tab|tabId|Tab Title|Detailed Description
+;    - gui.layout = group|Group Title|Detailed Description (or group||Description)
+;    - gui.layout = layout|hl  (horizontal line/separator)
+;
+; 3. Settings Key Format:
+;    setting.path = type|defaultValue|labelName|toolTip|filterView
+;
+;    - setting.path: The dot-notation XML path (e.g., model.world.width).
+;    - type: The data type of the setting. Supported types:
+;        - boolean: True/False checkbox
+;        - numeric / integer: Numeric values
+;        - string: Plain text
+;        - file: File selection dialog button
+;        - directory: Directory selection dialog button
+;        - function: Mathematical expression / user-defined formula
+;        - connected: GUI-only binding toggle. Note: connected keys are duplicate
+;                     entries and are automatically skipped by the doc generator.
+;        - combo: Dropdown list. The options are defined in the defaultValue field,
+;                 separated by semicolons (e.g., Option1;Option2;Option3).
+;    - defaultValue: The default value of the setting. For combo, it lists options.
+;    - labelName: The short label displayed in the GUI settings dialog.
+;    - toolTip: The detailed tooltip description. In the documentation, it is merged
+;               with the labelName. URLs must be absolute (e.g., https://iland-model.org/page-name)
+;               so the C++ GUI can launch them; the doc generator automatically
+;               translates them into relative, version-safe cross-links.
+;    - filterView: Determines C++ GUI filter visibility. Usually "simple" or "advanced".
+; ==============================================================================
 
 ; *** Initial page *****
 ; Note: background image set by c++ side
@@ -359,24 +401,17 @@ model.settings.svdStates.functioning = combo|3;5|Type|Number of LAI classes (3/5
 
 
 ; model.species
-gui.layout = tab|tabSpecies|Species Parameters|The species parameter can only be customized in the xml project file.
-; model.species.source = string|string|string|string
-; model.species.reader = string|string|string|string
-; model.species.nitrogenResponseClasses = string|string|string|string
-; model.species.CO2Response.p0 = string|string|string|string
-; model.species.CO2Response.baseConcentration = string|string|string|string
-; model.species.CO2Response.compensationPoint = string|string|string|string
-; model.species.CO2Response.beta0 = string|string|string|string
-; model.species.lightResponse.shadeTolerant = string|string|string|string
-; model.species.lightResponse.shadeIntolerant = string|string|string|string
-; model.species.lightResponse.LRImodifier = string|string|string|string
-; model.species.phenology.type.vpdMin = string|string|string|string
-; model.species.phenology.type.vpdMax = string|string|string|string
-; model.species.phenology.type.dayLengthMin = string|string|string|string
-; model.species.phenology.type.dayLengthMax = string|string|string|string
-; model.species.phenology.type.tempMin = string|string|string|string
-; model.species.phenology.type.tempMax = string|string|string|string
-; model.species.sprouting.adultSproutProbability = string|string|string|string
+gui.layout = tab|tabSpecies|Species Parameters|This section identifies the source of the species parameters and configures climate response parameters. Note that nitrogenResponseClasses and phenology settings cannot be edited in this GUI settings editor and must be edited directly in the XML project file. For details on these complex settings, see https://iland-model.org/project-file#species
+model.species.source = string|species|Species Table Source|Defines the table in the input database that contains the species parameters.|simple
+model.species.reader = file|lip/reader.lip|LIP Reader file|Path to a binary LIP file containing the "reader"-matrices, i.e., a matrix for each crown radius class used to calculate the Light Resource Index (LRI).|simple
+model.species.CO2Response.p0 = numeric|1|CO2 p0|Relative starting point for multiplication (e.g. GPP).|advanced
+model.species.CO2Response.baseConcentration = numeric|380|CO2 Base Concentration|Base atmospheric CO2 concentration (in ppm) for which the base radiation use efficiency (RUE) is derived.|advanced
+model.species.CO2Response.compensationPoint = numeric|80|CO2 Compensation Point|Compensation point of CO2 concentration (no production below this value, in ppm).|advanced
+model.species.CO2Response.beta0 = numeric|0.3|CO2 beta0|Relative productivity increase when doubling CO2 concentration.|advanced
+model.species.lightResponse.shadeTolerant = function|1-exp(-6*(lri-0.05))|Light Response Shade Tolerant|Mathematical formula defining the light response of shade tolerant species (class 1) as a function of Light Resource Index (LRI).|advanced
+model.species.lightResponse.shadeIntolerant = function|1-exp(-3*(lri-0.01))|Light Response Shade Intolerant|Mathematical formula defining the light response of shade intolerant species (class 5) as a function of Light Resource Index (LRI).|advanced
+model.species.lightResponse.LRImodifier = function|exp(ln(lri)/0.5*(1-0.5*relH))|LRI Modifier|Formula describing LRI modification as a function of LRI and relative tree height (relH).|advanced
+model.species.sprouting.adultSproutProbability = numeric|0|Adult Sprout Probability|Annual probability that one adjacent 2x2m pixel is colonized by lateral sprouts of adult trees (>4m).|simple
 
 ; ************* Initalization **************
 ; model.initialization

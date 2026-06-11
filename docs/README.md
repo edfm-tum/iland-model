@@ -60,7 +60,27 @@ To update the outputs page ([outputs.qmd](file:///home/werner/dev/iland-model/do
 
 ---
 
-## 4. Managing Documentation Versions
+## 4. Generating Project Settings Reference (`project-file-reference.qmd`)
+
+The detailed reference database of iLand settings ([project-file-reference.qmd](file:///home/werner/dev/iland-model/docs/wiki/project-file-reference.qmd)) is dynamically compiled from the C++ metadata file [project_file_metadata.txt](file:///home/werner/dev/iland-model/src/iland/res/project_file_metadata.txt) using a Python script.
+
+[project_file_metadata.txt](file:///home/werner/dev/iland-model/src/iland/res/project_file_metadata.txt) serves as the central documentation for all project settings. When you add, modify, or remove settings in the iLand engine, you should document them in this file.
+
+### How to Regenerate the Settings Reference:
+1. Make sure Python 3 is installed.
+2. Run the generation script from the repository root:
+   ```bash
+   python3 docs/apidoc/generate.py
+   ```
+3. This script will read [project_file_metadata.txt](file:///home/werner/dev/iland-model/src/iland/res/project_file_metadata.txt), parse layout tabs/groups and individual setting properties, translate absolute URLs to relative Quarto links, and write the updated tabular reference page to `docs/wiki/project-file-reference.qmd`.
+4. Compile the reference page to HTML by running:
+   ```bash
+   quarto render docs/wiki/project-file-reference.qmd
+   ```
+
+---
+
+## 5. Managing Documentation Versions
 
 We support multi-version documentation hosting to allow users to view current, historical, or development-level features.
 

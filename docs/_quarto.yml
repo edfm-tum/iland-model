@@ -48,8 +48,6 @@ website:
             href: wiki/reference.qmd
           - text: "Outputs"
             href: wiki/outputs.qmd
-          - text: "Project Settings"
-            href: wiki/project-file.qmd
           - text: "Project Settings Reference"
             href: wiki/project-file-reference.qmd
           - text: "Species Parameters"

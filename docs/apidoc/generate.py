@@ -839,7 +839,7 @@ def generate_settings_doc():
     qmd.append("title: \"Project File Settings Reference\"")
     qmd.append("---")
     qmd.append("\n::: {.callout-note}")
-    qmd.append("This settings reference is dynamically compiled from the core iLand engine metadata. It displays settings in tabular format organized by submodules.")
+    qmd.append("This page is a detailed tabular reference of all XML settings keys. For a general overview of the project file structure and its sections, see the [Project File Structure Guide](project-file.qmd).")
     qmd.append(":::\n")
     qmd.append("## Overview\n")
     qmd.append("Project settings are organized by their XML element path hierarchy. The first level represents the root tag (e.g. `system`, `model`), the second level represents the main submodule, and deeper levels represent nested configurations. Settings attributes are formatted with their types, default values, and description tooltips.\n")
