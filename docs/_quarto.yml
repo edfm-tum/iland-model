@@ -44,6 +44,8 @@ website:
             href: wiki/initialization.qmd
       - text: "References"
         menu:
+          - text: "Reference Hub"
+            href: wiki/reference.qmd
           - text: "Outputs"
             href: wiki/outputs.qmd
           - text: "Project Settings"
@@ -204,7 +206,9 @@ website:
                 - wiki/time-events.qmd
                 - wiki/expression.qmd
         - section: "Part 3: Reference & Resources"
+          file: wiki/reference.qmd
           contents:
+            - wiki/reference.qmd
             - wiki/project-file.qmd
             - wiki/project-file-reference.qmd
             - wiki/species-parameter.qmd

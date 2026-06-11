@@ -12,237 +12,6 @@ gui.layout = tab|tabProject|Project Description
 
 ; ********** outputs *************
 ; ****** overview page ***********
-gui.layout = tab|tabOutput|Output|Outputs in iLand are per default created as a SQLite database. Every type of output is represented by one table within this output database. Thus, the results of one simulation run are contained in one single file. <br/> See https://iland-model.org/outputs for details. <br/>Enable/disable outputs here, or go to tabs for further details.
-gui.layout = group|Vegetation and carbon state
-output.landscape.enabled = connected|Landscape
-output.stand.enabled = connected|Stand
-output.tree.enabled = connected|Single trees
-output.sapling.enabled = connected|Saplings
-output.saplingdetail.enabled = connected| Sapling Details
-output.carbon.enabled = connected|Carbon pools
-
-gui.layout = group|Special (dynamic) state outputs
-output.dynamic.enabled = connected| dynamic (landscape level)
-output.dynamicstand.enabled = connected|Dynamic stand
-output.customagg.enabled = connected|Custom aggregagations
-output.devstage.enabled = connected|development stages
-
-gui.layout = group|Flows
-output.landscape_removed.enabled = connected|Landscape removed
-output.standdead.enabled = connected|Stand removed
-output.treeremoved.enabled = connected|Removed single trees
-output.carbonflow.enabled = connected|Enable Carbon flow
-output.soilinput.enabled = connected|Enable Soilinput
-
-
-gui.layout = tab|tabTree|Tree management|Trees on off, removed or not
-
-gui.layout = group|Tree
-output.tree.enabled = boolean|true|Enable trees|Output of indivdual trees. Use the filter property to reduce amount of data (filter by resource-unit, year, species, ...). The output is triggered after the growth of the current season. Initial values (without any growth) are output as 'startyear-1'.|simple
-output.tree.filter = integer|1|Filter|See tooltip treeremoved|advanced
-
-gui.layout = layout|hl
-gui.layout = group|Remove trees
-output.treeremoved.enabled = boolean|true|Remove trees|Output of removed indivdual trees. Use the filter property to reduce amount of data (filter by resource-unit, year, species, ...). The output is triggered immediately when a tree is removed due to mortality or management.|simple
-output.treeremoved.filter = integer|1|Filter|The filter is a binary combination of the following values: TreeDead=1, TreeDebugging=2, TreeDeadBarkBeetle=16, TreeDeadWind=32, TreeDeadFire=64, TreeDeadKillAndDrop=128, TreeHarvested=256, MarkForCut=512, MarkForHarvest=1024, MarkCropTree=2048, MarkCropCompetitor=4096, TreeAffectedBite=8192|advanced
-
-gui.layout = layout|hl
-gui.layout = group|Stand	
-output.stand.enabled = boolean|false|Stand|Output of aggregates on the level of RU x species. Values are always aggregated per hectare (of stockable area). Use the 'area' column to scale to the actual values on the resource unit. The output is created after the growth of the year, i.e. output with year=2000 means effectively the state of at the end of the year 2000. The initial state (without any growth) is indicated by the year 'startyear-1'.|simple
-output.stand.condition = string|Stand condition|Condition|Controls if the output should be created for the current year (see dynamic stand output).|advanced
-output.stand.byRU = string|id number|Filter by RU|Limit the output to resource units that satisfy the given condition (e.g. 'id=3', or 'leafAreaIndex<2'). For more information see iLand-Wiki on resource unit variables.|advanced
-output.standdead.enabled = boolean|true|Stand dead|Died trees in current year on the level of RU x species. The output is created after the growth of the year, i.e. the growth of year trees are dying in is included! NPP and NPP_kg are not recorded for trees that are removed during management.|simple
-
-gui.layout = layout|hl
-gui.layout = group|Production & Management	
-output.production_month.enabled = boolean|false|Production month|Details about the 3PG production submodule on monthly basis and for each species and resource unit.|simple
-; output.production_month = string|january, february|Production month|string|advanced
-output.management.enabled = boolean|true|Enable Management|Aggregates for trees that are removed in current year on the level of RU x species. All values are scaled to one hectare.The output is created after the growth of the year, i.e. the growth of the year in which trees are dying, is included!|advanced
-
-gui.layout = layout|hl
-gui.layout = group|Sapling	
-output.sapling.enabled = boolean|true|Enable Saplings|Output of the establishment/sapling layer per resource unit and species. The output covers trees between a dbh of 1cm (height>1.3m) and the recruitment threshold (i.e. a height of 4m).Cohorts with a dbh < 1cm are counted in 'cohort_count_ha' but not used for average calculations.|simple
-output.sapling.condition = string|ru and year|Sapling|Condition to limit execution for specific time/area with the variable 'ru' (resource unit id) and 'year' (the current year).|advanced
-output.saplingdetail.enabled = boolean|true|Sapling Details|Detailed output on indidvidual sapling cohorts. For each occupied and living 2x2m pixel, a row is generated, unless the tree diameter is below the 'minDbh' threshold (cm).|simple
-output.saplingdetail.condition = string|details|Condition details|Condition to limit execution for specific time/area with the variable 'ru' (resource unit id) and 'year' (the current year).|advanced
-output.saplingdetail.minDbh = string|5|Detail minDbh|Only trees with Dbh larger than the specified minDbh value (in cm) are considered.|advanced
-
-
-gui.layout = group|Processes
-output.production_month.enabled = connected|GPP & NPP per month
-output.water.enabled = connected|Water Cycle
-
-gui.layout = group|Disturbance modules
-output.barkbeetle.enabled = connected|Barkbeetle
-output.wind.enabled = connected|Wind
-output.fire.enabled = connected|Fire
-output.bite.enabled = connected|BITE
-
-gui.layout = group|Integration with SVD and other tools
-output.svdstate.enabled = connected|SVD state
-output.svduniquestate.enabled = connected|SVD unique state
-output.svdindicator.enabled = connected|SVD indicator
-output.svdgpp.enabled = connected|SVDgpp
-output.ecoviz.enabled = connected|ecoviz (visualization tool)
-
-gui.layout = group|Forest management
-output.management.enabled = connected|(base) management
-output.abeUnit.enabled = connected|ABE unit
-output.abeStand.enabled = connected|ABE stand
-output.abeStandDetail.enabled = connected|ABE stand details
-output.abeStandRemoval.enabled = connected|ABE stand removals
-
-; ************************************
-; ********  Output details ***********
-; ************************************
-
-; **** Vegetation state data *********
-gui.layout = tab|tabVegetationstate|Vegetation state|These outputs contain state variables over time, on different level of aggregation. To reduce the amount of output data, filter options exist for some outputs.
-
-gui.layout = group|Landscape|Aggregated vegetation per species on landscape level https://iland-model.org/outputs#Landscape_aggregates_per_species
-output.landscape.enabled = boolean|false|Enabled|Output of aggregates on the level of landscape x species. Values are always aggregated per hectare. The output is created after the growth of the year, i.e. output with year=2000 means effectively the state of at the end of the year 2000. The initial state (without any growth) is indicated by the year 'startyear-1'.|simple
-output.landscape.condition = function|condition landscape|Condition|Controls if the output should be created for the current year(see also dynamic stand output).|simple
-
-gui.layout = group|Stand|Aggregated vegetation per species for each resource unit https://iland-model.org/outputs#Stand_by_species_RU
-output.stand.enabled = boolean|false|Enabled|Output of aggregates on the level of RU x species. Values are always aggregated per hectare (of stockable area). Use the 'area' column to scale to the actual values on the resource unit. The output is created after the growth of the year, i.e. output with year=2000 means effectively the state of at the end of the year 2000. The initial state (without any growth) is indicated by the year 'startyear-1'.|simple
-output.stand.condition = function|Stand condition|Condition|Controls if the output should be created for the current year (see dynamic stand output).|simple
-output.stand.byRU = function|id number|Filter by RU|Limit the output to resource units that satisfy the given condition (e.g. 'id=3', or 'leafAreaIndex<2'). For more information see iLand-Wiki on resource unit variables.|simple
-
-gui.layout = group|Stand dead|Died trees in current year on the level of RU x species. https://iland-model.org/outputs#Dead_trees_by_species_RU
-output.standdead.enabled = boolean|true|Enabled|Died trees in current year on the level of RU x species. The output is created after the growth of the year, i.e. the growth of year trees are dying in is included! NPP and NPP_kg are not recorded for trees that are removed during management.|simple
-
-gui.layout = group|Single trees|Detailed single tree data https://iland-model.org/outputs#Tree_Output
-output.tree.enabled = boolean|true|Enabled|Output of indivdual trees. Use the filter property to reduce amount of data (filter by resource-unit, year, species, ...). The output is triggered after the growth of the current season. Initial values (without any growth) are output as 'startyear-1'.|simple
-output.tree.filter = function|1|Filter|filter expression, tree variables|simple
-
-gui.layout = group|Saplings|Sapling cohorts per resource unit https://iland-model.org/outputs#Sapling_Output
-output.sapling.enabled = boolean|true|Enabled|Output of the establishment/sapling layer per resource unit and species. The output covers trees between a dbh of 1cm (height>1.3m) and the recruitment threshold (i.e. a height of 4m).Cohorts with a dbh < 1cm are counted in 'cohort_count_ha' but not used for average calculations.|simple
-output.sapling.condition = function|ru and year|Sapling|Condition to limit execution for specific time/area with the variable 'ru' (resource unit id) and 'year' (the current year).|simple
-
-gui.layout = group|Sapling details|Individual sapling cohorts  https://iland-model.org/outputs#Sapling_Details_Output
-output.saplingdetail.enabled = boolean|true|Enabled|Detailed output on indidvidual sapling cohorts. For each occupied and living 2x2m pixel, a row is generated, unlessthe tree diameter is below the 'minDbh' threshold (cm).|simple
-output.saplingdetail.condition = function|details|Condition details|Condition to limit execution for specific time/area with the variable 'ru' (resource unit id) and 'year' (the current year).|simple
-output.saplingdetail.minDbh = numeric|5|Detail minDbh|Only trees with Dbh larger than the specified minDbh value (in cm) are considered.|simple
-
-gui.layout = group|Carbon pools|carbon pools on landscape and/or per resource unit level https://iland-model.org/outputs#Carbon_and_nitrogen_pools_above_and_belowground_per_RU_yr
-output.carbon.enabled = boolean|false|Enabled|Carbon and nitrogen pools (C and N) per resource unit / year and/or by landsacpe/year. On resource unit level, the outputs contain aggregated above ground pools (kg/ha) and below ground pools (kg/ha). For landscape level outputs, all variables are scaled to kg/ha stockable area. The area column contains the stockable area (per resource unit / landscape) and can be used to scale to values to the actual value on the ground.|simple
-output.carbon.condition = function|condition carbon|Condition|Controls if the output should be created for the current year(see also dynamic stand output).|simple
-output.carbon.conditionRU = function|condition carbon RU|Condition RU|can be used to suppress resource-unit-level details; eg. specifying 'in(year,100,200,300)' limits output on reosurce unit level to the years 100,200,300 (leaving 'conditionRU' blank enables details per default).|simple
-
-; **** Dynamic outputs *********
-gui.layout = tab|tabDynamic|Dynamic outputs|These are customizable outputs of varying complexity that allow fine grained control of collected data
-gui.layout = group|Dynamic
-output.dynamic.enabled = boolean|true|Enabled|Output of dynamic|simple
-output.dynamic.columns = string|enter column names here|Columns|A list of columns to include|simple
-
-gui.layout = group|Dynamic stand|User-defined outputs for aggregated tree variables for each stand or species. https://iland-model.org/outputs#dynamic_stand_output_by_species_RU
-output.dynamicstand.enabled = boolean|false|Enabled|Userdefined outputs for tree aggregates for each stand or species. Technically, each field is calculated 'live', i.e. it is looped over all trees, and eventually the statistics (percentiles) are calculated. The aggregated values are not scaled to any area unit.|simple
-output.dynamicstand.condition = function|condition dynamic stand|Condition|When present, the condition is evaluated and output is executed only when condition=true (variable='year').This can be used to constrain the output to specific years (e.g. 'in(year,100,200,300)' produces output only for the given year.|simple
-output.dynamicstand.conditionRU = function|in(year,50,100,150,200)|Condition RU|With this, calculation of RU level can be triggered even if filter by_ru is set to false (variable='year'). Note that in this case landscape level outputs are generated always, RU-level outputs only for certain years.|simple
-output.dynamicstand.rufilter = function|dynamic stand ru filter|RU filter|Reduces the output to a subset of resource units|simple
-output.dynamicstand.treefilter = function|dynamic stand tree filter|Tree filter|Reduces the output to a subset of trees, e. g.  a treefilter of 'speciesindex=0' reduces the output to just one species.|simple
-output.dynamicstand.by_species = boolean|false|Filter by species|true: for each species a row is created|simple
-output.dynamicstand.by_ru = boolean|false|Filter by RU|true: outputs for all resource units are created, false: aggregate over the full project area is created|simple
-output.dynamicstand.columns = string|dyanmic stand columns|Columns|Each field is defined as: field.aggregation (separated by a dot). A field is a valid Expression. Aggregation is one of the following: mean, sum, min, max, p25, p50, p75, p5, 10, p80, p85, p90, p95 (pXX=XXth percentile), sd (std.dev.). Complex expression are allowed, e.g: if(dbh>50,1,0).sum (-> counts trees with dbh>50). Note that the column names in the output table may be slightly different, as dots (and other special characsters) are not allowed in column names und substituted.|simple
-
-gui.layout = group|Custom aggregagtes|`customagg` are advanced outputs, that allow to group different entitites (saplings, trees, RUs) with different aggregation levels. <br/> Please edit details directly in the XML project file. https://iland-model.org/dynamic+outputs
-output.customagg.enabled = boolean|true|Enabled|Output of dynamic|simple
-
-gui.layout = group|Development stage https://iland-model.org/development+stages
-output.devstage.enabled = boolean|true|Enable|Output of dynamic|simple
-output.devstage.cellsize = combo|10;20;50;100|Cellsize|Defines the cell size in meters. The value need to align with the 100m / 10m cells. Possible values are therefore: 10, 20, 50, 100 |simple
-output.devstage.handler = string|JavaScript handler file|Handler|The name of the Javascript object that is handling the calculation of development stages.|simple
-output.devstage.filter = string|in(year,100,200,300)|Filter|Filter to limit output to specific years (variable: simulation year, e.g., 'in(year, 100, 200, 300)' |simple
-
-; **** Vegetation flows *********
-gui.layout = tab|tabFlows|Ecosystem flows
-gui.layout = group|Landscape removed|Aggregates of all removed trees due to 'natural' death, harvest, or disturbance per species and reason. https://iland-model.org/outputs#Aggregates_of_removed_trees_due_to_death_harvest_and_disturbances_per_species
-output.landscape_removed.enabled = boolean|false|Enabled|Aggregates of all removed trees due to 'natural' death, harvest, or disturbance per species and reason. All values are totals for the whole landscape. The user can select with options whether to include 'natural' death and harvested trees (which may slow down the processing).|simple
-output.landscape_removed.includeHarvest = boolean|false|Include harvest|true/false: include/exclude trees that died due to natural mortality|simple
-output.landscape_removed.includeNatural = boolean|false|Include natural|true/false: include/exclude harvested trees|simple
-
-gui.layout = group|Removed trees|Removed indivdual trees https://iland-model.org/outputs#Tree_Removed_Output
-output.treeremoved.enabled = boolean|true|Enabled|Output of removed indivdual trees. Use the filter property to select subsets of trees to record. The output is triggered immediately when a tree is removed due to mortality or management.|simple
-output.treeremoved.filter = numeric|1|Filter|The filter is a binary combination of the following values: TreeDead=1, TreeDebugging=2, TreeDeadBarkBeetle=16, TreeDeadWind=32, TreeDeadFire=64, TreeDeadKillAndDrop=128, TreeHarvested=256, MarkForCut=512, MarkForHarvest=1024, MarkCropTree=2048, MarkCropCompetitor=4096, TreeAffectedBite=8192|simple
-
-gui.layout = group|Carbon flow|Carbon fluxes per resource unit and year and/or aggregated for the full landscape. https://iland-model.org/outputs#Carbon_fluxes_per_RU_or_landscape_yr
-output.carbonflow.enabled = boolean|true|Enabled|Carbon fluxes per resource unit and year and/or aggregated for the full landscape. All values are reported on a per hectare basis (use the area provided in carbon or stand outputs to scale to realized values on the respective resource unit). For results limited to the project area, the data values need to be scaled to the stockable area. For landsacpe level outputs, data is always given per ha of (stockable) project area (i.e. scaling with stockable area is already included). Furthermore, the following sign convention is used in iLand: fluxes from the atmosphere to the ecosystem are positive, while C leaving the ecosystem is reported as negative C flux.|simple
-output.carbonflow.condition = function|condition carbonflow|Condition|Limits the output execution to specific years (variable 'year').|simple
-output.carbonflow.conditionRU = function|condition carbonflow RU|Condition RU|Used to suppress resource-unit-level details; eg. specifying 'in(year,100,200,300)' limits output on reosurce unit level to the years 100,200,300 (leaving 'conditionRU' blank enables details per default).|simple
-
-gui.layout = group|Soilinput|The output contains all carbon inputs to the soil layer (per RU) https://iland-model.org/outputs#Carbon_input_to_the_soil_per_RU_yr
-output.soilinput.enabled = boolean|false|Enabled|The output contains all carbon inputs to the soil layer (per RU) and the climate modifier re. The data of the output can be used for estimating soil carbon parameters.|simple
-
-; **** Processes *********
-gui.layout = tab|tabProcesses|Ecosystem processes|todo
-gui.layout = group|Production month|Details about the 3PG production submodule on monthly basis and for each species and resource unit. https://iland-model.org/outputs#Production_per_month_species_and_resource_unit
-output.production_month.enabled = boolean|false|Enabled|Details about the 3PG production submodule on monthly basis and for each species and resource unit.|simple
-output.production_month.condition = string||Capling|Condition to limit execution for specific years with the variable 'year' (the current year).|advanced
-gui.layout = group|Water cycle|Annual water cycle output on resource unit/landscape unit. https://iland-model.org/outputs#Water_output
-output.water.enabled = boolean|true|Enabled|Annual water cycle output on resource unit/landscape unit. The output includes annual averages of precipitation, evapotranspiration, water excess, snow cover, and radiation input. The difference of precip - (evapotranspiration + excess) is the evaporation from intercepted precipitation. The spatial resolution is landscape averages and/or resource unit level (i.e. 100m pixels). Landscape level averages are indicated by -1 for the 'ru' and 'index' columns. Columns related to permafrost are 0 when permafrost module is disabled. The given values for depth are independent from the soil depth of iLand (e.g., soil depth can be 0.5m, but maxDepthFrozen can be 1.5m).|simple
-output.water.condition = function|condition water|Condition|Limits the output execution to specific years (variable 'year').|simple
-output.water.conditionRU = function|condition water RU|Condition RU|Used to suppress resource-unit-level details; eg. specifying 'in(year,100,200,300)' limits output on reosurce unit level to the years 100,200,300 (leaving 'conditionRU' blank enables details per default).|simple
-
-; **** Disturbance modules *********
-gui.layout = tab|tabDisturbancemodules|Disturbance modules|In this tab the outputs for disturbance modules are configured. Please see the "modules" tab for other settings for the modules!
-
-output.barkbeetle.enabled = boolean|false|Enable barkbeetle|Output results from barkbeetle module|simple
-output.wind.enabled = boolean|false|Enable wind|The output contains information about wind impacts|simple
-output.fire.enabled = boolean|false|Enable fire|Fire event aggregates per fire event. The output contains a row for each (ignited) fire event.|simple
-gui.layout = group|BITE|This output provides annual statistics for each agent https://iland-model.org/BITE#Annual_summary_for_each_Bite_agent. Note that BITE allows additional customized outputs per agent https://iland-model.org/bite/#/BiteOutput
-output.bite.enabled = boolean|false|Enable bite|The output provides annual statistics for each simulated biotic agent.|simple
-
-; **** ABE / Management *********
-gui.layout = tab|tabForestmanagement|Forest management|Outputs related to forest management
-gui.layout = group|Base management
-output.management.enabled = boolean|true|Enable Management|Aggregates for trees that are removed in current year on the level of RU x species. All values are scaled to one hectare.The output is created after the growth of the year, i.e. the growth of the year in which trees are dying, is included!|simple
-
-gui.layout = group|<h3>ABE management</h3>|The agent based management module of iLand provides a number of outputs. They are typically on spatial level of stand polygons or management units https://iland-model.org/ABE+outputs
-
-gui.layout = group||<b>ABE stand</b> provides details about the forest state on stand level.
-output.abeStand.enabled = boolean|false|Enabled|This output provides details about the forest state on stand level. The timber is provided as standing timber per hectare. The output is rather performance critical, condition for evaluation can be applied.|simple
-output.abeStand.condition = function|mod(year,10)=1|ABE stand eval. cond.|Limits the execution to certain years.|simple
-
-gui.layout = group||<b>ABE unit</b> provides planned and realized harvests on the level of planning units.
-output.abeUnit.enabled = boolean|false|Enabled|The output provides planned and realized harvests on the level of planning units. Note that the planning unit area, mean age, mean volume and MAI are only updated every 10 years. Harvested timber is given as 'realizedHarvest', which is the sum of 'finalHarvest' and 'thinningHarvest.' The 'salvageHarvest' is provided extra, but already accounted for in the 'finalHarvest' column.|simple
-
-gui.layout = group||<b>ABE stand removal</b> provides details about realized timber harvests on stand level.
-output.abeStandRemoval.enabled = boolean|false|Enabled|This output provides details about realized timber harvests on stand level. The timber is provided as standing timber per hectare. The total harvest on the stand is the sum of thinning and final.|simple
-
-gui.layout = group||<b>ABE stand details</b> provides details about the forest state on species- and stand level.
-output.abeStandDetail.enabled = boolean|false|Enabled|This output provides details about the forest state on species- and stand level. This output is more detailed than the abeStand output. The output is rather performance critical, condition for evaluation can be applied.|simple
-output.abeStandDetail.condition = function|mod(year,10)=1|ABE Standdetail eval. cond.|Limits the execution to certain years.|simple
-
-
-; **** SVD *********
-gui.layout = tab|tabSVD|Integration with other tools|This group of outputs is dedicated to linking iLand to other models.
-gui.layout = group|<h2>SVD</h2>|iLand has some special outputs that are tailored towards Scaling Vegetation Dynamics model.
-
-gui.layout = group|SVD State|Vegetation state transitions on RU over time https://iland-model.org/outputs#Forest_state_transitions
-output.svdstate.enabled = boolean|false|Enable State|Forest state (for SVD). The output contains fixed columns and adds two extra columns for every active tree species. Those species columns hold the species share 0..1 for the local and the mid-range-neighborhood. Former have 'l_' and latter 'm_' as prefix (e.g. 'l_piab', 'm_piab'). Note that the sum of all shares is <=1, but can be lower than 1. See also the 'svduniquestate' output.|simple
-
-gui.layout = group|SVD Unique state|List of unique states encountered in the simulation https://iland-model.org/outputs#Unique_forest_states
-output.svduniquestate.enabled = boolean|false|Enable Unique State|List of forest states for the current simulation (for SVD). Each state is defined by a unique numerical Id ('stateId') which is used as a key in the 'svdstate' output.|simple
-output.svduniquestate.condition = string|condition|Unique State Condition|List of forest states for the current simulation (for SVD). Each state is defined by a unique numerical Id ('stateId') which is used as a key in the 'svdstate' output.|simple
-
-gui.layout = group|SVD Indicators|SVD indicators <br/>Indicator data per resource unit as used by SVD. Please edit in XML project file https://iland-model.org/outputs#SVD_forest_indicator_data !
-output.svdindicator.enabled = boolean|false|Enable Indicator|Indicator data per resource unit as used by SVD. The selection of indicators is triggered by keys in the project file|simple
-
-gui.layout = group|SVD GPP
-output.svdgpp.enabled = boolean|false|Enable GPP|GPP potential (as conditioned by climate/site) per species and m2.|simple
-
-gui.layout = group|<h2>Ecoviz</h2>|Ecoviz is a forest landscape visualization tool, and this output produces tree data in required format for Ecoviz. Note that output files can become quite large!
-output.ecoviz.enabled = boolean|true|ecoviz|Output of vegetatition data for Ecoviz tool|simple
-output.ecoviz.condition = function||condition|filter for execution of output|simple
-output.ecoviz.binary = boolean|false|binary|if true, a binary file (version 3) is written (*.pdbb), a text file otherwise (*.pdb)|simple
-output.ecoviz.fileName = string|output/pdb_$.pdb|fileName|file name pattern for output files. "$" is replaced with simulation year|simple
-
-
-; ************************************
-; *************  System **************
-; ************************************
-
-; system overview
 gui.layout = tab|tabSystem|System Settings|The settings in this section let you control general behavior of iLand and characteristics of your project. For example, <ul><li>File paths within your project</li><li>References to species parameters and input climate data</li><li>name of the output database</li><li>Settings for system logging, parallel code execution (multithreading) and more</li></ul>
 ;system.path.home = connected|Home Directory
 ;system.path.script = connected|Script String
@@ -250,10 +19,10 @@ gui.layout = tab|tabSystem|System Settings|The settings in this section let you 
 ;system.logging.logTarget = connected|Test combo
 
 ; *************  Path **************
-gui.layout = tab|tabPath|File paths|Default paths for different types of files are defined in the section system.path in the project file. Generally, all paths might be given either as absolute or as relative. If relative paths are provided, then they are considered to be relative to the home directory of the project. If the home project setting is empty, the location of the project.xml itself will be used as the the home-directory. https://iland-model.org/filenames+and+paths
+gui.layout = tab|tabPath|File paths|Default paths for different types of files are defined in the section system.path in the project file. Generally, all paths might be given either as absolute or as relative. If relative paths are provided, then they are considered to be relative to the home directory of the project. If the home project setting is empty, the location of the project.xml itself will be used as the the home-directory. https://iland-model.org/filenames-and-paths
 system.path.home = directory|project's home directory|Home|The project's home directory. If empty, the directory containing the project file is the home folder.|simple
 system.path.database = directory|database directory|Database|Directory containing the databases. Default: "database"|simple
-system.path.lip = directory|LIP file directory|LIP files|Directory containing the binary LIP files. See https://iland-model.org/Lightroom about creating LIPS! Default: "lip"|simple
+system.path.lip = directory|LIP file directory|LIP files|Directory containing the binary LIP files. See https://iland-model.org/lightroom about creating LIPS! Default: "lip"|simple
 system.path.output = directory|output directory|Output|Default path for the output database(s). Default: "output"|simple
 system.path.temp = directory|temp|temp|default path for temporary files. Deprecated.|all
 system.path.script = directory|script|script|default for script files. Deprecated.|all
@@ -261,12 +30,12 @@ system.path.init = directory|init|init|default for init files. Deprecated.|all
 
 ; *************  databasse **************
 gui.layout = tab|tabDatabase|Database|iLand uses primarily the SQLite database system, which stores all tables of a database within a single database file. These files are considered to be located in the database location defined in the path section.
-gui.layout = group|Input database|Defines the main input database, that primarily stores the species parameter https://iland-model.org/species+parameter
-system.database.in = file|input database file|Input|Defines the main input database, that primarily stores the species parameter. https://iland-model.org/species+parameter|simple
-gui.layout = group|Output database|Results of simulations are written to this database https://iland-model.org/organizing+outputs
-system.database.out = file|output database file|Output|Results of simulations are written to this database https://iland-model.org/organizing+outputs|simple
-gui.layout = group|Climate database|The SQLite database containing the climate data https://iland-model.org/ClimateData
-system.database.climate = file|climate database file|Climate|The SQLite database containing the climate data driving the simulation https://iland-model.org/ClimateData|simple
+gui.layout = group|Input database|Defines the main input database, that primarily stores the species parameter https://iland-model.org/species-parameter
+system.database.in = file|input database file|Input|Defines the main input database, that primarily stores the species parameter. https://iland-model.org/species-parameter|simple
+gui.layout = group|Output database|Results of simulations are written to this database https://iland-model.org/organizing-outputs
+system.database.out = file|output database file|Output|Results of simulations are written to this database https://iland-model.org/organizing-outputs|simple
+gui.layout = group|Climate database|The SQLite database containing the climate data https://iland-model.org/climatedata
+system.database.climate = file|climate database file|Climate|The SQLite database containing the climate data driving the simulation https://iland-model.org/climatedata|simple
 
 ; *************  Logging **************
 gui.layout = tab|tabLogging|Logging|Settings controling logging in iLand.
@@ -280,7 +49,7 @@ gui.layout = tab|tabSystemSettings|Settings|Settings for multithreading, debug o
 gui.layout = group|Multithreading
 system.settings.multithreading = boolean|true|Multithreading|If checked, iLand will use several threads to perform its calculations (if more than 10 RessourceUnits are defined).|simple
 system.settings.threadCount = numeric|-1|ThreadCount|Number of used threads if multithreading is enabled. -1 uses all available CPU cores.|simple
-gui.layout = group|Debug outputs https://iland-model.org/Debug+Outputs
+gui.layout = group|Debug outputs https://iland-model.org/debug-outputs
 system.settings.debugOutput = numeric|1|Debug Output|Defines the active debug outputs. Each output is coded by a single bit. Find a list of currently available outputs under the debug data menu of the iLand application. e.g: a value of 17 (=16+1) would enable the water output (16) and the Tree NPP output (1).|simple
 system.settings.debugOutputAutoSave = boolean|true|Debug output autosave|If checked, csv-output files are created for each active debug output and saved to the temp directory (see Path-section).|simple
 gui.layout = group|Random seed
@@ -290,14 +59,14 @@ system.settings.expressionLinearizationEnabled = boolean|false|Expression Linear
 system.settings.responsive = boolean|true|Responsive|If checked, iLand is more responsive during lengthy calculations (i.e. the user interface freezes less frequently)|advanced
 
 gui.layout = group|Parameter|Other technical parameters (Note: from the section "model.parameter" of the project file)
-model.parameter.torus = boolean|false|Torus landscape|If true, the simulation space is treated as a torus, where any influence (e.g. a light influence pattern) leaving on one side again enters at the opposite site. This is especially useful for small simulated areas to provide a continuous environment without edge effects. https://iland-model.org/simulation+extent?highlight=torus#single_resource_units_and_the_torus|simple
+model.parameter.torus = boolean|false|Torus landscape|If true, the simulation space is treated as a torus, where any influence (e.g. a light influence pattern) leaving on one side again enters at the opposite site. This is especially useful for small simulated areas to provide a continuous environment without edge effects. https://iland-model.org/simulation-extent?highlight=torus#single_resource_units_and_the_torus|simple
 model.parameter.debug_tree = string|ruindex=2 and dbh>30|Debug tree|A filter expression executed for trees during initialization. Textual debug output is generated only for those trees passing the filter. (e.g.: "ruindex=2 and dbh>30"). Providing an empty string is the fastest option when the debug data is not used. To enable debug output for all trees, set the value to '1' or 'true'.|advanced
 model.parameter.debug_clear = boolean|false|Clear debug|If true, text debug will be cleared after each simulation year. If set to false, the debug info is kept to provide time series information.|advanced
 model.parameter.gpp_per_year = numeric|10|GPP per year|If set, the production module is short-cut and this amound of NPP (kg/ha) is available for growth.|advanced
 model.parameter.debugDumpStamps = boolean|false|Dump stamps|If true, the content of the LIP-files is dumped to the console. This feature is provided for debugging purposes.|advanced
 
 ; *************  Javascript **************
-gui.layout = tab|tabJavascript|Javascript|This section deals with Javascript-script files that are loaded into the models' script engine at startup. See https://iland-model.org/iLand%20scripting
+gui.layout = tab|tabJavascript|Javascript|This section deals with Javascript-script files that are loaded into the models' script engine at startup. See https://iland-model.org/iland-scripting
 system.javascript.fileName = file|javascript file name|File name|The filename of a javascript file to load.|simple
 
 
@@ -328,6 +97,131 @@ model.management.enabled = connected|Enable Management
 model.management.abeEnabled = connected|Enable ABE Management
 
 ; *************  Global settings **************
+gui.layout = tab|tabWorld|World|Describe the shape and size of the simulated landscape (the model "world"), as well as GIS data describing the environment.<br/>https://iland-model.org/landscape-setup
+;gui.layout = group|<img src="qrc:/landscape_setup.png" width="250">This describes landscape setup
+gui.layout = group|Simulation area|Define the width and height (in m) of the simulated area https://iland-model.org/simulation-extent
+model.world.cellSize = numeric|2|Cell size|The size of pixels of the light grid (m). The default is 2m, change not recommended.|advanced
+model.world.width = numeric|100|Width|The horizontal (east-west) extent of the simulation area (m).|simple
+model.world.height = numeric|100|Height|The vertical (north-south) extent of the simulation area (m).|simple
+model.world.buffer = numeric|60|Buffer|A buffer zone with the given width is attached to the rectangle of the simulation area (defined by width and height).|simple
+model.world.latitude = numeric|45|Latitude|Latitude of project area (in degree). Used for day of length calculation.|simple
+model.world.resourceUnitsAsGrid = boolean|true|RU as grid|If checked, each resource unit is a 100x100 pixel.default is true.|advanced
+
+gui.layout = group|Location|Specify the location of the 0/0 point of the local iLand coordinate in the (metric) coordinate system of GIS-based input data.
+model.world.location.x = numeric|0|x|Offset in x-direction|simple
+model.world.location.y = numeric|0|y|Offset in y-direction|simple
+model.world.location.z = numeric|0|z|Offset in z-direction|all
+model.world.location.rotation = numeric|0|Rotation|A value for rotation rotates the GIS-based input data. Note that this can have side-effects with e.g. the orientation of LIP-patterns. rotation is given in degrees.|all
+
+gui.layout = group|Environment|Describe the spatial setup, i.e. how climate and site information should be arranged spatially. Typical uses are: <ul><li>no environment: single stand or generic landscapes</li><li>matrix mode: generic setups (e.g. for evaluation experiments)</li><li>grid mode: actual landscapes</li></ul> https://iland-model.org/simulation-extent#spatially_distributed_parameters
+model.world.environmentEnabled = boolean|false|Enable|If checked, the spatial distribution of several model parameters is loaded from an environment file. See keys below and the pages initialization and simulation extent for details.|simple
+model.world.environmentMode = combo|grid;matrix|Mode|This settings determines how the environment file is interpreted. Possible values are grid and matrix. In grid-mode a GIS grid defines the spatial pattern, in matrix mode resource units are addressed using the resource unit index.|simple
+model.world.environmentGrid = file|grid filename|Grid|Filename of the GIS grid which is used in grid-mode. The grid contains integer IDs which are used to map the parameter values in the environment file to resource units within the landscape.|simple
+model.world.environmentFile = file|environment filename|File|filename of the environment file. Default path is the project path.|simple
+
+gui.layout = group|DEM|a digital elevation model of the landscape (required for some submodules and visualization)
+model.world.DEM = file|DEM file|DEM file|If not empty, a digital elevation model is read from a file (ESRI ASCII raster).|simple
+
+gui.layout = layout|hl
+
+gui.layout = group|Stand grid|a GIS file describing stand "polygons" (rastered to 10m resolution). See also initalization of vegetation https://iland-model.org/initialize-trees
+model.world.standGrid.enabled = boolean|false|Enable|If checked, the stand grid is loaded and used.|simple
+model.world.standGrid.fileName = file|stand grid file|File path|Path to the stand grid file (ESRI ASCII format, relative to the project root). See also the section location, and landscape setup.|simple
+gui.layout = layout|hl
+gui.layout = group|Time Events|A mechanism to trigger events over time https://iland-model.org/time-events
+model.world.timeEventsEnabled = boolean|false|Enable|If true, the time event mechanism is enabled. Similar to the spatial parameter distribution, project settings can be linked to specific year to change.|simple
+model.world.timeEventsFile = string|time event file name|Time event file|filename of the "time events" file. This is a simple CSV-style file with a fixed column year and user-defined columns with column names of valid project file keys.|simple
+
+gui.layout = group|Area mask
+model.world.areaMask.enabled = boolean|false|Enable|If checked, the mask of valid project area is retrieved from an image (located at imageFile).|all
+model.world.areaMask.imageFile = string|image file name|Image file|Filename of the image file used for the overlay.|all
+
+; ************* Site **************
+; model.site
+gui.layout = tab|tabClimate|Climate|This section controls the processing of climate data in iLand. See the section "System->Database" to change the climate scenario!<br/> https://iland-model.org/climatedata
+gui.layout = group|database table|The table name in the climate database and a SQL filter to select a subset of data. See environment file mechanism for spatial data https://iland-model.org/simulation-extent#spatially_distributed_parameters
+model.climate.tableName = string|name sqlite table|Table name|Name of the SQLite table within the defined climate database to load (system.database.climate).|simple
+model.climate.filter = string|filter expression|Filter|An optional filter criterion that is added to the where clause of the SQL for reading the climate data. This can be useful e.g. for skipping parts of the climate records. Example: 'year>2000 and year<2010' limits used climate data to the years 2001 to 2009.|simple
+
+gui.layout = group|Random sampling|iLand let you provide a pseudo-random sequence of years to simulate beyond available data https://iland-model.org/climatedata#Temporal_pattern
+model.climate.batchYears = numeric|10|Batch years|For performance reasons the access to the climate database accesses is performed bulked. This setting specifies how many years are loaded at once.|simple
+model.climate.randomSamplingEnabled = boolean|false|Enable random sampling|if true, only the first batchYears of the climate file are loaded (but see filter). The actual climate for each year is the sampled from this climate data. See also randomSamplingList. (default=false)|simple
+model.climate.randomSamplingList = string|empty|Random sampling list|if this key contains a list of 0-based indices (e.g. "3, 12, 14, 0, 3, 14", the random sampling (if enabled) uses this sequence of years. Note: the index is 0-based (in the example the 4th year would be used first). Use any non-word characters as delimiters. The list will be recycled if more years are simulated than present in the list. The index values are to be between 0 and batchYears-1. If invalid indices are in the list, an error is reported. If the key is empty or not present, each year a climate year is selected randomly from the list of loaded years. default=empty|simple
+
+gui.layout = group|CO2|Change in ambient CO2 concentration is defined here. Set a static value, or a pre-defined CO2 pathway. Note: More control over CO2 changes with time events https://iland-model.org/time-events
+model.climate.co2concentration = numeric|380|CO2 concentration|Current value of the atmospheric CO2 concentration. Default value is 380ppm. A time series may be implementing using the Time-Event feature. See also section world.species.CO2Response|simple
+model.climate.co2pathway = combo|No;RCP2.6;RCP4.5;RCP6.0;RCP8.5|CO2 pathway|Selects a pre-defined CO2 concentration pathway, default is no change ('No').|simple
+model.climate.co2startYear = numeric|1840|CO2 start year|If a co2pathway is used, then co2startYear defines the starting point of CO2 concentration within the simulation.|simple
+
+gui.layout = group|Static climate offset|Define a constant offset for temperature and precipitation
+model.climate.temperatureShift = numeric|0|Temperature shift|Simple option to modify the climate. The value is added to each daily temperature (default = 0)|simple
+model.climate.precipitationShift = numeric|1|Precipitation shift|Simple option to modify the climate. The daily precipitation is multiplied for each day with this value. (default = 1).|simple
+
+; ********************************************
+; **** Disturbance modules
+; ********************************************
+
+; modules overview
+gui.layout = tab|tabInitialization|Initialization of vegetation|Describes how to set up initial tree vegetation in the model.<br/>See https://iland-model.org/initialize-trees
+model.initialization.mode = combo|single;unit;map;standgrid;snapshot|Mode|type of intialization (e.g., from single files or a snapshot).|simple
+model.initialization.type = combo|distribution;single|Type|Describes the type of a initialization file. Possible values: distribution or single (see also: initialize trees ).|simple
+model.initialization.file = file|path to initialization file|File|Path of the initialization file to be loaded. In mode unit this key needs to be overwritten by the environment file. If blank, no trees are loaded.|simple
+model.initialization.saplingFile = file|path to sapling file|Sapling File|Path of the initialization file for saplings (see initialize trees). If blank, no saplings are loaded.|simple
+model.initialization.mapFileName = file|file for init and matching stands|Map File Name|When using the 'map' mode, the matching of stands and init files is defined in this file.|simple
+model.initialization.randomFunction = string|function expression|Random Function|Defines the function (as an expression) used when estimating positions for individual trees (for init files of type distribution).|advanced
+
+gui.layout = group|Height Grid|Constrain initalization with height data from remote sensing https://iland-model.org/initialize-trees#Using_LIDAR_based_maximum_tree_heights
+model.initialization.heightGrid.enabled = boolean|false|Enable|If true, the top height grid is used.|simple
+model.initialization.heightGrid.fileName = file|default system.path.init|File name|the ESRI ASCII file that holds the tree top heights (default path is system.path.init).|simple
+model.initialization.heightGrid.maxTries = numeric|10|Max. tries|The maximum number of attempts to find a suitable cell for a tree (default: 10).|simple
+model.initialization.heightGrid.fitFormula = string|polygon(x,0,0,0.8,1,1.1,1,1.25,0)|Fit formula|Equation that estimates the suitability of a target 10m cell based on the relative height of the tree compared to the top canopy height. default: polygon(x, 0,0, 0.8,1, 1.1, 1, 1.25,0).|simple
+
+gui.layout = layout|hl
+gui.layout = group|Snags|This provides initial values for snag pools
+model.initialization.snags.swdC = numeric|5|string|initial carbon content in (standing) snags (kg/ha)|simple
+model.initialization.snags.swdCN = numeric|0.1|C/N Ratio|CN ratio of snags|simple
+model.initialization.snags.swdCount = numeric|100|Number Snags|number of snags|simple
+model.initialization.snags.otherC = numeric|string|Carbon Content Other Wood Pools|Initial carbon content in the pools for other wood (i.e. branches and coarse roots). (kg/ha.). This content is split up into the five parts.|simple
+model.initialization.snags.otherCN = numeric|string|C/N Ratio Branches,Roots|CN ratio of 'otherC' (branches, coarse roots).|simple
+model.initialization.snags.otherAbovegroundFraction = numeric|0.4|Other Aboveground Fraction|Initial fraction (0..1) of C in the other pool from aboveground (branches).|simple
+model.initialization.snags.swdDecompRate = numeric|0.1|Decay rate standing snags|decay rate of standing snags (i.e. ksw)|simple
+model.initialization.snags.woodDecompRate = numeric|0.1|Decay rate wood|string|simple
+model.initialization.snags.swdHalfLife = numeric|10|Halflife initial snags|halflife attached to initial snags (years)|simple
+
+; model.management
+gui.layout = tab|tabSite|Site|Site characteristics and soil properties. Note: see environment file for spatial distribution.
+
+gui.layout = group|<h3>Soil properties</h3>
+gui.layout = group|Soil fertility
+model.site.availableNitrogen = numeric|60|Available nitrogen|Fertility of the site, expressed as plant available nitrogen (kg/ha/year)|simple
+
+gui.layout = group|Soil physical properties
+model.site.soilDepth = numeric|20|Soil depth [cm]|Depth of (rock-free) root accessible soil in cm.|simple
+gui.layout = group||Soil texture, proportion of sand, silt, and clay in %
+model.site.pctSand = numeric|string|Sand|Percentange of sand (0..100) in soil. |simple
+model.site.pctSilt = numeric|string|Silt|Percentange of silt (0..100) in soil. |simple
+model.site.pctClay = numeric|string|Clay|Percentange of clay (0..100) in soil. |simple
+
+gui.layout = layout|hl
+gui.layout = group|<h3>Carbon and nitrogen cycling</h3>|Provide initial values for litter (=labile), woody material (=refractory) and soil pool (SOM).
+gui.layout = group|Labile carbon and nitrogen (litter)
+model.site.youngLabileC = numeric|10000|Carbon content|(Initial) carbon content of ylC (i.e. litter) soil pool (kg/ha).|simple
+model.site.youngLabileN = numeric|500|Nitrogen content|(Initial) nitrogen content of ylC soil pool (kg/ha).|simple
+model.site.youngLabileDecompRate = numeric|0.2|Decomposition rate|(Initial) decomposition rate of yr pool.|simple
+model.site.youngLabileAbovegroundFraction = numeric|0.7|Fraction of C|(Initial) fraction of aboveground C in the litter (yL) layer (foliage).|simple
+gui.layout = group|Recfractory carbon and nitrogen (woody material)
+model.site.youngRefractoryC = numeric|30000|Carbon content [kg/ha]|(Initial) carbon content of yrC (woody) soil pool (kg/ha)|simple
+model.site.youngRefractoryN = numeric|100|Nitrogen content|(Initial) nitrogen content of yrC (woody) soil pool (kg/ha)|simple
+model.site.youngRefractoryDecompRate = numeric|string|Decomposition rate|(Initial) decomposition rate of yr pool|simple
+model.site.youngRefractoryAbovegroundFraction = numeric|0.7|Aboveground fraction|Fraction (0..1) of C in the yR pool from aboveground sources (branches, stems)|simple
+gui.layout = group|Soil organic matter
+model.site.somC = numeric|100000|Carbon content|(Initial) carbon content of oC (soil organic matter) soil pool (kg/ha)|simple
+model.site.somN = numeric|100|Nitrogen content|(Initial) nitrogen content of oN (soil organic matter) soil pool (kg/ha)|simple
+model.site.somDecompRate = numeric|0.1|Decomposition rate|Decomposition rate for soil organic matter (i.e. the "old" pool sensu ICBM)|simple
+model.site.soilHumificationRate = numeric|0.3|Soil humification rate|humification rate|simple
+
+; ************* Climate **************
+; model.climate
 gui.layout = tab|tabGlobalSettings|Model Settings|Settings that control the overall behavior of the model. This section contains many low(er)-level settings of iLand that are hidden per default. Click "Advanced view" in the tool bar to show them.
 
 gui.layout = group|Main submodules|Enable/disable main model processes
@@ -358,14 +252,14 @@ model.settings.snowMeltTemperature = numeric|0|Snow melt temperature|Threshold t
 model.settings.snowDensity = numeric|300|Snow density|Density of snow in kg/m3 (default: 300)|advanced
 model.settings.snowInitialDepth = numeric|0|Snow initial depth|Depth of the snow pack (in m) at the start of the simulation (default: 0).|advanced
 model.settings.groundVegetationLAI = numeric|1|LAI ground vegetation|minimum LAI that is assumed to be provided by ground vegetation in absence of tree vegetation|advanced
-model.settings.groundVegetationPsiMin = numeric|-1.5|PsiMin of ground vegetation|https://iland-model.org/transpiration+and+conductance+in+saplings|advanced
+model.settings.groundVegetationPsiMin = numeric|-1.5|PsiMin of ground vegetation|https://iland-model.org/transpiration-and-conductance-in-saplings|advanced
 ; heatCapacityAir and air Pressure are deprecated. included for filtering reasons
 ;model.settings.heatCapacityAir = numeric|1003.5|Heat Capacity Air|Specific heat capacity of air (J /(kg °C)). Sea level, dry, 0 °C|all
 ; model.settings.airPressure = numeric|1013|Air Pressure|Atmospheric average pressure (mbar)|all
 
 
 ; *************  Seed dispersal **************
-gui.layout = tab|tabSeedDispersal|Seed Dispersal|This section describes if and how external seeds (i.e., seed input not dynamically simulated) is handled by the model. <br/>The available options are: <ul><li>No external seed input</li> <li>Seeds are available everywhere (with given probability per species)</li> <li>Seed input is spatially explicit, limited to cardinal directions ("buffer")</li><li>Fine-grained control over seed avaialability in the areas surrounding the simulated landscape ("seed belt")</li></ul>See https://iland-model.org/external+seeds
+gui.layout = tab|tabSeedDispersal|Seed Dispersal|This section describes if and how external seeds (i.e., seed input not dynamically simulated) is handled by the model. <br/>The available options are: <ul><li>No external seed input</li> <li>Seeds are available everywhere (with given probability per species)</li> <li>Seed input is spatially explicit, limited to cardinal directions ("buffer")</li><li>Fine-grained control over seed avaialability in the areas surrounding the simulated landscape ("seed belt")</li></ul>See https://iland-model.org/external-seeds
 model.settings.seedDispersal.externalSeedEnabled = boolean|false|Enable External Seeds|If "true" external seeds are produced by species listed under externalSeedSpecies. If external seeds are enabled, the buffer-area of the simulation area is considered as a source of seeds.|simple
 
 gui.layout = group|Seeds everywhere|Provide a delimited list of species and probabilities (e.g., piab, 0.0001, fasy, 0.0001). If empty, seeds everywhere turned off.
@@ -396,7 +290,7 @@ model.settings.seedDispersal.longDistanceDispersal.rings = integer|5|Rings|‘Ri
 
 
 ; *************  Soil / Carbon **************
-gui.layout = tab|tabSoil|Soil Settings|This section contains parameters for the ICBM/2N carbon and nitrogen cycling sub model, and snags. <br/> More Details: <ul><li>Carbon and nitrogen cycling: https://iland-model.org/soil+C+and+N+cycling</li><li>Soil parameterization: https://iland-model.org/soil+parametrization+and+initialization</li><li>Individual tracking of dead trees: https://iland-model.org/dead+trees</li></ul>
+gui.layout = tab|tabSoil|Soil Settings|This section contains parameters for the ICBM/2N carbon and nitrogen cycling sub model, and snags. <br/> More Details: <ul><li>Carbon and nitrogen cycling: https://iland-model.org/soil-c-and-n-cycling</li><li>Soil parameterization: https://iland-model.org/soil-parametrization-and-initialization</li><li>Individual tracking of dead trees: https://iland-model.org/dead-trees</li></ul>
 gui.layout = layout|hl
 gui.layout = group|Soil Dynamics Settings
 model.settings.soil.useDynamicAvailableNitrogen = boolean|false|Use Dynamic Available Nitrogen|If true, iLand utilizes the plant available N from the soil model to calculate species responses. If false, the static value world.site.availableNitrogen will be used.|simple
@@ -486,40 +380,13 @@ gui.layout = tab|tabSpecies|Species Parameters|The species parameter can only be
 
 ; ************* Initalization **************
 ; model.initialization
-gui.layout = tab|tabInitialization|Initialization of vegetation|Describes how to set up initial tree vegetation in the model.<br/>See https://iland-model.org/initialize+trees
-model.initialization.mode = combo|single;unit;map;standgrid;snapshot|Mode|type of intialization (e.g., from single files or a snapshot).|simple
-model.initialization.type = combo|distribution;single|Type|Describes the type of a initialization file. Possible values: distribution or single (see also: initialize trees ).|simple
-model.initialization.file = file|path to initialization file|File|Path of the initialization file to be loaded. In mode unit this key needs to be overwritten by the environment file. If blank, no trees are loaded.|simple
-model.initialization.saplingFile = file|path to sapling file|Sapling File|Path of the initialization file for saplings (see initialize trees). If blank, no saplings are loaded.|simple
-model.initialization.mapFileName = file|file for init and matching stands|Map File Name|When using the 'map' mode, the matching of stands and init files is defined in this file.|simple
-model.initialization.randomFunction = string|function expression|Random Function|Defines the function (as an expression) used when estimating positions for individual trees (for init files of type distribution).|advanced
-
-gui.layout = group|Height Grid|Constrain initalization with height data from remote sensing https://iland-model.org/initialize+trees#Using_LIDAR_based_maximum_tree_heights
-model.initialization.heightGrid.enabled = boolean|false|Enable|If true, the top height grid is used.|simple
-model.initialization.heightGrid.fileName = file|default system.path.init|File name|the ESRI ASCII file that holds the tree top heights (default path is system.path.init).|simple
-model.initialization.heightGrid.maxTries = numeric|10|Max. tries|The maximum number of attempts to find a suitable cell for a tree (default: 10).|simple
-model.initialization.heightGrid.fitFormula = string|polygon(x,0,0,0.8,1,1.1,1,1.25,0)|Fit formula|Equation that estimates the suitability of a target 10m cell based on the relative height of the tree compared to the top canopy height. default: polygon(x, 0,0, 0.8,1, 1.1, 1, 1.25,0).|simple
-
-gui.layout = layout|hl
-gui.layout = group|Snags|This provides initial values for snag pools
-model.initialization.snags.swdC = numeric|5|string|initial carbon content in (standing) snags (kg/ha)|simple
-model.initialization.snags.swdCN = numeric|0.1|C/N Ratio|CN ratio of snags|simple
-model.initialization.snags.swdCount = numeric|100|Number Snags|number of snags|simple
-model.initialization.snags.otherC = numeric|string|Carbon Content Other Wood Pools|Initial carbon content in the pools for other wood (i.e. branches and coarse roots). (kg/ha.). This content is split up into the five parts.|simple
-model.initialization.snags.otherCN = numeric|string|C/N Ratio Branches,Roots|CN ratio of 'otherC' (branches, coarse roots).|simple
-model.initialization.snags.otherAbovegroundFraction = numeric|0.4|Other Aboveground Fraction|Initial fraction (0..1) of C in the other pool from aboveground (branches).|simple
-model.initialization.snags.swdDecompRate = numeric|0.1|Decay rate standing snags|decay rate of standing snags (i.e. ksw)|simple
-model.initialization.snags.woodDecompRate = numeric|0.1|Decay rate wood|string|simple
-model.initialization.snags.swdHalfLife = numeric|10|Halflife initial snags|halflife attached to initial snags (years)|simple
-
-; model.management
 gui.layout = tab|tabManagement|Management|The management section controls the Javascript based management subsytem of iLand. Note that, the Javascript interface can be 'misused' for other (i.e., not management related) tasks as well.
 model.management.enabled = boolean|false|Enable Management|Management is disabled if the value is false. This switch relates to the "base" management subsystem.|simple
 gui.layout = layout|hl
-gui.layout = group|Base management http://iland-model.org/management
+gui.layout = group|Base management https://iland-model.org/management
 model.management.file = file|javascript file|Javacsript file|Filename of the Javascript file to load (default path is the script path provided in the paths section).|simple
 gui.layout = layout|hl
-gui.layout = group|Management ABE|Agent Based Engine for forest management. http://iland-model.org/ABE
+gui.layout = group|Management ABE|Agent Based Engine for forest management. https://iland-model.org/abe
 model.management.abeEnabled = boolean|false|Enable ABE|Switch for turning the agent based management engine on/off.|simple
 model.management.abe.file = file|javascript file of ABE|Javacsript file|Filename of the main Javascript file of ABE (relative paths are relative to the project root).|simple
 model.management.abe.agentDataFile = file|data file for the spatial ABE setup|Agent data file|Filename of the data file for the spatial setup of ABE (relative paths are relative to the project root).|simple
@@ -529,113 +396,15 @@ gui.layout = tab|tabParameter|Parameter
 
 
 ; model.world
-gui.layout = tab|tabWorld|World|Describe the shape and size of the simulated landscape (the model "world"), as well as GIS data describing the environment.<br/>https://iland-model.org/landscape+setup
-;gui.layout = group|<img src="qrc:/landscape_setup.png" width="250">This describes landscape setup
-gui.layout = group|Simulation area|Define the width and height (in m) of the simulated area https://iland-model.org/simulation+extent
-model.world.cellSize = numeric|2|Cell size|The size of pixels of the light grid (m). The default is 2m, change not recommended.|advanced
-model.world.width = numeric|100|Width|The horizontal (east-west) extent of the simulation area (m).|simple
-model.world.height = numeric|100|Height|The vertical (north-south) extent of the simulation area (m).|simple
-model.world.buffer = numeric|60|Buffer|A buffer zone with the given width is attached to the rectangle of the simulation area (defined by width and height).|simple
-model.world.latitude = numeric|45|Latitude|Latitude of project area (in degree). Used for day of length calculation.|simple
-model.world.resourceUnitsAsGrid = boolean|true|RU as grid|If checked, each resource unit is a 100x100 pixel.default is true.|advanced
-
-gui.layout = group|Location|Specify the location of the 0/0 point of the local iLand coordinate in the (metric) coordinate system of GIS-based input data.
-model.world.location.x = numeric|0|x|Offset in x-direction|simple
-model.world.location.y = numeric|0|y|Offset in y-direction|simple
-model.world.location.z = numeric|0|z|Offset in z-direction|all
-model.world.location.rotation = numeric|0|Rotation|A value for rotation rotates the GIS-based input data. Note that this can have side-effects with e.g. the orientation of LIP-patterns. rotation is given in degrees.|all
-
-gui.layout = group|Environment|Describe the spatial setup, i.e. how climate and site information should be arranged spatially. Typical uses are: <ul><li>no environment: single stand or generic landscapes</li><li>matrix mode: generic setups (e.g. for evaluation experiments)</li><li>grid mode: actual landscapes</li></ul> https://iland-model.org/simulation+extent#spatially_distributed_parameters
-model.world.environmentEnabled = boolean|false|Enable|If checked, the spatial distribution of several model parameters is loaded from an environment file. See keys below and the pages initialization and simulation extent for details.|simple
-model.world.environmentMode = combo|grid;matrix|Mode|This settings determines how the environment file is interpreted. Possible values are grid and matrix. In grid-mode a GIS grid defines the spatial pattern, in matrix mode resource units are addressed using the resource unit index.|simple
-model.world.environmentGrid = file|grid filename|Grid|Filename of the GIS grid which is used in grid-mode. The grid contains integer IDs which are used to map the parameter values in the environment file to resource units within the landscape.|simple
-model.world.environmentFile = file|environment filename|File|filename of the environment file. Default path is the project path.|simple
-
-gui.layout = group|DEM|a digital elevation model of the landscape (required for some submodules and visualization)
-model.world.DEM = file|DEM file|DEM file|If not empty, a digital elevation model is read from a file (ESRI ASCII raster).|simple
-
-gui.layout = layout|hl
-
-gui.layout = group|Stand grid|a GIS file describing stand "polygons" (rastered to 10m resolution). See also initalization of vegetation https://iland-model.org/initialize+trees
-model.world.standGrid.enabled = boolean|false|Enable|If checked, the stand grid is loaded and used.|simple
-model.world.standGrid.fileName = file|stand grid file|File path|Path to the stand grid file (ESRI ASCII format, relative to the project root). See also the section location, and landscape setup.|simple
-gui.layout = layout|hl
-gui.layout = group|Time Events|A mechanism to trigger events over time https://iland-model.org/time+events
-model.world.timeEventsEnabled = boolean|false|Enable|If true, the time event mechanism is enabled. Similar to the spatial parameter distribution, project settings can be linked to specific year to change.|simple
-model.world.timeEventsFile = string|time event file name|Time event file|filename of the "time events" file. This is a simple CSV-style file with a fixed column year and user-defined columns with column names of valid project file keys.|simple
-
-gui.layout = group|Area mask
-model.world.areaMask.enabled = boolean|false|Enable|If checked, the mask of valid project area is retrieved from an image (located at imageFile).|all
-model.world.areaMask.imageFile = string|image file name|Image file|Filename of the image file used for the overlay.|all
-
-; ************* Site **************
-; model.site
-gui.layout = tab|tabSite|Site|Site characteristics and soil properties. Note: see environment file for spatial distribution.
-
-gui.layout = group|<h3>Soil properties</h3>
-gui.layout = group|Soil fertility
-model.site.availableNitrogen = numeric|60|Available nitrogen|Fertility of the site, expressed as plant available nitrogen (kg/ha/year)|simple
-
-gui.layout = group|Soil physical properties
-model.site.soilDepth = numeric|20|Soil depth [cm]|Depth of (rock-free) root accessible soil in cm.|simple
-gui.layout = group||Soil texture, proportion of sand, silt, and clay in %
-model.site.pctSand = numeric|string|Sand|Percentange of sand (0..100) in soil. |simple
-model.site.pctSilt = numeric|string|Silt|Percentange of silt (0..100) in soil. |simple
-model.site.pctClay = numeric|string|Clay|Percentange of clay (0..100) in soil. |simple
-
-gui.layout = layout|hl
-gui.layout = group|<h3>Carbon and nitrogen cycling</h3>|Provide initial values for litter (=labile), woody material (=refractory) and soil pool (SOM).
-gui.layout = group|Labile carbon and nitrogen (litter)
-model.site.youngLabileC = numeric|10000|Carbon content|(Initial) carbon content of ylC (i.e. litter) soil pool (kg/ha).|simple
-model.site.youngLabileN = numeric|500|Nitrogen content|(Initial) nitrogen content of ylC soil pool (kg/ha).|simple
-model.site.youngLabileDecompRate = numeric|0.2|Decomposition rate|(Initial) decomposition rate of yr pool.|simple
-model.site.youngLabileAbovegroundFraction = numeric|0.7|Fraction of C|(Initial) fraction of aboveground C in the litter (yL) layer (foliage).|simple
-gui.layout = group|Recfractory carbon and nitrogen (woody material)
-model.site.youngRefractoryC = numeric|30000|Carbon content [kg/ha]|(Initial) carbon content of yrC (woody) soil pool (kg/ha)|simple
-model.site.youngRefractoryN = numeric|100|Nitrogen content|(Initial) nitrogen content of yrC (woody) soil pool (kg/ha)|simple
-model.site.youngRefractoryDecompRate = numeric|string|Decomposition rate|(Initial) decomposition rate of yr pool|simple
-model.site.youngRefractoryAbovegroundFraction = numeric|0.7|Aboveground fraction|Fraction (0..1) of C in the yR pool from aboveground sources (branches, stems)|simple
-gui.layout = group|Soil organic matter
-model.site.somC = numeric|100000|Carbon content|(Initial) carbon content of oC (soil organic matter) soil pool (kg/ha)|simple
-model.site.somN = numeric|100|Nitrogen content|(Initial) nitrogen content of oN (soil organic matter) soil pool (kg/ha)|simple
-model.site.somDecompRate = numeric|0.1|Decomposition rate|Decomposition rate for soil organic matter (i.e. the "old" pool sensu ICBM)|simple
-model.site.soilHumificationRate = numeric|0.3|Soil humification rate|humification rate|simple
-
-; ************* Climate **************
-; model.climate
-gui.layout = tab|tabClimate|Climate|This section controls the processing of climate data in iLand. See the section "System->Database" to change the climate scenario!<br/> https://iland-model.org/ClimateData
-gui.layout = group|database table|The table name in the climate database and a SQL filter to select a subset of data. See environment file mechanism for spatial data https://iland-model.org/simulation+extent#spatially_distributed_parameters
-model.climate.tableName = string|name sqlite table|Table name|Name of the SQLite table within the defined climate database to load (system.database.climate).|simple
-model.climate.filter = string|filter expression|Filter|An optional filter criterion that is added to the where clause of the SQL for reading the climate data. This can be useful e.g. for skipping parts of the climate records. Example: 'year>2000 and year<2010' limits used climate data to the years 2001 to 2009.|simple
-
-gui.layout = group|Random sampling|iLand let you provide a pseudo-random sequence of years to simulate beyond available data https://iland-model.org/ClimateData#Temporal_pattern
-model.climate.batchYears = numeric|10|Batch years|For performance reasons the access to the climate database accesses is performed bulked. This setting specifies how many years are loaded at once.|simple
-model.climate.randomSamplingEnabled = boolean|false|Enable random sampling|if true, only the first batchYears of the climate file are loaded (but see filter). The actual climate for each year is the sampled from this climate data. See also randomSamplingList. (default=false)|simple
-model.climate.randomSamplingList = string|empty|Random sampling list|if this key contains a list of 0-based indices (e.g. "3, 12, 14, 0, 3, 14", the random sampling (if enabled) uses this sequence of years. Note: the index is 0-based (in the example the 4th year would be used first). Use any non-word characters as delimiters. The list will be recycled if more years are simulated than present in the list. The index values are to be between 0 and batchYears-1. If invalid indices are in the list, an error is reported. If the key is empty or not present, each year a climate year is selected randomly from the list of loaded years. default=empty|simple
-
-gui.layout = group|CO2|Change in ambient CO2 concentration is defined here. Set a static value, or a pre-defined CO2 pathway. Note: More control over CO2 changes with time events https://iland-model.org/time+events
-model.climate.co2concentration = numeric|380|CO2 concentration|Current value of the atmospheric CO2 concentration. Default value is 380ppm. A time series may be implementing using the Time-Event feature. See also section world.species.CO2Response|simple
-model.climate.co2pathway = combo|No;RCP2.6;RCP4.5;RCP6.0;RCP8.5|CO2 pathway|Selects a pre-defined CO2 concentration pathway, default is no change ('No').|simple
-model.climate.co2startYear = numeric|1840|CO2 start year|If a co2pathway is used, then co2startYear defines the starting point of CO2 concentration within the simulation.|simple
-
-gui.layout = group|Static climate offset|Define a constant offset for temperature and precipitation
-model.climate.temperatureShift = numeric|0|Temperature shift|Simple option to modify the climate. The value is added to each daily temperature (default = 0)|simple
-model.climate.precipitationShift = numeric|1|Precipitation shift|Simple option to modify the climate. The daily precipitation is multiplied for each day with this value. (default = 1).|simple
-
-; ********************************************
-; **** Disturbance modules
-; ********************************************
-
-; modules overview
 gui.layout = tab|tabModules|Modules|This section covers disturbance modules for fire, wind, bark beetles and generic biotic agents.
 modules.fire.enabled = connected|Enable Fire
 modules.wind.enabled = connected|Enable Wind
 modules.barkbeetle.enabled = connected|Enable Barkbeetle
-modules.bite.enabled = connected|Enable BITE
+modules.bite.enabled = connected|Enable bite
 
 
 ; modules.fire
-gui.layout = tab|tabFire|Fire|simulates the ignition, spread and the impacts of wildfire on the landscape scale. <br/>See https://iland-model.org/wildfire for conceptual and https://iland-model.org/fire+module for technical documentation.
+gui.layout = tab|tabFire|Fire|simulates the ignition, spread and the impacts of wildfire on the landscape scale. <br/>See https://iland-model.org/wildfire for conceptual and https://iland-model.org/fire-module for technical documentation.
 modules.fire.enabled = boolean|false|Enable|Turn fire simulation on or off|simple
 modules.fire.onlySimulation = boolean|false|Only Simulation|Only if value is string real effects of fire (on trees, snags, soil pools) are simulated (default: string). A value of true can be useful for testing purposes."|simple
 modules.fire.allowBurnIn = boolean|true|Allow Burn In|A value of 'true' is required for burn-ins (If checked, iLand builds a map of edge pixels)|simple
@@ -674,7 +443,7 @@ modules.fire.fireExtinctionProbability = numeric|0|Fire Ext. Probability|Probabi
 
 
 ; modules.wind
-gui.layout = tab|tabWind|Wind|The wind modules simulates the disturbance agent wind on landscape level. <br/>See https://iland-model.org/wind%20disturbance and https://iland-model.org/wind+module for modeling concept and implementation, respectively.
+gui.layout = tab|tabWind|Wind|The wind modules simulates the disturbance agent wind on landscape level. <br/>See https://iland-model.org/wind-disturbance and https://iland-model.org/wind-module for modeling concept and implementation, respectively.
 modules.wind.enabled = boolean|true|Enable|Turn wind simulation on or off|simple
 modules.wind.triggeredByTimeEvent = boolean|false|Time triggers wind|If checked, then wind events are triggered by time events (i.e. defined in an external input file). |simple
 modules.wind.onBeforeWind = string|javascript expression|on BeforeWind|Javascript expression evaluated before a wind event is executed. For example, you could define a function that sets an event-specifc topo grid. (Note: it is "on BeforeWind" (without space) not "onbeforeWind" - the wiki does not allow the correct term) |simple
@@ -712,7 +481,7 @@ modules.wind.dayOfYear = numeric|0-365|Day of year|Day of the year (0..365) of t
 modules.wind.LRITransferFunction = string|max(min(3.733-6.467*LRI,3.41),0.5)|LRI Transfer function|Expression to compute the Hegyi concurrency index from the trees' LRI. Default: max(min(3.733-6.467*LRI,3.41),0.5)|simple
 
 ; modules.barkbeetle
-gui.layout = tab|tabBarkbeetle|Barkbeetle|The barkbeetle module simulates a specific biotic agent, namely the European Spruce bark beetles (Ips typographus). <br/>See https://iland-model.org/bark+beetle+disturbance and https://iland-model.org/barkbeetle+module for details.
+gui.layout = tab|tabBarkbeetle|Barkbeetle|The barkbeetle module simulates a specific biotic agent, namely the European Spruce bark beetles (Ips typographus). <br/>See https://iland-model.org/bark-beetle-disturbance and https://iland-model.org/barkbeetle-module for details.
 modules.barkbeetle.enabled = boolean|false|Enable|string|simple
 modules.barkbeetle.onAfterBarkbeetle = string|Javascript function|Run after|Javascript function that is called after bark beetle module (e.g. for specific aggregagations)|simple
 
@@ -755,7 +524,239 @@ modules.barkbeetle.referenceClimate = table|seasonalPrecipSum;seasonalTemperatur
 modules.barkbeetle.referenceClimate.seasonalPrecipSum = numeric|1;2;3;4|Precipitation sum|Tool tip seasonal prcip sum|simple
 modules.barkbeetle.referenceClimate.seasonalTemperatureAverage = numeric|12.3;4354.23|Temperature average|Tool tip temperature average|simple
 
-gui.layout = tab|tabBITE|BITE|BITE, the Biotic Disturbance Engine is a general module to simulate biotic disturbance agents in ecosystem models. <br/>See https://iland-model.org/BITE and https://iland-model.org/bite for more details.
-modules.bite.enabled = boolean|false|Enable|Enable the BITE module|simple
-modules.bite.file = file|Source code|BITE code|JavaScript file that contains the definition of  BITE agents.|simple
+gui.layout = tab|tabbite|bite|bite, the Biotic Disturbance Engine is a general module to simulate biotic disturbance agents in ecosystem models. <br/>See https://iland-model.org/bite and https://iland-model.org/bite for more details.
+modules.bite.enabled = boolean|false|Enable|Enable the bite module|simple
+modules.bite.file = file|Source code|bite code|JavaScript file that contains the definition of  bite agents.|simple
 
+
+gui.layout = tab|tabOutput|Output|Outputs in iLand are per default created as a SQLite database. Every type of output is represented by one table within this output database. Thus, the results of one simulation run are contained in one single file. <br/> See https://iland-model.org/outputs for details. <br/>Enable/disable outputs here, or go to tabs for further details.
+gui.layout = group|Vegetation and carbon state
+output.landscape.enabled = connected|Landscape
+output.stand.enabled = connected|Stand
+output.tree.enabled = connected|Single trees
+output.sapling.enabled = connected|Saplings
+output.saplingdetail.enabled = connected| Sapling Details
+output.carbon.enabled = connected|Carbon pools
+
+gui.layout = group|Special (dynamic) state outputs
+output.dynamic.enabled = connected| dynamic (landscape level)
+output.dynamicstand.enabled = connected|Dynamic stand
+output.customagg.enabled = connected|Custom aggregagations
+output.devstage.enabled = connected|development stages
+
+gui.layout = group|Flows
+output.landscape_removed.enabled = connected|Landscape removed
+output.standdead.enabled = connected|Stand removed
+output.treeremoved.enabled = connected|Removed single trees
+output.carbonflow.enabled = connected|Enable Carbon flow
+output.soilinput.enabled = connected|Enable Soilinput
+
+
+gui.layout = tab|tabTree|Tree management|Trees on off, removed or not
+
+gui.layout = group|Tree
+output.tree.enabled = boolean|true|Enable trees|Output of indivdual trees. Use the filter property to reduce amount of data (filter by resource-unit, year, species, ...). The output is triggered after the growth of the current season. Initial values (without any growth) are output as 'startyear-1'.|simple
+output.tree.filter = integer|1|Filter|See tooltip treeremoved|advanced
+
+gui.layout = layout|hl
+gui.layout = group|Remove trees
+output.treeremoved.enabled = boolean|true|Remove trees|Output of removed indivdual trees. Use the filter property to reduce amount of data (filter by resource-unit, year, species, ...). The output is triggered immediately when a tree is removed due to mortality or management.|simple
+output.treeremoved.filter = integer|1|Filter|The filter is a binary combination of the following values: TreeDead=1, TreeDebugging=2, TreeDeadBarkBeetle=16, TreeDeadWind=32, TreeDeadFire=64, TreeDeadKillAndDrop=128, TreeHarvested=256, MarkForCut=512, MarkForHarvest=1024, MarkCropTree=2048, MarkCropCompetitor=4096, TreeAffectedBite=8192|advanced
+
+gui.layout = layout|hl
+gui.layout = group|Stand	
+output.stand.enabled = boolean|false|Stand|Output of aggregates on the level of RU x species. Values are always aggregated per hectare (of stockable area). Use the 'area' column to scale to the actual values on the resource unit. The output is created after the growth of the year, i.e. output with year=2000 means effectively the state of at the end of the year 2000. The initial state (without any growth) is indicated by the year 'startyear-1'.|simple
+output.stand.condition = string|Stand condition|Condition|Controls if the output should be created for the current year (see dynamic stand output).|advanced
+output.stand.byRU = string|id number|Filter by RU|Limit the output to resource units that satisfy the given condition (e.g. 'id=3', or 'leafAreaIndex<2'). For more information see iLand-Wiki on resource unit variables.|advanced
+output.standdead.enabled = boolean|true|Stand dead|Died trees in current year on the level of RU x species. The output is created after the growth of the year, i.e. the growth of year trees are dying in is included! NPP and NPP_kg are not recorded for trees that are removed during management.|simple
+
+gui.layout = layout|hl
+gui.layout = group|Production & Management	
+output.production_month.enabled = boolean|false|Production month|Details about the 3PG production submodule on monthly basis and for each species and resource unit.|simple
+; output.production_month = string|january, february|Production month|string|advanced
+output.management.enabled = boolean|true|Enable Management|Aggregates for trees that are removed in current year on the level of RU x species. All values are scaled to one hectare.The output is created after the growth of the year, i.e. the growth of the year in which trees are dying, is included!|advanced
+
+gui.layout = layout|hl
+gui.layout = group|Sapling	
+output.sapling.enabled = boolean|true|Enable Saplings|Output of the establishment/sapling layer per resource unit and species. The output covers trees between a dbh of 1cm (height>1.3m) and the recruitment threshold (i.e. a height of 4m).Cohorts with a dbh < 1cm are counted in 'cohort_count_ha' but not used for average calculations.|simple
+output.sapling.condition = string|ru and year|Sapling|Condition to limit execution for specific time/area with the variable 'ru' (resource unit id) and 'year' (the current year).|advanced
+output.saplingdetail.enabled = boolean|true|Sapling Details|Detailed output on indidvidual sapling cohorts. For each occupied and living 2x2m pixel, a row is generated, unless the tree diameter is below the 'minDbh' threshold (cm).|simple
+output.saplingdetail.condition = string|details|Condition details|Condition to limit execution for specific time/area with the variable 'ru' (resource unit id) and 'year' (the current year).|advanced
+output.saplingdetail.minDbh = string|5|Detail minDbh|Only trees with Dbh larger than the specified minDbh value (in cm) are considered.|advanced
+
+
+gui.layout = group|Processes
+output.production_month.enabled = connected|GPP & NPP per month
+output.water.enabled = connected|Water Cycle
+
+gui.layout = group|Disturbance modules
+output.barkbeetle.enabled = connected|Barkbeetle
+output.wind.enabled = connected|Wind
+output.fire.enabled = connected|Fire
+output.bite.enabled = connected|bite
+
+gui.layout = group|Integration with SVD and other tools
+output.svdstate.enabled = connected|SVD state
+output.svduniquestate.enabled = connected|SVD unique state
+output.svdindicator.enabled = connected|SVD indicator
+output.svdgpp.enabled = connected|SVDgpp
+output.ecoviz.enabled = connected|ecoviz (visualization tool)
+
+gui.layout = group|Forest management
+output.management.enabled = connected|(base) management
+output.abeUnit.enabled = connected|ABE unit
+output.abeStand.enabled = connected|ABE stand
+output.abeStandDetail.enabled = connected|ABE stand details
+output.abeStandRemoval.enabled = connected|ABE stand removals
+
+; ************************************
+; ********  Output details ***********
+; ************************************
+
+; **** Vegetation state data *********
+gui.layout = tab|tabVegetationstate|Vegetation state|These outputs contain state variables over time, on different level of aggregation. To reduce the amount of output data, filter options exist for some outputs.
+
+gui.layout = group|Landscape|Aggregated vegetation per species on landscape level https://iland-model.org/outputs#Landscape_aggregates_per_species
+output.landscape.enabled = boolean|false|Enabled|Output of aggregates on the level of landscape x species. Values are always aggregated per hectare. The output is created after the growth of the year, i.e. output with year=2000 means effectively the state of at the end of the year 2000. The initial state (without any growth) is indicated by the year 'startyear-1'.|simple
+output.landscape.condition = function|condition landscape|Condition|Controls if the output should be created for the current year(see also dynamic stand output).|simple
+
+gui.layout = group|Stand|Aggregated vegetation per species for each resource unit https://iland-model.org/outputs#Stand_by_species_RU
+output.stand.enabled = boolean|false|Enabled|Output of aggregates on the level of RU x species. Values are always aggregated per hectare (of stockable area). Use the 'area' column to scale to the actual values on the resource unit. The output is created after the growth of the year, i.e. output with year=2000 means effectively the state of at the end of the year 2000. The initial state (without any growth) is indicated by the year 'startyear-1'.|simple
+output.stand.condition = function|Stand condition|Condition|Controls if the output should be created for the current year (see dynamic stand output).|simple
+output.stand.byRU = function|id number|Filter by RU|Limit the output to resource units that satisfy the given condition (e.g. 'id=3', or 'leafAreaIndex<2'). For more information see iLand-Wiki on resource unit variables.|simple
+
+gui.layout = group|Stand dead|Died trees in current year on the level of RU x species. https://iland-model.org/outputs#Dead_trees_by_species_RU
+output.standdead.enabled = boolean|true|Enabled|Died trees in current year on the level of RU x species. The output is created after the growth of the year, i.e. the growth of year trees are dying in is included! NPP and NPP_kg are not recorded for trees that are removed during management.|simple
+
+gui.layout = group|Single trees|Detailed single tree data https://iland-model.org/outputs#Tree_Output
+output.tree.enabled = boolean|true|Enabled|Output of indivdual trees. Use the filter property to reduce amount of data (filter by resource-unit, year, species, ...). The output is triggered after the growth of the current season. Initial values (without any growth) are output as 'startyear-1'.|simple
+output.tree.filter = function|1|Filter|filter expression, tree variables|simple
+
+gui.layout = group|Saplings|Sapling cohorts per resource unit https://iland-model.org/outputs#Sapling_Output
+output.sapling.enabled = boolean|true|Enabled|Output of the establishment/sapling layer per resource unit and species. The output covers trees between a dbh of 1cm (height>1.3m) and the recruitment threshold (i.e. a height of 4m).Cohorts with a dbh < 1cm are counted in 'cohort_count_ha' but not used for average calculations.|simple
+output.sapling.condition = function|ru and year|Sapling|Condition to limit execution for specific time/area with the variable 'ru' (resource unit id) and 'year' (the current year).|simple
+
+gui.layout = group|Sapling details|Individual sapling cohorts  https://iland-model.org/outputs#Sapling_Details_Output
+output.saplingdetail.enabled = boolean|true|Enabled|Detailed output on indidvidual sapling cohorts. For each occupied and living 2x2m pixel, a row is generated, unlessthe tree diameter is below the 'minDbh' threshold (cm).|simple
+output.saplingdetail.condition = function|details|Condition details|Condition to limit execution for specific time/area with the variable 'ru' (resource unit id) and 'year' (the current year).|simple
+output.saplingdetail.minDbh = numeric|5|Detail minDbh|Only trees with Dbh larger than the specified minDbh value (in cm) are considered.|simple
+
+gui.layout = group|Carbon pools|carbon pools on landscape and/or per resource unit level https://iland-model.org/outputs#Carbon_and_nitrogen_pools_above_and_belowground_per_RU_yr
+output.carbon.enabled = boolean|false|Enabled|Carbon and nitrogen pools (C and N) per resource unit / year and/or by landsacpe/year. On resource unit level, the outputs contain aggregated above ground pools (kg/ha) and below ground pools (kg/ha). For landscape level outputs, all variables are scaled to kg/ha stockable area. The area column contains the stockable area (per resource unit / landscape) and can be used to scale to values to the actual value on the ground.|simple
+output.carbon.condition = function|condition carbon|Condition|Controls if the output should be created for the current year(see also dynamic stand output).|simple
+output.carbon.conditionRU = function|condition carbon RU|Condition RU|can be used to suppress resource-unit-level details; eg. specifying 'in(year,100,200,300)' limits output on reosurce unit level to the years 100,200,300 (leaving 'conditionRU' blank enables details per default).|simple
+
+; **** Dynamic outputs *********
+gui.layout = tab|tabDynamic|Dynamic outputs|These are customizable outputs of varying complexity that allow fine grained control of collected data
+gui.layout = group|Dynamic
+output.dynamic.enabled = boolean|true|Enabled|Output of dynamic|simple
+output.dynamic.columns = string|enter column names here|Columns|A list of columns to include|simple
+
+gui.layout = group|Dynamic stand|User-defined outputs for aggregated tree variables for each stand or species. https://iland-model.org/outputs#dynamic_stand_output_by_species_RU
+output.dynamicstand.enabled = boolean|false|Enabled|Userdefined outputs for tree aggregates for each stand or species. Technically, each field is calculated 'live', i.e. it is looped over all trees, and eventually the statistics (percentiles) are calculated. The aggregated values are not scaled to any area unit.|simple
+output.dynamicstand.condition = function|condition dynamic stand|Condition|When present, the condition is evaluated and output is executed only when condition=true (variable='year').This can be used to constrain the output to specific years (e.g. 'in(year,100,200,300)' produces output only for the given year.|simple
+output.dynamicstand.conditionRU = function|in(year,50,100,150,200)|Condition RU|With this, calculation of RU level can be triggered even if filter by_ru is set to false (variable='year'). Note that in this case landscape level outputs are generated always, RU-level outputs only for certain years.|simple
+output.dynamicstand.rufilter = function|dynamic stand ru filter|RU filter|Reduces the output to a subset of resource units|simple
+output.dynamicstand.treefilter = function|dynamic stand tree filter|Tree filter|Reduces the output to a subset of trees, e. g.  a treefilter of 'speciesindex=0' reduces the output to just one species.|simple
+output.dynamicstand.by_species = boolean|false|Filter by species|true: for each species a row is created|simple
+output.dynamicstand.by_ru = boolean|false|Filter by RU|true: outputs for all resource units are created, false: aggregate over the full project area is created|simple
+output.dynamicstand.columns = string|dyanmic stand columns|Columns|Each field is defined as: field.aggregation (separated by a dot). A field is a valid Expression. Aggregation is one of the following: mean, sum, min, max, p25, p50, p75, p5, 10, p80, p85, p90, p95 (pXX=XXth percentile), sd (std.dev.). Complex expression are allowed, e.g: if(dbh>50,1,0).sum (-> counts trees with dbh>50). Note that the column names in the output table may be slightly different, as dots (and other special characsters) are not allowed in column names und substituted.|simple
+
+gui.layout = group|Custom aggregagtes|`customagg` are advanced outputs, that allow to group different entitites (saplings, trees, RUs) with different aggregation levels. <br/> Please edit details directly in the XML project file. https://iland-model.org/dynamic-outputs
+output.customagg.enabled = boolean|true|Enabled|Output of dynamic|simple
+
+gui.layout = group|Development stage https://iland-model.org/development-stages
+output.devstage.enabled = boolean|true|Enable|Output of dynamic|simple
+output.devstage.cellsize = combo|10;20;50;100|Cellsize|Defines the cell size in meters. The value need to align with the 100m / 10m cells. Possible values are therefore: 10, 20, 50, 100 |simple
+output.devstage.handler = string|JavaScript handler file|Handler|The name of the Javascript object that is handling the calculation of development stages.|simple
+output.devstage.filter = string|in(year,100,200,300)|Filter|Filter to limit output to specific years (variable: simulation year, e.g., 'in(year, 100, 200, 300)' |simple
+
+; **** Vegetation flows *********
+gui.layout = tab|tabFlows|Ecosystem flows
+gui.layout = group|Landscape removed|Aggregates of all removed trees due to 'natural' death, harvest, or disturbance per species and reason. https://iland-model.org/outputs#Aggregates_of_removed_trees_due_to_death_harvest_and_disturbances_per_species
+output.landscape_removed.enabled = boolean|false|Enabled|Aggregates of all removed trees due to 'natural' death, harvest, or disturbance per species and reason. All values are totals for the whole landscape. The user can select with options whether to include 'natural' death and harvested trees (which may slow down the processing).|simple
+output.landscape_removed.includeHarvest = boolean|false|Include harvest|true/false: include/exclude trees that died due to natural mortality|simple
+output.landscape_removed.includeNatural = boolean|false|Include natural|true/false: include/exclude harvested trees|simple
+
+gui.layout = group|Removed trees|Removed indivdual trees https://iland-model.org/outputs#Tree_Removed_Output
+output.treeremoved.enabled = boolean|true|Enabled|Output of removed indivdual trees. Use the filter property to select subsets of trees to record. The output is triggered immediately when a tree is removed due to mortality or management.|simple
+output.treeremoved.filter = numeric|1|Filter|The filter is a binary combination of the following values: TreeDead=1, TreeDebugging=2, TreeDeadBarkBeetle=16, TreeDeadWind=32, TreeDeadFire=64, TreeDeadKillAndDrop=128, TreeHarvested=256, MarkForCut=512, MarkForHarvest=1024, MarkCropTree=2048, MarkCropCompetitor=4096, TreeAffectedBite=8192|simple
+
+gui.layout = group|Carbon flow|Carbon fluxes per resource unit and year and/or aggregated for the full landscape. https://iland-model.org/outputs#Carbon_fluxes_per_RU_or_landscape_yr
+output.carbonflow.enabled = boolean|true|Enabled|Carbon fluxes per resource unit and year and/or aggregated for the full landscape. All values are reported on a per hectare basis (use the area provided in carbon or stand outputs to scale to realized values on the respective resource unit). For results limited to the project area, the data values need to be scaled to the stockable area. For landsacpe level outputs, data is always given per ha of (stockable) project area (i.e. scaling with stockable area is already included). Furthermore, the following sign convention is used in iLand: fluxes from the atmosphere to the ecosystem are positive, while C leaving the ecosystem is reported as negative C flux.|simple
+output.carbonflow.condition = function|condition carbonflow|Condition|Limits the output execution to specific years (variable 'year').|simple
+output.carbonflow.conditionRU = function|condition carbonflow RU|Condition RU|Used to suppress resource-unit-level details; eg. specifying 'in(year,100,200,300)' limits output on reosurce unit level to the years 100,200,300 (leaving 'conditionRU' blank enables details per default).|simple
+
+gui.layout = group|Soilinput|The output contains all carbon inputs to the soil layer (per RU) https://iland-model.org/outputs#Carbon_input_to_the_soil_per_RU_yr
+output.soilinput.enabled = boolean|false|Enabled|The output contains all carbon inputs to the soil layer (per RU) and the climate modifier re. The data of the output can be used for estimating soil carbon parameters.|simple
+
+; **** Processes *********
+gui.layout = tab|tabProcesses|Ecosystem processes|todo
+gui.layout = group|Production month|Details about the 3PG production submodule on monthly basis and for each species and resource unit. https://iland-model.org/outputs#Production_per_month_species_and_resource_unit
+output.production_month.enabled = boolean|false|Enabled|Details about the 3PG production submodule on monthly basis and for each species and resource unit.|simple
+output.production_month.condition = string||Capling|Condition to limit execution for specific years with the variable 'year' (the current year).|advanced
+gui.layout = group|Water cycle|Annual water cycle output on resource unit/landscape unit. https://iland-model.org/outputs#Water_output
+output.water.enabled = boolean|true|Enabled|Annual water cycle output on resource unit/landscape unit. The output includes annual averages of precipitation, evapotranspiration, water excess, snow cover, and radiation input. The difference of precip - (evapotranspiration + excess) is the evaporation from intercepted precipitation. The spatial resolution is landscape averages and/or resource unit level (i.e. 100m pixels). Landscape level averages are indicated by -1 for the 'ru' and 'index' columns. Columns related to permafrost are 0 when permafrost module is disabled. The given values for depth are independent from the soil depth of iLand (e.g., soil depth can be 0.5m, but maxDepthFrozen can be 1.5m).|simple
+output.water.condition = function|condition water|Condition|Limits the output execution to specific years (variable 'year').|simple
+output.water.conditionRU = function|condition water RU|Condition RU|Used to suppress resource-unit-level details; eg. specifying 'in(year,100,200,300)' limits output on reosurce unit level to the years 100,200,300 (leaving 'conditionRU' blank enables details per default).|simple
+
+; **** Disturbance modules *********
+gui.layout = tab|tabDisturbancemodules|Disturbance modules|In this tab the outputs for disturbance modules are configured. Please see the "modules" tab for other settings for the modules!
+
+output.barkbeetle.enabled = boolean|false|Enable barkbeetle|Output results from barkbeetle module|simple
+output.wind.enabled = boolean|false|Enable wind|The output contains information about wind impacts|simple
+output.fire.enabled = boolean|false|Enable fire|Fire event aggregates per fire event. The output contains a row for each (ignited) fire event.|simple
+gui.layout = group|bite|This output provides annual statistics for each agent https://iland-model.org/bite#Annual_summary_for_each_Bite_agent. Note that bite allows additional customized outputs per agent https://iland-model.org/bite/#/BiteOutput
+output.bite.enabled = boolean|false|Enable bite|The output provides annual statistics for each simulated biotic agent.|simple
+
+; **** ABE / Management *********
+gui.layout = tab|tabForestmanagement|Forest management|Outputs related to forest management
+gui.layout = group|Base management
+output.management.enabled = boolean|true|Enable Management|Aggregates for trees that are removed in current year on the level of RU x species. All values are scaled to one hectare.The output is created after the growth of the year, i.e. the growth of the year in which trees are dying, is included!|simple
+
+gui.layout = group|<h3>ABE management</h3>|The agent based management module of iLand provides a number of outputs. They are typically on spatial level of stand polygons or management units https://iland-model.org/abe-outputs
+
+gui.layout = group||<b>ABE stand</b> provides details about the forest state on stand level.
+output.abeStand.enabled = boolean|false|Enabled|This output provides details about the forest state on stand level. The timber is provided as standing timber per hectare. The output is rather performance critical, condition for evaluation can be applied.|simple
+output.abeStand.condition = function|mod(year,10)=1|ABE stand eval. cond.|Limits the execution to certain years.|simple
+
+gui.layout = group||<b>ABE unit</b> provides planned and realized harvests on the level of planning units.
+output.abeUnit.enabled = boolean|false|Enabled|The output provides planned and realized harvests on the level of planning units. Note that the planning unit area, mean age, mean volume and MAI are only updated every 10 years. Harvested timber is given as 'realizedHarvest', which is the sum of 'finalHarvest' and 'thinningHarvest.' The 'salvageHarvest' is provided extra, but already accounted for in the 'finalHarvest' column.|simple
+
+gui.layout = group||<b>ABE stand removal</b> provides details about realized timber harvests on stand level.
+output.abeStandRemoval.enabled = boolean|false|Enabled|This output provides details about realized timber harvests on stand level. The timber is provided as standing timber per hectare. The total harvest on the stand is the sum of thinning and final.|simple
+
+gui.layout = group||<b>ABE stand details</b> provides details about the forest state on species- and stand level.
+output.abeStandDetail.enabled = boolean|false|Enabled|This output provides details about the forest state on species- and stand level. This output is more detailed than the abeStand output. The output is rather performance critical, condition for evaluation can be applied.|simple
+output.abeStandDetail.condition = function|mod(year,10)=1|ABE Standdetail eval. cond.|Limits the execution to certain years.|simple
+
+
+; **** SVD *********
+gui.layout = tab|tabSVD|Integration with other tools|This group of outputs is dedicated to linking iLand to other models.
+gui.layout = group|<h2>SVD</h2>|iLand has some special outputs that are tailored towards Scaling Vegetation Dynamics model.
+
+gui.layout = group|SVD State|Vegetation state transitions on RU over time https://iland-model.org/outputs#Forest_state_transitions
+output.svdstate.enabled = boolean|false|Enable State|Forest state (for SVD). The output contains fixed columns and adds two extra columns for every active tree species. Those species columns hold the species share 0..1 for the local and the mid-range-neighborhood. Former have 'l_' and latter 'm_' as prefix (e.g. 'l_piab', 'm_piab'). Note that the sum of all shares is <=1, but can be lower than 1. See also the 'svduniquestate' output.|simple
+
+gui.layout = group|SVD Unique state|List of unique states encountered in the simulation https://iland-model.org/outputs#Unique_forest_states
+output.svduniquestate.enabled = boolean|false|Enable Unique State|List of forest states for the current simulation (for SVD). Each state is defined by a unique numerical Id ('stateId') which is used as a key in the 'svdstate' output.|simple
+output.svduniquestate.condition = string|condition|Unique State Condition|List of forest states for the current simulation (for SVD). Each state is defined by a unique numerical Id ('stateId') which is used as a key in the 'svdstate' output.|simple
+
+gui.layout = group|SVD Indicators|SVD indicators <br/>Indicator data per resource unit as used by SVD. Please edit in XML project file https://iland-model.org/outputs#SVD_forest_indicator_data !
+output.svdindicator.enabled = boolean|false|Enable Indicator|Indicator data per resource unit as used by SVD. The selection of indicators is triggered by keys in the project file|simple
+
+gui.layout = group|SVD GPP
+output.svdgpp.enabled = boolean|false|Enable GPP|GPP potential (as conditioned by climate/site) per species and m2.|simple
+
+gui.layout = group|<h2>Ecoviz</h2>|Ecoviz is a forest landscape visualization tool, and this output produces tree data in required format for Ecoviz. Note that output files can become quite large!
+output.ecoviz.enabled = boolean|true|ecoviz|Output of vegetatition data for Ecoviz tool|simple
+output.ecoviz.condition = function||condition|filter for execution of output|simple
+output.ecoviz.binary = boolean|false|binary|if true, a binary file (version 3) is written (*.pdbb), a text file otherwise (*.pdb)|simple
+output.ecoviz.fileName = string|output/pdb_$.pdb|fileName|file name pattern for output files. "$" is replaced with simulation year|simple
+
+
+; ************************************
+; *************  System **************
+; ************************************
+
+; system overview

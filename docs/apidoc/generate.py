@@ -679,7 +679,13 @@ def generate_settings_doc():
             "world": "World & Spatial Setup",
             "site": "Site & Soil Properties",
             "climate": "Climate Configurations",
-            "settings": "Model Submodule Settings",
+            "settings": "Model Settings",
+            "settings.seedDispersal": "Seed Dispersal",
+            "settings.soil": "Soil Settings",
+            "settings.grass": "Grass Cover Settings",
+            "settings.browsing": "Browsing Settings",
+            "settings.permafrost": "Permafrost Settings",
+            "settings.svdStates": "SVD States Settings",
             "species": "Species Parameters",
             "initialization": "Initialization Options",
             "management": "Forest Management & ABE",
@@ -687,23 +693,68 @@ def generate_settings_doc():
         }
     }
 
-    class TreeNode:
-        def __init__(self, name):
-            self.name = name
-            self.children = {}
-            self.setting = None
+    def map_url(url):
+        match = re.match(r'https?://(?:www\.)?iland-model\.org/([^?\s#]+)(?:\?([^#\s]*))?(?:#([^\s]*))?', url)
+        if not match:
+            return url
+        
+        page = match.group(1)
+        query = match.group(2)
+        fragment = match.group(3)
+        
+        page_clean = page.replace('+', '-').replace('%20', '-').lower()
+        
+        wiki_dir = os.path.join(SCRIPT_DIR, "../wiki")
+        qmd_path = os.path.join(wiki_dir, f"{page_clean}.qmd")
+        
+        if os.path.exists(qmd_path):
+            rel_target = f"{page_clean}.qmd"
+            if fragment:
+                fragment_clean = fragment.replace('+', '-').replace('%20', '-')
+                rel_target += f"#{fragment_clean}"
+            
+            link_text = page_clean.replace('-', ' ').title()
+            return f"[{link_text}]({rel_target})"
+        else:
+            if page_clean.startswith('bite/'):
+                bite_page = page_clean[5:]
+                if not bite_page or bite_page == 'index':
+                    rel_target = "../bite/index.qmd"
+                else:
+                    rel_target = f"../bite/{bite_page}.qmd"
+                link_text = bite_page.replace('-', ' ').title() if bite_page else "Bite"
+                return f"[{link_text}]({rel_target})"
+                
+            reconstructed = f"https://iland-model.org/{page_clean}"
+            if query:
+                reconstructed += f"?{query}"
+            if fragment:
+                reconstructed += f"#{fragment}"
+            return f"[{reconstructed}]({reconstructed})"
 
     def clean_text(text):
-        # Format URLs as Markdown links
-        text = re.sub(r'https?://[^\s\)]+', lambda m: f"[{m.group(0)}]({m.group(0)})", text)
-        # Strip HTML tags
+        # Strip HTML tags first
         text = re.sub(r'<[^>]+>', ' ', text)
+        
+        # Format and translate URLs
+        def replace_url(match):
+            url = match.group(0)
+            if "iland-model.org/" in url:
+                return map_url(url)
+            else:
+                return f"[{url}]({url})"
+        
+        text = re.sub(r'https?://[^\s\)\|]+', replace_url, text)
         # Compress multiple spaces
         text = re.sub(r'\s+', ' ', text).strip()
         return text
 
-    # We will build a tree for each root category
-    roots = {}
+    # We will build submodules and track order
+    roots = {}  # maps r_name -> list of c2_names in insertion order
+    submodules = {}  # maps (r_name, c2_name) -> list of settings
+    submodule_descs = {} # maps (r_name, c2_name) -> general description string
+
+    current_layout_desc = ""
 
     for line in lines:
         line_strip = line.strip()
@@ -711,6 +762,22 @@ def generate_settings_doc():
             continue
 
         if line_strip.startswith("gui.layout"):
+            parts = line_strip.split('=', 1)
+            layout_val = parts[1].strip()
+            layout_parts = [l.strip() for l in layout_val.split('|')]
+            if len(layout_parts) > 0:
+                layout_type = layout_parts[0]
+                if layout_type in ["tab", "group"]:
+                    desc_candidate = ""
+                    if layout_type == "tab" and len(layout_parts) > 3:
+                        desc_candidate = layout_parts[3]
+                    elif layout_type == "group" and len(layout_parts) > 2:
+                        desc_candidate = layout_parts[2]
+                    elif layout_type == "group" and len(layout_parts) > 1 and not layout_parts[1]:
+                        desc_candidate = layout_parts[2] if len(layout_parts) > 2 else ""
+                    
+                    if desc_candidate:
+                        current_layout_desc = desc_candidate
             continue
 
         if '=' in line_strip:
@@ -721,131 +788,128 @@ def generate_settings_doc():
 
             type_val = value_parts[0] if len(value_parts) > 0 else ""
             
+            # Skip connected keys (UI connections only, duplicates of real keys)
             if type_val == "connected":
-                default_val = ""
-                label_val = value_parts[1] if len(value_parts) > 1 else ""
-                tooltip_val = "Toggle switch in iLand user interface."
-                filter_val = "simple"
-            else:
-                default_val = value_parts[1] if len(value_parts) > 1 else ""
-                label_val = value_parts[2] if len(value_parts) > 2 else ""
-                tooltip_val = value_parts[3] if len(value_parts) > 3 else ""
-                filter_val = value_parts[4] if len(value_parts) > 4 else "simple"
+                continue
+
+            default_val = value_parts[1] if len(value_parts) > 1 else ""
+            label_val = value_parts[2] if len(value_parts) > 2 else ""
+            tooltip_val = value_parts[3] if len(value_parts) > 3 else ""
+            filter_val = value_parts[4] if len(value_parts) > 4 else "simple"
 
             key_parts = key.split('.')
-            if not key_parts:
+            if len(key_parts) < 3:
                 continue
             
-            root_name = key_parts[0]
-            if root_name not in roots:
-                roots[root_name] = TreeNode(root_name)
+            r_name = key_parts[0]
+            if r_name == 'model' and key_parts[1] == 'settings' and key_parts[2] in ['seedDispersal', 'soil', 'grass', 'browsing', 'permafrost', 'svdStates']:
+                c2_name = f"settings.{key_parts[2]}"
+                rel_key = ".".join(key_parts[3:])
+            else:
+                c2_name = key_parts[1]
+                rel_key = ".".join(key_parts[2:])
 
-            # Traverse/build tree
-            current = roots[root_name]
-            for part in key_parts[1:]:
-                if part not in current.children:
-                    current.children[part] = TreeNode(part)
-                current = current.children[part]
+            if r_name not in roots:
+                roots[r_name] = []
+            if c2_name not in roots[r_name]:
+                roots[r_name].append(c2_name)
 
-            current.setting = {
-                'key': key,
+            sub_key = (r_name, c2_name)
+            
+            # Associate current layout description with the first key's submodule it applies to
+            if current_layout_desc:
+                if sub_key not in submodule_descs:
+                    submodule_descs[sub_key] = clean_text(current_layout_desc)
+                current_layout_desc = ""
+
+            if sub_key not in submodules:
+                submodules[sub_key] = []
+
+            submodules[sub_key].append({
+                'rel_key': rel_key,
                 'type': type_val,
                 'default': default_val,
                 'label': label_val,
                 'tooltip': tooltip_val,
                 'filter': filter_val
-            }
-
-    def format_setting_details(s):
-        t = s['type']
-        d = s['default']
-        l = s['label']
-        
-        # Format type description
-        if t == "file":
-            t_desc = "file selection"
-        elif t == "directory":
-            t_desc = "directory selection"
-        elif t == "boolean":
-            t_desc = "boolean (true/false)"
-        elif t == "connected":
-            t_desc = "checkbox / toggle"
-        elif t == "combo":
-            options = d.split(';')
-            t_desc = f"combo dropdown [options: {', '.join(options)}]"
-            d = options[0] if options else ""
-        else:
-            t_desc = t
-
-        meta = []
-        meta.append(f"Type: *{t_desc}*")
-        if d:
-            meta.append(f"Default: `{d}`")
-        if l:
-            meta.append(f"Label: \"{l}\"")
-        if s['filter'] and s['filter'] != "simple":
-            meta.append(f"View: *{s['filter']}*")
-
-        tooltip = clean_text(s['tooltip'])
-        
-        details_str = ", ".join(meta)
-        return f"({details_str}) — {tooltip}"
-
-    def render_tree(node, depth, current_path_parts):
-        qmd_lines = []
-        indent = "  " * depth
-
-        if node.setting:
-            details = format_setting_details(node.setting)
-            qmd_lines.append(f"{indent}- **`{node.name}`** {details}")
-            
-        if node.children:
-            if not node.setting:
-                qmd_lines.append(f"{indent}- **`{node.name}`**")
-            
-            for child_name in sorted(node.children.keys()):
-                child_node = node.children[child_name]
-                qmd_lines.extend(render_tree(child_node, depth + 1, current_path_parts + [child_name]))
-
-        return qmd_lines
+            })
 
     qmd = []
     qmd.append("---")
     qmd.append("title: \"Project File Settings Reference\"")
     qmd.append("---")
     qmd.append("\n::: {.callout-note}")
-    qmd.append("This settings reference is dynamically compiled from the core iLand engine metadata. It displays settings in their exact XML hierarchical tree structure.")
+    qmd.append("This settings reference is dynamically compiled from the core iLand engine metadata. It displays settings in tabular format organized by submodules.")
     qmd.append(":::\n")
     qmd.append("## Overview\n")
     qmd.append("Project settings are organized by their XML element path hierarchy. The first level represents the root tag (e.g. `system`, `model`), the second level represents the main submodule, and deeper levels represent nested configurations. Settings attributes are formatted with their types, default values, and description tooltips.\n")
 
-    for r_name in sorted(roots.keys()):
+    for r_name in roots.keys():
         r_title = c1_titles.get(r_name, r_name.title())
         qmd.append(f"\n# {r_title} (`{r_name}`)\n")
         
-        root_node = roots[r_name]
-        
-        for c2_name in sorted(root_node.children.keys()):
-            c2_node = root_node.children[c2_name]
+        for c2_name in roots[r_name]:
             c2_title = c2_titles.get(r_name, {}).get(c2_name, c2_name.title())
             qmd.append(f"\n## {c2_title} (`{r_name}.{c2_name}`)\n")
             
-            list_lines = []
-            for child_name in sorted(c2_node.children.keys()):
-                child_node = c2_node.children[child_name]
-                list_lines.extend(render_tree(child_node, 0, [r_name, c2_name, child_name]))
-                
-            if list_lines:
-                qmd.extend(list_lines)
-                qmd.append("")
+            sub_key = (r_name, c2_name)
+            if sub_key in submodule_descs and submodule_descs[sub_key]:
+                qmd.append(f"{submodule_descs[sub_key]}\n")
             
-            if c2_node.setting:
-                qmd.append(f"\n- **`{r_name}.{c2_name}`** {format_setting_details(c2_node.setting)}\n")
+            # Start table
+            qmd.append("| **XML Key** | **Type** | **Default Value** | **Description** |")
+            qmd.append("| :--- | :--- | :--- | :--- |")
+            
+            for s in submodules[sub_key]:
+                rel_key = s['rel_key']
+                t = s['type']
+                d = s['default']
+                l = s['label']
+                
+                # Format type
+                if t == "file":
+                    t_desc = "file selection"
+                elif t == "directory":
+                    t_desc = "directory selection"
+                elif t == "boolean":
+                    t_desc = "boolean"
+                elif t == "connected":
+                    t_desc = "checkbox / toggle"
+                elif t == "combo":
+                    options = d.split(';')
+                    t_desc = f"combo dropdown [options: {', '.join(options)}]"
+                    d = options[0] if options else ""
+                else:
+                    t_desc = t
+                
+                # Clean description
+                desc = clean_text(s['tooltip'])
+                
+                # Escape pipes
+                rel_key_esc = rel_key.replace('|', '\\|')
+                t_desc_esc = t_desc.replace('|', '\\|')
+                d_esc = d.replace('|', '\\|')
+                l_esc = l.strip().replace('|', '\\|')
+                desc_esc = desc.strip().replace('|', '\\|')
+                
+                # Merge Label and Description
+                if l_esc and desc_esc:
+                    desc_combined = f"**{l_esc}**: {desc_esc}"
+                elif l_esc:
+                    desc_combined = f"**{l_esc}**"
+                else:
+                    desc_combined = desc_esc
+                
+                # Format default value with code block if not empty
+                d_formatted = f"`{d_esc}`" if d_esc else ""
+                
+                qmd.append(f"| `{rel_key_esc}` | {t_desc_esc} | {d_formatted} | {desc_combined} |")
+            qmd.append("")
 
     with open(output_qmd_path, 'w', encoding='utf-8') as f:
         f.write("\n".join(qmd))
         
-    print(f"Generated clean hierarchical reference page at {output_qmd_path}")
+    print(f"Generated clean tabular reference page at {output_qmd_path}")
 
 
 if __name__ == "__main__":
