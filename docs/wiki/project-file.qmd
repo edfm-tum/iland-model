@@ -206,6 +206,11 @@ Below is a section of an active XML project file showing the structure of comple
   * `dayLengthMin` / `dayLengthMax`: Photoperiod thresholds (hours) defining the linear ramp range for day length.
   * `tempMin` / `tempMax`: Temperature limits (°C) defining the linear ramp range for minimum daily temperature stress.
 
+* **Sprouting** (`<sprouting>`): Configures adult vegetative reproduction.
+  * `adultSproutProbability`: The annual probability that an adjacent 2x2m pixel is colonized by vegetative sprouts of an adult tree (>4m). It can be configured in two formats:
+    * **Global value**: A single decimal value (e.g., `<adultSproutProbability>0.1</adultSproutProbability>`) that applies globally to all species.
+    * **Species-specific list**: A space- or comma-separated list of pairs with species short name and its specific probability (e.g., `<adultSproutProbability>Fasy 0.05 Quro 0.2</adultSproutProbability>`).
+
 ---
 
 ### Initialization (`model.initialization`)

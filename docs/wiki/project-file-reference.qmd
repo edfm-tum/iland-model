@@ -343,7 +343,7 @@ This section identifies the source of the species parameters and configures clim
 | `lightResponse.shadeTolerant` | function | `1-exp(-6*(lri-0.05))` | **Light Response Shade Tolerant**: Mathematical formula defining the light response of shade tolerant species (class 1) as a function of Light Resource Index (LRI). |
 | `lightResponse.shadeIntolerant` | function | `1-exp(-3*(lri-0.01))` | **Light Response Shade Intolerant**: Mathematical formula defining the light response of shade intolerant species (class 5) as a function of Light Resource Index (LRI). |
 | `lightResponse.LRImodifier` | function | `exp(ln(lri)/0.5*(1-0.5*relH))` | **LRI Modifier**: Formula describing LRI modification as a function of LRI and relative tree height (relH). |
-| `sprouting.adultSproutProbability` | numeric | `0` | **Adult Sprout Probability**: Annual probability that one adjacent 2x2m pixel is colonized by lateral sprouts of adult trees (>4m). |
+| `sprouting.adultSproutProbability` | string | `0` | **Adult Sprout Probability**: Annual probability that one adjacent 2x2m pixel is colonized by lateral sprouts of adult trees (>4m). This can be a single global value (e.g. '0.1') or a space-separated list of species short names and values (e.g. 'Fasy 0.05 Quro 0.2'). |
 
 
 ## Forest Management & ABE (`model.management`)
