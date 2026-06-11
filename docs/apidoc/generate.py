@@ -647,7 +647,210 @@ def generate_bite_docs():
             
         print(f"Generated BITE page: {out_name}")
 
+
+def generate_settings_doc():
+    metadata_path = os.path.join(SCRIPT_DIR, "../../src/iland/res/project_file_metadata.txt")
+    output_qmd_path = os.path.join(SCRIPT_DIR, "../wiki/project-file-reference.qmd")
+
+    if not os.path.exists(metadata_path):
+        print(f"Error: metadata file not found at {metadata_path}")
+        return
+
+    with open(metadata_path, 'r', encoding='utf-8') as f:
+        lines = f.readlines()
+
+    c1_titles = {
+        "system": "System Settings",
+        "model": "Model Settings",
+        "output": "Output Settings",
+        "modules": "Module Settings",
+        "user": "User Settings"
+    }
+
+    c2_titles = {
+        "system": {
+            "path": "File Paths",
+            "database": "Databases",
+            "settings": "System Settings",
+            "logging": "Logging",
+            "javascript": "Javascript Options"
+        },
+        "model": {
+            "world": "World & Spatial Setup",
+            "site": "Site & Soil Properties",
+            "climate": "Climate Configurations",
+            "settings": "Model Submodule Settings",
+            "species": "Species Parameters",
+            "initialization": "Initialization Options",
+            "management": "Forest Management & ABE",
+            "parameter": "Advanced Parameters"
+        }
+    }
+
+    class TreeNode:
+        def __init__(self, name):
+            self.name = name
+            self.children = {}
+            self.setting = None
+
+    def clean_text(text):
+        # Format URLs as Markdown links
+        text = re.sub(r'https?://[^\s\)]+', lambda m: f"[{m.group(0)}]({m.group(0)})", text)
+        # Strip HTML tags
+        text = re.sub(r'<[^>]+>', ' ', text)
+        # Compress multiple spaces
+        text = re.sub(r'\s+', ' ', text).strip()
+        return text
+
+    # We will build a tree for each root category
+    roots = {}
+
+    for line in lines:
+        line_strip = line.strip()
+        if not line_strip or line_strip.startswith(';'):
+            continue
+
+        if line_strip.startswith("gui.layout"):
+            continue
+
+        if '=' in line_strip:
+            parts = line_strip.split('=', 1)
+            key = parts[0].strip()
+            value_str = parts[1].strip()
+            value_parts = [v.strip() for v in value_str.split('|')]
+
+            type_val = value_parts[0] if len(value_parts) > 0 else ""
+            
+            if type_val == "connected":
+                default_val = ""
+                label_val = value_parts[1] if len(value_parts) > 1 else ""
+                tooltip_val = "Toggle switch in iLand user interface."
+                filter_val = "simple"
+            else:
+                default_val = value_parts[1] if len(value_parts) > 1 else ""
+                label_val = value_parts[2] if len(value_parts) > 2 else ""
+                tooltip_val = value_parts[3] if len(value_parts) > 3 else ""
+                filter_val = value_parts[4] if len(value_parts) > 4 else "simple"
+
+            key_parts = key.split('.')
+            if not key_parts:
+                continue
+            
+            root_name = key_parts[0]
+            if root_name not in roots:
+                roots[root_name] = TreeNode(root_name)
+
+            # Traverse/build tree
+            current = roots[root_name]
+            for part in key_parts[1:]:
+                if part not in current.children:
+                    current.children[part] = TreeNode(part)
+                current = current.children[part]
+
+            current.setting = {
+                'key': key,
+                'type': type_val,
+                'default': default_val,
+                'label': label_val,
+                'tooltip': tooltip_val,
+                'filter': filter_val
+            }
+
+    def format_setting_details(s):
+        t = s['type']
+        d = s['default']
+        l = s['label']
+        
+        # Format type description
+        if t == "file":
+            t_desc = "file selection"
+        elif t == "directory":
+            t_desc = "directory selection"
+        elif t == "boolean":
+            t_desc = "boolean (true/false)"
+        elif t == "connected":
+            t_desc = "checkbox / toggle"
+        elif t == "combo":
+            options = d.split(';')
+            t_desc = f"combo dropdown [options: {', '.join(options)}]"
+            d = options[0] if options else ""
+        else:
+            t_desc = t
+
+        meta = []
+        meta.append(f"Type: *{t_desc}*")
+        if d:
+            meta.append(f"Default: `{d}`")
+        if l:
+            meta.append(f"Label: \"{l}\"")
+        if s['filter'] and s['filter'] != "simple":
+            meta.append(f"View: *{s['filter']}*")
+
+        tooltip = clean_text(s['tooltip'])
+        
+        details_str = ", ".join(meta)
+        return f"({details_str}) — {tooltip}"
+
+    def render_tree(node, depth, current_path_parts):
+        qmd_lines = []
+        indent = "  " * depth
+
+        if node.setting:
+            details = format_setting_details(node.setting)
+            qmd_lines.append(f"{indent}- **`{node.name}`** {details}")
+            
+        if node.children:
+            if not node.setting:
+                qmd_lines.append(f"{indent}- **`{node.name}`**")
+            
+            for child_name in sorted(node.children.keys()):
+                child_node = node.children[child_name]
+                qmd_lines.extend(render_tree(child_node, depth + 1, current_path_parts + [child_name]))
+
+        return qmd_lines
+
+    qmd = []
+    qmd.append("---")
+    qmd.append("title: \"Project File Settings Reference\"")
+    qmd.append("---")
+    qmd.append("\n::: {.callout-note}")
+    qmd.append("This settings reference is dynamically compiled from the core iLand engine metadata. It displays settings in their exact XML hierarchical tree structure.")
+    qmd.append(":::\n")
+    qmd.append("## Overview\n")
+    qmd.append("Project settings are organized by their XML element path hierarchy. The first level represents the root tag (e.g. `system`, `model`), the second level represents the main submodule, and deeper levels represent nested configurations. Settings attributes are formatted with their types, default values, and description tooltips.\n")
+
+    for r_name in sorted(roots.keys()):
+        r_title = c1_titles.get(r_name, r_name.title())
+        qmd.append(f"\n# {r_title} (`{r_name}`)\n")
+        
+        root_node = roots[r_name]
+        
+        for c2_name in sorted(root_node.children.keys()):
+            c2_node = root_node.children[c2_name]
+            c2_title = c2_titles.get(r_name, {}).get(c2_name, c2_name.title())
+            qmd.append(f"\n## {c2_title} (`{r_name}.{c2_name}`)\n")
+            
+            list_lines = []
+            for child_name in sorted(c2_node.children.keys()):
+                child_node = c2_node.children[child_name]
+                list_lines.extend(render_tree(child_node, 0, [r_name, c2_name, child_name]))
+                
+            if list_lines:
+                qmd.extend(list_lines)
+                qmd.append("")
+            
+            if c2_node.setting:
+                qmd.append(f"\n- **`{r_name}.{c2_name}`** {format_setting_details(c2_node.setting)}\n")
+
+    with open(output_qmd_path, 'w', encoding='utf-8') as f:
+        f.write("\n".join(qmd))
+        
+    print(f"Generated clean hierarchical reference page at {output_qmd_path}")
+
+
 if __name__ == "__main__":
     generate_docs()
     generate_bite_docs()
+    generate_settings_doc()
+
 

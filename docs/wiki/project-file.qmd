@@ -7,16 +7,32 @@ title: "project file"
 ## The project file
 
 
-The project file is the main spot to control iLand. The file contains settings that define which *world* to create (i.e. the spatial configuration, climate data, etc), but also how iLand should operate - this includes switches defining the behaviour of the model, but also which kind of output data should be created (and where it should be stored).
-For the project file we choose a XML based structure which gives great flexibility and adaptability. For the time being, no GUI is provided to make these settings - but this may change in future.
+The project file is the main spot to control iLand. The file contains settings that define which *world* to create (i.e. the spatial configuration, climate data, etc), but also how iLand should operate - this includes switches defining the behaviour of the model, but also which kind of output data should be created (and where it should be stored).For the project file we choose a XML based structure which gives great flexibility and adaptability. 
+
+There are two primary ways of editing the project file: one is to use the user 
+interface ("Edit Settings") which provides a graphical interface for *most* 
+settings. The dialog is structured the same way as the hierarchical XML (see below).
+The second approach is to directly edit the XML file with an editor. There are
+some tools that help with the syntax, e.g. Notepad++, or VS Code. 
+
+You can add comments / notes to the project file, which allows you commenting on
+the reasons for a change, different alternative values, literature sources, etc.
+Comments are stored as XML-comments (`<-- comment -->`-blocks) directly *above* 
+a specific setting. The user interface allows you to edit comments as well (see
+the little pen symbol, which is dark if comments are available).
+
+In addition, the project file includes space for a free-text description, where
+you can describe briefly the project itself. The description is stored in the
+project file, as a (series of) comments at the very top (below the `<xml version='1.0' encoding='utf-8'>` header line). You can use HTML for formatting.
 
 
+The [project settings reference](project-file-reference.qmd) provides a complete list of settings.
 
 
 ### Example files
 
 
-Example files are provided here: [Example for a project file]
+An example file is provided with the [example landscape](download.qmd).
 
 
 
@@ -35,7 +51,14 @@ Each valid XML project file starts with a fixed header, and all sections are bel
 
 
 ```XML/HTML
-<?xml version="1.0" encoding="utf-8"?>   ...    ...    ...    ...    ...
+<?xml version="1.0" encoding="utf-8"?>   
+<!-- project description -->
+<project>
+...    
+...    
+...    
+...    
+</project>
 ```
 
 

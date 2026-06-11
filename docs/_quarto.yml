@@ -48,6 +48,8 @@ website:
             href: wiki/outputs.qmd
           - text: "Project Settings"
             href: wiki/project-file.qmd
+          - text: "Project Settings Reference"
+            href: wiki/project-file-reference.qmd
           - text: "Species Parameters"
             href: wiki/species-parameter.qmd
           - text: "Expressions and Variables"
@@ -204,6 +206,7 @@ website:
         - section: "Part 3: Reference & Resources"
           contents:
             - wiki/project-file.qmd
+            - wiki/project-file-reference.qmd
             - wiki/species-parameter.qmd
             - wiki/expressions-and-variables.qmd
             - wiki/expression.qmd
