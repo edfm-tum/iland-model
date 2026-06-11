@@ -21,6 +21,9 @@ title: "iLand publications"
 # Modeling
 
 
+[**Braziunas, K. H., Rammer, W., De Frenne, P., Díaz-Calafat, J., Hedwall, P.-O., Senf, C., Thom, D., Zellweger, F., & Seidl, R. (2025).**](https://doi.org/10.1007/s10980-025-02054-8) Microclimate temperature effects propagate across scales in forest ecosystems. Landscape Ecology, 40(2), 37. https://doi.org/10.1007/s10980-025-02054-8
+
+
 [**Hansen, W. D., Foster, A., Gaglioti, B., Seidl, R., & Rammer, W. (2023).**](https://gmd.copernicus.org/articles/16/2011/2023) The Permafrost and Organic LayEr module for Forest Models (POLE-FM) 1.0. Geoscientific Model Development, 16(7), 2011–2036. https://doi.org/10.5194/gmd-16-2011-2023
 
 
@@ -106,6 +109,12 @@ Anthropogenic climate change has the potential to impact a variety of natural pr
 
 ## Cross continents
 
+
+
+[**Dollinger, C., Turner, M. G., Rammer, W., Keller, T. T., Mori, A. S., Suzuki, K. F., & Seidl, R. (2026).**](https://doi.org/10.1029/2025GB008970) Forest Reorganization Sustains Carbon Sequestration Under Climate Change. Global Biogeochemical Cycles, 40(2), e2025GB008970. https://doi.org/10.1029/2025GB008970
+
+
+[**Dollinger, C., Rammer, W., Mori, A. S., Turner, M. G., & Seidl, R. (2025).**](https://doi.org/10.1111/geb.70140) Disentangling Compound Effects of Changing Disturbance and Regeneration Across Temperate Forest Landscapes. Global Ecology and Biogeography, 34(10), e70140. https://doi.org/10.1111/geb.70140
 
 
 [**Dollinger, C., Rammer, W., Suzuki, F. K., Braziunas, K.H., Keller T., Kobayashi, Y., Mohr, J. Mori, A. S., Turner M. G., Seidl R. (2024)**](https://doi.org/10.1111/gcb.17468) Beyond resilience: Responses to changing climate and disturbance regimes in temperate forest landscapes across the Northern Hemisphere, Global Change Biology, https://doi.org/10.1111/gcb.17468
@@ -348,6 +357,8 @@ Forest ecosystems are the most important terrestrial carbon (C) storage globally
 # related
 
 
+
+[**Rammer, W., Guérin, E., Marais, P., Peytavie, A., Kapp, K., Galin, E., Seidl, R., & Gain, J. (2026).**](https://doi.org/10.1002/ecog.08198) EcoViz: A tool for visual analysis and photorealistic rendering of forest landscape model simulations. Ecography, 2026(4), e08198. https://doi.org/10.1002/ecog.08198
 
 
 [**Mohr, J. S., Bastit, F., Grünig, M., Knoke, T., Rammer, W., Senf, C., Thom, D., & Seidl, R. (2025).**](https://doi.org/10.1038/s41558-025-02408-9) Rising cost of disturbances for forestry in Europe under climate change. Nature Climate Change. https://doi.org/10.1038/s41558-025-02408-9
