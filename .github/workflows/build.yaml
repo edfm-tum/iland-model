@@ -81,6 +81,7 @@ jobs:
           Compress-Archive -Path deploy-win/* -DestinationPath iLand-Windows.zip
 
       # 2. Linux Deployment (AppImage)
+      # 2. Linux Deployment
       - name: Linux Deployment
         if: matrix.os == 'ubuntu-latest'
         run: |
@@ -91,43 +92,49 @@ jobs:
           wget -c https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
           chmod +x linuxdeploy*.AppImage
 
-          # 2. Pfade ermitteln (Sicherer Weg via qmake)
+          # 2. Pfade und Qt-Plugin-Konfiguration
           export QMAKE=$(which qmake)
           export QT_PLUGIN_DIR=$(qmake -query QT_INSTALL_PLUGINS)
-          export QT_LIB_DIR=$(qmake -query QT_INSTALL_LIBS)  # <--- WICHTIG
-
           export QML_SOURCES_PATHS=src/iland/qml
           export APPIMAGE_EXTRACT_AND_RUN=1
+          
+          # WICHTIG: Weist das Qt-Plugin an, Wayland und Styles nativ und mit allen Abhängigkeiten zu verpacken
+          export EXTRA_QT_PLUGINS="wayland-shell-integration;wayland-graphics-integration-client;wayland-decoration-client;platformthemes;styles"
 
-          # 3. AppDir vorbereiten & Plugins manuell kopieren (Wie gehabt)
-          mkdir -p AppDir/usr/plugins/platforms
-          mkdir -p AppDir/usr/plugins/wayland-shell-integration
-          mkdir -p AppDir/usr/plugins/platformthemes
+          # 3. Ungenutzte SQL Treiber im Qt-Cache löschen
+          find "$QT_PLUGIN_DIR/sqldrivers" -maxdepth 1 -name "libqsql*.so" ! -name "libqsqlite.so" -delete || true
 
-          cp "$QT_PLUGIN_DIR/platforms/libqwayland-generic.so" AppDir/usr/plugins/platforms/
-          cp "$QT_PLUGIN_DIR/platforms/libqwayland-egl.so"     AppDir/usr/plugins/platforms/
-          cp -r "$QT_PLUGIN_DIR/wayland-shell-integration/"* AppDir/usr/plugins/wayland-shell-integration/ || true
-
-          if [ -f "$QT_PLUGIN_DIR/platformthemes/libqxdgdesktopportal.so" ]; then
-             cp "$QT_PLUGIN_DIR/platformthemes/libqxdgdesktopportal.so" AppDir/usr/plugins/platformthemes/
-          fi
-
-          # remove all database drivers (excep SQLite)
-          find "$QT_PLUGIN_DIR/sqldrivers" -maxdepth 1 -name "libqsql*.so" ! -name "libqsqlite.so" -delete
-      
-          # 4. AppImage bauen MIT ZUSÄTZLICHER LIBRARY
-          # Das '-l' Flag zwingt linuxdeploy, die Wayland-Client Lib einzupacken
+          # 4. AppImage 1 bauen: GUI (iLand)
           ./linuxdeploy-x86_64.AppImage --appdir AppDir \
-               -l "$QT_LIB_DIR/libQt6WaylandClient.so.6" \
-               -l "$QT_LIB_DIR/libQt6WaylandEglClientHwIntegration.so.6" \
                -e src/iland/build/release/iland \
                -d src/iland/res/iland.desktop \
                -i src/iland/res/iLand.svg \
                --plugin qt --output appimage
 
-          mv *.AppImage deploy-linux/
-          cp src/ilandc/build/release/ilandc deploy-linux/
-          cp src/fonstudio/build/release/fonstudio deploy-linux/
+          # 5. AppImage 2 bauen: Konsole (ilandc)
+          mkdir -p AppDirConsole
+          echo "[Desktop Entry]
+          Name=ilandc
+          Exec=ilandc
+          Icon=iLand
+          Type=Application
+          Terminal=true
+          Categories=Science;" > ilandc.desktop
+
+          ./linuxdeploy-x86_64.AppImage --appdir AppDirConsole \
+               -e src/ilandc/build/release/ilandc \
+               -d ilandc.desktop \
+               -i src/iland/res/iLand.svg \
+               --plugin qt --output appimage
+
+          # 6. Aufräumen und Verschieben
+          rm -f linuxdeploy*.AppImage 
+          
+          mv iLand-*.AppImage deploy-linux/
+          mv ilandc-*.AppImage deploy-linux/
+          
+          cp src/fonstudio/build/release/fonstudio deploy-linux/ 
+          cp build_log.txt deploy-linux/
 
 # 3. macOS Deployment
       - name: macOS Deployment
