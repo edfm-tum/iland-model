@@ -24,6 +24,35 @@ title: "iLand publications"
 [**Braziunas, K. H., Rammer, W., De Frenne, P., Díaz-Calafat, J., Hedwall, P.-O., Senf, C., Thom, D., Zellweger, F., & Seidl, R. (2025).**](https://doi.org/10.1007/s10980-025-02054-8) Microclimate temperature effects propagate across scales in forest ecosystems. Landscape Ecology, 40(2), 37. https://doi.org/10.1007/s10980-025-02054-8
 
 
+::: {.callout-note collapse="true" title="Abstract"}
+*Context*: Forest canopies shape subcanopy environments, affecting biodiversity and ecosystem processes. Empirical forest microclimate studies are often restricted to local scales and short-term effects, but forest dynamics unfold at landscape scales and over long time periods.
+
+*Objectives*: We developed the first explicit and dynamic implementation of microclimate temperature buffering in a forest landscape model and investigated effects on simulated forest dynamics and outcomes.
+
+*Methods*: We adapted the individual-based forest landscape and disturbance model iLand to use microclimate temperature for three processes [decomposition, bark beetle (Ips typographus L.) development, and tree seedling establishment]. We simulated forest dynamics with or without microclimate temperature buffering in a temperate European mountain landscape under historical climate and disturbance conditions.
+
+*Results*: Temperature buffering effects propagated from local to landscape scales. After 1,000 simulation years, average total carbon and cumulative net ecosystem productivity were 2% and 21% higher, respectively, and tree species composition differed in simulations including versus excluding microclimate buffering. When microclimate buffering was included, Norway spruce (Picea abies (L.) Karst.) increased by 9% and European beech (Fagus sylvatica L.) decreased by 12% in mean basal area share. Some effects were amplified across scales, such as a mean 16% decrease in local-scale bark beetle development rates resulting in a mean 45% decrease in landscape-scale bark beetle-caused mortality.
+
+*Conclusions*: Microclimate effects on forests scaled nonlinearly from stand to landscape and days to millennia, underlining the utility of complex simulation models for dynamic upscaling in space and time. Microclimate temperature buffering can alter forest dynamics at landscape scales.
+:::
+
+
+[**Das, A. K., Baldo, M., Dobor, L., Seidl, R., Rammer, W., Modlinger, R., Washaya, P., Merganičová, K., & Hlásny, T. (2025).**](https://doi.org/10.1007/s10980-025-02125-w) The increasing role of drought as an inciting factor of bark beetle outbreaks can cause large-scale transformation of Central European forests. Landscape Ecology, 40(6). https://doi.org/10.1007/s10980-025-02125-w
+
+
+::: {.callout-note collapse="true" title="Abstract"}
+*Context*: Historically, large-scale outbreaks of the European spruce bark beetle were initiated mainly by windthrows. However, after 2018, a severe drought triggered the hitherto largest bark beetle outbreak observed in Europe, signalling a major shift in the disturbance regime.
+
+*Objectives*: Develop and test an approach that allows simulating this novel disturbance dynamics and evaluate landscape-scale compound impacts of wind- and drought-initiated outbreaks throughout the twenty-first century.
+
+*Methods*: We incorporated drought-initiated outbreaks into the forest landscape simulation model iLand, using critical values of vapour pressure deficit as the outbreak trigger. Forest management records and remote sensing-based disturbance maps were used to derive model parameters and evaluate simulated dynamics in a Central European forest landscape (41,000 hectares). The period 1961–2021 was used for model evaluation, and the years until 2100 for scenario analysis.
+
+*Results*: Incorporating drought as outbreak trigger led to a notable decoupling of wind and bark beetle disturbances, which have historically formed a typical disturbance cascade in European forests. While forest growing stock and species composition were resilient to a wind-dominated disturbance regime, this resilience diminished under the compounded impact of wind- and drought-triggered disturbances. The new disturbance regime caused a persistent decline in Norway spruce and resulted in an overall decrease in landscape-level growing stock.
+
+*Conclusions*: Our findings underscore the urgent need for new approaches to evaluate increasingly complex disturbance dynamics and suggest that the future impacts of bark beetles on forest landscapes may be greater than previously anticipated.
+:::
+
+
 [**Hansen, W. D., Foster, A., Gaglioti, B., Seidl, R., & Rammer, W. (2023).**](https://gmd.copernicus.org/articles/16/2011/2023) The Permafrost and Organic LayEr module for Forest Models (POLE-FM) 1.0. Geoscientific Model Development, 16(7), 2011–2036. https://doi.org/10.5194/gmd-16-2011-2023
 
 
@@ -132,6 +161,9 @@ Anthropogenic climate change has the potential to impact a variety of natural pr
 
 
 [**Marzini, S., Tasser, E., Wellstein, C., Albrich, K., Rammer, W., & Mina, M.(2025)**](https://doi.org/10.1007/s10980-025-02070-8) Future expansion of upper forest-grassland ecotone under land-use and climate change in the Eastern Alps. Landscape Ecology, 40(3), 55. https://doi.org/10.1007/s10980-025-02070-8
+
+
+[**Braziunas, K. H., Geres, L., Richter, T., Glasmann, F., Senf, C., Thom, D., Seibold, S., & Seidl, R. (2024).**](https://doi.org/10.1111/gcb.17121) Projected climate and canopy change lead to thermophilization and homogenization of forest floor vegetation in a hotspot of plant species richness. Global Change Biology, 30, e17121. https://doi.org/10.1111/gcb.17121
 
 
 [**Repo, A., Albrich, K., Jantunen, A, Aalto, J., Lehtonen, I., Honkaniemi, J., (2024)**](https://doi.org/10.1016/j.jenvman.2024.123124) Contrasting forest management strategies: Impacts on biodiversity and ecosystem services under changing climate and disturbance regimes. Journal of Environmental Management, https://doi.org/10.1016/j.jenvman.2024.123124
@@ -298,8 +330,10 @@ Biodiversity fosters the functioning and stability of forest ecosystems and, con
 
 
 
-[**Willis, S., Taylor, A.R., Thom, D., L. D’Orangeville (2023).**](https://pubs.cif-ifc.org/doi/10.5558/tfc2023-021)Calibrating a process-based simulation model for the Acadian forest region. The Forestry Chronicle, 99(2), 226–240. https://doi.org/10.5558/tfc2023-021
+[**Keller, T. T., Abendroth, D. C., Braziunas, K. H., Dollinger, C., Hood, P. R., Knowlton, G. J., Seidl, R., & Turner, M. G. (2025).**](https://doi.org/10.1002/eap.70121) Can Fire Exclusion Zones Enhance Postfire Tree Regeneration? A Simulation Study in Subalpine Conifer Forests. Ecological Applications, 35(7), e70121. https://doi.org/10.1002/eap.70121
 
+
+[**Willis, S., Taylor, A.R., Thom, D., L. D’Orangeville (2023).**](https://pubs.cif-ifc.org/doi/10.5558/tfc2023-021)Calibrating a process-based simulation model for the Acadian forest region. The Forestry Chronicle, 99(2), 226–240. https://doi.org/10.5558/tfc2023-021
 
 [**Turner, M. G., Braziunas, K. H., Hansen, W. D., Hoecker, T. J., Rammer, W., Ratajczak, Z., Westerling, A. L., & Seidl, R. (2022).**](https://doi.org/10.1002/ecm.1485) The magnitude, direction, and tempo of forest change in Greater Yellowstone in a warmer world with more fire. Ecological Monographs, 92(1), 1–27. https://doi.org/10.1002/ecm.1485
 

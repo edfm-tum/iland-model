@@ -36,6 +36,8 @@ iLand is a collaborative effort, and a variety of people have contributed and do
 -   <img src="/img/czu.png" alt="Image" class="img-fluid float-end ms-3 mb-2" width="90"/>[Thomas Hlasny](https://www.researchgate.net/lab/Global-Change-Research-Group-CULS-Prague-Tomas-Hlasny) ([CZU Praha, Czech Republic](https://www.fld.czu.cz/en)) leads the Global Change Research Group and works on disturbance ecology and management. He was leading model-based research on forest management and novel biotic disturbance agents in Slovakia and Czech Republic.
 
 -   <img src="/img/u_dab.png" alt="Image" class="img-fluid float-end ms-3 mb-2" width="90"/>[Brian Harvey](https://environment.uw.edu/faculty/brian-harvey/) ([University of Washington, USA](https://www.washington.edu/)) is Assistant Professor at the University of Washington and works primarily on the interaction of forest structure with forest fire and insect outbreaks in the Pacific North West, the Rockies and California.
+
+-   <img src="/img/univ_new_brunswick.png" alt="Image" class="img-fluid float-end ms-3 mb-2" width="90"/>[Anthony Taylor](https://www.unb.ca/faculty-staff/directory/forestry-and-environmental-management/taylor-anthony.html) ([University of New Brunswick, Canada](https://www.unb.ca)) is Associate Professor of Forest Management and leads the Forest Analytics & Management Laboratory (FORMAN Lab). He utilizes forest analytics and ecological modeling to study forest response and adaptation to climate change and disturbances, and is instrumental in calibrating and applying iLand in the Acadian forest region of eastern North America.
 :::
 
 ## iLand supporters
