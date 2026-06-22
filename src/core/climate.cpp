@@ -190,8 +190,8 @@ void Climate::setup(bool do_log)
     mSouthernHemisphere = Model::settings().latitude < 0.;
     if (do_log && mSouthernHemisphere) {
         qDebug() << "*** Southern hemisphere mode ***";
-        qDebug() << "Here iLand uses a pseudo-phenological calendar: the simulation year starts at July 1st of a year.";
-        qDebug() << "Climate data is shifted by six month during, the first half of the first year of climate data is discarded (so is the last half of the last year).";
+        qDebug() << "iLand uses a pseudo-phenological calendar: the simulation year starts at July 1st of a year.";
+        qDebug() << "Climate data is shifted by six month during loading, the first half of the first year of climate data is discarded (so is the last half of the last year of the climate data series).";
         qDebug() << "*** See more: https://iland-model.org/climatedata";
     }
 
@@ -324,7 +324,7 @@ void Climate::load()
                 // new month...
                 lastmon = cday->month;
                 // save relative position of the beginning of the new month
-                qDebug() << "day-index: #"  << mDayIndices.size()  << cday->month << cday->year;
+                //qDebug() << "day-index: #"  << mDayIndices.size()  << cday->month << cday->year;
                 mDayIndices.push_back( cday - mStore.data() );
             }
 
