@@ -588,7 +588,7 @@ void MainWindow::on_lrReadStamps_clicked()
 
 void MainWindow::on_openFile_clicked()
 {
-    QString fileName = Helper::fileDialog("select XML-ini file for FonStudio...");
+    QString fileName = fileDialog("select XML-ini file for FonStudio...");
     if (fileName.isEmpty())
         return;
     ui->initFileName->setText(fileName);
