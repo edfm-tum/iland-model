@@ -21,6 +21,7 @@
 
 #include "globalsettings.h"
 #include "model.h"
+#include "dem.h"
 #include "modelcontroller.h"
 #include "species.h"
 #include "abe/forestmanagementengine.h"
@@ -43,11 +44,18 @@ void FlowModule::setup()
 {
     // setup the bark beetle grid (10m default size)
     mGrid.setup(GlobalSettings::instance()->model()->heightGrid()->metricRect(), cellsize());
+    mFSI.setup(GlobalSettings::instance()->model()->heightGrid()->metricRect(), cellsize());
 
+    mLayers.setModel(&mFlow);
     GlobalSettings::instance()->controller()->addLayers(&mLayers, "flow");
 
     // load settings from the XML file
     loadParameters();
+
+
+    // set up the Flow Module
+    const Grid<float>* dem_ptr = static_cast<const Grid<float>*>(GlobalSettings::instance()->model()->dem());
+    mFlow.setup(dem_ptr, mFSI);
 
 }
 
@@ -62,6 +70,11 @@ void FlowModule::loadParameters(bool do_reset)
 
 void FlowModule::run()
 {
+    // get current vegetation from iLand
+    calculateFSI();
+
+    // run the flow algorithm
+    mFlow.run();
 }
 
 void FlowModule::treeDeath(const Tree *tree, const int removal_type)
@@ -74,17 +87,34 @@ void FlowModule::yearBegin()
 
 }
 
+void FlowModule::calculateFSI()
+{
+    const auto &hgrid = GlobalSettings::instance()->model()->heightGrid();
+    for (int index=0;index<hgrid->count(); ++index) {
+        if ((*hgrid)[index].isValid()) {
+            float height = (*hgrid)[index].height;
+            // dummy function for now - a simple parabola with max value at 30m
+            float FSI = 1 - ( (height - 30)*(height - 30) / (30*30) );
+            mFSI[index] = FSI;
+        } else {
+            mFSI[index] = 0.;
+        }
+    }
+}
+
 
 
 //*********************************************************************************
-//************************************ BarkBeetleLayers ***************************
+//************************************ FlowLayers ***************************
 //*********************************************************************************
 
 
 double FlowLayers::value(const FlowCell &data, const int param_index) const
 {
+    size_t index = &data - mGrid->begin();
     switch(param_index){
-    case 0: return data.test;
+    case 0: return mFlow->dem()[index];
+    case 1: return mFlow->fsi()[index];
 
     default: throw IException(QString("invalid variable index for a FlowCell: %1").arg(param_index));
     }
@@ -95,7 +125,8 @@ const QVector<LayeredGridBase::LayerElement> &FlowLayers::names()
 {
     if (mNames.isEmpty())
         mNames = QVector<LayeredGridBase::LayerElement>()
-                 << LayeredGridBase::LayerElement(QStringLiteral("test"), QStringLiteral("grid value of the pixel"), GridViewTurbo);
+                 << LayeredGridBase::LayerElement(QStringLiteral("elevation"), QStringLiteral("elevation from DEM"), GridViewTurbo)
+                 << LayeredGridBase::LayerElement(QStringLiteral("FSI"), QStringLiteral("forest structure index [0..1]"), GridViewTurbo);
     return mNames;
 
 }

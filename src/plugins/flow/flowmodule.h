@@ -22,7 +22,7 @@
 #include "grid.h"
 #include "layeredgrid.h"
 
-
+#include "flowmodel.h"
 
 class FlowCell
 {
@@ -38,11 +38,13 @@ public:
 class FlowLayers: public LayeredGrid<FlowCell> {
   public:
     void setGrid(const Grid<FlowCell> &grid) { mGrid = &grid; }
+      void setModel(FlowModel *model) { mFlow = model; }
     double value(const FlowCell& data, const int index) const;
     const QVector<LayeredGridBase::LayerElement> &names();
     bool onClick(const QPointF &world_coord) const;
 private:
     QVector<LayeredGridBase::LayerElement> mNames;
+    FlowModel *mFlow { nullptr};
 };
 
 
@@ -100,8 +102,14 @@ private:
     } params;
 
     Grid<FlowCell> mGrid;
+    Grid<float> mFSI;
     FlowLayers mLayers;
-    // reference climate
+
+    FlowModel mFlow;
+
+    // retrieve forest information from iLand and
+    // calculate the forest structure index
+    void calculateFSI();
 
     friend class FlowScript;
     friend class FlowOut;

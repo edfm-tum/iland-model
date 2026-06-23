@@ -19,6 +19,7 @@ INCLUDEPATH  += ../.. \
 
 CONFIG += exceptions
 HEADERS       = \
+    flowmodel.h \
     flowmodule.h \
     flowplugin.h \
     flowplugin.h \
@@ -26,6 +27,7 @@ HEADERS       = \
     flowscript.h
 
 SOURCES       = \
+    flowmodel.cpp \
     flowmodule.cpp \
     flowplugin.cpp \
     flowplugin.cpp \
