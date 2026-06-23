@@ -20,8 +20,8 @@
 #include <QtCore>
 #include <QtWidgets>
 #include <QtXml>
-#include <QQuickView>
 #include <QQmlEngine>
+#include <QQuickWidget>
 #include <QQmlContext>
 #include <QJSValueIterator>
 
@@ -373,14 +373,14 @@ MainWindow::MainWindow(QWidget *parent)
     if (!QApplication::arguments().contains("noqml")) {
 
         //qDebug() << "mainwindow init before qml";
-        QQuickView *view = new QQuickView();
+        QQuickWidget *view = new QQuickWidget();
         mRuler = view;
-        //qDebug() << "createWindowContainer:";
-        QWidget *container = QWidget::createWindowContainer(view, this);
+
+        view->setFocusPolicy(Qt::StrongFocus);
 
         //qDebug() << "setContextProperty:";
         view->engine()->rootContext()->setContextProperty("rulercolors", mRulerColors);
-        view->setResizeMode(QQuickView::SizeRootObjectToView);
+        view->setResizeMode(QQuickWidget::SizeRootObjectToView);
         ui->pbReloadQml->setVisible(false); // enable for debug...
         //view->setSource(QUrl::fromLocalFile("C:/dev/iland_portqt6/src/iland/qml/ruler.qml"));
 
@@ -389,7 +389,8 @@ MainWindow::MainWindow(QWidget *parent)
 
         //view->show();
         //qDebug() << "addWidget:";
-        ui->qmlRulerLayout->addWidget(container);
+        ui->qmlRulerLayout->addWidget(view);
+
 
         connect(mRulerColors, SIGNAL(manualColorsChanged()), this, SLOT(repaint()));
 

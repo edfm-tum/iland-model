@@ -9,6 +9,7 @@ QT += widgets
 QT += charts
 # quick: for QML based user interface
 QT += quick
+QT += quickwidgets
 QT += concurrent
 
 

@@ -92,7 +92,7 @@ Rectangle {
                                 width: 80
                                 Layout.preferredWidth: 50
                                 value: rulercolors.minValue
-                                onValueChanged: rulercolors.minValue = value
+                                onValueModified: rulercolors.minValue = value
                             }
                             SpinBox {
                                 id: maxValueSpin
@@ -106,7 +106,7 @@ Rectangle {
                                 value: rulercolors.maxValue
                                 //anchors.left: minValueSpin.right
                                 //anchors.leftMargin: 10
-                                onValueChanged: rulercolors.maxValue = value
+                                onValueModified: rulercolors.maxValue = value
                             }
                             CheckBox {
                                 id: rangeAuto

@@ -37,7 +37,7 @@
 
 #include "ui/linkxmlqt.h"
 
-class QQuickView;
+class QQuickWidget;
 class Model;
 class Tree;
 class ResourceUnit;
@@ -126,7 +126,7 @@ private:
     metadata mMeta;
 
     QLabel *mStatusLabel;
-    QQuickView *mRuler;
+    QQuickWidget *mRuler;
     Colors *mRulerColors;
     QString mLastPaintError;
     // setup
