@@ -27,15 +27,11 @@
 #include <QtPlugin>
 
 // include the static modules here in the code:
-#if QT_VERSION >= 0x050000
+
 Q_IMPORT_PLUGIN(FirePlugin)
 Q_IMPORT_PLUGIN(WindPlugin)
 Q_IMPORT_PLUGIN(BarkBeetlePlugin)
-#else
-Q_IMPORT_PLUGIN(iland_fire)
-Q_IMPORT_PLUGIN(iland_wind)
-Q_IMPORT_PLUGIN(iland_barkbeetle)
-#endif
+Q_IMPORT_PLUGIN(FlowPlugin)
 
 Modules::Modules()
 {

@@ -3,5 +3,7 @@ TEMPLATE = subdirs
 
 SUBDIRS += \
     fire \
+    flow \
     wind \
-    barkbeetle
+    barkbeetle \
+    flow

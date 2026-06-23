@@ -20,6 +20,9 @@
 #ifndef MODULES_H
 #define MODULES_H
 
+#include <QList>
+#include <QString>
+
 class DisturbanceInterface; // forward
 class SetupResourceUnitInterface; // forward
 class WaterInterface; // forward

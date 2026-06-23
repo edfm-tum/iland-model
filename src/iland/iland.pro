@@ -81,12 +81,15 @@ CONFIG(debug, debug|release) {
 parts_to_join_fire = $$PLUGIN_PATH / $$LIBPRAE fire $$PLUGIN_SUFFIX $$LIBPOST
 parts_to_join_wind = $$PLUGIN_PATH / $$LIBPRAE wind $$PLUGIN_SUFFIX $$LIBPOST
 parts_to_join_barkbeetle = $$PLUGIN_PATH / $$LIBPRAE barkbeetle $$PLUGIN_SUFFIX $$LIBPOST
+parts_to_join_flow = $$PLUGIN_PATH / $$LIBPRAE flow $$PLUGIN_SUFFIX $$LIBPOST
+
 
 PRE_TARGETDEPS += $$join(parts_to_join_fire)
 PRE_TARGETDEPS += $$join(parts_to_join_wind)
 PRE_TARGETDEPS += $$join(parts_to_join_barkbeetle)
+PRE_TARGETDEPS += $$join(parts_to_join_flow)
 
-LIBS += -L$$PLUGIN_PATH -liland_fire$$PLUGIN_SUFFIX -liland_wind$$PLUGIN_SUFFIX -liland_barkbeetle$$PLUGIN_SUFFIX
+LIBS += -L$$PLUGIN_PATH -liland_fire$$PLUGIN_SUFFIX -liland_wind$$PLUGIN_SUFFIX -liland_barkbeetle$$PLUGIN_SUFFIX -liland_flow$$PLUGIN_SUFFIX
 
 message("PRE_TARGETDEPS:" $$PRE_TARGETDEPS)
 

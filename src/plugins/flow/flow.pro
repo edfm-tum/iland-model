@@ -1,0 +1,46 @@
+# iLand project file for the flow module. See iland-model.org
+QT += xml
+QT += qml
+QT += sql
+
+
+TEMPLATE      = lib
+CONFIG       += plugin static
+INCLUDEPATH  += ../.. \
+                ../../tools \
+                ../../output \
+                ../../core
+
+
+# to enable debug symbols in release code:
+# uncomment then next two lines to enable debug information in release-mode executable
+#QMAKE_CXXFLAGS_RELEASE += -g
+#QMAKE_LFLAGS_RELEASE -= -Wl,-s
+
+CONFIG += exceptions
+HEADERS       = \
+    flowmodule.h \
+    flowplugin.h \
+    flowplugin.h \
+    flowmodule.h \
+    flowscript.h
+
+SOURCES       = \
+    flowmodule.cpp \
+    flowplugin.cpp \
+    flowplugin.cpp \
+    flowmodule.cpp \
+    flowscript.cpp
+
+TARGET        = $$qtLibraryTarget(iland_flow)
+DESTDIR       = ../../plugins
+
+DEFINES += NO_DEBUG_MSGS
+
+DISTFILES += \
+    flowplugin.json
+
+
+
+
+
