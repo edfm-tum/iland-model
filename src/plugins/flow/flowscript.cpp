@@ -1,32 +1,106 @@
-/********************************************************************************************
-**    iLand - an individual based forest landscape and disturbance model
-**    https://iland-model.org
-**    Copyright (C) 2009-  Werner Rammer, Rupert Seidl
-**
-**    This program is free software: you can redistribute it and/or modify
-**    it under the terms of the GNU General Public License as published by
-**    the Free Software Foundation, either version 3 of the License, or
-**    (at your option) any later version.
-**
-**    This program is distributed in the hope that it will be useful,
-**    but WITHOUT ANY WARRANTY; without even the implied warranty of
-**    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-**    GNU General Public License for more details.
-**
-**    You should have received a copy of the GNU General Public License
-**    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-********************************************************************************************/
-
 #include "flowscript.h"
 #include "scriptglobal.h"
+#include "flowmodule.h"
+#include "globalsettings.h"
+#include "model.h"
+#include "scriptgrid.h"
 
 FlowScript::FlowScript(QObject *)
 {
     mModule = nullptr;
 }
 
-void FlowScript::test(QString value)
+
+void FlowScript::setStartPoint(double x, double y)
 {
-    qDebug() << value;
+    if (!mModule) return;
+    try {
+        mModule->mFlow.setStartArea(QPointF(x, y));
+    } catch (const IException &e) {
+        ScriptGlobal::throwError(e.message());
+    } catch (const std::exception &e) {
+        ScriptGlobal::throwError(e.what());
+    }
 }
 
+void FlowScript::setStartRectangle(double x1, double y1, double x2, double y2)
+{
+    if (!mModule) return;
+    try {
+        QRectF rect(QPointF(x1, y1), QPointF(x2, y2));
+        mModule->mFlow.setStartArea(rect);
+    } catch (const IException &e) {
+        ScriptGlobal::throwError(e.message());
+    } catch (const std::exception &e) {
+        ScriptGlobal::throwError(e.what());
+    }
+}
+
+void FlowScript::setStartPolygon(int standId, ScriptGrid *grid)
+{
+    if (!mModule) return;
+    try {
+        mModule->mFlow.setStartArea(standId, grid ? grid->grid() : nullptr);
+    } catch (const IException &e) {
+        ScriptGlobal::throwError(e.message());
+    } catch (const std::exception &e) {
+        ScriptGlobal::throwError(e.what());
+    }
+}
+
+void FlowScript::setInfrastructure(ScriptGrid *grid)
+{
+    if (!mModule) return;
+    try {
+        if (!grid || !grid->grid())
+            ScriptGlobal::throwError("FlowScript:setInfrastructure: empty or missing grid!");
+        Grid<int> int_grid;
+        int_grid.setup(grid->grid()->metricRect(), grid->grid()->cellsize());
+        for (int i=0;i<int_grid.count();++i)
+            int_grid[i] = (*grid->grid())[i];
+
+        mModule->mFlow.setInfrastructure(int_grid);
+    } catch (const IException &e) {
+        ScriptGlobal::throwError(e.message());
+    } catch (const std::exception &e) {
+        ScriptGlobal::throwError(e.what());
+    }
+
+}
+
+void FlowScript::setStartStand(int standId)
+{
+    if (!mModule) return;
+    try {
+        mModule->mFlow.setStartArea(standId);
+    } catch (const IException &e) {
+        ScriptGlobal::throwError(e.message());
+    } catch (const std::exception &e) {
+        ScriptGlobal::throwError(e.what());
+    }
+}
+
+void FlowScript::run(QString type)
+{
+    if (!mModule) return;
+    try {
+        mModule->run(type);
+    } catch (const IException &e) {
+        ScriptGlobal::throwError(e.message());
+    } catch (const std::exception &e) {
+        ScriptGlobal::throwError(e.what());
+    }
+}
+
+QJSValue FlowScript::grid(QString type)
+{
+    if (!mModule) return QJSValue();
+    int idx = mModule->mLayers.indexOf(type);
+    if (idx<0)
+        qDebug() << "ERROR: FlowScript:grid(): invalid grid" << type;
+    // this is a copy
+    Grid<double> *value_grid = mModule->mLayers.copyGrid(idx);
+
+    QJSValue g = ScriptGrid::createGrid(value_grid, type);
+    return g;
+}

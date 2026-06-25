@@ -25,6 +25,7 @@
 
 
 class FlowModule; // forward
+class ScriptGrid; // forward
 
 class FlowScript : public QObject
 {
@@ -40,7 +41,16 @@ public:
 signals:
 
 public slots:
-    void test(QString value);
+    void setStartPoint(double x, double y);
+    void setStartRectangle(double x1, double y1, double x2, double y2);
+    void setStartStand(int standId);
+    void setStartPolygon(int standId, ScriptGrid *grid=nullptr);
+    void setInfrastructure(ScriptGrid *grid);
+
+
+    void run(QString type = "avalanche");
+
+    QJSValue grid(QString type);
 
 
 private:

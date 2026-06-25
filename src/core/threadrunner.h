@@ -39,9 +39,10 @@ public:
     // actions
     void run( void (*funcptr)(ResourceUnit*), const bool forceSingleThreaded=false ) const; ///< execute 'funcptr' for all resource units in parallel
     void run( void (*funcptr)(Species*), const bool forceSingleThreaded=false ) const; ///< execute 'funcptr' for set of species in parallel
-    // run over elements of a vector of type T
     template<class T> void run(T* (*funcptr)(T*), const QVector<T*> &container, const bool forceSingleThreaded=false) const;
     template<class T> void run(void (*funcptr)(T&), QVector<T> &container, const bool forceSingleThreaded=false) const;
+    template<class Container, class Callable> void run(Callable funcptr, const Container &container, const bool forceSingleThreaded=false) const;
+    template<class Container, class Callable> void run(Callable funcptr, Container &container, const bool forceSingleThreaded=false) const;
     // run over chunks of a larger array (or grid)
     template<class T> void runGrid(void (*funcptr)(T*, T*), T* begin, T* end, const bool forceSingleThreaded=false, int minsize=10000, int maxchunks=10000) const;
 
@@ -119,6 +120,36 @@ void ThreadRunner::run(void (*funcptr)(T &), QVector<T> &container, const bool f
         for (int i=0;i<container.size();++i)
             (*funcptr)(container[i]);
 
+    }
+    mState = Inactive;
+}
+
+template<class Container, class Callable>
+void ThreadRunner::run(Callable funcptr, const Container &container, const bool forceSingleThreaded) const
+{
+    if (mMultithreaded && container.size() > 3 && forceSingleThreaded==false) {
+        mState = MultiThreaded;
+        QtConcurrent::blockingMap(container, funcptr);
+    } else {
+        mState = SingleThreaded;
+        for (const auto &element : container) {
+            funcptr(element);
+        }
+    }
+    mState = Inactive;
+}
+
+template<class Container, class Callable>
+void ThreadRunner::run(Callable funcptr, Container &container, const bool forceSingleThreaded) const
+{
+    if (mMultithreaded && container.size() > 3 && forceSingleThreaded==false) {
+        mState = MultiThreaded;
+        QtConcurrent::blockingMap(container, funcptr);
+    } else {
+        mState = SingleThreaded;
+        for (auto &element : container) {
+            funcptr(element);
+        }
     }
     mState = Inactive;
 }

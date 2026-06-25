@@ -22,16 +22,12 @@ HEADERS       = \
     flowmodel.h \
     flowmodule.h \
     flowplugin.h \
-    flowplugin.h \
-    flowmodule.h \
     flowscript.h
 
 SOURCES       = \
     flowmodel.cpp \
     flowmodule.cpp \
     flowplugin.cpp \
-    flowplugin.cpp \
-    flowmodule.cpp \
     flowscript.cpp
 
 TARGET        = $$qtLibraryTarget(iland_flow)
