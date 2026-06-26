@@ -461,7 +461,7 @@ void MainWindow::on_actionSettingsDialog_triggered()
         if (!ui_settingsDialog) {
             QStringList dialogList = QStringList() << "Project" << "System"  << "Model" << "Output" << "Modules";
             QStringList modelList = QStringList() << "World" << "Climate" << "Initialization" << "Site" << "Global Settings"  << "Seed Dispersal" << "Soil" << "Submodules" << "Species" << "Management"  ;
-            QStringList modulesList = QStringList() << "Fire" << "Wind" << "Barkbeetle" << "BITE";
+            QStringList modulesList = QStringList() << "Fire" << "Wind" << "Barkbeetle" << "BITE" << "Flow";
             QStringList outputList = QStringList() << "Vegetation state" << "Dynamic" << "Flows" << "Processes" << "Disturbance modules" << "Forest management"  << "SVD";
             QStringList systemList = QStringList() << "Path" << "Database" << "Logging" << "System Settings" << "Javascript";
             QList<QStringList> tabList;

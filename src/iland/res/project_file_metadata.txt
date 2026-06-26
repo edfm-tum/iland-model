@@ -431,11 +431,12 @@ gui.layout = tab|tabParameter|Parameter
 
 
 ; model.world
-gui.layout = tab|tabModules|Modules|This section covers disturbance modules for fire, wind, bark beetles and generic biotic agents.
+gui.layout = tab|tabModules|Modules|This section covers disturbance modules for fire, wind, bark beetles, generic biotic agents, and gravitational mass flows.
 modules.fire.enabled = connected|Enable Fire
 modules.wind.enabled = connected|Enable Wind
 modules.barkbeetle.enabled = connected|Enable Barkbeetle
 modules.bite.enabled = connected|Enable bite
+modules.flow.enabled = connected|Enable Flow
 
 
 ; modules.fire
@@ -559,9 +560,29 @@ modules.barkbeetle.referenceClimate = table|seasonalPrecipSum;seasonalTemperatur
 modules.barkbeetle.referenceClimate.seasonalPrecipSum = numeric|1;2;3;4|Precipitation sum|Tool tip seasonal prcip sum|simple
 modules.barkbeetle.referenceClimate.seasonalTemperatureAverage = numeric|12.3;4354.23|Temperature average|Tool tip temperature average|simple
 
-gui.layout = tab|tabbite|bite|bite, the Biotic Disturbance Engine is a general module to simulate biotic disturbance agents in ecosystem models. <br/>See https://iland-model.org/bite and https://iland-model.org/bite for more details.
+gui.layout = tab|tabBITE|bite|bite, the Biotic Disturbance Engine is a general module to simulate biotic disturbance agents in ecosystem models. <br/>See https://iland-model.org/bite and https://iland-model.org/bite for more details.
 modules.bite.enabled = boolean|false|Enable|Enable the bite module|simple
 modules.bite.file = file|Source code|bite code|JavaScript file that contains the definition of  bite agents.|simple
+
+
+gui.layout = tab|tabFlow|Flow|The flow module simulates gravitational mass flows (GMF) like avalanches, rockfall, and mudflows. See https://iland-model.org/flow-module for details.
+modules.flow.enabled = boolean|false|Enable|Turn flow simulation on or off|simple
+modules.flow.alpha = numeric|30.0|Baseline friction angle|Baseline friction angle (degrees) representing Coulomb friction (mu = tan(alpha)).|simple
+modules.flow.exp = numeric|8.0|Divergence exponent|Divergence exponent controlling lateral routing spread (higher values channelize, lower values spread).|simple
+modules.flow.fluxThreshold = numeric|0.0003|Flux threshold|Minimum routing flux threshold below which flow propagation stops. |simple
+modules.flow.maxZDelta = numeric|100.0|Max kinetic energy height|Maximum kinetic energy height Z_delta (meters) to prevent non-physical velocity build-up.|simple
+
+gui.layout = group|Forest Friction (avalanche)
+modules.flow.avalanche.forestFriction.enabled = boolean|true|Friction Enabled|Enable/disable forest friction effects for avalanche.|simple
+modules.flow.avalanche.forestFriction.maxAddedFriction = numeric|10.0|Max added friction|Maximum additional friction angle (degrees) in dense forest.|simple
+modules.flow.avalanche.forestFriction.minAddedFriction = numeric|2.0|Min added friction|Minimum additional friction angle (degrees) in sparse forest.|simple
+modules.flow.avalanche.forestFriction.noFrictionEffectVelocity = numeric|30.0|Velocity threshold|Velocity threshold (m/s) above which the forest friction effect ceases.|simple
+
+gui.layout = group|Forest Detrainment (avalanche)
+modules.flow.avalanche.forestDetrainment.enabled = boolean|false|Detrainment Enabled|Enable/disable forest detrainment effects for avalanche.|simple
+modules.flow.avalanche.forestDetrainment.maxAddedDetrainment = numeric|0.0|Max detrainment|Maximum detrainment rate (fraction/step) in dense forest.|simple
+modules.flow.avalanche.forestDetrainment.minAddedDetrainment = numeric|0.0|Min detrainment|Minimum detrainment rate (fraction/step) in sparse forest.|simple
+modules.flow.avalanche.forestDetrainment.noDetrainmentEffectVelocity = numeric|30.0|Velocity threshold|Velocity threshold (m/s) above which forest detrainment ceases.|simple
 
 
 gui.layout = tab|tabOutput|Output|Outputs in iLand are per default created as a SQLite database. Every type of output is represented by one table within this output database. Thus, the results of one simulation run are contained in one single file. <br/> See https://iland-model.org/outputs for details. <br/>Enable/disable outputs here, or go to tabs for further details.

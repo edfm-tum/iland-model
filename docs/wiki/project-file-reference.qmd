@@ -466,6 +466,27 @@ bite, the Biotic Disturbance Engine is a general module to simulate biotic distu
 | `file` | file selection | `Source code` | **bite code**: JavaScript file that contains the definition of bite agents. |
 
 
+## Flow (`modules.flow`)
+
+The flow module simulates gravitational mass flows (GMF) like avalanches, rockfall, and mudflows. See [Flow Module](flow-module.qmd) for details.
+
+| **XML Key** | **Type** | **Default Value** | **Description** |
+| :--- | :--- | :--- | :--- |
+| `enabled` | boolean | `false` | **Enable**: Turn flow simulation on or off |
+| `alpha` | numeric | `30.0` | **Baseline friction angle**: Baseline friction angle (degrees) representing Coulomb friction (mu = tan(alpha)). |
+| `exp` | numeric | `8.0` | **Divergence exponent**: Divergence exponent controlling lateral routing spread (higher values channelize, lower values spread). |
+| `fluxThreshold` | numeric | `0.0003` | **Flux threshold**: Minimum routing flux threshold below which flow propagation stops. |
+| `maxZDelta` | numeric | `100.0` | **Max kinetic energy height**: Maximum kinetic energy height Z_delta (meters) to prevent non-physical velocity build-up. |
+| `avalanche.forestFriction.enabled` | boolean | `true` | **Friction Enabled**: Enable/disable forest friction effects for avalanche. |
+| `avalanche.forestFriction.maxAddedFriction` | numeric | `10.0` | **Max added friction**: Maximum additional friction angle (degrees) in dense forest. |
+| `avalanche.forestFriction.minAddedFriction` | numeric | `2.0` | **Min added friction**: Minimum additional friction angle (degrees) in sparse forest. |
+| `avalanche.forestFriction.noFrictionEffectVelocity` | numeric | `30.0` | **Velocity threshold**: Velocity threshold (m/s) above which the forest friction effect ceases. |
+| `avalanche.forestDetrainment.enabled` | boolean | `false` | **Detrainment Enabled**: Enable/disable forest detrainment effects for avalanche. |
+| `avalanche.forestDetrainment.maxAddedDetrainment` | numeric | `0.0` | **Max detrainment**: Maximum detrainment rate (fraction/step) in dense forest. |
+| `avalanche.forestDetrainment.minAddedDetrainment` | numeric | `0.0` | **Min detrainment**: Minimum detrainment rate (fraction/step) in sparse forest. |
+| `avalanche.forestDetrainment.noDetrainmentEffectVelocity` | numeric | `30.0` | **Velocity threshold**: Velocity threshold (m/s) above which forest detrainment ceases. |
+
+
 # Output Settings (`output`)
 
 

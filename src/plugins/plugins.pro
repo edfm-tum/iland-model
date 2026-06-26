@@ -5,5 +5,5 @@ SUBDIRS += \
     fire \
     flow \
     wind \
-    barkbeetle \
-    flow
+    barkbeetle
+
