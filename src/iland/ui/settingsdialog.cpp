@@ -275,8 +275,7 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* mS
         element = mMetaKeys[n];
         values = mMetaValues[n].split("|");
         inputType = values[0];
-        if (valueTypes.contains(inputType) &&
-            !element.startsWith("model.species")) {
+        if (valueTypes.contains(inputType)) {
             item = new SettingsItem(  n,
                                       element,
                                       inputType, //input type

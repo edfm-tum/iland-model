@@ -460,7 +460,7 @@ void MainWindow::on_actionSettingsDialog_triggered()
         mLinkxqt->readXmlProjectDescription();
         if (!ui_settingsDialog) {
             QStringList dialogList = QStringList() << "Project" << "System"  << "Model" << "Output" << "Modules";
-            QStringList modelList = QStringList() << "World" << "Climate" << "Initialization" << "Site" << "Global Settings"  << "Seed Dispersal" << "Soil" << "Submodules" << "Management"  ;
+            QStringList modelList = QStringList() << "World" << "Climate" << "Initialization" << "Site" << "Global Settings"  << "Seed Dispersal" << "Soil" << "Submodules" << "Species" << "Management"  ;
             QStringList modulesList = QStringList() << "Fire" << "Wind" << "Barkbeetle" << "BITE";
             QStringList outputList = QStringList() << "Vegetation state" << "Dynamic" << "Flows" << "Processes" << "Disturbance modules" << "Forest management"  << "SVD";
             QStringList systemList = QStringList() << "Path" << "Database" << "Logging" << "System Settings" << "Javascript";
@@ -2560,6 +2560,34 @@ void MainWindow::on_actionOutput_table_description_triggered()
     QString txt = GlobalSettings::instance()->outputManager()->wikiFormat();
     QApplication::clipboard()->setText(txt);
     qDebug() << "Description copied to clipboard!";
+
+    QString appPath = QCoreApplication::applicationDirPath();
+    if (appPath.contains("iland-model") && appPath.contains("build")) {
+        int idx = appPath.indexOf("iland-model");
+        if (idx != -1) {
+            QString projectRoot = appPath.left(idx + QString("iland-model").length());
+            QString qmdPath = projectRoot + "/docs/wiki/outputs.qmd";
+            QFile file(qmdPath);
+            if (file.exists()) {
+                QString qmdContent = Helper::loadTextFile(qmdPath);
+                if (!qmdContent.isEmpty()) {
+                    QString startTag = "<!-- GENERATED-CODE-START -->";
+                    QString endTag = "<!-- GENERATED-CODE-END -->";
+                    int startIdx = qmdContent.indexOf(startTag);
+                    int endIdx = qmdContent.indexOf(endTag);
+                    if (startIdx != -1 && endIdx != -1 && endIdx > startIdx) {
+                        QString newContent = qmdContent.left(startIdx + startTag.length()) + "\n" + txt + "\n" + qmdContent.mid(endIdx);
+                        Helper::saveToTextFile(qmdPath, newContent);
+                        qDebug() << "Output table description successfully written to" << qmdPath;
+                        Helper::msg(QString("Output table description successfully written to %1\nand copied to clipboard.").arg(qmdPath));
+                        return;
+                    }
+                }
+            }
+        }
+    }
+    qDebug() << "Output table description copied to clipboard.";
+    Helper::msg("Output table description copied to clipboard.");
 }
 
 void MainWindow::on_actionTimers_triggered()

@@ -1,0 +1,81 @@
+---
+title: "snag dynamics"
+---
+
+
+
+This page describes the snag dynamics with resource unit resolution (i.e., pool-based, 1ha). For tracking individual dead trees (standing and lying), see also [individual dead trees](dead-trees.qmd)!
+
+
+
+# Cohorts of standing woody debris
+
+
+All [mortality](mortality.qmd) events (with the exception of harvest) lead to the creation of standing woody debris (SWD), i.e. stem C and N mass are moved to the SWD pool. Snag foliage and fine root biomass are moved to the litter pool in the year of death, branch and coarse root biomass are routed to the DWD pool equally distributed over the five years following death.
+
+SWD is tracked in size cohorts per [resource unit](resource-units.qmd) in iLand, where three size-classes (based on dbh at time of death) are specified by the user in the [project file](project-file.qmd). This allows an efficient handling of snags while preserving relevant information on the structure and composition of deadwood stocks e.g. in the context of conservation issues. To that end aggregates of number of snags, average dbh, height and volume at time of death are calculated for all cohorts, in addition to the mass balance of SWD C and N pools.
+
+        *
+
+
+
+# Snag decomposition
+
+
+The SWD C pools undergo decomposition following first order decay kinetcs (Eq.1)
+
+$$
+C_{t+i}=C_{t}\cdot e^{-ksw\cdot re\cdot i}
+$$
+
+with *re* the climate factor modifying decomposition, *ksw* a species-specific decay rate for standing deadwood, and *C<sub>t+i</sub>* the individuals' C pool at timestep *t+i*. Since C is respired to the atmosphere by heterotrophic respiration in this process, the C/N ratio of the snag decreases (cf. also [Currie et al. 1999](http://tinyurl.com/2copzrg)).
+
+It has to be noted that this approach - for the sake of simplicity - essentially assumes a uniform climatic influence on decomposition for snags and logs, i.e. standing and downed woody debris (as well as litter and soil pools, see [#Integration_into_the_iLand_framework|here](soil-c-and-n-cycling.qmd)). While more detailed approaches, for instance in the model [Standcarb 2](http://andrewsforest.oregonstate.edu/pubs/webdocs/models/standcarb2/climate.htm) ([Harmon et al. 2009b](http://dx.doi.org/10.1007/s10021-009-9256-2)), calculate the moisture content of these compartments separately to derive process-based indices of decomposition limitations, we acknowledge differences between deadwood pools simply by specifying separate base decomposition rates for standing and downed woody debris.
+
+        *
+
+
+
+# Transition from standing to downed woody debris
+
+
+An annual probability for a snag to transit to [#Integration_into_the_iLand_framework|downed woody debris](soil-c-and-n-cycling.qmd) *p<sub>DWD</sub>* is calculated from a species-specific snag half-life (see for instance [Dunn 2010](http://hdl.handle.net/1957/19686)), assuming a negative exponential transition function. Half-life is furthermore modified by the influence of climate on decomposition, i.e. under a favorable climate for decomposition the snag duration is decreased following Eq.2 (cf. [Standcarb 2](http://andrewsforest.oregonstate.edu/pubs/webdocs/models/standcarb2/decomp.htm), [Harmon and Marks 2002](http://dx.doi.org/10.1139/X01-216), [Harmon et al. 2009b](http://dx.doi.org/10.1007/s10021-009-9256-2)). Transfer rate kdw is subsequently derived from Eq. 3, and the number of snags in a certain size cohort per *RU* can be updated according to Eq. 4.
+
+$$
+hl_{s}=\frac{hl_{s}}{re}
+$$
+
+
+$$
+ksd=\frac{log(2)}{hl_{s}}
+$$
+
+
+$$
+SWD_{t+1}=SWD_{t}\cdot e^{-ksd}
+$$
+
+Eq. 4 can be applied for C, N, and snag-count, and the respective decreasing portions of the SWD pools can be transfered to the [#Integration_into_the_iLand_framework|DWD pools](soil-c-and-n-cycling.qmd). If the snag count becomes <1 or the snag mass falls below a certain minimum threshold the whole remaining snag cohort is transfered to DWD pools.
+
+This approach allows the simulation of mortality pulses as introduced by disturbances, i.e. a large number of snags from mortality in one year decay and fall down discreetly distributed over time. The negative exponential decay used to model SWD to DWD transfer, however, also assures assymptotic behavior of the SWD pools, i.e. there is no unrealistic buildup of snags in a stand. In addition, it's parametrisiation via half-life is straight-forward and the parameter frequently reported in empirical studies on snags (e.g. [Dunn 2010](http://hdl.handle.net/1957/19686)).
+
+
+
+# Execution sequence
+
+
+The snag dynamics component consists of several discrete steps, and their order of execution has an effect on the simulated systems dynamics.
+Steps during the state update at the end of the year are:
+
+* Move new stems to the SWD pool
+* calculate flux to atmosphere; therefore 'fresh' input also already undergoes decay in the first year
+* calculate transfer to DWD (i.e.: including 'fresh' input and after flux to atmosphere)
+* empty SWD pools if pool content is below thresholds (number of snags below 0.5 or average carbon content per snag below class threshold)
+
+
+
+
+::: {.callout-note title="citation"}
+[Seidl, R., Spies, T.A., Rammer, W., Steel, E.A., Pabst, R.J., Olsen, K. 2012](http://dx.doi.org/10.1007/s10021-012-9587-2). Multi-scale drivers of spatial variation in old-growth forest carbon density disentangled with Lidar and an individual-based landscape model. Ecosystems, DOI: 10.1007/s10021-012-9587-2.
+:::
+

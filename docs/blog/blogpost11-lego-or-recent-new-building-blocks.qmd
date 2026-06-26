@@ -1,0 +1,16 @@
+---
+title: "Lego - or recent new building blocks"
+date: "2009-09-24"
+author: "Werner Rammer"
+---
+
+During the last 10 days (or so) the iLand platform grew remarkably, as new features were added. Some of those additions are:
+
+* Outputs: the things that are necessary under the hood, to have some useful database output tables after a model run
+* dynamic outputs: outputs based on aggregates of tree variables (e.g. per resource unit and species). "Aggregates" can be averages/sum or more fancy percentiles (e.g. the 90th percentile of the treeheight or the sum of tree volume)
+* loading of climate data from a input database
+* a basic management routine
+
+The management implemented is not very powerful, it merely allows to reduce the stem number to a predefined number. Much more interesting is the way it works: it utilize the Qt Script engine to let management programs be programs in a very literal way (Javascript, it is!). A similar (and still much more powerful) scripting approach was used for the management in Picus. The difference: To set up a running Javascript-based simple management took about half a day, and to set up a running PicusScript management took, well, *much* longer...
+
+The next step in developing iLand will be to setup the simpler parts of the "environment" and subsequently persuade the 3PG production module to respond to that... The more complicated parts (i.e. the water cycle) already are lurking around...

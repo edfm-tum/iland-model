@@ -1,0 +1,30 @@
+---
+title: "iLand web - relaunch!!"
+date: "2012-03-09"
+author: "Werner Rammer"
+---
+
+
+
+	**We are happy to announce that now large portions of the iLand wiki are now online for public access!**
+
+
+
+	During the last three and a half years, the iLand wiki continuously growed along the [modelling concepts](../wiki/abstract.qmd) and the [model software](../wiki/iland-software.qmd) - but for registered users only. Now it is time to raise the curtain! The first official [iLand publication](../wiki/iland-publications.qmd) is (finally) in press (see[this blog post](blogpost33-on-publishing-a-model.qmd) for some philosphical musings  over this process), and the Marie Curie Fellowship that provided the main funding for the development has almost ended.
+
+
+
+	We took this also as an opportunity to improve the wiki and the overal appearance of the iLand home on the web - we hope you like it. The iLand wiki is powered by the open-source wiki software [TikiWiki](http://tiki.org) which is developed by a very active community. One major task was to upgrade the wiki software from an ancient version, which was not always as easy we had hoped, but brought as a lot of new functionalities, improvements and bug fixes. 
+
+
+
+	We also re-designed the [public start page](../wiki/iland.qmd) trying to provide a visually pleasing and informative entry point for our site. Also new is the [download](../wiki/download.qmd) page that allows free download of the iLand software and source code. Currently, we have a total number of 110 public wiki pages - something we are quite proud of.
+
+
+
+	Note, that a part of the wiki is still for registered users only. These pages cover unpublished parts of the model (e.g. regeneration) and you will encounter "not logged in" error messages when you try to view them. But rest assured that these pages will not remain in private darkness forever!
+
+
+
+	If you miss something important, find dead links or have any other feedback  we'd be happy to hear from you!
+

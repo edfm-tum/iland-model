@@ -1,0 +1,19 @@
+---
+title: "transatlantic debugging"
+date: "2010-03-10"
+author: "Werner Rammer"
+---
+
+First, a quick note for what happened since the last post. Autumn came, the Oregon visit ended. Then winter came. Now, winter is still around - at least here in Vienna. From my side activities for the iLand project were somewhat reduced during the last couple of month - this is on one side a pity, because I definitely enjoy working on iLand a lot. The second side, though, is that everything worked pretty well despite the heavy testing Rupert did.
+So much to the first part of bragging ;)
+Today, I found a cry for help from Rupert in my mail box. He described the issue he stumbled into while he was testing iLand (namely strange behavior of doug fir). He added - and that is the remarkable point - some additional information.
+The mail attachment consisted of:
+
+* a complete project folder (zipped).
+* a screencast of the iLand GUI to show what the 'strange behavior' is about
+
+Notably, the bug was detected by actually watching the visual representation of the forest in iLand. This points to the importance of proper visuals - it's all about the unrivaled power of the human visual system! And the video is IMHO an appropriate way to communicate visual impressions...
+Second, using the project-folder I was able to duplicate the exact simulation setup within minutes. This nicely confirms some design decisions like project specific XML files, the directory structure or the omitting of a central run-database. Well, that was the second part of bragging...
+
+Lest I forget: the bug. As we introduced variable class widths for the storage of LIPs, I forgot to adapt the code for the highest dbh-classes. Eventually, the linking between trees and their respective LIP went bananas and super-large LIPs were assigned to small trees. Setting up 4000 small trees therefore resulted in an average light-influence-field value of about 10e-11. The scaling of LIF -> light response then increased small differences between the LIF levels of individual trees enormously which directly led to the observed behavior.
+Modesty is easily restored in the light of such stupid bugs...

@@ -1,0 +1,69 @@
+---
+title: "Documenting the Javascript API with Doxygen"
+date: "2011-01-21"
+author: "Werner Rammer"
+---
+
+This post will most probably be no much fun to read - much like the researching of the topic was quite ... tedious.
+The question is how to set up a documentation of the Javascript API. There are certain requirements for such a setup:
+
+* the doc should be maintained while coding and you should be able to use the same tools (i.e. IDE) for that
+* the doc tool should have some basic knowledge of software and should therefore be able to automatically create cross links
+* however close the act of documenting is to the act of source code production: the result in the end should be a shiny HTML document that is linked to the iLand wiki
+
+The C++ source code documentation of iLand uses [Doxygen](http://www.doxygen.org), which is a very nice tool and tailored explicitely to C++ as the language. So my first guess was to try to somehow use the documentation of the C++ source code that is attached to the objects/functions related to the scripting engine. While that sounds straightforward, it has some problems: On the one hand, the syntax of C++ and Javascript is different (e.g., there is no **void** in JS), and, more important, the documentation targets the wrong audience: if you want to use the Javascript function, you'd probably not very interested in the details of marshaling data types between Javascript and C++.
+The alternative is to set up a specific "Javascript API documentation" that targets script hackers and deals with Javascript syntax.
+After some failings I stumbled upon [a perl script for Javascript to Doxygen conversion](http://jsunit.berlios.de/internal.html). This script creates from Javascript a "kind" of C++ code which would not compile but can be processed by Doxygen.
+After a couple of minor difficulties (e.g. how to execute perl scripts on windows) I managed to set up the production chain:
+
+* write the docmentation in the IDE (Qt Creator)
+* process by the perlscript js2doxy.pl
+* process the result with Doxygen
+
+However, it took some time until I found out how to write the documentation right....
+And here are the rules:
+
+* write a "constructor" function (even if it is not used).
+* write the signatures of the functions in javascript; use the special commands for paramters/return values to provide types in the documentation
+* assign the function to the prototype (!). This is just to show  membership relatiions to the js2doxy-script
+
+Here is an example:
+
+
+::: {.callout-note}
+
+```
+/** DataSource is the basic object to handle input data of various sources.
+*/
+function DataSource()   // constructor (use  @ctor to add real docmentation)
+{ }
+ ...
+
+/** advance to next record and retrieve content. Returns false, if pointer is located behind the last record.
+The next() function provides a efficient looping construct:
+@code
+// ds: a data source
+while (ds.next()) {
+   // do something
+}
+@endcode
+@treturn bool Returns false, if pointer is located behind the last record. */
+function next() {}
+DataSource.prototype.next = next;
+
+/**
+opens a datasource with a given \p type from a specific source \p name.
+Opens a data source. Writes a output message if opening the data source failed.
+@tparam string type Type of the datasource.
+@tparam string name path to the file (for file based data sources) or the SQL query for database types.
+\sa isOpen() */
+function open(type, name) {}
+DataSource.prototype.open = open;
+```
+
+:::
+
+
+Note the way the how datatypes are descibed for the *open* function, and how code examples are included for the *next* function.
+Hopefully soon I will add a link to an example of how such a documentation then looks like in HTML format...
+This way of documentation is obviously not perfect; however, it allows to separate clearly between source code doc and users doc and is uses the same tools (i.e., Doxygen).

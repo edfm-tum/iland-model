@@ -1,0 +1,35 @@
+---
+title: "On “publishing” a model"
+date: "2012-02-16"
+author: "Rupert Seidl"
+---
+
+***Publishing a model – what it is****
+
+*Put the executable online, says the (potential future) user*
+*Put the code online, says the fellow model developer*
+*Write a paper about it, says your tenure committee*
+*Put the technical documentation online, says the PhD student*
+*Write a paper about it, says the evaluator of your next proposal*
+*Write two papers about it (because there is too much information), says Reviewer #1*
+*Write a paper about it (but in a different journal), says Reviewer #2*
+*[Nothing], says the subject editor (and forgets the paper on a pile somewhere for half a year)*
+*Blog about it, says the grad student*
+*Do all of the above, says the model*
+
+On the eve of finally publishing the core conceptual approach of iLand, I’ve been pondering quite a bit what “publishing a model” actually means. Of course, peer-reviewed journal publications are the currency of our “[publish-or-perish](http://en.wikipedia.org/wiki/Publish_or_perish)” science world, but are they really the best way publish (as in: to make what you’ve developed available to the community) a simulation model? From personal experience I’m inclined to say “no”, or at least “yes, but not exclusively”, because of the following factors:
+
+* **Time:** It takes on average a year to get a paper published from the first submission to its final publication. Add three to six months for writing and internally reviewing the manuscript before submission, and six to 24 months (depending on the complexity of the endeavor) for model development and testing, and you’ll end up taking between 21 and 42 months (that’s a range of 1.75 to 3.5 years) between having an idea and communicating it with your peers. Needless to say there’s a lot of [progress](http://en.wikipedia.org/wiki/Moore's_law) in 3.5 years, particularly in a strongly technology-driven field such as modeling, i.e. your initial problem might already be obsolete (e.g., technological advances might have relaxed prior limitations), somebody else might have put out a similar idea in the meantime, etc.
+
+* **Level of detail:** More and more journals put page restrictions on papers, and more and more reviewers demand the lean studies that we’ve all gotten so used to in this day and age of the “[least publishable unit](http://en.wikipedia.org/wiki/Least_publishable_unit)”. So you basically end up having to gloss over a lot of details to publish a complex model in a journal article. Or, if you’re like me, and have been trying to re-trace the models of other people from their papers A LOT, you end up writing online appendices that are (almost) as extensive as the original paper. In general, these online appendices are a good opportunity to communicate more detail about a model without hampering the narrative of the paper. But let’s be honest, they are rarely looked at with the same rigor by reviewers, are even less read by your random reader, and are not at all included/ considered in the current system of quantifying the value and quality of a contribution (think number of downloads, citiations, etc.).
+
+* **Utility:** So even if you do end up writing a detailed online supplement (somebody once told me I’m wasting a [perfectly good second paper](http://en.wikipedia.org/wiki/Least_publishable_unit) on an Appendix), it is in many cases still not enough to make your modeling work really useful. First, some of the details only reveal themselves in a technical documentation or, even better, in the code. Second, if you’ve been sold by a convincing paper and want to try the model, an appendix doesn’t really help you. What you’ll need in the latter case is an executable, a documentation of inputs and drivers, and ideally some templates and examples for you to just hit “play” and toy around a bit to get an idea about what the model actually does…
+
+* **Visibility:** We scientists oftentimes tend to reduce visibility to the impact factor of a journal. But let's face it, if we were to do an [initial search on a subject](http://www.google.com/search?q=forest+landscape+model), even we'd start out by using everybodys tool of the trade for [searching the world](http://www.google.com) (wide web). Particularly for simulation modeling platforms, which are designed to be applicable over a wide range of conditions and to a wide range of questions (and would thus (at least in theory) be of interest to a wide range of people - a major difference to case-specific empirical models), there should be more to it than a [proprietary measure of journal importance](http://en.wikipedia.org/wiki/Impact_factor). What I'm saying is: A paper in a well-esteemed journal of course doesn’t hurt for a models visibility, but it’s the 21st century (and I’ve lost track if its web 2.0, 3.0 or any other version out there currently). [Foreign affairs cables](http://wikileaks.org/) are being blogged. Revolutions are being [televised](http://www.youtube.com/results?search_query=tahrir+square). The news of the day are being [tweeted from every corner](http://en.wikipedia.org/wiki/Twitter#Use_and_social_impact) in real time (and thereby transforming the course of actions). So why not use these channels also to spread the word on your latest model? To engage into a discussion with the world beyond the selected readers of the big syndicated publishers? To enable a discussion of ideas more immediately and directly?
+
+
+You guessed it already, but addressing these issues is what we’re aiming for with the “model publication strategy 2.0” we’re pursuing with iLand. To have high quality papers in esteemed journals. To have the code and documentation available only a mouse click away. And, of course, to blog about it (case in point) – so stay tuned.
+
+
+
+*modified from Erich Fried. All characters and statements are completely fictional and are not ment to be a faithful reproduction of our publishing experience with iLand.

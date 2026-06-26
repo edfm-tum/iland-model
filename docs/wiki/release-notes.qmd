@@ -1,0 +1,291 @@
+---
+title: "release notes"
+---
+
+This page contains more technical details for individual releases. The bigger picture of iLand versions and releases is drawn on the  [iLand Software](iland-software.qmd) page.
+
+
+required changes to the species parameter table (run this SQL code):
+
+```sql
+alter table species add column estSOLthickness numeric;
+```
+
+
+
+
+# released versions
+
+
+
+
+## iLand 2.0
+
+
+Details in [this blog post](../blog/blogpost60-release-of-iland-20.qmd).
+
+
+## iLand 1.0
+
+
+Details in the blog posts [here](../blog/blogpost58-iland-10-released.qmd) and [here](../blog/blogpost57-iland-10-release-in-numbers.qmd)
+SVN: date: 2016/11/16
+features: final release of the iLand includes all planned features ;).
+
+required changes to the species parameter table (run this SQL code):
+
+
+```sql
+alter table species add column browsingProbability numeric;
+alter table species add column serotinyFormula char;
+alter table species add column serotinyFecundity numeric;
+alter table species add column estPsiMin numeric;
+alter table species add column  sapSproutGrowth numeric;
+```
+
+
+
+
+## iLand 0.9
+
+
+SVN: date: 2015/xx/xx
+features: iLand with bark beetle module.
+This release has been skipped. 1.0 is around the corner.
+
+
+
+
+## iLand 0.8
+
+
+Details on the [blog](../blog/blogpost52-new-iland-release-08.qmd).
+SVN: 926 date: 2014/08/01
+features: iLand on fire.
+The release 0.8 includes the [fire module](fire-module.qmd). Required for the fire module was, inter alia, the inclusion of a digital elevation model.
+
+
+### New species parameters:
+
+
+
+```
+-- add columns
+alter table species add barkThickness real;
+-- provide default values
+update species set barkThickness=0.065; -- the Psme value
+```
+
+
+new XML-section: see [fire module](fire-module.qmd).
+
+
+
+## iLand 0.7
+
+
+SVN: 805, date: 2013-10-14
+iLand 0.7 is the first version of iLand that includes a [disturbance modules](disturbance-modules.qmd). The first of these modules is the [wind module](wind-module.qmd). The [wind module](wind-module.qmd) page describes inter alia the necessary steps to setup the required species parameter table for wind related parameters.
+
+
+
+
+## iLand 0.6.9
+
+
+SVN: 673, date: 2011/10/19
+This iLand version is the version capable of running large scale simulations (read: HJAndrews). It includes advanced management operations (using maps of management) and various other impovements.
+The version 0.6.9 is the program version used for the first batch of HJA simulations.
+
+
+
+## release notes iLand 0.5 alpha
+
+
+The new release includes new features and several bug-fixes (current svn#: 527). This release includes snag dynamics and carbon/nitrogen cycle including a soil sub model (ICBM/2N). The release needs new XML-settings and new species-settings:
+
+
+### XML (section *model.settings* and *model.site*)
+
+
+
+```
+in section "model.settings":
+	  <soil>
+		  <qb>5</qb> <!-- CN ratio of soil microbes -->
+		  <qh>25</qh> <!-- CN ratio of SOM -->
+		  <leaching>0.15</leaching> <!-- how many percent of the mineralized nitrogen in O is not available for plants but is leached -->
+		  <el>0.0577</el> <!-- microbal efficiency in the labile pool, auxiliary parameter -->
+		  <er>0.073</er> <!-- microbal efficiency in the refractory pool, auxiliary parameter -->
+		  <swdDBHClass12>20</swdDBHClass12> <!-- class break between classes 1 and 2 for standing snags (dbh, cm) -->
+		  <swdDBHClass23>60</swdDBHClass23> <!-- class break between classes 2 and 3 for standing snags (dbh, cm) -->
+	     <useDynamicAvailableNitrogen>true</useDynamicAvailableNitrogen> <!-- if true, iLand utilizes the soil-model N for species responses. -->
+
+	  </soil>
+```
+
+
+
+```
+<youngLabileC>33000</youngLabileC> <!-- (initial) carbon content of ylC (i.e. litter) soil pool (kg/ha) -->
+	  <youngLabileN>450</youngLabileN> <!-- (initial) nitrogen content of ylC soil pool (kg/ha) -->
+	  <youngLabileDecompRate>0.08</youngLabileDecompRate> <!-- (initial) decomposition rate of yl pool  -->
+	  <youngRefractoryC>247000</youngRefractoryC> <!-- (initial) carbon content of yrC (woody) soil pool (kg/ha) -->
+	  <youngRefractoryN>990</youngRefractoryN> <!-- (initial) nitrogen content of yrC (woody) soil pool (kg/ha) -->
+	  <youngRefractoryDecompRate>0.03</youngRefractoryDecompRate>  <!-- (initial) decomposition rate of yr pool  -->
+	  <somC>375000</somC> <!-- (initial) carbon content of oC (soil organic matter) soil pool (kg/ha) -->
+	  <somN>15000</somN> <!-- (initial) nitrogen content of oN (soil organic matter) soil pool (kg/ha) -->
+	  <somDecompRate>0.02</somDecompRate> <!-- decomposition rate for soil organic matter (i.e. the "old" pool sensu ICBM) -->
+	  <soilHumificationRate>0.3</soilHumificationRate> <!-- humification rate -->
+```
+
+
+
+
+### Species parameters
+
+
+
+```
+-- add columns
+alter table species add cnFoliage real;
+alter table species add cnFineroot real;
+alter table species add cnWood real;
+alter table species add snagKSW real;
+alter table species add snagHalfLife real;
+-- provide default values
+update species set cnFoliage = 75, cnFineroot=40, cnWood=300, snagKSW=0.015, snagHalfLife=15;
+--- update 2010-12-07
+--- kyl and kyr as species parameter
+alter table species add snagKYL real;
+alter table species add snagKYR real;
+update species set snagKYL=0.15, snagKYR=0.0807;
+```
+
+
+
+
+## release notes iLand 0.4
+
+
+iLand 0.4 is released on ??? 08/xx/2010 with SVN revision 4xx.
+Main achievement of version 0.4 is the implementation of "seed dispersal and regeneration". It includes:
+
+* production of seeds of mature trees
+* dispersal of the seeds using a two-phase dispersion algorithm
+* the calculation of establishment probabilties using the TACA model
+* the establishment and growth of saplings
+* the recruitmment of sapling-cohorts into the "real" iLand
+
+Species behaviour is controlled by (currently) 20 species parameters.
+
+
+
+### Other improvements:
+
+
+
+* visualization of regeneration (saplings) in the GUI. Color indicates maximum height of saplings on that pixel.
+* new values in resource-unit-statistics:
+    * cohortCount: number of cohorts on RU
+    * saplingCount: same as cohortCount (representative N with Reinecke not implemented)
+    * saplingAge: mean age of saplings on RU
+* new columns in stand ouput
+
+
+
+### Debug-Output "Establishment":
+
+
+
+| RU_index | 0-based index of resource unit |
+| --- | --- |
+| avgProbDensity | mean seed density on RU (avg probability of all seed cells (i.e. 20m) on a RU (100x100m)) |
+| TACAminTemp | absolute minimum-temperatur, boolean-switch, false: establishment = NO |
+| TACAchill | chilling requirement (number of days), boolean-switch, false: establishment = NO |
+| TACAfrostFree | number of frost-free days, boolean-switch, false: establishment = NO |
+| TACAgdd | true = gdd within thresholds |
+| TACAFrostAfterBud | frostdays after budbirst are counted to the end of vegetation period |
+| TACAAbioticEnv | result after abiotic environment (after multiplication with fEnvYr) (result of  tolerance pow(sqrt(frostdays after budbirst)) * fEnvYr) |
+| fEnvYr | still missing: f_ref: parameter that scales response values to the range 0..1 (1 for best growth conditions) |
+| avgLIFValue | average LIF value of all pixels that are tested for esetablishment. If no pixels were tested, avgLifValue=0. |
+| N_Established | number of cells in RU where establishment was successful |
+| Living_cohorts | number of cohorts on resource unit |
+| averageHeight | average height of cohorts (the cohort statistics are based on all cohorts that survive, i.e. that do not die or get recruited) (m) |
+| averageAge | average age of cohorts (living) |
+| avgDeltaHPot | average height increment potential (of all "surviving" cohorts) (m) |
+| avgDeltaHRealized | average realized height increment (m) |
+| Added | number of cohorts established in current year on RU |
+| Died | number of cohorts that died (due to stress) in the current year on RU |
+| Recruited | number of cohorts that recruited to the iLand-model in the current year on RU |
+
+
+
+
+### SQL statements
+
+
+
+
+```
+*** seed production / dispersal ***
+- add columns for regeneration
+alter table species add maturityYears integer;
+alter table species add seedYearInterval integer;
+alter table species add nonSeedYearFraction real;
+alter table species add fecundity_m2 real;
+alter table species add seedKernel_as1 real;
+alter table species add seedKernel_as2 real;
+alter table species add seedKernel_ks0 real;
+
+-- default values
+update species
+set maturityYears=30,seedYearInterval=5, nonSeedYearFraction=0.25,
+fecundity_m2=100, seedKernel_as1=100, seedKernel_as2=0, seedKernel_ks0=0;
+
+*** establishment ***
+
+alter table species add estMinTemp real;
+alter table species add estChillRequirement integer;
+alter table species add estGDDMin integer;
+alter table species add estGDDMax integer;
+alter table species add estGDDBaseTemp real;
+alter table species add estBudBirstGDD integer;
+alter table species add estFrostFreeDays integer;
+alter table species add estFrostTolerance double;
+
+-- default values establishment
+update species
+set estMinTemp=-37, estChillRequirement=56, estGDDMin=177,
+estGDDMaX=3261, estGDDBaseTemp=3.4,
+estBudBirstGDD=255, estFrostFreeDays=65, estFrostTolerance=0.5;
+
+*** sapling growth ***
+
+-- new columns
+alter table species add sapHeightGrowthPotential text;
+alter table species add sapMaxStressYears integer;
+alter table species add sapStressThreshold real;
+alter table species add sapHDSapling real;
+alter table species add sapReinekesR real;
+--default values
+update species set sapHeightGrowthPotential='40*(1-(1-(h/40)^(1/3))*exp(-0.1))^3',
+sapMaxStressYears=3, sapStressThreshold=0.1, sapHDSapling=80, sapReinekesR=1450;
+
+**** update --- additional parameters for sapling growth ****
+alter table species add sapReferenceRatio real;
+update species set sapReferenceRatio = 1;
+```
+
+
+
+
+## release notes iLand pre 0.5 alpha
+
+
+
+
+```
+alter table species add displayColor text;
+update species set displayColor='547239';
+```

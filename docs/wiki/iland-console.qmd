@@ -1,0 +1,66 @@
+---
+title: "iLand console"
+---
+
+
+# iLand console application
+
+The iLand console application ("*ilandc*") is a command-line version of iLand. It contains the same core functionality as the [iLand+viewer](iland-viewer.qmd) (actually, both applications use the same code base), but does not sport a graphical user interface. The main purpose of ilandc is for automating simulation jobs and/or for running in environments where no graphical user interface is available. The name of the executable of the console version is *ilandc *(whereas the name of the GUI version is 'iland'). The console version is part of the [iLand download package](download.qmd). The "ilandc" version is also used in applications facilitating a [computer cluster environment](iland-cluster.qmd).
+
+## Instructions
+
+```bash
+ilandc project-file years additional-options
+```
+
+* project-file: path of a valid iLand [project+file](project-file.qmd)
+
+* years: the number of years to simulate
+
+* additonal-options: additional key=value pairs that represent values for settings that are set after the project is loaded, i.e., overwrite the default project file. The settings are modified *before* the project is loaded. If the value contains and space characters, the value string must be enclosed by "-characters.
+
+Javascript functions can also be called from the additional options: these are specified as *event=javascriptFunction(parameters)*. Valid *events *are:
+
+onCreate
+triggered after creating the model immediately before the simulation of the first year.
+onfinish
+triggered after the last year of the simulation is finished. (Note: onfinish with capital "F" - the tikiwiki always changes to lowercase)
+
+Examples:
+
+run "project.xml" for 100 years:
+
+```bash
+ilandc project.xml 100
+```
+
+run the same project, but disable the stand output:
+
+```bash
+ilandc project xml 100 output.stand.enabled=false
+```
+
+in addition, modify a external seed parameter (note the "-characters):
+
+```bash
+ilandc project.xml 100 output.stand.enabled=false model.seedDispersal.seedBelt.species_0_0="abal 0.1 piab 0.1 lade 0.1"
+```
+
+call a special javascript function, when the simulation has finished:
+
+```bash
+ilandc project.xml 100 onfinish="runmyFunction('my file name');"
+```
+
+## Platforms
+
+*ilandc *is known to run for the following platforms:
+
+* Windows 32bit (gcc)
+
+* Windows 64bit (gcc, msvc)
+
+* Linux 32Bit (Ubuntu) (gcc)
+
+* Linux 64Bit (Red hat) (gcc, icc)
+

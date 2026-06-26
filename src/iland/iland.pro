@@ -522,9 +522,12 @@ DISTFILES += \
     ../abe-lib/planting/planting.js \
     ../abe-lib/thinning/selective.js \
     ../abe-lib/thinning/thinning.js \
+    ../apidoc/ABE/abe_context_doc.js \
+    ../apidoc/ABE/abe_doc.js \
     ../apidoc/ABE/abe_patches.js \
     ../apidoc/ABE/deadtreelist_doc.js \
     ../apidoc/ABE/saplinglist_doc.js \
+    ../apidoc/ABE/treelist_doc.js \
     ../apidoc/iLand/grid_doc.js \
     ../apidoc/iLand/map_doc.js \
     ../apidoc/iLand/factory_doc.js \

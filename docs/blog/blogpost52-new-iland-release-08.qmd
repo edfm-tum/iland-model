@@ -1,0 +1,15 @@
+---
+title: "New iLand release 0.8!"
+date: "2014-07-30"
+author: "Werner Rammer"
+---
+
+We are happy to announce the release of a new iLand version (0.8). Its main feature is the inclusion of a dynamic [fire disturbance module](../wiki/wildfire.qmd). The model software (including a ready-to-run example and the full source code) are available at the [download](../wiki/download.qmd) page.
+
+The release follows [our recent publication in Ecological Applications](http://dx.doi.org/10.1890/14-0255.1) on the role of disturbance legacies. The paper presents an application of iLand at the [HJ Andrews](http://andrewsforest.oregonstate.edu/) experimental forest in Orgeon, US. In the study we ran long-term simulations (with the new fire module engaged) starting from different legacy levels after a landscape level disturbance, and analyzed the simulated successional patterns over 500 years. We found that life tree legacies have not only an effect on the long-term trajectories of ecosystem carbon storage, but also on species composition and structure. More details can be found in [this](blogpost42-iland-is-burning.qmd) and [this](blogpost38-gauging-forest-carbon-with-iland.qmd) blog post. The development and testing of the iLand wildfire module - which was a prerequisite for conducting this study - is described in detail in two Appendices of the paper (and of course in the [iLand wiki](../wiki/wildfire.qmd)).
+
+In fact the development of the iLand fire module actually started already 2011 (see, for example, [this blog post](blogpost28-summer-time-is-fire-time.qmd)), illustrating nicely that the cycle of model development, model application, paper writing, and paper publication can take quite a long time.
+
+But there is more than the new [fire module](../wiki/fire-module.qmd) in this release. Most notably, iLand now also includes a command-line version (without a graphical user interface), making it a perfect tool for [High-Performance-Computing environments](blogpost49-a-clusterful-of-secrets.qmd) (note that the download package contains only windows binaries though). In addition, many small fixes and additions made it into this release (e.g., more detailed [database outputs](../wiki/outputs.qmd), extended Javascript bindings for forest [management](../apidoc/classes/iland/management.qmd), improved stability due to bugfixes, ...).
+
+With this release the number of available disturbance modules effectively doubled (now being two). Since we, of course, are aware that [three shall be the number](https://www.youtube.com/watch?v=xOrgLj9lOwk), we are currently working on also bringing bark beetles into iLand. So stay tuned!

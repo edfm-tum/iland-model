@@ -1,0 +1,11 @@
+---
+title: "Novelty"
+date: "2013-06-18"
+author: "Rupert Seidl"
+---
+
+If it wasn't for another round of [recent technological advances](blogpost44-64-bits-and-qt-5.qmd) (the computer world never sleeps, it seems!) it would have been seriously quiet around here recently. One thing that's certainly not behind this quiet is the iLand world being idle... Au contraire - we're happily hacking away, both on the modeling side as well as on the publishing side of things, working on a few - as we think - quite novel ideas.
+
+Ah novelty... it is such an ambivalent thing in science - everybody [wants it](http://researchinprogress.tumblr.com/post/35627073462/when-your-method-is-re-discovered-without-any-citation), we all need it to get funded, or published (which we again need to get funded, which...). But it is hard to come by after 100+ years of systematic scientific inquiry, and most (if not all) scientific breakthroughs are incremental and build on a large body of previous work, if one takes a closer look. Yet, also funding agencies and journals need to sell their decisions these days, I guess, and can't always escape the trend towards a societal attention span equaling that of a toddler.
+
+Anyway, enough with ranting already. We hope to get back with more details on our novel activities soon, but in the meanwhile, [here's a link](http://dx.doi.org/10.1016/j.tree.2013.05.007) to a recent critique on the obsession with novelty in current academic publishing. It probably wins the "best paper title of the year" award too, so make sure to [click through](http://dx.doi.org/10.1016/j.tree.2013.05.007) - if just for the title.

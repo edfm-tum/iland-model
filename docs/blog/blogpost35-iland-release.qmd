@@ -1,0 +1,15 @@
+---
+title: "iLand release"
+date: "2012-03-21"
+author: "Rupert Seidl"
+---
+
+We're delighted to let you know that after [more than three years](blogpost3-project-kickoff-iland-on-its-way.qmd) of research, discussion, coding, and testing iLand is finally [published](blogpost33-on-publishing-a-model.qmd). A paper describing the core components of the iLand approach with regard to individual-tree competition for resources, growth, and mortality, and demonstrating the models' ability to simulate both even-aged and complex stands, has recently been published in [Ecological Modelling](http://dx.doi.org/10.1016/j.ecolmodel.2012.02.015). In line with our open source strategy it'll also become "open access" soon, i.e. available to everyone (with access to the internet).
+
+In parallel to this peer-reviewed publication we have also published [the model code and software version](../wiki/iland-releases.qmd) that was used in the simulation exercises presented in the paper. You can download the package [here](../wiki/download.qmd), and since we even supply some example simulation files running iLand on your machine is only a click away.
+
+But there's even more. Despite publishing a 36 page appendix alongside the paper, to describe our model logic in more detail, we have also made the respective [iLand wiki documentation pages](../wiki/iland-hub.qmd) public over the last days. On this 70+ pages you can browse interactively through the iLand world, search for key words you're interested in, or link yourself directly to relevant references we relied on in developing iLand.
+
+For us this is a great moment (and we'll go celebrating it later this week ;-). Let me take this opportunity to thank everybody who contributed to making this possible, particularly the [amazing colleagues](../wiki/team.qmd) who worked with us on iLand over the last three years, but also the funding sources making all of this possible, above all the [EC's FP7 Marie Curie program](http://ec.europa.eu/research/mariecurieactions/index.htm).
+
+So is this it? No, quite the contrary. For us, this is only the beginning. We're currently working on a number of additions (think disturbance modules) for iLand, so iLand development is far from finished (hence also the v0.3 of the currently public[model version](../wiki/iland-releases.qmd)). And, of course, we didn't develop the model for the sake of model development itself (although that's a fun and interesting process, I admit): We're currently conducting a number of studies applying the model to a variety of questions, including an investigation into the drivers of C storage in complex mountain forest landscapes, the interactions between disturbances and forest vegetation, and the link between [biodiversity and ecosystem functioning](http://www.fundiveurope.eu/).

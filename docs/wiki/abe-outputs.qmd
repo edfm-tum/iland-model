@@ -1,0 +1,107 @@
+---
+title: "ABE outputs"
+---
+
+ABE provides several outputs with different spatial/temporal grain (see [organizing outputs](organizing-outputs.qmd), and other [iLand outputs](outputs.qmd)).
+
+
+
+
+
+## Annual harvests and harvest plan on unit level.
+
+
+Table Name: abeUnit
+The output provides planned and realized harvests on the level of planning units. Note that the planning unit area, mean age, mean volume and MAI are only updated every 10 years. Harvested timber is given as 'realizedHarvest', which is the sum of 'finalHarvest' and 'thinningHarvest.' The 'salvageHarvest' is provided extra, but already accounted for in the 'finalHarvest' column
+
+
+| **caption** | **datatype** | **description** |
+| --- | --- | --- |
+| year | integer | simulation year |
+| id | string | unique identifier of the planning unit |
+| area | double | total area of the unit (ha) |
+| age | double | mean stand age (area weighted) (updated every 10yrs) |
+| U | integer | default rotation length for stands of the unit (years) |
+| thinningIntensity | double | default thinning intensity for the unit |
+| volume | double | mean standing volume (updated every 10yrs), m3/ha |
+| MAI | double | mean annual increment (updated every 10yrs), m3/ha*yr |
+| decadePlan | double | planned mean harvest per year for the decade (m3/ha*yr) |
+| annualPlan | double | updated annual plan for the year, m3/ha*yr |
+| runningDelta | double | current aggregated difference between planned (10yr period) and realised harvests (+decay); positive: more realized than planned harvests, m3/ha*yr |
+| realizedHarvest | double | total harvested timber volume, m3/ha*yr |
+| finalHarvest | double | total harvested timber of planned final harvests, m3/ha*yr |
+| thinningHarvest | double | total harvested timber due to tending and thinning operations, m3/ha*yr |
+| salvageHarvest | double | total harvested timber due to salvage operations , m3/ha*yr |
+
+
+
+
+
+## Annual stand output (state).
+
+
+Table Name: abeStand
+This output provides details about the forest state on stand level. The timber is provided as standing timber per hectare.
+The output is rather performance critical. You can use the *condition* XML-tag to limit the execution to certain years (e.g., mod(year,10)=1 ).
+
+
+| **caption** | **datatype** | **description** |
+| --- | --- | --- |
+| year | integer | simulation year |
+| unitid | string | unique identifier of the planning unit |
+| standid | integer | unique identifier of the forest stand |
+| initialstandid | integer | stand id if not split, stand id of the source stand after splitting a stand. |
+| area | double | total area of the forest stand (ha) |
+| volume | double | standing timber volume (after harvests of the year) (m3/ha) |
+| basalarea | double | basal area (trees >4m) (m2/ha) |
+| dbh | double | mean diameter (basal area weighted, of trees >4m) (cm) |
+| height | double | mean stand tree height (basal area weighted, of trees >4m)(cm) |
+| stems | double | number of trees (trees >4m) per ha |
+| age | double | the age of the stand (years since beginning of the rotation) |
+
+
+
+
+
+## Detailed annual stand output (state).
+
+
+Table Name: abeStandDetail
+This output provides details about the forest state on species- and stand level. This output is more detailed than the abeStand output.
+The output is rather performance critical. You can use the *condition* XML-tag to limit the execution to certain years (e.g., mod(year,10)=1 ).
+
+
+| **caption** | **datatype** | **description** |
+| --- | --- | --- |
+| year | integer | simulation year |
+| species | string | tree species |
+| standid | integer | unique identifier of the forest stand |
+| basalarea | double | basal area of the species(trees >4m) (m2/ha) |
+| relBasalarea | double | relative basal area share of the species (trees >4m) (0..1) |
+
+
+
+
+
+## Annual harvests on stand level.
+
+
+Table Name: abeStandRemoval
+This output provides details about realized timber harvests on stand level. The timber is provided as standing timber per hectare. The total harvest on the stand is the sum of thinning and final.
+
+
+| **caption** | **datatype** | **description** |
+| --- | --- | --- |
+| year | integer | simulation year |
+| unitid | string | unique identifier of the planning unit |
+| standid | integer | unique identifier of the forest stand |
+| area | double | total area of the forest stand (ha) |
+| age | double | absolute stand age at the time of the activity (yrs) |
+| activity | string | name of the management activity that is executed |
+| volumeAfter | double | standing timber volume after the harvest operation (m3/ha) |
+| volumeThinning | double | removed timber volume due to thinning, m3/ha |
+| volumeFinal | double | removed timber volume due to final harvests (regeneration cuts), m3/ha |
+| volumeSalvaged | double | removed timber volume due to salvaging (m3/ha) |
+| volumeDisturbed | double | disturbed trees on the stand, m3/ha. Note: all killed trees are recorded here,also those trees that are not salvaged (due to size and other constraints) |
+
+

@@ -1,0 +1,15 @@
+---
+title: "Why iLand has been developed"
+---
+
+Forest ecosystems cover roughly 30% of the global land area, store approximately three times more carbon than the earth's atmosphere, are hotspots of biodiversity, and provide a multitude of ecosystem services to society. However, many of these crucial ecosystem functions and services are severely threatened by anthropogenic climate change. Understanding the trajectories and sensitivities of forest ecosystems is thus crucial for sustaining the planet's life-support system, and for a transformation towards a sustainable, carbon-neutral society.
+
+Forest ecosystems are complex adaptive systems. Their dynamics emerges from nonlinear interactions between adaptive biotic agents (i.e., individual trees) and their relationship with a spatially and temporally heterogeneous abiotic environment. Processes at multiple scales, from organs of individual trees (e.g., photosynthesis) to the landscape (e.g., wildfire) interact to form diverse and resilient ecosystems. In order to assess how climate change - which affects a variety of these processes - will impact ecosystems, and to sustainably manage these complex systems, we need to consider these multiple interactions among processes and scales. To that end, we have developed a simulation model of forest ecosystem dynamics at landscape scales, the **i**ndividual-based forest **lan**dscape and **d**isturbance model **iLand**.
+
+iLand explicitly simulates the principal adaptive agents in forest ecosystems, i.e., individual trees, over large areas. This scalability is achieved by:
+
+1. Employing a pattern-based rendering of ecological field theory to efficiently model spatially explicit resource availability at the landscape scale (see [Competition for Light](competition-for-light.qmd)).
+2. Integrating local resource competition and physiological resource use (see [Primary Production](primary-production.qmd)) via a hierarchical multi-scale framework (see [Scaling across space and time](scaling.qmd)).
+
+See also: [iLand complexity and its niche in the landscape of models](iland-model-complexity-and-its-niche-in-the-landscape-of-models.qmd)
+

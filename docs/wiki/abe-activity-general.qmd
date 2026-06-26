@@ -1,0 +1,18 @@
+---
+title: "ABE activity general"
+---
+
+The “General” activity is the most basic, general purpose activity that can be used for all kinds of activities.
+
+ 
+
+| **Property** | **Description** |
+| --- | --- |
+| action | Javascript function that is executed when the activity is executed. |
+
+
+
+::: {.callout-note title="citation"}
+[Rammer, W., Seidl, R., 2015](http://dx.doi.org/10.1016/j.gloenvcha.2015.10.003). Coupling human and natural systems: Simulating adaptive management agents in dynamically changing forest landscapes. Global Environmental Change, 35, 475-485.
+:::
+

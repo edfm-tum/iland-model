@@ -1,0 +1,48 @@
+---
+title: "resource unit variables"
+---
+
+
+A list of variables provided by each resource unit.
+These variable names are used when binding a single resource unit to a [expression](expression.qmd).
+
+## General variables
+
+| **Name** | **Description** |
+| --- | --- |
+| year | current simulation year. |
+
+ 
+
+## Resource unit variables
+
+| **Name** | **Description** |
+| --- | --- |
+| index | unique index of the resource unit. 0-based. |
+| id | id of the unit provided in [resource unit grid mode](simulation-extent.qmd#grid-mode), or -1 otherwise |
+| area | total stockable area of the resource unit (m2). The value is determined by the initial stand grid. |
+| totalEffectiveArea | (0..1). intermediate variable for production calculation. |
+| nitrogenAvailable | available nitrogen (kg/ha*yr) |
+| soilDepth | depth of the soil (mm) |
+| waterHoldingCapacity | WHC (mm) of the soil (using -4MPa as permanent wilitng point) |
+| stockedArea | area covered by trees (calculation is based on 2m-pixels) (m2) |
+| count | number of trees / ha |
+| volume | sum of volume of the tree bole (m3) |
+| totalCarbon | total living carbon (including above + belowground, trees and regeneration) kg/ha |
+| avgDbh | arithmetic mean of DBH (cm) |
+| avgHeight | arithmetic mean of tree height (m) |
+| basalArea | total basal area of all trees (m2) |
+| leafAreaIndex | total LAI (m2/m2)leaf area weighted average aging factor (0..1) |
+| aging | total average aging (weighted by LAI) factor. |
+| cohortCount | total number of cohorts per ha in the sapling phase. |
+| saplingCount | total number of individuals in the sapling phase (>1.3m) per ha. |
+| canopyConductance | LAI weighted average canopy conductance (m/s) (including the conductance of the "ground cover" layer) |
+| soilC | total Carbon content (t/ha) in soil (sum of young, refractory and SOM) |
+| soilN | total Nitrogen content (t/ha) in soil (sum of young, refractory and SOM) |
+| snagC | total Carbon (kg/ha) present in the standing woody pools (i.e.: carbon in snag diameter classes and carbon in branch/coarse root pools) |
+| meanTemp | mean annual temperature (daytime) on the resource unit (°C) |
+| annualPrecip | annual precipitation (mm) on the resource unit |
+| annualRad | total incoming radiation (MJ) per year |
+
+ 
+

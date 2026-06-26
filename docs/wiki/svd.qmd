@@ -1,0 +1,71 @@
+---
+title: "SVD"
+---
+
+
+
+# Scaling Vegetation Dynamics
+
+
+ 
+
+ 
+
+
+
+## SVD
+
+
+The [SVD framework](https://svdmodel.github.io/SVD/#/) is a deep-learning based modeling framework for upscaling vegetation transitions. iLand is particularly well suited to provide training data for the deep neural networks and ecosystem attribute data. The model already includes the means to classify vegetaiton into distinct "states" that are used in SVD and direct outputs to generate attribute information.
+The spatial grain for SVD related data is the resource unit level, i.e. 1ha.
+
+
+
+## Definition of states
+
+
+
+The section *model.settings.svdStates* in the [project file](project-file.qmd) is dedicated to the definition of states in iLand.
+
+
+| Key | Type | Description |
+| --- | --- | --- |
+|  | enabled | boolean |
+|  | structure | string |
+|  | functioning | string |
+
+
+
+
+### The classification of structure
+
+
+The *structure* component is related to the canopy height on a resource unit; we here use the "top height" which we define as the 90th percentile of the the maximum tree height on the 10m "height grid".
+A canopy is *irregular* when the height on 50% of the area (10m pixels) is below the top height
+
+The following types are available (key *structure*):
+
+* **4m**: classes with a width of 4m (0- <4m, 4- <8m, 8 - <12m, ...) and a maximum height of 80m. For irregular canopies the class width is 12m (<12, 12- <24, ... 48- <60m, >=60m). The total number of classes is 27 (21 standard, 6 irregular). This is the default value.
+* **2m**: classes with a width of 2m and a maximum top height of 60m (0 - <2m, 2 - <4m, .... 58 - <60m, >60m ). For irregular canopies the class width 8m (<8m, 8 - <16m, 48- <56m, >=56m). The total number of classes is 39 (31 standard, 8 irregular)
+
+
+
+### The classification of functioning
+
+
+Ecosystem functioning is based on the leaf area index of a resource unit. The leaf area index includes both adult trees (height >4m) and saplings (<4m).
+The following schemes are available (key *functioning*):
+
+* **3**: three classes: LAI 0 - <2, 2 - <4, >=4 (default)
+* **5**: five classes LAI 0- <1, 1- <2, 2- <3, 3- <4, >=4
+
+
+
+
+## SVD related outputs
+
+
+
+There are several outputs related to SVD, e.g. [#Unique_forest_states|SVDUniqueState](outputs.qmd) [#SVD_forest_indicator_data|SVDIndicator](outputs.qmd).
+See [Outputs](outputs.qmd) for the details!
+

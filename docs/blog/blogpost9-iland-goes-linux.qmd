@@ -1,0 +1,11 @@
+---
+title: "iLand goes Linux"
+date: "2009-09-10"
+author: "Werner Rammer"
+---
+
+Up and then I think about switching to Linux, and up and then I install a Linux version somewhere on my harddrive, boot it up, play around, get stuck (usually, WLAN drivers play a role here), and soon after that I give it up. Recently, I tried [Virtul Box](http://www.virtualbox.org/) and here the experience differed significantly: I installed a Ubuntu 9.04, rebooted the virtual machine and (almost) everything worked nice from the start.
+Two evenings later, I had it all up and running: the iLand-sourcecode from a SVN-Repository, compiled with [Qt Creator](http://qt.nokia.com/products/developer-tools) and running on [KDE 4.3](http://www.kde.org).
+Here is the proof:
+<img src='/img/iLandLinux.png' border='0' alt='image' width=50%/>
+
