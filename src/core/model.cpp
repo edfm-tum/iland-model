@@ -543,7 +543,9 @@ void Model::loadProject()
     QString script_file = xml.value("system.javascript.fileName");
     if (!script_file.isEmpty()) {
         script_file = g->path(script_file, "script");
-        ScriptGlobal::loadScript(script_file);
+        if (!ScriptGlobal::loadScript(script_file)) {
+            throw IException(QString("Error when loading Javascript-file %1: %2").arg(script_file).arg(ScriptGlobal::lastErrorMessage()));
+        }
         g->controller()->setLoadedJavascriptFile(script_file);
         // call the global event very early in the process of creating the model
         GlobalSettings::instance()->executeJSFunction("onBeforeCreate");

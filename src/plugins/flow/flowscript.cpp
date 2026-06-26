@@ -80,11 +80,11 @@ void FlowScript::setStartStand(int standId)
     }
 }
 
-void FlowScript::run(QString type)
+void FlowScript::run(QString type, int experimentID)
 {
     if (!mModule) return;
     try {
-        mModule->run(type);
+        mModule->runFlow(type, experimentID);
     } catch (const IException &e) {
         ScriptGlobal::throwError(e.message());
     } catch (const std::exception &e) {

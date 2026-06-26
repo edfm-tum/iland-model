@@ -71,12 +71,15 @@ public:
 
 
     /// main function to run the flow module
-    void run(QString type="avalanche");
+    void run();
+    /// function to run a hazard
+    void runFlow(QString type="avalanche", int experimentID=0);
 
     /// function that is called whenever a tree dies somewhere in iLand
     void treeDeath(const Tree *tree, const int removal_type);
 
     void yearBegin(); ///< called automatically
+    const FlowModel &flowModel() const { return mFlow; }
 
 private:
     FlowParameters mParamsAvalanche;
@@ -89,9 +92,11 @@ private:
 
     FlowModel mFlow;
 
+    QString mRunFunction;
+
     // retrieve forest information from iLand and
     // calculate the forest structure index
-    void calculateFSI();
+    void calculateFSI(const QString &type);
 
     friend class FlowScript;
     friend class FlowOut;

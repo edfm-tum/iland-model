@@ -21,11 +21,11 @@
 
 #include "globalsettings.h"
 #include "model.h"
+#include "outputmanager.h"
 #include "dem.h"
 #include "modelcontroller.h"
 #include "species.h"
-#include "abe/forestmanagementengine.h"
-#include "abe/fmstand.h"
+#include <QJSEngine>
 
 
 
@@ -81,6 +81,9 @@ void FlowModule::loadParameters(bool do_reset)
 {
     Q_UNUSED(do_reset);
     const XmlHelper xmlGlobal = GlobalSettings::instance()->settings().node("modules.flow");
+
+    mRunFunction = xmlGlobal.value(".executeJS", "");
+
     FlowParameters defaultParams;
     loadParamsHelper(xmlGlobal, defaultParams);
 
@@ -107,8 +110,17 @@ void FlowModule::loadParameters(bool do_reset)
     }
 }
 
+void FlowModule::run()
+{
+    // for now, only JS based triggering
+    if (!mRunFunction.isEmpty()) {
+        qDebug() << "Flow: running Javascript function" << mRunFunction;
+        GlobalSettings::instance()->executeJavascript(mRunFunction);
+    }
+}
 
-void FlowModule::run(QString type)
+
+void FlowModule::runFlow(QString type, int experimentID)
 {
     // Apply process-specific parameters
     if (type == "avalanche") {
@@ -122,10 +134,13 @@ void FlowModule::run(QString type)
     }
 
     // get current vegetation from iLand
-    calculateFSI();
+    calculateFSI(type);
 
     // run the flow algorithm
-    mFlow.run();
+    mFlow.run(type, experimentID);
+
+    // create outputs
+    GlobalSettings::instance()->outputManager()->execute("flow");
 }
 
 void FlowModule::treeDeath(const Tree *tree, const int removal_type)
@@ -139,7 +154,7 @@ void FlowModule::yearBegin()
 
 }
 
-void FlowModule::calculateFSI()
+void FlowModule::calculateFSI(const QString &type)
 {
     const auto &hgrid = GlobalSettings::instance()->model()->heightGrid();
     for (int index=0;index<hgrid->count(); ++index) {

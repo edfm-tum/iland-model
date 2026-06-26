@@ -1079,7 +1079,7 @@ void ScriptGlobal::throwError(const QString &errormessage)
     qWarning() << "Scripterror:" << errormessage;
 }
 
-void ScriptGlobal::loadScript(const QString &fileName)
+bool ScriptGlobal::loadScript(const QString &fileName)
 {
     QJSEngine *engine = GlobalSettings::instance()->scriptEngine();
     ExprExceptionAsScriptError no_expression;
@@ -1088,7 +1088,7 @@ void ScriptGlobal::loadScript(const QString &fileName)
     QString program = Helper::loadTextFile(fileName);
     if (program.isEmpty()) {
         qDebug() << "loading of Javascript file" << fileName << "failed because file is either missing or empty.";
-        return;
+        return false;
     }
 
     QJSValue result = engine->evaluate(program);
@@ -1100,8 +1100,10 @@ void ScriptGlobal::loadScript(const QString &fileName)
         for (int i=std::max(0, lineno - 5); i<std::min(static_cast<qsizetype>( lineno+5 ), code_lines.count()); ++i)
             code_part.append(QString("%1: %2 %3\n\n").arg(i).arg(code_lines[i]).arg(i==lineno?"  <---- [ERROR]":""));
         qDebug() << "Javascript Error in file" << fileName << ":" << result.property("lineNumber").toInt() << ":" << result.toString() << ":\n" << code_part;
-
+        mLastErrorMessage = result.toString();
+        return false;
     }
+    return true; // no errors
 
 }
 

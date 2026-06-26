@@ -37,6 +37,7 @@ bool FlowModel::setup(const Grid<float> *DEM, Grid<float> &FSI)
     mEnergy.setup(FSI.metricRect(), FSI.cellsize());
     mFlux.setup(FSI.metricRect(), FSI.cellsize());
     mDEM.setup(FSI.metricRect(), FSI.cellsize());
+    mStockable.setup(FSI.metricRect(), FSI.cellsize());
     mEnergySum.setup(FSI.metricRect(), FSI.cellsize());
     mFpTravelAngle.setup(FSI.metricRect(), FSI.cellsize());
     mSlTravelAngle.setup(FSI.metricRect(), FSI.cellsize());
@@ -61,6 +62,11 @@ bool FlowModel::setup(const Grid<float> *DEM, Grid<float> &FSI)
             *p = DEM->constValueAt(pt);
         else
             *p = 0.;
+    }
+    // copy stockable area
+    const auto &hg = GlobalSettings::instance()->model()->heightGrid();
+    for (int i=0;i<hg->count();++i) {
+        mStockable[i] =  (*hg)[i].isValid() ? 1 : 0;
     }
 
     qDebug() << "*** Setup of Flow module  ***";
@@ -122,7 +128,7 @@ void FlowModel::setStartArea(int standId, Grid<double>* src_grid)
     if (!standGrid || !standGrid->isValid()) {
         throw IException(QString("FlowModule: setStartArea for stand %1 failed: Stand Grid is not valid or loaded.").arg(standId));
     }
-    QList<int> indices = standGrid->gridIndices(standId);
+    const QList<int> indices = standGrid->gridIndices(standId);
     for (int idx : indices) {
         if (mFSI->isIndexValid(mFSI->indexOf(idx))) {
             mStartIndices.append(idx);
@@ -130,9 +136,12 @@ void FlowModel::setStartArea(int standId, Grid<double>* src_grid)
     }
 }
 
-bool FlowModel::run()
+bool FlowModel::run(const QString &type, int experimentId)
 {
-    qDebug() << "Flow Model running with starting cells count:" << mStartIndices.size();
+    mLastType = type;
+    mLastExperiment = experimentId;
+    qDebug() << "Flow Model running for" << type << "with starting cells count:" << mStartIndices.size();
+
     DebugTimer t("flow");
     // Sort starting cells by elevation descending to match Python flowpy logic
     std::sort(mStartIndices.begin(), mStartIndices.end(), [this](int a, int b) {

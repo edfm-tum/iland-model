@@ -80,23 +80,26 @@ public:
     void setInfrastructure(const Grid<int> &infra);
 
     /// Run the FlowPy simulation using the current parameters
-    bool run();
+    bool run(const QString &type, int experimentId=0);
+    const QString &lastFlowType() const { return mLastType; }
+    int lastExperimentId() const { return mLastExperiment; }
 
     // Access to parameters
     FlowParameters &parameters() { return mParams; }
     const FlowParameters &parameters() const { return mParams; }
 
     // Access to data grids
-    Grid<float> &dem() { return mDEM; }
-    Grid<float> &flux() { return mFlux; }
-    Grid<float> &energy() { return mEnergy; }
-    Grid<float> &energySum() { return mEnergySum; }
-    Grid<float> &fpTravelAngle() { return mFpTravelAngle; }
-    Grid<float> &slTravelAngle() { return mSlTravelAngle; }
-    Grid<float> &fsi() { return *mFSI; }
-    Grid<int> &infra() { return mInfra; }
-    Grid<int> &backCalc() { return mBackCalc; }
-    Grid<int> &count() { return mCount; }
+    const Grid<float> &dem() const { return mDEM; }
+    const Grid<int> &stockable() const { return mStockable; }
+    const Grid<float> &flux() const { return mFlux; }
+    const Grid<float> &energy() const { return mEnergy; }
+    const Grid<float> &energySum() const { return mEnergySum; }
+    const Grid<float> &fpTravelAngle() const { return mFpTravelAngle; }
+    const Grid<float> &slTravelAngle() const { return mSlTravelAngle; }
+    const Grid<float> &fsi() const { return *mFSI; }
+    const Grid<int> &infra() const { return mInfra; }
+    const Grid<int> &backCalc() const { return mBackCalc; }
+    const Grid<int> &count() const { return mCount; }
 
 private:
     /// Run simulation path for a single starting cell (thread-safe execution)
@@ -104,12 +107,15 @@ private:
 
     /// Parameters of the simulation
     FlowParameters mParams;
+    QString mLastType; ///< type of flow last executed
+    int mLastExperiment; ///< ID of last experiment = combination of starts & targets
 
     /// Grid (external) with forest structure information
     Grid<float> *mFSI { nullptr };
 
     /// Grids storing elevation, inputs, and outputs
     Grid<float> mDEM;
+    Grid<int> mStockable; ///< 1 for stockable cells
     Grid<float> mEnergy;
     Grid<float> mFlux;
     Grid<float> mEnergySum;

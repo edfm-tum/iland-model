@@ -117,7 +117,7 @@ public:
     double worldY(); ///< extent of the world (without buffer) in meters (y-direction)
 
     // general functions
-    static void loadScript(const QString &fileName);
+    static bool loadScript(const QString &fileName);
     static QString executeScript(QString cmd);
     static QString executeJSFunction(QString function);
     static QObject *scriptOutput; ///< public "pipe" for script output (is redirected to GUI if available)

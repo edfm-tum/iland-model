@@ -19,6 +19,8 @@
 
 #include "flowplugin.h"
 #include "flowscript.h"
+#include "flowmoduleout.h"
+#include "outputmanager.h"
 
 #include <QObject>
 #include <QJSValue>
@@ -49,13 +51,14 @@ FlowPlugin::FlowPlugin()
 
 void FlowPlugin::setup()
 {
-    // setup of the fire related outputs: note: here the fire module is passed directly to the output
-    //BarkBeetleOut *bb_output = new BarkBeetleOut();
-    //bb_output->setBarkBeetleModule(&mBeetle);
-    //GlobalSettings::instance()->outputManager()->removeOutput(bb_output->tableName());
-    //GlobalSettings::instance()->outputManager()->addOutput(bb_output);
-    // setup of the fire module: load parameters from project file, etc.
     mFlow.setup();
+
+    // setup of the fire related outputs: note: here the fire module is passed directly to the output
+    FlowModuleOut *output = new FlowModuleOut();
+    output->setFlowModel(&mFlow.flowModel());
+    GlobalSettings::instance()->outputManager()->removeOutput(output->tableName());
+    GlobalSettings::instance()->outputManager()->addOutput(output);
+    // setup of the fire module: load parameters from project file, etc.
 }
 
 //Q_SCRIPT_DECLARE_QMETAOBJECT(FireScript, QObject*)

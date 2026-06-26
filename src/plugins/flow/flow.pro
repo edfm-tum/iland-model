@@ -21,12 +21,14 @@ CONFIG += exceptions
 HEADERS       = \
     flowmodel.h \
     flowmodule.h \
+    flowmoduleout.h \
     flowplugin.h \
     flowscript.h
 
 SOURCES       = \
     flowmodel.cpp \
     flowmodule.cpp \
+    flowmoduleout.cpp \
     flowplugin.cpp \
     flowscript.cpp
 

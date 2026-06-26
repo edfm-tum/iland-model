@@ -48,7 +48,7 @@ public slots:
     void setInfrastructure(ScriptGrid *grid);
 
 
-    void run(QString type = "avalanche");
+    void run(QString type = "avalanche", int experimentID = 0);
 
     QJSValue grid(QString type);
 
