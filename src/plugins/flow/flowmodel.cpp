@@ -77,7 +77,26 @@ bool FlowModel::setup(const Grid<float> *DEM, Grid<float> &FSI)
 
 void FlowModel::setInfrastructure(const Grid<int> &infra)
 {
-    mInfra.copy(infra);
+    mInfra.initialize(0);
+    int total_cells = 0;
+    if (infra.count() == mInfra.count() && infra.metricRect() == mInfra.metricRect()) {
+        mInfra.copy(infra);
+        for (int i = 0; i < mInfra.count(); ++i) {
+            if (mInfra[i] > 0) total_cells++;
+        }
+        qDebug() << "FlowModel::setInfrastructure: direct copy. Count of infrastructure cells:" << total_cells;
+    } else {
+        for (int i = 0; i < mInfra.count(); ++i) {
+            QPointF p = mInfra.cellCenterPoint(i);
+            QPoint idx = infra.indexAt(p);
+            if (infra.isIndexValid(idx)) {
+                int val = infra.constValueAtIndex(idx);
+                mInfra[i] = val;
+                if (val > 0) total_cells++;
+            }
+        }
+        qDebug() << "FlowModel::setInfrastructure: spatial copy (size mismatch). Count of infrastructure cells:" << total_cells;
+    }
 }
 
 void FlowModel::setStartArea(QPointF point)

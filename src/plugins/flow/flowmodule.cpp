@@ -32,7 +32,9 @@
 FlowModule::FlowModule()
 {
     mLayers.setGrid(mGrid);
-
+    mCustomFSISet = false;
+    mForestEffectEnabled = true;
+    mCustomLandscapeSet = false;
 }
 
 FlowModule::~FlowModule()
@@ -112,6 +114,10 @@ void FlowModule::loadParameters(bool do_reset)
 
 void FlowModule::run()
 {
+    if (mCustomLandscapeSet) {
+        throw IException("FlowModule::run: The flow module has been configured with a custom landscape, and cannot be run automatically by the iLand simulation loop. This run was aborted to prevent out-of-bounds landscape calculations.");
+    }
+
     // for now, only JS based triggering
     if (!mRunFunction.isEmpty()) {
         qDebug() << "Flow: running Javascript function" << mRunFunction;
@@ -134,7 +140,20 @@ void FlowModule::runFlow(QString type, int experimentID)
     }
 
     // get current vegetation from iLand
-    calculateFSI(type);
+    if (!mCustomFSISet) {
+        if (mCustomLandscapeSet) {
+            throw IException("FlowModule::runFlow: Custom landscape is set, but no custom FSI grid was provided. You must call Flow.setFSI(grid) with a grid matching the custom DEM before calling Flow.run().");
+        }
+        if (mForestEffectEnabled) {
+            calculateFSI(type);
+            qDebug() << "FlowModule::runFlow: Calculated FSI from height grid. Average value:" << mFSI.avg();
+        } else {
+            mFSI.initialize(0.f);
+            qDebug() << "FlowModule::runFlow: Forest effect is disabled (setForestEffect(false)). FSI initialized to 0. Average value:" << mFSI.avg();
+        }
+    } else {
+        qDebug() << "FlowModule::runFlow: Using custom FSI grid. Average value:" << mFSI.avg();
+    }
 
     // run the flow algorithm
     mFlow.run(type, experimentID);

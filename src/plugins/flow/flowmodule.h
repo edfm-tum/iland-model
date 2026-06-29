@@ -93,6 +93,9 @@ private:
     FlowModel mFlow;
 
     QString mRunFunction;
+    bool mCustomFSISet;
+    bool mForestEffectEnabled;
+    bool mCustomLandscapeSet;
 
     // retrieve forest information from iLand and
     // calculate the forest structure index

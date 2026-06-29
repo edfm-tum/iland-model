@@ -46,6 +46,9 @@ public slots:
     void setStartStand(int standId);
     void setStartPolygon(int standId, ScriptGrid *grid=nullptr);
     void setInfrastructure(ScriptGrid *grid);
+    void setFSI(ScriptGrid *grid);
+    void setForestEffect(bool enabled);
+    void setCustomLandscape(ScriptGrid *grid);
 
 
     void run(QString type = "avalanche", int experimentID = 0);
