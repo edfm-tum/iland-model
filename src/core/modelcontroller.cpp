@@ -311,6 +311,7 @@ void ModelController::internalStop()
         GlobalSettings::instance()->outputManager()->save();
         DebugTimer::printAllTimers();
         GlobalSettings::instance()->systemStatistics()->printPerformanceStats();
+
         saveDebugOutputs(true);
         //if (GlobalSettings::instance()->dbout().isOpen())
         //    GlobalSettings::instance()->dbout().close();

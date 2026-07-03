@@ -91,7 +91,30 @@ LIBS += -L$$PLUGIN_PATH -liland_fire$$PLUGIN_SUFFIX -liland_wind$$PLUGIN_SUFFIX 
 message("PRE_TARGETDEPS:" $$PRE_TARGETDEPS)
 
 
+# ===============================================================
+# FreeImage linking setup (for GeoTIFF image support)
+# ===============================================================
+# The "FreeImage" library is required for GeoTIFF support.
+# On different platforms, it is linked and installed differently:
+#
+# Linux:
+#   Install via package manager:
+#     sudo apt-get install libfreeimage3 libfreeimage-dev   [Debian/Ubuntu]
+#     sudo dnf install freeimage freeimage-devel  [RHEL/Fedora]
+#
+# macOS:
+#   Install via Homebrew:
+#     brew install freeimage
+#   Homebrew usually installs to: /opt/homebrew/opt/freeimage
+#   This block ensures correct linking of headers and library files.
+#
+# Windows:
+#   Precompiled binaries are expected under the 3rd-party path
+#   (THIRDPARTY_PATH/FreeImage).
+# ===============================================================
+
 linux-g++ {
+
 # The "FreeImage" library is used for processing GeoTIFF data files.
 # FreeImage on Linux: see https://codeyarns.com/2014/02/11/how-to-install-and-use-freeimage/
 # basically sudo apt-get install libfreeimage3 libfreeimage-dev
@@ -140,12 +163,23 @@ win32 {
     GIT_BRANCH = $$system(git -C "$$GIT_DIR" rev-parse --abbrev-ref HEAD)
 }
 
+
 # Apply to DEFINES
 DEFINES += $$addStringDefine(GIT_HASH, $$GIT_HASH)
 DEFINES += $$addStringDefine(GIT_BRANCH, $$GIT_BRANCH)
 DEFINES += $$addStringDefine(BUILD_TIMESTAMP, $$BUILD_TIMESTAMP)
 
 message("BUILD_TIMESTAMP:" $$BUILD_TIMESTAMP "GIT_HASH:" $$GIT_HASH "GIT_BRANCH: " $$GIT_BRANCH)
+
+
+# Handle application icons
+macx {
+    ICON = res/iLand.icns
+}
+win32 {
+    RC_ICONS = res/iLand.ico
+}
+
 # to enable debug symbols in release code
 # CONFIG += force_debug_info
 # debug information in release-mode executable
@@ -167,9 +201,11 @@ DEFINES += ILAND_GUI
 DEFINES += NO_DEBUG_MSGS
 
 # for debugging only: print all qmake variables
+
 # for(var, $$list($$enumerate_vars())) {
 #    message($$var ": " $$eval($$var))
 # }
+
 
 # Use Precompiled headers (PCH)
 #PRECOMPILED_HEADER = stable.h
@@ -466,8 +502,7 @@ FORMS += mainwindow.ui \
     ui/dialogfunctionplotter.ui \
     ui/settingsTestDialog.ui
 RESOURCES += ./res/iland.qrc \
-    ../abe-lib/abe-library.qrc \
-    abe-library.qrc \
+    ./../abe-lib/abe-library.qrc \
     qml_res.qrc
 
 # QMAKE_EXTRA_TARGETS += revtarget
@@ -489,6 +524,7 @@ OTHER_FILES += maindoc.cpp \
     ../apidoc/abe/abe_context_doc.js
 
 DISTFILES += \
+    ../../.github/workflows/build.yaml \
     ../3rdparty/FreeImage/FreeImage.dll \
     ../3rdparty/FreeImage/FreeImage.lib \
     ../abe-lib/ABE-library.js \
@@ -499,9 +535,12 @@ DISTFILES += \
     ../abe-lib/planting/planting.js \
     ../abe-lib/thinning/selective.js \
     ../abe-lib/thinning/thinning.js \
+    ../apidoc/ABE/abe_context_doc.js \
+    ../apidoc/ABE/abe_doc.js \
     ../apidoc/ABE/abe_patches.js \
     ../apidoc/ABE/deadtreelist_doc.js \
     ../apidoc/ABE/saplinglist_doc.js \
+    ../apidoc/ABE/treelist_doc.js \
     ../apidoc/iLand/grid_doc.js \
     ../apidoc/iLand/map_doc.js \
     ../apidoc/iLand/factory_doc.js \
@@ -511,7 +550,8 @@ DISTFILES += \
     ../apidoc/ABE/abe_stand.js \
     ../apidoc/iLand/csvfie_doc.js \
     ../apidoc/iLand/tree_doc.js \
-    ../apidoc/iLand/treeexpr_doc.js
+    ../apidoc/iLand/treeexpr_doc.js \
+    res/iland.desktop
 
 
 

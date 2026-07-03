@@ -1,0 +1,39 @@
+---
+title: "iLand 0.69 - the new kid on the block"
+date: "2012-09-27"
+author: "Werner Rammer"
+---
+
+After the going online of the new iLand [paper](http://dx.doi.org/10.1007/s10021-012-9587-2) in Ecosystems, we proudly present a new release of the iLand model that was described and used in the aforementioned study. The [download](../wiki/download.qmd) package contains the iLand software (compiled for Windows) and an extensive, fully functional example (a part of the HJ Andrews forest, see the screenshot).
+
+<img alt="iLand 0.69 running with example" src="/img/iLandScreen069.png" style="height:306px;width:400px;float:right; margin-left: 20px;" />
+
+Although relatively few time has passed since the [last release](blogpost35-iland-release.qmd) (version 0.3, March 2012), a relatively large amount of additions and modifications are included in the new version: the records show approximately 250 commits in the subversion repository from roughly April 2010 up to May 2011. The number of lines in the C++ source code (without comments and empty lines, counted by [cloc)](http://cloc.sourceforge.net/) increased from a not-too-shabby 12732 to an awsome 16841. If you want to check the numbers for yourself, have a look at our new public [SVN repository](http://iland.boku.ac.at/publicsvn), which contains the full source code of iLand (which, by the way, is released under the GPL open source licence).
+
+In case you worry, that iLand development stopped a year ago, rest assured that development continues (see e.g. posts on ongoing activities for modeling [fire](blogpost28-summer-time-is-fire-time.qmd) or [wind](blogpost30-frontiers-in-modeling-wind-disturbance.qmd)), and that the software and code are released after the respective scientific publications.
+
+Now lets turn to some of the new ingredients of the new release:
+
+### Seed Dispersal / Establishment / Regeneration
+
+This is the first real landscape process covered by iLand: [seed dispersal](../wiki/dispersal.qmd) is modeled on a 20x20m grid (some early results were presented in the [blog](blogpost17-let-the-seeds-fly.qmd) more than two years ago). Also included are an [establishment](../wiki/establishment.qmd) module, sporting a phenology based mechanistic approach (TACA), and the [growth of saplings](../wiki/sapling-growth-and-competition.qmd) (trees below a height of 4m in iLand), both happening on a 2x2 m grid. 
+
+### Soil, Carbon and Nitrogen cycle
+
+The second big topic was closing the carbon and nitrogen cycle and adding a soil module. The [soil module](../wiki/soil-dynamics.qmd) applies the [ICBM/2N](http://dx.doi.org/10.1016/S0304-3800(00) approach which was selected due to its simplicity and parameter parsimony. We also added a module for handling [standing dead trees](../wiki/snag-dynamics.qmd), and closed the links between soil and the living vegetation.
+
+### Landscape level simulation
+
+Since 0.69, the "landscape" in the model acronym is well deserved: iLand is now able to [initialize](../wiki/landscape-setup.qmd) and simulate complex forest landscapes. To that end, we implemented features to set up the model from GIS based data and also to save some of the results as GIS readable grid files.
+
+### Management and Javascript Bindings
+
+iLand 0.3 already contained a management module, but the module in 0.69 offers much more. You can now base management on spatial entities (read GIS polygons), or access regeneration, snags and soil pools from Javascript (in case you want to mimick disturbance events). Generally, the [scripting](../wiki/iland-scripting.qmd) capabilites increased in many ways: for instance [APIs](../apidoc/classes/iland/globals.qmd) for controlling outputs or the "viewport" of the iLand viewer are available.
+
+### Memory and CPU Performance
+
+The HJ Andrews simulations, with its more than 6000 ha and 500 years of simulated time, were challenging and required both fastening the debugging and performance thumbscrews. A current office PC should suffice (but nice are 8GB RAM with a couple of cores and a 64 Bit Windows), and it is fun to see all CPU cores simmering at 100% CPU load. We were also able to reduce the run time of the HJ Andrews simulations from 5 hours to a little more than 1 hour by adding one tiny little ampersand that was initially forgotten, demonstrating the "small cause - large impact" principle (and of course it took ages to find that bottleneck).
+
+### Wiki Improvements
+
+And, last but not least, a whole bunch of [wiki pages](../wiki/iland.qmd) are publicly available now - happy reading!

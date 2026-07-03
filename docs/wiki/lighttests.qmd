@@ -1,0 +1,38 @@
+---
+title: "LightTests"
+---
+
+
+
+### Quick howto for automated light test series
+
+
+
+1. provide a "automation.xml" file with exactly that name. It must reside in the "Home"-Directory of the project, usually the directory containing the projectfile.
+
+1. the automation.xml file contains something like:
+
+
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<automation>
+<!-- simple "multirun".
+when clicking on the "execute many stands" button on the "testing" tab, then:
+* the "stands"-file is read - this should contain a return-separated list of filenames without path.
+* each file of the list is read from directory "inputpath", trees are loaded, and a stamp/read-cycle performed
+* in "outputpath" a .csv style treelist-file is generated (name scheme: out_$infile$.csv).
+-->
+<outputpath>E:\Daten\iLand\Light\stands\output</outputpath>
+<inputpath>E:\Daten\iLand\Light\stands</inputpath>
+<stands>E:\Daten\iLand\Light\stands\standlist.txt</stands>
+</automation>
+```
+
+
+1. load iLand with a "normal" project file
+* check: in model.settings "growthEnabled" should be false
+* usually preferable: 100x100m, "torus"=true
+
+1. start the test run
+* type "test" in "Aggregate Expression" and hit enter,
+* choose test 4 (multiple run)

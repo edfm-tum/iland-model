@@ -1,0 +1,108 @@
+---
+title: "Part 3: Reference & Resources"
+---
+
+Welcome to the **iLand Reference & Resources** portal. Here you will find structural specifications for model inputs and outputs, variable indices, dynamic expressions, scientific publications, and license agreements.
+
+```{=html}
+<div class="row">
+  <!-- Card 1: Core Configuration -->
+  <div class="col-md-6 mb-4">
+    <div class="card h-100 shadow-sm">
+      <div class="card-body">
+        <h3 class="card-title text-primary"><i class="bi bi-file-earmark-code"></i> Model Configuration</h3>
+        <p class="card-text">
+          Technical specifications for setting up the main XML simulation project file and defining species-specific parameters.
+        </p>
+        <div class="list-group list-group-flush mb-3">
+          <a href="project-file.html" class="list-group-item list-group-item-action bg-transparent px-0 py-2">
+            <strong>Project File Structure:</strong> General XML structure, tags, and file inclusion mechanism.
+          </a>
+          <a href="project-file-reference.html" class="list-group-item list-group-item-action bg-transparent px-0 py-2">
+            <strong>Project Settings Reference:</strong> Database of all XML settings grouped by submodules (System, Model, Modules, Outputs).
+          </a>
+          <a href="species-parameter.html" class="list-group-item list-group-item-action bg-transparent px-0 py-2">
+            <strong>Species Parameters:</strong> Complete list of species characteristics (phenology, competition, fire, dispersal).
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 2: Variables & Expressions -->
+  <div class="col-md-6 mb-4">
+    <div class="card h-100 shadow-sm">
+      <div class="card-body">
+        <h3 class="card-title text-primary"><i class="bi bi-code-square"></i> Variables & Expressions</h3>
+        <p class="card-text">
+          Documentation for mathematical expressions, runtime variables, and standard indexes.
+        </p>
+        <div class="list-group list-group-flush mb-3">
+          <a href="expressions-and-variables.html" class="list-group-item list-group-item-action bg-transparent px-0 py-2">
+            <strong>Variables Hub:</strong> Unified guide for scripting variables.
+          </a>
+          <a href="expression.html" class="list-group-item list-group-item-action bg-transparent px-0 py-2">
+            <strong>Mathematical Expressions:</strong> Parser syntax, operators, and dynamic math formulas.
+          </a>
+          <div class="list-group-item bg-transparent px-0 py-2 small text-muted">
+            <strong>Entity Variable Lists:</strong> <br/>
+            <a href="tree-variables.html">Individual Trees</a> &bull; 
+            <a href="sapling-variables.html">Sapling Cohorts</a> &bull; 
+            <a href="resource-unit-variables.html">Resource Units (RU)</a> &bull; 
+            <a href="dead-tree-variables.html">Dead / Harvested Trees</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 3: Model Outputs -->
+  <div class="col-md-6 mb-4">
+    <div class="card h-100 shadow-sm">
+      <div class="card-body">
+        <h3 class="card-title text-primary"><i class="bi bi-database"></i> Simulation Outputs</h3>
+        <p class="card-text">
+          iLand generates detailed SQLite database tables and console debugging logs during execution.
+        </p>
+        <div class="list-group list-group-flush mb-3">
+          <a href="outputs.html" class="list-group-item list-group-item-action bg-transparent px-0 py-2">
+            <strong>Outputs Database Tables:</strong> Detailed schema of all SQLite output tables.
+          </a>
+          <a href="organizing-outputs.html" class="list-group-item list-group-item-action bg-transparent px-0 py-2">
+            <strong>Organizing Outputs:</strong> Database file handling, naming conventions, and runtime conditions.
+          </a>
+          <a href="dynamic-outputs.html" class="list-group-item list-group-item-action bg-transparent px-0 py-2">
+            <strong>Dynamic Outputs:</strong> Configuring custom aggregations for trees and stands.
+          </a>
+          <a href="debug-outputs.html" class="list-group-item list-group-item-action bg-transparent px-0 py-2">
+            <strong>Console Debug Logs:</strong> Low-level CSV debugging options for water, growth, and light.
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 4: Community Resources -->
+  <div class="col-md-6 mb-4">
+    <div class="card h-100 shadow-sm">
+      <div class="card-body">
+        <h3 class="card-title text-primary"><i class="bi bi-info-square"></i> Resources & License</h3>
+        <p class="card-text">
+          Scientific citations, release notes, license terms, and external community links.
+        </p>
+        <div class="list-group list-group-flush mb-3">
+          <a href="iland-publications.html" class="list-group-item list-group-item-action bg-transparent px-0 py-2">
+            <strong>Scientific Publications:</strong> Bibliography of iLand model applications.
+          </a>
+          <a href="release-notes.html" class="list-group-item list-group-item-action bg-transparent px-0 py-2">
+            <strong>Release Notes:</strong> Complete version change logs and updates.
+          </a>
+          <a href="terms-and-conditions.html" class="list-group-item list-group-item-action bg-transparent px-0 py-2">
+            <strong>Terms & Conditions:</strong> Model licensing and scientific citation guide.
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+```

@@ -85,16 +85,43 @@ PRE_TARGETDEPS += $$join(parts_to_join_barkbeetle)
 LIBS += -L$$PLUGIN_PATH -liland_fire$$PLUGIN_SUFFIX -liland_wind$$PLUGIN_SUFFIX -liland_barkbeetle$$PLUGIN_SUFFIX
 
 message("PRE_TARGETDEPS:" $$PRE_TARGETDEPS)
+
+
+# ===============================================================
+# FreeImage linking setup (for GeoTIFF image support)
+# ===============================================================
+# The "FreeImage" library is required for GeoTIFF support.
+# On different platforms, it is linked and installed differently:
+#
+# Linux:
+#   Install via package manager:
+#     sudo apt-get install libfreeimage3 libfreeimage-dev   [Debian/Ubuntu]
+#     sudo dnf install freeimage freeimage-devel  [RHEL/Fedora]
+#
+# macOS:
+#   Install via Homebrew:
+#     brew install freeimage
+#   Homebrew usually installs to: /opt/homebrew/opt/freeimage
+#   This block ensures correct linking of headers and library files.
+#
+# Windows:
+#   Precompiled binaries are expected under the 3rd-party path
+#   (THIRDPARTY_PATH/FreeImage).
+# ===============================================================
+
 linux-g++ {
 # The "FreeImage" library is used for processing GeoTIFF data files.
 # FreeImage on Linux: see https://codeyarns.com/2014/02/11/how-to-install-and-use-freeimage/
 # basically sudo apt-get install libfreeimage3 libfreeimage-dev
 
 LIBS += -lfreeimage
+} else:macx {
+LIBS += -L/opt/homebrew/Cellar/freeimage/3.18.0/lib -lfreeimage
 } else {
-# external freeimage library (geotiff)
-LIBS += -L$$THIRDPARTY_PATH/FreeImage -lFreeImage
+# external freeimage library (geotiff) (Windows)
+LIBS += -L$$THIRDPARTY_PATH\FreeImage -lFreeImage
 }
+
 
 
 # special settings
@@ -142,12 +169,12 @@ win32 {
     GIT_BRANCH = $$system(git -C "$$GIT_DIR" rev-parse --abbrev-ref HEAD)
 }
 
+
 # Apply to DEFINES
 DEFINES += $$addStringDefine(GIT_HASH, $$GIT_HASH)
 DEFINES += $$addStringDefine(GIT_BRANCH, $$GIT_BRANCH)
 DEFINES += $$addStringDefine(BUILD_TIMESTAMP, $$BUILD_TIMESTAMP)
 
-message("BUILD_TIMESTAMP:" $$BUILD_TIMESTAMP "GIT_HASH:" $$GIT_HASH "GIT_BRANCH: " $$GIT_BRANCH)
 
 #CONFIG += precompile_header
 
@@ -257,6 +284,7 @@ SOURCES += main.cpp \
     ../abe/actthinning.cpp \
     ../abe/patch.cpp \
     ../abe/patches.cpp \
+    ../abe/fmdeadtreelist.cpp \
     ../core/grasscover.cpp \
     ../tools/scriptgrid.cpp \
     ../output/waterout.cpp \
@@ -293,8 +321,6 @@ SOURCES += main.cpp \
     ../output/understoryout.cpp \
     ../abe/fmdeadtreelist.cpp \
     ../core/deadtree.cpp
-
-
 
 
 HEADERS += \
@@ -398,6 +424,7 @@ HEADERS += \
     ../abe/actthinning.h \
     ../abe/patch.h \
     ../abe/patches.h \
+    ../abe/fmdeadtreelist.h \
     ../core/grasscover.h \
     ../tools/scriptgrid.h \
     ../output/waterout.h \
@@ -427,13 +454,13 @@ HEADERS += \
     ../bite/biteoutputitem.h \
     ../core/permafrost.h \
     ../core/microclimate.h \
+
     ../core/understory.h \
     ../core/understorypft.h \
     ../core/understoryplant.h \
     ../output/understoryout.h \
     ../abe/fmdeadtreelist.h \
     ../core/deadtree.h
-
 
 
 RESOURCES += ../iland/res/iland.qrc

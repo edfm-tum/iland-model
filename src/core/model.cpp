@@ -938,6 +938,7 @@ void Model::runYear()
 {
     DebugTimer t_all("Model::runYear()");
     setCurrentTask("Running");
+
     threadRunner.clearErrors();
     RandomGenerator::checkGenerator(); // see if we need to generate new numbers...
     // initalization at start of year for external modules

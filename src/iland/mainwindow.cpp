@@ -461,7 +461,7 @@ void MainWindow::on_actionSettingsDialog_triggered()
         mLinkxqt->readXmlProjectDescription();
         if (!ui_settingsDialog) {
             QStringList dialogList = QStringList() << "Project" << "System"  << "Model" << "Output" << "Modules";
-            QStringList modelList = QStringList() << "World" << "Climate" << "Initialization" << "Site" << "Global Settings"  << "Seed Dispersal" << "Soil" << "Submodules" << "Management"  ;
+            QStringList modelList = QStringList() << "World" << "Climate" << "Initialization" << "Site" << "Global Settings"  << "Seed Dispersal" << "Soil" << "Submodules" << "Species" << "Management"  ;
             QStringList modulesList = QStringList() << "Fire" << "Wind" << "Barkbeetle" << "BITE";
             QStringList outputList = QStringList() << "Vegetation state" << "Dynamic" << "Flows" << "Processes" << "Disturbance modules" << "Forest management"  << "SVD";
             QStringList systemList = QStringList() << "Path" << "Database" << "Logging" << "System Settings" << "Javascript";
@@ -1503,14 +1503,13 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
 
         QString single_tree_expr = ui->lTreeExpr->text();
         if (single_tree_expr.isEmpty())
-            single_tree_expr = "1";
+            single_tree_expr = "remaining";
         DeadTreeWrapper tw;
 
         Expression tree_value(single_tree_expr, &tw);    // get maximum value
         tree_value.setCatchExceptions(); // silent catching...
 
         QString filter_expr = ui->expressionFilter->text();
-        bool do_filter = ui->cbDrawFiltered->isChecked();
         if (filter_expr.isEmpty())
             filter_expr = "1"; // a constant, always true
 
@@ -1524,7 +1523,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         if (!mRulerColors->autoScale()) {
             max_val = mRulerColors->maxValue(); min_val = mRulerColors->minValue();
         }
-        if (auto_scale_color && !ui->lTreeExpr->text().isEmpty()) {
+        if (auto_scale_color) {
             // find min / max
             for (const auto &ru : model->ruList()) {
                 for (const auto &dt : ru->snag()->deadTrees()) {
@@ -1839,7 +1838,8 @@ void MainWindow::mouseClick(const QPoint& pos)
     ui->PaintWidget->setCursor(Qt::CrossCursor);
     Model *model = mRemoteControl.model();
     ResourceUnit *ru = model->ru(coord);
-    // find adjactent tree
+
+    ui->dataTree->clear();
 
     // test ressource units...
     if (ui->visResourceUnits->isChecked()) {
@@ -1850,19 +1850,32 @@ void MainWindow::mouseClick(const QPoint& pos)
 
     // test for ABE grid
     if (ui->visOtherGrid->isChecked()) {
-        if (showABEDetails(coord))
-            return;
+        showABEDetails(coord);
+        return; // return also when click is not handled by ABE
     }
 
+    // test for regeneration
     if (ui->visRegeneration->isChecked()) {
         showRegenDetails(coord);
         return;
     }
 
+    // test for regeneration
+    if (ui->visSnags->isChecked()) {
+        showSnagsDetails(ru, coord);
+        return;
+    }
+
+    if (ui->visSeeds->isChecked() ||
+        ui->visFon->isChecked() ||
+        ui->visDomGrid->isChecked())
+        return; // nothing
+
     //qDebug() << "coord:" << coord << "RU:"<< ru << "ru-rect:" << ru->boundingBox();
     if (!ru)
         return;
 
+    // find closest tree
     QVector<Tree> &mTrees =  ru->trees();
     QVector<Tree>::iterator tit;
     Tree *closestTree=0;
@@ -1998,6 +2011,49 @@ void MainWindow::showRegenDetails(const QPointF &coord)
     }
     ui->dataTree->addTopLevelItems(items);
     ui->dataTree->expandItem(parent);
+}
+
+void MainWindow::showSnagsDetails(const ResourceUnit *ru, const QPointF &coord)
+{
+    ui->dataTree->clear();
+    if (!ru || !ru->snag())
+        return;
+
+    auto &dead_trees  = ru->snag()->deadTrees();
+    const DeadTree *closest = nullptr;
+    double min_dist = 10000000000000;
+
+    for (const auto &dt : dead_trees) {
+        double current_dist = distance(QPointF(dt.x(), dt.y()),coord);
+        if (current_dist < min_dist) {
+            min_dist = current_dist;
+            closest = &dt;
+        }
+    }
+
+    if (min_dist>5 || !closest) {
+        return;
+    }
+    // closest snag identified, populate items using the wrapper class
+    QList<QTreeWidgetItem *> items;
+    DeadTreeWrapper dtw;
+    dtw.setDeadTree(closest);
+    const QStringList &names = dtw.getVariablesList();
+
+    QString value;
+    for (auto name: names) {
+        if (name == "species")
+            value = mRemoteControl.model()->speciesSet()->species(dtw.valueByName(name))->id() ;
+        else if (name == "snag")
+            value = dtw.valueByName(name) == 1. ? "standing" : "downed";
+        else
+            value = QString::number( dtw.valueByName(name));
+
+        items.append(new QTreeWidgetItem(QStringList() << name << value ));
+    }
+
+    ui->dataTree->addTopLevelItems(items);
+
 }
 
 
@@ -2625,6 +2681,34 @@ void MainWindow::on_actionOutput_table_description_triggered()
     QString txt = GlobalSettings::instance()->outputManager()->wikiFormat();
     QApplication::clipboard()->setText(txt);
     qDebug() << "Description copied to clipboard!";
+
+    QString appPath = QCoreApplication::applicationDirPath();
+    if (appPath.contains("iland-model") && appPath.contains("build")) {
+        int idx = appPath.indexOf("iland-model");
+        if (idx != -1) {
+            QString projectRoot = appPath.left(idx + QString("iland-model").length());
+            QString qmdPath = projectRoot + "/docs/wiki/outputs.qmd";
+            QFile file(qmdPath);
+            if (file.exists()) {
+                QString qmdContent = Helper::loadTextFile(qmdPath);
+                if (!qmdContent.isEmpty()) {
+                    QString startTag = "<!-- GENERATED-CODE-START -->";
+                    QString endTag = "<!-- GENERATED-CODE-END -->";
+                    int startIdx = qmdContent.indexOf(startTag);
+                    int endIdx = qmdContent.indexOf(endTag);
+                    if (startIdx != -1 && endIdx != -1 && endIdx > startIdx) {
+                        QString newContent = qmdContent.left(startIdx + startTag.length()) + "\n" + txt + "\n" + qmdContent.mid(endIdx);
+                        Helper::saveToTextFile(qmdPath, newContent);
+                        qDebug() << "Output table description successfully written to" << qmdPath;
+                        Helper::msg(QString("Output table description successfully written to %1\nand copied to clipboard.").arg(qmdPath));
+                        return;
+                    }
+                }
+            }
+        }
+    }
+    qDebug() << "Output table description copied to clipboard.";
+    Helper::msg("Output table description copied to clipboard.");
 }
 
 void MainWindow::on_actionTimers_triggered()

@@ -1368,7 +1368,8 @@ void ScriptGlobal::setupGlobalScripting()
                     "   } return value; " \
                     "  } " \
                     "console.log(JSON.stringify(x, replacer, 4)); " \
-                    "}";
+        "}";
+
     ScriptGlobal::executeScript(code);
     // add a (fake) console.log / console.print
 /*/    engine->evaluate("var console = { log: function(x) {Globals.print(x); }, " \

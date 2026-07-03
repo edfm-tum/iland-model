@@ -60,6 +60,7 @@
 
 
 
+<<<<<<< HEAD
 function get_js_file_path() {
     try {
         throw new Error("give me the filename!");
@@ -88,16 +89,33 @@ function get_js_file_path() {
         };
     }
 }
+=======
+>>>>>>> refs/heads/wiki_move
 var lib = {};
-lib.path = get_js_file_path(); //
 
-console.log("Loading forest management library from '" + lib.path.dir + "' ... ");
+// set lib.path to the root directory of the ABE-library
+// use for includes relative to this folder (e.g., lib.path + '/thinnings/thinnings.js')
+lib.path = (function() {
+    try { throw new Error(); } catch (e) {
+        // 1. Strip protocol (file://)
+        var path = e.fileName.replace(/^(file:\/{2})|(qrc:\/\/)/, "");
 
-Globals.include('/' + lib.path.dir + '/thinning/thinning.js'); //'/' + 
-Globals.include('/' + lib.path.dir + '/planting/planting.js');
-Globals.include('/' + lib.path.dir + '/harvest/harvest.js');
+        // 2. Fix Windows drive letters (/C:/ -> C:/)
+        if (path.match(/^\/[a-zA-Z]:/)) path = path.substring(1);
 
-Globals.include('/' + lib.path.dir + '/lib_helper.js');
+        // 3. Return the directory
+        return path.substring(0, path.lastIndexOf("/"));
+    }
+})();
+
+
+console.log("Loading forest management library from '" + lib.path + "' ... ");
+
+Globals.include(lib.path + '/thinning/thinning.js'); //'/' +
+Globals.include(lib.path + '/planting/planting.js');
+Globals.include(lib.path + '/harvest/harvest.js');
+
+Globals.include(lib.path + '/lib_helper.js');
 
 console.log('Forest management library loaded!');
 

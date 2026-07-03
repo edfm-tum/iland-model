@@ -1,5 +1,6 @@
 build-iland*
 build-plugins*
+deploy
 *.pro.user*
 *.lib
 *.pdb
@@ -9,3 +10,6 @@ project_file.xml
 .qtc_clangd
 build/
 .DS_Store
+_site
+.obsidian/
+.Rhistory

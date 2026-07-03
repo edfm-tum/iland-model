@@ -25,9 +25,11 @@
 // static members
 QHash<QString, double> DebugTimer::mTimingList;
 
- qint64 DebugTimer::ms_since_epoch = 0;
+bool DebugTimer::m_responsive_mode = false;
+qint64 DebugTimer::ms_since_epoch = 0;
 
- QMutex timer_mutex;
+QMutex timer_mutex;
+
 
 /*
 double DebugTimer::m_tick_p_s=0.;
@@ -53,12 +55,24 @@ void DebugTimer::sampleClock(int ms)
 DebugTimer::~DebugTimer()
 {
     --m_count;
-    
+
+    if (responsiveMode()) {
+        qint64 diff = QDateTime::currentMSecsSinceEpoch() - ms_since_epoch;
+        if (diff > 1000) {
+            ms_since_epoch = QDateTime::currentMSecsSinceEpoch();
+            // qDebug() << "DebugTimer:: process events after 100ms - now" << ms_since_epoch;
+            // process events only if we are currently in the main thread (GUI)
+            if (QThread::currentThread() == QCoreApplication::instance()->thread())
+                QCoreApplication::processEvents();
+        }
+    }
+
     double t = elapsed();
     if (!m_caption.isEmpty()) {
         QMutexLocker locker(&timer_mutex);
         mTimingList[m_caption]+=t;
     }
+
 
     // show message if timer is not set to silent, and if time > 100ms (if timer is set to hideShort (which is the default))
     if (!m_silent && (!m_hideShort || t>1000.))
@@ -68,7 +82,12 @@ DebugTimer::~DebugTimer()
 DebugTimer::DebugTimer(const QString &caption, bool silent)
 {
     ++m_count;
-    
+
+    if (responsiveMode() && m_count==1) {
+        // store time of the first call (start of the year)
+        ms_since_epoch = QDateTime::currentMSecsSinceEpoch();
+    }
+
     m_silent=silent;
     m_hideShort=true;
     m_caption = caption;
@@ -113,20 +132,21 @@ void DebugTimer::checkResponsiveness(qint64 counter, int modulus)
 void DebugTimer::clearAllTimers()
 {
     QHash<QString, double>::iterator i = mTimingList.begin();
-     while (i != mTimingList.end()) {
-         i.value() = 0.;
-         ++i;
-     }
+    while (i != mTimingList.end()) {
+        i.value() = 0.;
+        ++i;
+    }
 }
 void DebugTimer::printAllTimers()
 {
     QHash<QString, double>::iterator i = mTimingList.begin();
     qWarning() << "Total timers\n================";
     while (i != mTimingList.end()) {
-         if (i.value()>0)
-             qWarning() << i.key() << ":" << timeStr(i.value());
-         ++i;
-     }
+        if (i.value()>0)
+            qWarning() << i.key() << ":" << timeStr(i.value());
+        ++i;
+    }
+
 }
 
 // pretty formatting of timing information
@@ -141,18 +161,18 @@ QString DebugTimer::timeStr(double value_ms, bool exact)
             return QString("%1m %2s").arg(floor(value_ms/60000)).arg(fmod(value_ms,60000)/1000);
 
         return QString("%1h %2m %3s").arg(floor(value_ms/3600000)) //h
-                .arg(floor(fmod(value_ms,3600000)/60000)) //m
-                .arg(qRound(fmod(value_ms,60000)/1000));    //s
+            .arg(floor(fmod(value_ms,3600000)/60000)) //m
+            .arg(qRound(fmod(value_ms,60000)/1000));    //s
     } else {
         if (value_ms<60000)
             return QString("%1s").arg(qRound(value_ms/1000.));
         if (value_ms<60000*60)
             return QString("%1:%2").arg(floor(value_ms/60000), 2, 'f', 0, QLatin1Char('0'))
-                    .arg(floor(fmod(value_ms,60000)/1000.), 2, 'f', 0, QLatin1Char('0'));
+                .arg(floor(fmod(value_ms,60000)/1000.), 2, 'f', 0, QLatin1Char('0'));
 
         return QString("%1:%2:%3").arg(floor(value_ms/3600000)) //h
-                .arg(floor(fmod(value_ms,3600000)/60000), 2, 'f', 0,  QLatin1Char('0')) //m
-                .arg(floor(fmod(value_ms,60000)/1000.), 2, 'f', 0, QLatin1Char('0'));    //s
+            .arg(floor(fmod(value_ms,3600000)/60000), 2, 'f', 0,  QLatin1Char('0')) //m
+            .arg(floor(fmod(value_ms,60000)/1000.), 2, 'f', 0, QLatin1Char('0'));    //s
 
     }
 }
@@ -167,7 +187,7 @@ void DebugTimer::interval(const QString &text)
 void DebugTimer::showElapsed()
 {
     if (!m_shown) {
-            qDebug() << "Timer" << m_caption << ":" << timeStr(elapsed());
+        qDebug() << "Timer" << m_caption << ":" << timeStr(elapsed());
     }
     m_shown=true;
 }

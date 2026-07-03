@@ -1,0 +1,11 @@
+{
+    "name": "The ABE-library",
+    "description": "The documentation for the ABE-library",
+    "version": "1.0",
+    "url": "https://iland-model.org",
+    "options": {
+        "outdir": "../../build/apidocs/abe-lib",
+		"themedir": "../apidoc/node_modules/yuidoc-bootstrap-theme",
+		"helpers": [ "../apidoc/node_modules/yuidoc-bootstrap-theme/helpers/helpers.js" ]
+    }
+}

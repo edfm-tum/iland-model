@@ -83,6 +83,7 @@ public:
         dt_InititalBiomass = dt.initialBiomass();
         dt_Biomass = dt.biomass();
         dt_Volume = dt.volume();
+        dt_DBH = dt.dbh();
     }
 
     void insertTreeToDataStream( QDataStream& dataStream ) const
@@ -113,7 +114,7 @@ public:
     {
         dataStream >> x >> y >> species >> dt_IsStanding >> dt_DeathReason;
         dataStream >> dt_YearsStandingDead >> dt_YearsDowned >> dt_CrownRadius;
-        dataStream >> dt_InititalBiomass >> dt_Biomass >> dt_Volume;
+        dataStream >> dt_InititalBiomass >> dt_Biomass >> dt_Volume >> dt_DBH;
     }
 
 // variables
@@ -139,6 +140,7 @@ float dt_Volume {0};
 float dt_InititalBiomass {0}; // kg biomass at time of death
 float dt_Biomass {0}; // kg biomass currently
 float dt_CrownRadius {0}; // crown radius (m)
+float dt_DBH {0}; // dbh (cm)
 
 };
 
@@ -330,7 +332,9 @@ bool Snapshot::saveStandSnapshot(const int stand_id, const MapGrid *stand_grid, 
         openStandDatabase(GlobalSettings::instance()->path(file_name), false);
         db=QSqlDatabase::database("snapshotstand");
         // check if tree/sapling tables are already present
-        if (!db.tables().contains("trees_stand") || !db.tables().contains("saplings_stand")) {
+        if (!db.tables().contains("trees_stand") ||
+            !db.tables().contains("saplings_stand") ||
+            !db.tables().contains("deadtrees_stand")) {
             // create tables
             QSqlQuery q(db);
             // trees
@@ -614,6 +618,7 @@ bool Snapshot::loadStandSnapshot(const int stand_id, const MapGrid *stand_grid, 
                 dt.mInititalBiomass = item.dt_InititalBiomass;
                 dt.mBiomass = item.dt_Biomass;
                 dt.mCrownRadius = item.dt_CrownRadius;
+                dt.mDBH = item.dt_DBH;
                 dt.updateDecayClass();
                 ++dt_n;
             }
@@ -1342,6 +1347,7 @@ void Snapshot::loadDeadTrees()
         dt.mInititalBiomass = q.value(ci++).toDouble();
         dt.mBiomass = q.value(ci++).toDouble();
         dt.mCrownRadius = q.value(ci++).toDouble();
+        dt.mDBH = q.value(ci++).toDouble();
         dt.updateDecayClass();
 
         ++n;

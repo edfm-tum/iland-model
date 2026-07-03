@@ -1,0 +1,21 @@
+---
+title: "Expressions and Variables"
+---
+
+In **iLand**, text-based mathematical expressions and dynamic variables are used extensively to define species-specific behaviors, customize forest management activities, evaluate logical selection criteria, and inspect simulation results.
+
+---
+
+### [Expressions](expression.qmd)
+An **Expression** is a mathematical formula provided in text form (such as `3*x + 2` or `dbh > 30 and leafarea < 1`). In iLand, expressions are parsed once and compiled into high-performance internal programs that run at speeds comparable to hard-coded C++.
+* Read the [Expressions documentation](expression.qmd) to learn about basic arithmetic, logical operators, constants, built-in functions (mathematical, logical, and helper functions), and performance linearization.
+
+---
+
+### Variable Reference Lists
+The variables available within an expression depend on the context it is evaluated in. Refer to the reference pages below for the specific variables exposed for different entities:
+
+*   **[Tree Variables](tree-variables.qmd)**: Variables representing individual living trees, such as `dbh`, `height`, `volume`, `basalarea`, `leafarea`, `stress`, and age metrics.
+*   **[Sapling Variables](sapling-variables.qmd)**: Variables representing sapling cohorts on a resource unit, such as `height`, `age`, `cohortCount`, and species-specific indicators.
+*   **[Dead Tree Variables](dead-tree-variables.qmd)**: Variables for standing and downed dead wood (snags), representing their diameter, height, decomposition state, and species.
+*   **[Resource Unit Variables](resource-unit-variables.qmd)**: Landscape-level variables representing resource unit conditions (typically 1-hectare blocks), including climate variables, soil indicators, site productivity, and aggregated tree metrics.

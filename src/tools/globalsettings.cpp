@@ -515,6 +515,21 @@ void GlobalSettings::setupDirectories(QDomElement pathNode, const QString &proje
 QString GlobalSettings::path(const QString &fileName, const QString &type)
 {
     if (!fileName.isEmpty()) {
+
+        // handle Qt resource files
+        if (fileName.startsWith(":/") || fileName.startsWith("qrc:")) {
+            if (fileName.startsWith("qrc:")) {
+                QString cleanName = fileName;
+                cleanName.replace(0, 4, ":"); // Replaces "qrc:" with ":" -> results in ":/..." or "://..."
+                // Cleanup potential triple slashes if input was qrc:///
+                if (cleanName.startsWith("://")) {
+                    cleanName.remove(0, 1);
+                }
+                return cleanName;
+            }
+            return fileName;
+        }
+
         QFileInfo fileinfo(fileName);
         if (fileinfo.isAbsolute())
             return QDir::cleanPath(fileName);

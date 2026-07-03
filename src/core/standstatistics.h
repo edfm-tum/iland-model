@@ -111,6 +111,7 @@ public:
                    tManagement = 0.; tApplyPattern=tReadPattern=tTreeGrowth=0.;
                    tSeedDistribution=tSapling=tEstablishment=tCarbonCycle=tWriteOutput=tTotalYear=0.;
                    tUnderstoryEstablishment=tUnderstoryGrowth=tTotalRegeneration=tDisturbanceModules=tClimate=0.;    }
+
     void writeOutput();
     void printPerformanceStats();
     // the system counters

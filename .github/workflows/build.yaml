@@ -1,0 +1,178 @@
+name: Build iLand
+
+# Rechte um Releases zu erstellen (WICHTIG!)
+permissions:
+  contents: write
+
+on:
+  # 1. Automatisch bei neuem Tag (z.B. v2.1.0)
+  push:
+    tags:
+      - 'v*'
+  # 2. Manuell per Button (für Dev Builds)
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: '6.8.0'
+          modules: 'qtcharts'
+          arch: ${{ matrix.os == 'windows-latest' && 'win64_msvc2022_64' || '' }}
+
+      # --- Dependencies ---
+      - name: Install FreeImage & XCB (Linux)
+        if: runner.os == 'Linux'
+        # libxcb-cursor0 fix added
+        run: sudo apt-get update && sudo apt-get install -y libfreeimage-dev libxcb-cursor0
+
+      - name: Install FreeImage (macOS)
+        if: runner.os == 'macOS'
+        run: brew install freeimage
+
+      - name: Set up MSVC
+        if: matrix.os == 'windows-latest'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      # --- Build Phase ---
+      - name: Build Project (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          ./build_iland.ps1 2>&1 | Tee-Object -FilePath build_log.txt
+
+      - name: Build Project (Linux/macOS)
+        if: matrix.os != 'windows-latest'
+        shell: bash
+        run: |
+          chmod +x ./build_iland.sh
+          ./build_iland.sh 2>&1 | tee build_log.txt
+
+      # --- Deployment Phase ---
+
+      # 1. Windows Deployment
+      - name: Windows Deployment
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          mkdir deploy-win
+          # Binaries kopieren
+          copy src/iland/build/release/release/iland.exe deploy-win/
+          copy src/ilandc/build/release/release/ilandc.exe deploy-win/
+          copy src/fonstudio/build/release/release/fonstudio.exe deploy-win/
+          copy libs/win/FreeImage.dll deploy-win/
+
+          # Qt Abhängigkeiten hinzufügen
+          windeployqt --release --no-translations --compiler-runtime --qmldir src/iland/qml deploy-win/iland.exe
+
+          # Ordner für das Release zippen (wichtig für den Upload!)
+          Compress-Archive -Path deploy-win/* -DestinationPath iLand-Windows.zip
+
+      # 2. Linux Deployment (AppImage)
+      - name: Linux Deployment
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          mkdir -p deploy-linux
+
+          # 1. Tools laden
+          wget -c https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          wget -c https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
+          chmod +x linuxdeploy*.AppImage
+
+          # 2. Pfade ermitteln (Sicherer Weg via qmake)
+          export QMAKE=$(which qmake)
+          export QT_PLUGIN_DIR=$(qmake -query QT_INSTALL_PLUGINS)
+          export QT_LIB_DIR=$(qmake -query QT_INSTALL_LIBS)  # <--- WICHTIG
+
+          export QML_SOURCES_PATHS=src/iland/qml
+          export APPIMAGE_EXTRACT_AND_RUN=1
+
+          # 3. AppDir vorbereiten & Plugins manuell kopieren (Wie gehabt)
+          mkdir -p AppDir/usr/plugins/platforms
+          mkdir -p AppDir/usr/plugins/wayland-shell-integration
+          mkdir -p AppDir/usr/plugins/platformthemes
+
+          cp "$QT_PLUGIN_DIR/platforms/libqwayland-generic.so" AppDir/usr/plugins/platforms/
+          cp "$QT_PLUGIN_DIR/platforms/libqwayland-egl.so"     AppDir/usr/plugins/platforms/
+          cp -r "$QT_PLUGIN_DIR/wayland-shell-integration/"* AppDir/usr/plugins/wayland-shell-integration/ || true
+
+          if [ -f "$QT_PLUGIN_DIR/platformthemes/libqxdgdesktopportal.so" ]; then
+             cp "$QT_PLUGIN_DIR/platformthemes/libqxdgdesktopportal.so" AppDir/usr/plugins/platformthemes/
+          fi
+
+          # remove all database drivers (excep SQLite)
+          find "$QT_PLUGIN_DIR/sqldrivers" -maxdepth 1 -name "libqsql*.so" ! -name "libqsqlite.so" -delete
+      
+          # 4. AppImage bauen MIT ZUSÄTZLICHER LIBRARY
+          # Das '-l' Flag zwingt linuxdeploy, die Wayland-Client Lib einzupacken
+          ./linuxdeploy-x86_64.AppImage --appdir AppDir \
+               -l "$QT_LIB_DIR/libQt6WaylandClient.so.6" \
+               -l "$QT_LIB_DIR/libQt6WaylandEglClientHwIntegration.so.6" \
+               -e src/iland/build/release/iland \
+               -d src/iland/res/iland.desktop \
+               -i src/iland/res/iLand.svg \
+               --plugin qt --output appimage
+
+          mv *.AppImage deploy-linux/
+          cp src/ilandc/build/release/ilandc deploy-linux/
+          cp src/fonstudio/build/release/fonstudio deploy-linux/
+
+# 3. macOS Deployment
+      - name: macOS Deployment
+        if: matrix.os == 'macos-latest'
+        run: |
+          mkdir deploy-mac
+          cp -r src/iland/build/release/iland.app deploy-mac/
+
+          # add ilandc to the folder
+          cp src/ilandc/build/release/ilandc deploy-mac/
+
+          # Bundle GUI into DMG
+          macdeployqt deploy-mac/iland.app -qmldir=src/iland/qml -dmg
+          mv deploy-mac/iland.dmg deploy-mac/iLand-macOS.dmg
+
+
+      # --- Artifact Upload (Für Debugging & History) ---
+      # Lädt ALLES hoch (Logs + Ordner), damit du prüfen kannst, falls was nicht geht.
+      - name: Upload Build Artifacts (Debug)
+        uses: actions/upload-artifact@v4
+        with:
+          name: iLand-Build-Artifacts-${{ matrix.os }}
+          path: |
+            build_log.txt
+            deploy-win/
+            deploy-linux/
+            deploy-mac/
+            iLand-Windows.zip
+          retention-days: 5
+
+      # --- Release Upload (Nur Clean Binaries) ---
+      # Lädt nur die fertigen Dateien (AppImage, Zip, DMG) ins Release.
+      - name: Publish Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+        with:
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'dev-latest' }}
+          name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'Development Build (Latest)' }}
+          prerelease: ${{ github.event_name == 'workflow_dispatch' }}
+          files: |
+            deploy-linux/*.AppImage
+            deploy-linux/ilandc
+            deploy-linux/fonstudio
+            deploy-mac/*.dmg
+            deploy-mac/ilandc
+            iLand-Windows.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

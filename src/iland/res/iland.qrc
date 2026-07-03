@@ -28,5 +28,7 @@
         <file>note_empty.png</file>
         <file>note_full.png</file>
         <file>iland_splash3.jpg</file>
+        <file>iland.desktop</file>
+        <file>iLand512.png</file>
     </qresource>
 </RCC>

@@ -67,6 +67,8 @@ public:
     static void clearAllTimers();
     static void printAllTimers();
     static QString timeStr(double value_ms, bool exact=true);
+    static void setResponsiveMode(bool mode) { m_responsive_mode = mode; }
+    static bool responsiveMode()  { return m_responsive_mode; }
 
     /// function to run the event loop (avoid freezing of the UI) every 250ms
     /// calling is cheap, even cheaper if you provide a counter and a modules
@@ -75,6 +77,7 @@ public:
 
 private:
     static QHash<QString, double> mTimingList;
+    static bool m_responsive_mode;
     static qint64 ms_since_epoch; // milliseconds since epoch for the first call
     QElapsedTimer t;
     bool m_hideShort; // if true, hide messages for short operations (except an explicit call to showElapsed())

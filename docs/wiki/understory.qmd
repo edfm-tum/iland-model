@@ -1,0 +1,47 @@
+---
+title: "Understory Module"
+---
+
+The understory module in iLand simulates the dynamics of ground vegetation (moss, herbs, and shrubs) and requires two CSV configuration files: one for defining Plant Functional Types (PFTs) and one for defining the developmental states of these PFTs.
+
+## 1. PFT File
+
+This file defines the Plant Functional Types (PFTs) and their environmental response parameters.
+
+| Column Name | Type | Description |
+|:---|:---|:---|
+| `pftId` | String | Unique identifier/name for the PFT (e.g., "Vaccinium", "Ferns"). |
+| `estBaseProb` | Double | Base establishment probability ($\ge0$). |
+| `mortalityBaseProb` | Double | Base mortality probability ($\ge0$). |
+| `optimalGrowth` | Double | Optimal growth rate ($>0$). Relates to the time to reach the maximum state. |
+| `pDecline` | Double | Probability of decline (transition to the previous state) ($\ge0$). |
+| `lightResponse` | Expression | (Optional) Custom function for light response. <br>Default: `min(0.05 + 1.5/(1 + ((lr - (0.15*LightEIV-0.4))/(0.8-0.05*LightEIV))^2),1)` |
+| `LightEIV` | Double | Ellenberg Indicator Value for Light (1-9). <br>**Required** if the default `lightResponse` expression is used. |
+| `waterResponse` | Expression | (Optional) Custom function for water response. <br>Default: `min(0.05 + 1.3/(1 + ((swpgs + 14 + (10-MoistureEIV)*0.5)/3)^2),1)` |
+| `MoistureEIV` | Double | Ellenberg Indicator Value for Moisture (1-9). <br>**Required** if the default `waterResponse` expression is used. |
+| `nutrientResponse` | Expression | (Optional) Custom function for nutrient response. <br>Default: `min(0.05 + 1.5/(1 + ((PlantAvailN - (5*NutrientEIV+40))/20)^2),1)` |
+| `NutrientEIV` | Double | Ellenberg Indicator Value for Nutrients (1-9). <br>**Required** if the default `nutrientResponse` expression is used. |
+| `tempResponse` | Expression | (Optional) Custom function for temperature response. <br>Default: `min(0.05 + 1.2/(1 + ((meanTemp - (TemperatureEIV*1.5))/3)^2),1)` |
+| `TemperatureEIV` | Double | Ellenberg Indicator Value for Temperature (1-9). <br>**Required** if the default `tempResponse` expression is used. |
+| `stressFunction` | Expression | (Optional) Custom function for stress response. <br>Default: `0.5*exp(-x/stressSensitivity)` |
+| `stressSensitivity` | Double | Sensitivity to stress (0-1). <br>**Required** if the default `stressFunction` expression is used. |
+
+## 2. States File
+
+This file defines the developmental states (size classes) for each PFT defined in the PFT file.
+
+| Column Name | Type | Description |
+|:---|:---|:---|
+| `pftId` | String | Name of the PFT this state belongs to. Must match a `pftId` in the PFT file. |
+| `size` | Integer | Size class index. Must be strictly increasing for each PFT (e.g., 1, 2, 3...). |
+| `slots` | Integer | Number of spatial slots a single plant in this state occupies (1-10). |
+| `LAI` | Double | Leaf Area Index of a plant in this state ($m^2/m^2$). |
+| `biomass` | Double | Biomass of a plant in this state ($kg/m^2$ or kg/plant, depending on internal scaling). |
+| `cover` | Double | Cover fraction of a plant in this state (0-1). |
+| `height` | Double | Height of a plant in this state (0-4m). |
+
+**Important Notes:**
+
+*   **Consistency:** Every PFT defined in the PFT file must have at least one corresponding state in the states file.
+*   **Sequence:** The `size` column must be strictly increasing for the rows belonging to a single PFT.
+*   **Format:** Standard CSV (Comma Separated Values).

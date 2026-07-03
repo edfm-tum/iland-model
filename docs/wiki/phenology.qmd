@@ -1,0 +1,40 @@
+---
+title: "phenology"
+---
+
+The competitive advantage of evergreen coniferous species in the Pacific Northwest has been found to originate *inter alia* from their ability to conduct photosynthesis during mild winter periods, while deciduous species are dormant ([Waring and Franklin 1979](http://dx.doi.org/10.1126/science.204.4400.1380)). [Bugmann and Solomon (2000)](http://www.jstor.org/stable/2640989) in their model analysis found that accounting for phenological differences was a key aspect in adapting a traditional gap model concept to the forests of the Pacific Northwest. Also in the alpine terrain of Central Europe phenology is an important trait defining plant competitive strategies.
+
+A dynamic, climate-sensitive phenology model is thus adapted for iLand to derive the vegetation period for deciduous tree species. While several detailed phenology models based on regional data and species characteristics have been presented (e.g., [Kramer et al. 2000](http://dx.doi.org/10.1007/s004840000066), [Linkosalo et al. 2008](http://treephys.oxfordjournals.org/cgi/reprint/28/12/1873)) a simple, general, yet process-based approach is harnessed in iLand. The growing season index (*GSI*, [Jolly et al. 2005](http://dx.doi.org/10.1111/j.1365-2486.2005.00930.x)) uses photoperiod, evaporative demand and [temperature response](temperature-response.qmd) to characterize the growing season for deciduous trees. The factors are characterized by linear response functions defined by upper and lower thresholds and are aggregated multiplicatively to arrive at daily *GSI<sub>d</sub>* (Eq. 1)
+
+$$
+GSI_{d}=f_{TP}\cdot f_{DP}\cdot f_{LP}
+$$
+
+with
+
+$$
+f_{TP}=max(min(\frac{T-TP_{min}}{TP_{max}-TP_{min}}\: ;\: 1)\: ;\: 0)
+$$
+
+
+$$
+f_{DP}=1-max(min(\frac{D-DP_{min}}{DP_{max}-DP_{min}}\: ;\: 1)\: ;\: 0)
+$$
+
+
+$$
+f_{LP}=max(min(\frac{L-LP_{min}}{LP_{max}-LP_{min}}\: ;\: 1)\: ;\: 0)
+$$
+
+where *T*, *D*, and *L* are daily [temperature response](temperature-response.qmd), vapor pressure deficit and photoperiod respectively, and subscripts *min *and *max *denote the upper and lower cutoff value for the respective factor. Following [Jolly et al. (2005)](http://dx.doi.org/10.1111/j.1365-2486.2005.00930.x) GSI is defined as 21-day running mean of the daily value *GSI<sub>d</sub>*. Start (end) of growing season is defined as the day of year where *GSI* first exceeds (falls below) a value of 0.5. In iLand, the start and end of growing season are furthermore restricted to the periods of the year with increasing and decreasing daylength respectively to avoid e.g., leaf fall after a short adverse climate spell in sping. This approach was found to be well in line with satellite-derived Normalized Difference Vegetation Index on a global scale, and reproduced selected observed growing season lengths for deciduous forest ecosystems with satisfactorily accuracy despite its simplicity (cf. [Jolly et al. 2005](http://dx.doi.org/10.1111/j.1365-2486.2005.00930.x), [Stöckli et al. 2008](http://dx.doi.org/10.1029/2008JG000781)).
+
+Three phenological groups are currently distinguised in iLand. No phenological restrictions apply for evergreen trees (but see the acclimation approach to model [temperature response](temperature-response.qmd)). Parameters for the *GSI *model are estimated separately for deciduous broadleafed and deciduous coniferous trees. Currently no gradual spring greening and leaf fall are simulated but the *GSI*-based vegetation period is simply used to restrict photosynthetic activity of deciduous trees to this period every year. It is furthermore noteworthy that frost or drought events are fully reversible and do not have any impact on phenological status in this approach as long as the composite *GSI *remains above the threshold value.
+
+
+
+
+::: {.callout-note title="citation"}
+[Seidl, R., Rammer, W., Scheller, R.M., Spies, T.A. 2012](http://dx.doi.org/10.1016/j.ecolmodel.2012.02.015). An individual-based process model to simulate landscape-scale forest ecosystem dynamics. Ecol. Model. 231, 87-100.
+:::
+
+

@@ -150,7 +150,8 @@ void ForestManagementEngine::setupScripting()
     if (code.isEmpty())
         throw IException("Loading of ABE script file '"  + file_name + "'failed; file missing or empty.");
     qCDebug(abeSetup) << "Loading script file" << file_name;
-    QJSValue result = GlobalSettings::instance()->scriptEngine()->evaluate(code,file_name);
+
+    QJSValue result = GlobalSettings::instance()->scriptEngine()->evaluate(code, file_name);
     if (result.isError()) {
         int lineno = result.property("lineNumber").toInt();
         QStringList code_lines = code.replace('\r', "").split('\n'); // remove CR, split by LF
@@ -429,8 +430,9 @@ FMUnit *nc_plan_update_unit(FMUnit *unit)
 
 void ForestManagementEngine::setup()
 {
-    QLoggingCategory::setFilterRules("abe.debug=true\n" \
-                                     "abe.setup.debug=true"); // enable *all*
+    QString enable_debug = logLevelDebug() ? "true" : "false";
+    QLoggingCategory::setFilterRules(QString("abe.debug=%1\n" \
+                                             "abe.setup.debug=true").arg(enable_debug) ); // enable *all*
 
     DebugTimer time_setup("ABE:setupScripting");
     clear();
@@ -940,6 +942,11 @@ void ForestManagementEngine::notifyTreeRemoval(Tree *tree, int reason)
     //    return;
     // we use an 'int' instead of Tree:TreeRemovalType because it does not work
     // with forward declaration (and I dont want to include the tree.h header in this class header).
+
+    // test for emptyness: this handles the case when ABE is not yet properly set up
+    if (mFMStandGrid.isEmpty())
+        return;
+
     FMStand *stand = mFMStandGrid[tree->position()];
     if (stand)
         stand->notifyTreeRemoval(tree, reason);
