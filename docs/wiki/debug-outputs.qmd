@@ -337,6 +337,34 @@ This output provides a summary of key model performance metrics for each simulat
 
 
 
+### Understory (1024)
+
+
+This output details the state transitions, environmental responses, and transition probabilities for individual understory plants/cohorts (moss, herbs, shrubs) on each 2m cell where they are present.
+
+
+| **Name** | **Description** |
+| --- | --- |
+| id | Unique identifier for the debug record. |
+| type | The type of the debug output ("understory"). |
+| year | The current simulation year. |
+| ruindex | The 0-based index of the resource unit. |
+| cellindex | The index of the 2m grid cell (0..2499) within the resource unit. |
+| pft | The name/identifier of the understory Plant Functional Type (PFT). |
+| stateId | The size class ID of the current understory plant state. |
+| lightResponse | The environmental response to light (0..1). |
+| nitrogenResponse | The environmental response to available nitrogen (0..1). |
+| waterResponse | The environmental response to soil water potential (0..1). |
+| tempResponse | The environmental response to mean temperature (0..1). |
+| totalResponse | The combined growth/decline response (0..1) derived from individual responses. |
+| pMortality | The probability of mortality for the plant under current conditions. |
+| pDecline | The probability of declining to the previous smaller state. |
+| pGrowth | The probability of growing to the next larger state. |
+| nextStateId | The selected next state ID for the plant (or a marker indicating mortality). |
+
+
+
+
 ### Dynamic Output
 
 
