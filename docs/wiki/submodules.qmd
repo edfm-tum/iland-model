@@ -18,5 +18,8 @@ The **Ground Vegetation** submodule models the forest floor vegetation layer (un
 ### [Understory Module](understory.qmd)
 The **Understory** submodule simulates the detailed dynamics of forest floor vegetation (moss, herbs, and shrubs) based on Plant Functional Types (PFTs) and developmental size-class states. It is configured using dedicated CSV files for PFT traits and developmental states.
 
+### [Microclimate Module](microclimate.qmd)
+The **Microclimate** submodule simulates dynamic temperature buffering beneath the canopy. It models subcanopy warming of daily minimum temperatures and cooling of maximum temperatures, affecting decomposition rates, spruce bark beetle generations and survival, and tree seedling establishment.
+
 ### [Scaling Vegetation Dynamics (SVD)](svd.qmd)
 The **SVD** submodule provides a deep-learning based framework for upscaling vegetation transitions. iLand is used to classify vegetation into structural/functional states and export training data for neural networks at the resource unit scale.

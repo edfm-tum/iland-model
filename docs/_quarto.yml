@@ -173,6 +173,7 @@ website:
                 - wiki/ground-vegetation.qmd
                 - wiki/svd.qmd
                 - wiki/understory.qmd
+                - wiki/microclimate.qmd
         - section: "Part 2: Working with iLand"
           contents:
             - section: "iLand Software"

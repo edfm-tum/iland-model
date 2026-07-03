@@ -1,0 +1,80 @@
+---
+title: "Microclimate Module"
+---
+
+The **Microclimate** module simulates dynamic subcanopy temperature buffering below forest canopies. It calculates daily minimum, maximum, and mean microclimate temperature offsets at a 10m spatial grain (aggregated to 100m resource units for process calculations) compared to free-air macroclimate conditions outside the forest. 
+
+Detailed descriptions and research results of the module's implementation and impacts are documented in:
+> [**Braziunas, K. H., Rammer, W., De Frenne, P., Díaz-Calafat, J., Hedwall, P.-O., Senf, C., Thom, D., Zellweger, F., & Seidl, R. (2025).**](https://doi.org/10.1007/s10980-025-02054-8) Microclimate temperature effects propagate across scales in forest ecosystems. *Landscape Ecology*, 40(2), 37.
+
+## Concept
+
+Forest canopies act as an insulating blanket, mitigating extreme understory temperature conditions relative to open/free-air conditions. In general, canopies cool maximum temperatures during the summer (cooling effect), warm minimum temperatures during the winter (warming effect), and consistently warm minimum temperatures across all seasons. These temperature modifications propagate into critical understory processes, affecting the decay rate of deadwood, spruce bark beetle development and survival, and the establishment success of tree seedlings.
+
+## Implementation
+
+The module calculates monthly average daily minimum and maximum temperature offsets ($\Delta T_{min}$ and $\Delta T_{max}$, in °C) dynamically using linear mixed-effects models (LMMs) parameterized from 497 forest plots across Europe. The calculated offsets are added to daily macroclimate temperatures.
+
+### Spatial Resolution and Aggregation
+
+Calculations are performed at two nested spatial scales. The primary microclimate variables (vegetation structure and topography) are calculated at a $10\text{ m} \times 10\text{ m}$ resolution. For each $10\text{ m}$ cell, the temperature buffering capacities are computed daily. To optimize performance and match the resolution of the temperature-dependent submodels, these cell-level buffering values are averaged (arithmetic mean) over the stockable $10\text{ m}$ cells within each $100\text{ m} \times 100\text{ m}$ Resource Unit (RU). Cells that are not stockable (e.g., bare rock or water bodies) are excluded from this aggregation. The resulting monthly aggregated RU-level minimum and maximum buffering values are then used at the $100\text{ m}$ resolution to adjust daily macroclimate temperatures for the establishment, decomposition, and bark beetle submodels.
+
+### Data Requirements and Topographic Factors
+
+The microclimate module requires a digital elevation model (DEM) to compute the topographic predictors at the $10\text{ m}$ cell scale. Northness is computed as the cosine of the topographic aspect derived directly from the DEM. The Topographic Position Index (TPI) is computed from the DEM as the difference between the cell's elevation and the average elevation within a surrounding neighborhood radius of $500\text{ m}$. Vegetation predictors (Leaf Area Index and average Shade Tolerance) are dynamically calculated by looping over all individual trees on the resource unit and assigning their leaf area and basal area to their corresponding $10\text{ m}$ cells based on their coordinates.
+
+### Predictive Equations
+
+The temperature offsets are calculated as follows:
+
+$$\Delta T_{min} = 1.4570 - 0.0248 \times T_{macro, min} + 0.2627 \times \text{Northness} + 0.0158 \times \text{TPI} + 0.0227 \times \text{LAI} - 0.2031 \times \text{STol}$$
+
+$$\Delta T_{max} = 0.9767 - 0.1932 \times T_{macro, max} - 0.5729 \times \text{Northness} + 0.0140 \times \text{TPI} - 0.3948 \times \text{LAI} + 0.4419 \times \text{STol}$$
+
+$$\Delta T_{mean} = \frac{\Delta T_{min} + \Delta T_{max}}{2}$$
+
+The predictor variables used in these equations are $T_{macro}$ (daily free-air temperature at 2m height in °C), Northness (cosine of topographic aspect ranging from -1 to 1), TPI (Topographic Position Index, elevation minus mean elevation within a 500m radius in meters), LAI (dynamically simulated projected leaf area index in $m^2/m^2$), and STol (basal-area-weighted mean shade tolerance class of the overstory tree species, ranging from 1 for very light-demanding to 5 for very shade tolerant).
+
+To prevent extrapolation outside the training dataset, predictor variables are truncated to the range of values used in model fitting: TPI is limited to $[-105.0, 67.0]$, LAI is limited to $[0.3, 9.4]$, and STol is limited to $[1.0, 5.0]$. Additionally, if calculated offsets exceed physically realistic values ($\pm10$°C), they are reset to 0 to ensure stability.
+
+---
+
+## Implemented Effects
+
+### [Bark Beetle Development and Survival](barkbeetle-module.qmd)
+
+The microclimate module adjusts the temperatures used by the European spruce bark beetle (*Ips typographus*) submodel. Daily maximum air temperature used to accumulate effective bark temperature is modified by adding the monthly maximum offset $\Delta T_{max}$. Canopy-induced cooling under dense stands slows degree-day accumulation, which delays spring swarming and reduces the number of completed beetle generations per year. For overwintering survival, the daily minimum air temperature is modified by adding the monthly minimum offset $\Delta T_{min}$. Winter warming under dense forest cover buffers the beetles from extreme cold, reducing the number of frost days where temperatures fall below the lethal threshold of $-15$°C and improving overwintering success. For further details on the host dynamics, see the [Bark Beetle Module](barkbeetle-module.qmd).
+
+### Wood and [Soil Decomposition](soil-dynamics.qmd)
+
+Decomposition rates of snags, downed wood, litter, and soil organic matter follow first-order decay kinetics modified by a climate factor ($r_e$) representing temperature and moisture. The mean daily temperature is modified by adding $\Delta T_{mean}$. During the summer, canopy cooling decreases understory temperatures, leading to lower decomposition rates and reduced annual heterotrophic respiration ($R_h$) in dense stands. For details on how carbon is routed to the soil pools, see [Soil Dynamics](soil-dynamics.qmd).
+
+### Tree Seedling [Establishment](establishment.qmd)
+
+Seedling germination and first-year survival must pass several species-specific temperature-sensitive filters in the TACA (Temperature, Moisture, Chilling, Frost) framework. Daily minimum microclimate temperature ($T_{macro, min} + \Delta T_{min}$) is used to evaluate minimum winter temperature limits and count growing season frost events. Since canopies warm winter minima, this alleviates cold filters and enables warm-preferring species to establish at higher elevations. Daily mean microclimate temperature ($T_{macro, mean} + \Delta T_{mean}$) is used to evaluate winter chilling requirements and Growing Degree Days (GDD). For details on the TACA parameters, see [Establishment](establishment.qmd).
+
+---
+
+## Parameters in the Project File
+
+The microclimate module and its individual process effects are configured in the `model.climate.microclimate` section of the [Project File](project-file.qmd):
+
+| **XML Key** | **Type** | **Default Value** | **Description** |
+| :--- | :--- | :--- | :--- |
+| `enabled` | boolean | `false` | Enables/disables the microclimate submodule. |
+| `barkbeetle` | boolean | `true` | Enables the microclimate buffering effect for bark beetle development and overwintering success. |
+| `decomposition` | boolean | `true` | Enables the microclimate buffering effect for decomposition of deadwood and soil organic matter. |
+| `establishment` | boolean | `true` | Enables the microclimate buffering effect for tree seedling establishment. |
+
+## Visualization Layers
+
+In the iLand Viewer interface, several layers are available to visualize microclimate variables at the 10m grid cell resolution:
+
+| **Layer Name** | **Description** |
+| :--- | :--- |
+| `Microclimate - LAI` | Leaf Area Index of the cell ($10\text{ m}$ pixel resolution). |
+| `Microclimate - ShadeTol` | Average shade tolerance index of the cell. |
+| `Microclimate - TPI` | Topographic Position Index (elevation difference compared to a $500\text{ m}$ neighborhood). |
+| `Microclimate - Northness` | Cosine of topographic aspect. |
+| `Microclimate - Min.Buffer(June)` / `(Dec)` | Minimum temperature buffering capacity for June and December, respectively. |
+| `Microclimate - Max.Buffer(June)` / `(Dec)` | Maximum temperature buffering capacity for June and December, respectively. |

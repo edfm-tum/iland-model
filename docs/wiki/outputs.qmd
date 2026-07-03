@@ -380,7 +380,7 @@ The 'conditionRU' can be used to suppress resource-unit-level details; eg. speci
 | litter_c_ag | double | soil litter aboveground (yl, foliage, part of litter_c) carbon kg/ha |
 | soil_c | double | soil organic matter (som), carbon kg/ha |
 | soil_n | double | soil organic matter (som), nitrogen kg/ha |
-| understorey_c | double | living understorey vegetation (e.g. moss) kg C/ha |
+| understory_c | double | living understory vegetation (e.g. moss) kg C/ha |
 
 
 ## Carbon fluxes per RU or landscape/yr
@@ -457,6 +457,9 @@ You can specify a 'condition' to limit output execution to specific years (varia
 | total_radiation | double | total incoming radiation over the year (MJ/m2), sum of data in climate input) |
 | radiation_snowcover | integer | sum of radiation input (MJ/m2) for days with snow cover |
 | effective_lai | double | effective LAI (m2/m2) including LAI of adult trees, saplings, and ground cover |
+| lai_saplings | double | LAI (m2/m2) of saplings, calc. from pixels |
+| lai_saplings_rus | double | LAI (m2/m2) of saplings, calc. from RUS average |
+| lai_understory | double | LAI (m2/m2) of understory layer |
 | mean_swc_mm | double | mean soil water content of the year (mm) |
 | mean_swc_gs_mm | double | mean soil water content in the growing season (fixed: April - September) (mm) |
 | maxDepthFrozen | double | Permafrost: maximum depth of freezing (m). The value is 2m when soil is fully frozen in a year. |
@@ -622,6 +625,33 @@ You can use the 'condition' to control if the output should be created for the c
 | count_trees | integer | total number of trees count saved to file |
 | count_saplings | integer | total number saplings saved to file |
 | filename | string | filename of the created output PDB file |
+
+
+## Understory cover per RU/landscape
+
+**Table Name:** **understory**
+
+Understory cover by resource unit / year and/or by landsacpe/year. On resource unit level, the output provides RU proportions, i.e. proportion of stockable area e.g. covered (0..1).
+
+For landscape level outputs, all variables are aggregated over the landscape and scaled to per hectare stockable area. The area column contains the stockable area (per resource unit / landscape) and can be used to scale to values to the actual value on the ground.
+
+You can use the 'condition' to control if the output should be created for the current year(see also dynamic stand output).
+
+The 'conditionRU' can be used to suppress resource-unit-level details; eg. specifying 'in(year,100,200,300)' limits output on reosurce unit level to the years 100,200,300 (leaving 'conditionRU' blank enables details per default).
+
+| **caption** | **datatype** | **description** |
+| --- | --- | --- |
+| year | integer | simulation year |
+| ru | integer | index of ressource unit |
+| rid | integer | id of ressource unit (-1: no ids set) |
+| area_ha | double | total stockable area of the resource unit (ha) |
+| pft | string | Name of the plant functional type |
+| area | double | total area where the PFT is present (based on 2m cells) (% of stockable area) |
+| cover | double | total area covered by PFT (area x state-specific cover) (% of stockable area) |
+| areaGain | double | total area where PFT regenerated (based on 2m cells, % of stockable area) |
+| areaLoss | double | total area with PFT mortality (based on 2m cells, % of stockable area) |
+| LAI | double | leaf area index of PFT (m2/m2) |
+| biomass | double | biomass of PFT (kg/ha) |
 
 
 
