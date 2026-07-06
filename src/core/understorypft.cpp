@@ -86,6 +86,13 @@ void UnderstoryPFT::setup(UnderstorySetting s, int index)
         mPsiMin = -fabs(mPsiMin); // make sure it is negative
         if (!ok || mPsiMin < -10) throw IException("invalid value for 'psiMin'!");
 
+        mTurnoverRate = s.value("turnoverRate").toDouble(&ok);
+        if (!ok || mTurnoverRate<0. || mTurnoverRate>1.) throw IException("invalid value for 'turnoverRate' (0..1)");
+        mBelowgroundFrac = s.value("belowgroundFrac").toDouble(&ok);
+        if (!ok || mBelowgroundFrac<0. || mBelowgroundFrac>1.) throw IException("invalid value for 'belowgroundFrac' (0..1)");
+        mLitterDecompRate = s.value("litterDecompRate").toDouble(&ok);
+        if (!ok || mLitterDecompRate<0. || mLitterDecompRate>1.) throw IException("invalid value for 'litterDecompRate' (0..1)");
+
         // response functions
         resp = "lightResponse";
         expr = s.value(resp).toString();
@@ -121,7 +128,7 @@ void UnderstoryPFT::setup(UnderstorySetting s, int index)
         if (expr.isEmpty()) {
             expr = QString("min(0.05 + 1.5/(1 + ((PlantAvailN - (5*NutrientEIV+40))/20)^2),1)");
         }
-        if (expr.contains("MoistureEIV")) {
+        if (expr.contains("NutrientEIV")) {
             double value = s.value("NutrientEIV").toDouble(&ok);
             if (!ok || value < 1. || value > 9.) throw IException("NutrientEIV required, but not a number or out of range (1..9)!");
             expr.replace("NutrientEIV", s.value("NutrientEIV").toString());
@@ -136,9 +143,9 @@ void UnderstoryPFT::setup(UnderstorySetting s, int index)
         if (expr.isEmpty()) {
             expr = QString("min(0.05 + 1.2/(1 + ((meanTemp - (TemperatureEIV*1.5))/3)^2),1)");
         }
-        if (expr.contains("MoistureEIV")) {
+        if (expr.contains("TemperatureEIV")) {
             double value = s.value("TemperatureEIV").toDouble(&ok);
-            if (!ok || value < 1. || value > 9.) throw IException("NutrientEIV required, but not a number or out of range (1..9)!");
+            if (!ok || value < 1. || value > 9.) throw IException("TemperatureEIV required, but not a number or out of range (1..9)!");
             expr.replace("TemperatureEIV", s.value("TemperatureEIV").toString());
         }
 

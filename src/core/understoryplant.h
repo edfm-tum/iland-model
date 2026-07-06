@@ -72,8 +72,8 @@ struct UnderstoryStatsCell {
     }
     void clear() {LAI=0.; biomass=0.; height=0.; cellsOccupied=0; slotsOccupied = 0; }
     float LAI {0.}; ///< cell: LAI (m2/m2) from state, RU: LAI (stockable area)
-    float biomass  {0.};
-    float height {0.};
+    float biomass  {0.}; // TODO: Clarify biomass units (biomass g/m2)
+    float height {0.}; ///< height (m)
     float cover {0.}; ///< %cover (state-variable)
     float cellsOccupied {0}; ///< Cell: 1/0, RU: % cells covered
     float slotsOccupied {0}; ///< Cell: N Slots, RU: % slots covered

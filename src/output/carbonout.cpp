@@ -24,6 +24,7 @@
 #include "soil.h"
 #include "watercycle.h"
 #include "permafrost.h"
+#include "understory.h"
 
 CarbonOut::CarbonOut()
 {
@@ -137,10 +138,12 @@ void CarbonOut::exec()
                     << ru->soil()->oldOrganicMatter().C*1000.
                     << ru->soil()->oldOrganicMatter().N*1000.;   // soil
 
-            // biomass for understory (currently only moss)
+            // biomass for understory (moss (permafrost) and understory)
             double understory_c = 0.;
             if (ru->waterCycle()->permafrost())
                 understory_c = ru->waterCycle()->permafrost()->mossBiomass() * biomassCFraction * 10000.; // convert from kg/m2 -> kg C / ha
+            if (m->understory())
+                understory_c += m->understory()->understoryRU(ru->index())->stats().stats.biomass * biomassCFraction * 10.; // TODO: Clarify biomass units (convert from g/m2 -> kgC/ha)
 
             *this << understory_c;
 
@@ -166,6 +169,15 @@ void CarbonOut::exec()
         *vit++ += ru->soil()->youngRefractory().C*area_factor * 1000.; *vit++ += ru->soil()->youngRefractory().N*area_factor * 1000.; *vit++ += ru->soil()->youngRefractory().C*area_factor * 1000. * ru->soil()->youngRefractoryAbovegroundFraction();
         *vit++ += ru->soil()->youngLabile().C*area_factor * 1000.; *vit++ += ru->soil()->youngLabile().N*area_factor * 1000.; *vit++ += ru->soil()->youngLabile().C*area_factor * 1000. * ru->soil()->youngLabileAbovegroundFraction();
         *vit++ += ru->soil()->oldOrganicMatter().C*area_factor * 1000.; *vit++ += ru->soil()->oldOrganicMatter().N*area_factor * 1000.;
+ 
+        double understory_c = 0;
+        if (ru->waterCycle()->permafrost())
+            understory_c = ru->waterCycle()->permafrost()->mossBiomass() * biomassCFraction * 10000.; // convert from kg/m2 -> kg C / ha
+        if (m->understory())
+            understory_c += m->understory()->understoryRU(ru->index())->stats().stats.biomass * biomassCFraction * 10.; // TODO: Clarify biomass units (convert from g/m2 -> kgC/ha)
+
+
+        *vit++ += understory_c;
 
     }
     // write landscape sums

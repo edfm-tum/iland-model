@@ -47,6 +47,15 @@ public:
     /// values are always <0
     double psiMin() const { return mPsiMin; }
 
+    /// carbon turnover rate / yr (i.e. percentage of carbon flux to ground w/o growth, mortality)
+    double turnoverRate() const { return mTurnoverRate; }
+
+    // fraction of carbon / biomass that is below ground
+    double belowgroundFrac() const { return mBelowgroundFrac; }
+
+    /// decomposition rate of litter originating from PFT biomass
+    double litterDecompRate() const { return mLitterDecompRate; }
+
     /// determine if the state updates
     /// based on environmental conditions
     UStateId stateTransition(const UnderstoryPlant &plant,
@@ -78,6 +87,9 @@ private:
     double mPDecline {0. }; ///< global probability of decline (one state down) (prop.)
     double mEffectiveLAIfactor {1. }; ///< multiplier to reduce light competition for specific PFTs (grasses)
     double mPsiMin { -1.5 }; ///< psi min (water cycle) for the PFT
+    double mTurnoverRate { 0.5 }; ///< annual carbon turnover rate
+    double mBelowgroundFrac { 0.5 }; ///< fraction of PFT biomass that is belowground
+    double mLitterDecompRate { 0.25 }; ///< decay rate of litter coming from PFT
 
     // response functions for the PFT
     Expression mExprLight; ///< light response (param: corrected lif_value on the ground)
@@ -122,14 +134,14 @@ public:
     short int NSlots() const { return mNSlots; }
     /// leaf area index (m2/m2)
     double LAI() const { return mLAI; }
-    /// plant biomass of all plants of the state on the cell (g/m2)
+    /// plant biomass of all plants of the state on the cell (g/m2?) // TODO: Clarify biomass units
     double biomass() const { return mBiomass; }
     /// mean height (m)
     double height() const { return mHeight; }
     /// proportion of cover on the cell (0..1)
     double cover() const { return mCover; }
     /// carbon turnover rate / yr (i.e. percentage of carbon flux to ground w/o growth, mortality)
-    double turnoverRate() const { return 0.5; } // TODO: make editable
+    double turnoverRate() const { return mPFT->turnoverRate(); }
 
 
 private:
@@ -141,10 +153,10 @@ private:
     bool mFinalState {false};
 
     short int mNSlots {1};
-    double mLAI {0.};
-    double mBiomass {0.};
-    double mHeight {0.};
-    double mCover {0.};
+    double mLAI {0.}; //m2/m2
+    double mBiomass {0.}; // TODO: Clarify biomass units
+    double mHeight {0.}; // m
+    double mCover {0.}; // 0..1
 
 
 };

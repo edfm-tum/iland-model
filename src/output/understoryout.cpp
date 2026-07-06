@@ -24,7 +24,7 @@ UnderstoryOut::UnderstoryOut()
               << OutputColumn("areaGain", "total area where PFT regenerated (based on 2m cells, % of stockable area)", OutDouble)
               << OutputColumn("areaLoss", "total area with PFT mortality (based on 2m cells, % of stockable area)", OutDouble)
               << OutputColumn("LAI", "leaf area index of PFT (m2/m2)", OutDouble)
-              << OutputColumn("biomass", "biomass of PFT (kg/ha)", OutDouble);
+              << OutputColumn("biomass", "biomass of PFT (kg/ha)", OutDouble); // TODO: Clarify biomass units
 
 }
 
@@ -61,7 +61,7 @@ void UnderstoryOut::exec()
                     const auto *pft = m->understory()->pft(pft_index);
                     *this << currentYear() << ru->index() << ru->id() << area_factor; // keys
                     *this << pft->name();
-                    *this << stat.stats.cellsOccupied << stat.stats.slotsOccupied;
+                    *this << stat.stats.cellsOccupied << stat.stats.cover;
                     *this << stat.established << stat.died;
                     *this << stat.stats.LAI << stat.stats.biomass;
                     writeRow();
@@ -83,7 +83,7 @@ void UnderstoryOut::exec()
                 const auto *pft = m->understory()->pft(pft_index);
                 *this << currentYear() << -1 << -1 << total_area; // keys
                 *this << pft->name();
-                *this << stat.stats.cellsOccupied / total_area << stat.stats.slotsOccupied / total_area;
+                *this << stat.stats.cellsOccupied / total_area << stat.stats.cover / total_area;
                 *this << stat.established / total_area << stat.died / total_area;
                 *this << stat.stats.LAI / total_area << stat.stats.biomass / total_area;
                 writeRow();

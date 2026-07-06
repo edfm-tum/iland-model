@@ -194,3 +194,9 @@ Understory biomass and litter are integrated into iLand's carbon cycles:
 ### 4. Mechanical Inhibition
 
 *   *(Mechanical inhibition of sapling establishment by dense understory cover is planned for future development).*
+
+---
+
+## See Also
+
+*   [iLand Performance Optimization Report (Blog, Dec 2025)](../blog/blogpost62-iland-performance-optimization-report.qmd) — Technical details and scaling benchmarks on the multi-threaded performance optimization of the understory and regeneration modules.

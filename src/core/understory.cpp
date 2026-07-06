@@ -202,7 +202,7 @@ void UnderstoryVisualizer::setupVisualization()
     QStringList var_desc = {
                 "Number of 'plants' on cell",
                 "Number of 'slots' occupied per cell",
-                "Total biomass (kg/m2?)",
+                "Total biomass (kg/m2?)", // TODO: Clarify biomass units
                 "LAI (m2/m2) of understory",
                 "Maximum height (m) on cell",
                 "reduction factor light due to understory",
@@ -210,7 +210,7 @@ void UnderstoryVisualizer::setupVisualization()
                 "Percent of RU area with >0 plants (%)",
                 "Percent of total #slots of RU occupied (%)",
                 "Total LAI on RU (m2/m2)",
-                "Total biomass on RU (kg/ha?)"
+                "Total biomass on RU (kg/ha?)" // TODO: Clarify biomass units
     };
 
     const auto &us = Globals->model()->understory();
