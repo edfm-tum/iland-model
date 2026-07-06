@@ -39,6 +39,14 @@ public:
     /// the prob scales the number resource units that are tested for establishment each year
     double baseEstablishmentProbability() const { return mBaseEstablishmentProb; }
 
+    /// effective LAI multiplier for certain PFTS to reduce
+    /// the effect on light competition
+    double effectiveLAIfactor() const { return mEffectiveLAIfactor; }
+
+    /// psi min (water cycle) of a PFT
+    /// values are always <0
+    double psiMin() const { return mPsiMin; }
+
     /// determine if the state updates
     /// based on environmental conditions
     UStateId stateTransition(const UnderstoryPlant &plant,
@@ -49,6 +57,9 @@ public:
     /// location with given environment factors
     bool establishment(UnderstoryCellParams &ucp,
                        double n_represented) const;
+
+    void calculateEnvironment(UnderstoryCellParams &ucp, bool always_calc=false) const;
+    double calculateResponse(const UnderstoryCellParams &ucp, bool calc_growth_response=false) const;
 
     /// return a string with useful info
     QString dump();
@@ -65,7 +76,8 @@ private:
     double mBaseMortalityProb {0.}; ///< base probability of a cells die-off (mortality) (prop)
     double mOptimalGrowth { 1.}; ///< time to grow under optimal env. conditions to reach the last state (years)
     double mPDecline {0. }; ///< global probability of decline (one state down) (prop.)
-
+    double mEffectiveLAIfactor {1. }; ///< multiplier to reduce light competition for specific PFTs (grasses)
+    double mPsiMin { -1.5 }; ///< psi min (water cycle) for the PFT
 
     // response functions for the PFT
     Expression mExprLight; ///< light response (param: corrected lif_value on the ground)
@@ -73,6 +85,10 @@ private:
     Expression mExprWater; ///< water response (param: average soil water content in veg. period)
     Expression mExprTemp; ///< temperature response (param: MAT macro or microclimate)
     Expression mExprStress; ///< function expressing "stress" as f(environment) (param: total_response)
+    /// total response for establishment (named variables)
+    Expression mExprEstResponse;
+    /// total response for establishment (named variables)
+    Expression mExprGrowthResponse;
 
 };
 

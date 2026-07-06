@@ -22,6 +22,7 @@ struct UnderstoryCellParams {
     double nitrogenResponse;
     double waterResponse;
     double tempResponse;
+    double lightResponse;
     const LightProfile *lightProfile; ///< pre-calculated light profile for resource unit
     // cached variables
     float height; /// height of the state (m)

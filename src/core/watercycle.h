@@ -135,6 +135,7 @@ public:
         float lai_saplings {0.};
         float lai_saplings_rus {0.};
         float lai_understory {0.};
+        float psi_min_understory { 0. };
         SLAIs & operator+=(const SLAIs &s) {
             lai_saplings+=s.lai_saplings; lai_saplings_rus+=s.lai_saplings_rus; lai_understory+=s.lai_understory;
             return *this;

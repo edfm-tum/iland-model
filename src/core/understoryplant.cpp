@@ -92,7 +92,8 @@ UnderstoryPlant* UnderstoryCell::establishment(UStateId id)
 {
     for (auto& plant : mPlants) {
         if (!plant.isLiving()) {
-            plant.setState(id); return &plant;
+            plant.setState(id);
+            return &plant;
         }
     }
     return nullptr; // should not happen
@@ -204,6 +205,13 @@ void UnderstoryRU::establishment(const LightProfile &profile)
         if (drandom() < pft->baseEstablishmentProbability()) {
             // analyze the pft
             ucp.PFTcalc = false;
+            // evaluate env response: skip pft for this RU based on response
+            pft->calculateEnvironment(ucp);
+            double p_env = ucp.nitrogenResponse * ucp.waterResponse * ucp.tempResponse;
+            if (drandom() > p_env)
+                continue;
+
+
             int isc = 0; // index on 2m cell on LIF grid
             int cell_index = 0; // index in the cell array
             for (int iy=0; iy<cPxPerRU; ++iy) {

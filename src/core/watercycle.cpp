@@ -252,7 +252,7 @@ inline double WaterCycle::calculateBaseSoilAtmosphereResponse(const double psi_k
 /// on the RU. This is used for the calc. of transpiration.
 inline double WaterCycle::calculateSoilAtmosphereResponse(RUSpeciesShares &species_share, const double psi_kpa, const double vpd_kpa)
 {
-    // the species_share has pre-calculated shares for the species (and ground-veg) on the total LAI
+    // the species_share struct has pre-calculated proportions for species (and ground-veg/understory) on the total LAI
     // that effectively evapotranspirates water.
     // sum( species_share.lai_share ) + species_share.ground_vegetation_share = 1
 
@@ -273,6 +273,13 @@ inline double WaterCycle::calculateSoilAtmosphereResponse(RUSpeciesShares &speci
         // the LAI is below the threshold (default=1): the rest is considered as "ground vegetation": VPD-exponent is a constant
         double ground_response = calculateBaseSoilAtmosphereResponse(psi_kpa, vpd_kpa, mGroundVegetationPsiMin, -0.6 );
         total_response += ground_response * species_share.ground_vegetation_share;
+    }
+
+    // understory
+    if (mLAIs.lai_understory > 0.) {
+        double us_response = calculateBaseSoilAtmosphereResponse(psi_kpa, vpd_kpa, mLAIs.psi_min_understory, -0.6);
+        double prop_understory = mLAIs.lai_understory / species_share.total_lai;
+        total_response += us_response * prop_understory;
     }
 
     // add an aging factor to the total response (averageAging: leaf area weighted mean aging value):
@@ -400,12 +407,14 @@ void WaterCycle::run()
                 // climatic variables
                 out << day->id() << mRU->index() << mRU->id() << day->temperature << day->vpd << day->preciptitation << day->radiation;
                 out << combined_response; // combined response of all species on RU (min(water, vpd))
+                out << mLAIs.lai_understory; // LAI understory
+                out << mLAIs.psi_min_understory; // effective psi_min of understory
                 // fluxes
                 out << prec_after_interception << prec_to_soil << et << mCanopy.evaporationCanopy()
                         << mContent << mPsi[doy] << excess;
                 // other states
                 out << mSnowPack.snowPack();
-                out << mEffectiveLAI; // total LAI
+                out << mEffectiveLAI; // total LAI (incl. ground-veg, understory)
 
                 if (mPermafrost)
                     mPermafrost->debugData(out);

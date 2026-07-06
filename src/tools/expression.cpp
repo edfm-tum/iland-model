@@ -973,7 +973,6 @@ double * Expression::addVar(const QString& VarName)
     int idx=m_varList.indexOf(VarName);
     if (idx==-1) {
         m_varList+=VarName;
-        idx=m_varList.size()-1;
     }
     if (m_varList.size() >= EXPRNLOCALVARS)
         throw IException("The expression uses too many (local) variables!");

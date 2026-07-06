@@ -236,12 +236,15 @@ struct LightProfile
     /// mean LAI of saplings over all cells (m2/m2, for stockable area)
     double LAI_saplings;
     /// mean LAI of understory over all cells (m2/m2, for stockable area)
+    /// note: full LAI (not effective LAI for grasses)
     double LAI_understory;
+
+    /// mean psi min (weighed with understory LAI)
+    double PsiMin_understory;
 
     // Fast reset: Only clear what we accumulate (LAI).
     void reset_lai() {
         // std::memset is safe for std::array of POD (floats)
-        // This translates to a highly optimized vectorized zeroing instruction
         std::memset(lai.data(), 0, sizeof(lai));
     }
 

@@ -79,6 +79,13 @@ void UnderstoryPFT::setup(UnderstorySetting s, int index)
         mPDecline = s.value("pDecline").toDouble(&ok);
         if (!ok || mPDecline<0) throw IException("invalid value for 'pDecline'!");
 
+        mEffectiveLAIfactor = s.value("effectiveLAIfactor").toDouble(&ok);
+        if (!ok || mEffectiveLAIfactor<0 || mEffectiveLAIfactor>1) throw IException("invalid value for 'effectiveLAI'!");
+
+        mPsiMin = s.value("psiMin").toDouble(&ok);
+        mPsiMin = -fabs(mPsiMin); // make sure it is negative
+        if (!ok || mPsiMin < -10) throw IException("invalid value for 'psiMin'!");
+
         // response functions
         resp = "lightResponse";
         expr = s.value(resp).toString();
@@ -153,6 +160,35 @@ void UnderstoryPFT::setup(UnderstorySetting s, int index)
         mExprStress.setAndParse(expr);
         mExprStress.linearize(0., 1.);
 
+        // total response for establishment
+        resp = "establishmentResponse";
+        expr = s.value(resp).toString();
+        if (!expr.isEmpty()) {
+            // variable sequence: light, water, temp, nitrogen
+            mExprEstResponse.addVar("rlight");
+            mExprEstResponse.addVar("rwater");
+            mExprEstResponse.addVar("rtemp");
+            mExprEstResponse.addVar("rnitrogen");
+            mExprEstResponse.setExpression(expr);
+            mExprEstResponse.parse();
+        }
+
+        // total response for state transition / growth
+
+        resp = "growthResponse";
+        expr = s.value(resp).toString();
+        if (!expr.isEmpty()) {
+            // variable sequence: light, water, temp, nitrogen
+            mExprGrowthResponse.addVar("rlight");
+            mExprGrowthResponse.addVar("rwater");
+            mExprGrowthResponse.addVar("rtemp");
+            mExprGrowthResponse.addVar("rnitrogen");
+            mExprGrowthResponse.setExpression(expr);
+            mExprGrowthResponse.parse();
+        }
+
+
+
     } catch (const IException &e) {
         throw IException( s.error(QString("'%1' for PFT '%3': Expression error: %2").arg(resp, e.message(), name()))   );
     }
@@ -165,13 +201,14 @@ UStateId UnderstoryPFT::stateTransition(const UnderstoryPlant &plant,
                                         UnderstoryRU &us_ru) const
 {
     double light_available = ucp.lightProfile->relativeLightAt(ucp.height, ucp.cell_index);
-    double light_response = mExprLight.calculate(light_available);
-    double nitrogen_response = mExprNutrients.calculate(ucp.availableNitrogen);
-    double water_response = mExprWater.calculate(ucp.psiGrowingSeason);
-    double temp_response = mExprTemp.calculate(ucp.meanTemperature);
+    ucp.lightResponse = mExprLight.calculate(light_available);
 
-    // calculate total response value as a multiplication of individual factors
-    double total_response = light_response * nitrogen_response  * water_response * temp_response;
+    // calculate environmental responses
+    calculateEnvironment(ucp, true);
+
+    /// calculate total responese based on user defined function (default: multiplication of all responses)
+    double total_response = calculateResponse(ucp, true);
+
 
     // **********************************************************
     // translate environmental response to
@@ -204,8 +241,8 @@ UStateId UnderstoryPFT::stateTransition(const UnderstoryPlant &plant,
     if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dUnderstory)) {
         DebugList &out = GlobalSettings::instance()->debugList(us_ru.ru()->index(), GlobalSettings::dUnderstory );
         out << us_ru.ru()->index() << ucp.cell_index <<
-            state->pft()->name() << state->id() << light_response << nitrogen_response <<
-            water_response << temp_response << total_response <<
+            state->pft()->name() << state->id() << ucp.lightResponse << ucp.nitrogenResponse <<
+            ucp.waterResponse << ucp.tempResponse << total_response <<
             p_mort << p_previous << p_next << next_state;
         //"ruindex", "cellindex",
         //    "pft", "stateId", "lightResponse", "nitrogenResponse", "waterResponse", "tempResponse", "totalResponse",
@@ -220,23 +257,18 @@ UStateId UnderstoryPFT::stateTransition(const UnderstoryPlant &plant,
 bool UnderstoryPFT::establishment(UnderstoryCellParams &ucp,
                                    double n_represented) const
 {
-    if (!ucp.PFTcalc) {
-        ucp.nitrogenResponse = mExprNutrients.calculate(ucp.availableNitrogen);
-        ucp.waterResponse = mExprWater.calculate(ucp.psiGrowingSeason);
-        ucp.tempResponse = mExprTemp.calculate(ucp.meanTemperature);
-        ucp.PFTcalc = true;
-    }
+    calculateEnvironment(ucp);
 
     double light_response = mExprLight.calculate(ucp.ground_light);
+    ucp.lightResponse = light_response;
 
-    // the total response combines all sub-responses multiplicatively
-    double total_response = light_response * ucp.nitrogenResponse  * ucp.waterResponse * ucp.tempResponse;
+    // calculate total response based on user-defined-function
+    double total_response = calculateResponse(ucp, false);
 
-    total_response = std::max(0., std::min( total_response, 1. ));
     if (total_response == 0.)
         return false;
 
-    // the test for establishment represented more than once cell, update the prob accordingly
+    // the test for establishment represented more than one cell, update the prob accordingly
     double p_adjusted = 1. - std::pow(1. - total_response, n_represented);
     if (drandom() < p_adjusted) {
         // establish PFT on the cell
@@ -244,6 +276,44 @@ bool UnderstoryPFT::establishment(UnderstoryCellParams &ucp,
     }
 
     return false;
+}
+
+void UnderstoryPFT::calculateEnvironment(UnderstoryCellParams &ucp, bool always_calc) const
+{
+    if (always_calc || !ucp.PFTcalc) {
+        ucp.nitrogenResponse = mExprNutrients.calculate(ucp.availableNitrogen);
+        ucp.waterResponse = mExprWater.calculate(ucp.psiGrowingSeason);
+        ucp.tempResponse = mExprTemp.calculate(ucp.meanTemperature);
+        ucp.PFTcalc = true;
+    }
+}
+
+double UnderstoryPFT::calculateResponse(const UnderstoryCellParams &ucp, bool calc_growth_response) const
+{
+    double local_vars[4];
+    // variable sequence: light, water, temp, nitrogen
+    local_vars[0] = ucp.lightResponse;
+    local_vars[1] = ucp.waterResponse;
+    local_vars[2] = ucp.tempResponse;
+    local_vars[3] = ucp.nitrogenResponse;
+
+    if (calc_growth_response) {
+        // growth response
+        // default: all factors multiplied
+        if (mExprGrowthResponse.isEmpty())
+            return ucp.lightResponse * ucp.waterResponse * ucp.tempResponse * ucp.nitrogenResponse;
+        double response = mExprGrowthResponse.execute(local_vars);
+        return limit(response, 0., 1.);
+
+    } else {
+        // establishment response
+        // if function empty: response = light_response
+        if (mExprEstResponse.isEmpty())
+            return ucp.lightResponse;
+        double response = mExprEstResponse.execute(local_vars);
+        return limit(response, 0., 1.);
+    }
+
 }
 
 QString UnderstoryPFT::dump()
@@ -274,7 +344,7 @@ void UnderstoryPFT::responseToTransitionProb(const double response, double &rPre
     const double stress_factor = mExprStress.calculate(response);
 
     // mortality is based only on an annual prob. of mortality and stress
-    rMort = mBaseMortalityProb + stress_factor;
+    rMort = mBaseMortalityProb + stress_factor - (mBaseMortalityProb*stress_factor);
 
     // decline is a fixed response
     rPrevious = mPDecline;

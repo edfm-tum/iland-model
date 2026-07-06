@@ -325,7 +325,8 @@ QStringList GlobalSettings::debugListCaptions(const DebugOutputs dbg)
 
     case dStandGPP: return QStringList() << "id" << "type" << "year" << "species" << "RU_index" << "rid" << "lai" << "gpp_kg_m2" << "gpp_kg" << "avg_aging" << "f_env_yr";
 
-    case dWaterCycle: return QStringList() << "id" << "type" << "year" << "date" << "ruindex" << "rid" << "temp" << "vpd" << "prec" << "rad" << "combined_response"
+    case dWaterCycle: return QStringList() << "id" << "type" << "year" << "date" << "ruindex" << "rid" << "temp" << "vpd" << "prec" << "rad"
+                                           << "combined_response" << "lai_understory" << "psimin_understory"
                                            << "after_intercept" << "after_snow" << "et_canopy" << "evapo_intercepted"
                                            << "content" << "psi_kpa" << "excess_mm" << "snow_height" << "lai_effective"
                                               // permafrost details

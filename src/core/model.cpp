@@ -751,6 +751,7 @@ static void nc_full_regeneration_phase(ResourceUnit *unit)
         auto &lais = const_cast<WaterCycle*>(unit->waterCycle())->lai_details();
         lais.lai_saplings = profile.LAI_saplings;
         lais.lai_understory = profile.LAI_understory;
+        lais.psi_min_understory = profile.PsiMin_understory;
 
         // 1. Run establishment
         s->establishment(unit, profile);

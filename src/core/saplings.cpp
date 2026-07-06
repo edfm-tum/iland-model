@@ -300,6 +300,7 @@ void Saplings::calculateLightProfile(const ResourceUnit *ru, const UnderstoryRU 
 
     float total_lai_saplings = 0.0;
     float total_lai_understory = 0.0;
+    float total_lai_psi_min_understory = 0.0;
     // pass 1: collect LAI for saplings and understory
 
     for (int iy=0; iy<cPxPerRU; ++iy) {
@@ -312,7 +313,7 @@ void Saplings::calculateLightProfile(const ResourceUnit *ru, const UnderstoryRU 
         for (int ix=0;ix<cPxPerRU; ++ix, ++s, ++isc, ++cell_index) {
 
             // per cell:
-            double lif_value = (*lif_grid)[isc]; // use hgv here?
+            double lif_value = (*lif_grid)[isc];
             double lif_corrected = hgv->height > cSapHeight ? species_set->LRIcorrection(lif_value, cSapHeight / hgv->height) : lif_value ;
             profile.lif_4m[cell_index] = lif_corrected;
 
@@ -336,9 +337,16 @@ void Saplings::calculateLightProfile(const ResourceUnit *ru, const UnderstoryRU 
                     for (auto &p : us_cell->plants()) {
                         if (p.isLiving()) {
                             const double focus_height = (*states)[p.stateId()]->height();
+                            double lai_factor = (*states)[p.stateId()]->pft()->effectiveLAIfactor();
+                            double psi_min = (*states)[p.stateId()]->pft()->psiMin();
                             double LAI_us = (*states)[p.stateId()]->LAI();
+                            // accounting: for lai_understory use *full* LAI (e.g. for water cycle), for the actual
+                            // light calculation use the effective LAI (e.g. for grasses)
                             total_lai_understory += LAI_us;
-                            profile.lai[cell_index][profile.getBinIndex(focus_height)] += LAI_us;
+                            profile.lai[cell_index][profile.getBinIndex(focus_height)] += LAI_us * lai_factor;
+                            // calculate psi min (weigh with LAI)
+                            total_lai_psi_min_understory += LAI_us * psi_min;
+
                         }
                     }
                 }
@@ -349,6 +357,7 @@ void Saplings::calculateLightProfile(const ResourceUnit *ru, const UnderstoryRU 
     // to calculate mean LAI: sum(cell LAIs (m/m)) / 2500
     profile.LAI_saplings = ru->stockableArea()>0. ? total_lai_saplings / cPxPerHectare * cRUArea / ru->stockableArea() : 0.;
     profile.LAI_understory = ru->stockableArea()>0. ? total_lai_understory / cPxPerHectare * cRUArea / ru->stockableArea() : 0.;
+    profile.PsiMin_understory = total_lai_understory > 0 ? total_lai_psi_min_understory / total_lai_understory : 0.;
 
     // pass 2: calculate actual light profile
     const float k = 0.5f;
