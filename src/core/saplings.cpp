@@ -586,7 +586,8 @@ void Saplings::generateLightMap(float height_at, Grid<float> &rGrid)
     auto calc = [height_at, &rGrid](ResourceUnit* ru) {
         LightProfile profile;
         UnderstoryRU *us_ru = nullptr;
-        if (GlobalSettings::instance()->model()->settings().understoryEnabled )
+        if (GlobalSettings::instance()->model()->settings().understoryEnabled &&
+            GlobalSettings::instance()->model()->understory()->isValid())
             us_ru = GlobalSettings::instance()->model()->understory()->understoryRU(ru->index());
 
         // run the detailed light calculations and fill lightprofile for the resource unit

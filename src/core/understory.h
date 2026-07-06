@@ -57,6 +57,8 @@ public:
     /// setup the understory module
     void setup();
 
+    bool isValid() const { return !mUnderstoryRU.isEmpty();}
+
 
 
 private:

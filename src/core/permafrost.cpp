@@ -338,7 +338,7 @@ void Permafrost::calculateMoss()
         CNPool litter_input(stockable_area * moss_turnover * biomassCFraction,
                             stockable_area * moss_turnover * biomassCFraction / mosspar.CNRatio,
                             mosspar.r_decomp);
-        mWC->mRU->snag()->addBiomassToSoil(CNPool(), litter_input);
+        mWC->mRU->snag()->addBiomassToSoil(CNPool(), litter_input, 1.);
     }
 
      // save some stats for moss

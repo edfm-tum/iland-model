@@ -302,22 +302,38 @@ void UnderstoryRU::yearEnd()
         int i=0;
         double turnover_ha = 0.;
         double mortality_ha = 0.;
+        double decomp_rate = 0.;
+        double belowground_frac = 0.;
         for (auto &pft_stat: mPFTStats) {
-            double rate = Understory::instance().state(Understory::instance().PFTs()[i]->firstState())->turnoverRate();
-            turnover_ha += pft_stat.stats.biomass * rate;
+            const auto &pft = Understory::instance().PFTs()[i];
+            //double rate = Understory::instance().state(Understory::instance().PFTs()[i]->firstState())->turnoverRate();
+            double flux = pft_stat.stats.biomass * pft->turnoverRate();
+            turnover_ha += flux;
             mortality_ha += pft_stat.biomass_died;
+            flux +=  pft_stat.biomass_died;
+
+            decomp_rate +=  flux * pft->litterDecompRate();
+            belowground_frac += flux * pft->belowgroundFrac();
             ++i;
         }
         //
-        const double understory_r_decomp = 0.14; // value of moss for permafrost
-        const double understory_CNratio = 30; // same value as for moss
-
         double total_c_flux = turnover_ha + mortality_ha;
+        if (total_c_flux > 0.) {
+            const double understory_r_decomp = decomp_rate / total_c_flux;
+            belowground_frac =  belowground_frac / total_c_flux;
+            const double understory_CNratio = 30; // same value as for moss
 
-        CNPool litter_input( total_c_flux * biomassCFraction,
-                             total_c_flux * biomassCFraction / understory_CNratio,
-                            understory_r_decomp);
-        mRU->snag()->addBiomassToSoil(CNPool(), litter_input);
+
+            CNPool litter_input( total_c_flux * biomassCFraction,
+                                total_c_flux * biomassCFraction / understory_CNratio,
+                                understory_r_decomp);
+
+            // add to litter pool: flux-weighted decomposition rate and belowground fraction
+            mRU->snag()->addBiomassToSoil(CNPool(),
+                                          litter_input,
+                                          1. - belowground_frac);
+
+        }
 
     }
 

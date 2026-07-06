@@ -570,7 +570,7 @@ void Snag::addToSoil(const Species *species, const CNPair &woody_pool, const CNP
             );
 }
 
-void Snag::addBiomassToSoil(const CNPool &woody_pool, const CNPool &litter_pool)
+void Snag::addBiomassToSoil(const CNPool &woody_pool, const CNPool &litter_pool, double aboveground_frac)
 {
     // add the biomass (fluxes in kg/ha)
     mLabileFlux.add(litter_pool, litter_pool.parameter());

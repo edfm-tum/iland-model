@@ -145,7 +145,7 @@ public:
     void addToSoil(const Species *species, const CNPair &woody_pool, const CNPair &litter_pool, double woody_aboveground_C, double fine_aboveground_C);
 
     /// add non-tree biomass to soil (litter input). Inputs in kg/ha. decomposition rate in parameter value of CNPool.
-    void addBiomassToSoil(const CNPool &woody_pool, const CNPool &litter_pool);
+    void addBiomassToSoil(const CNPool &woody_pool, const CNPool &litter_pool, double aboveground_frac);
 
     /// disturbance function: remove the fraction of 'factor' of biomass from the SWD pools; 0: remove nothing, 1: remove all
     void removeCarbon(const double factor);

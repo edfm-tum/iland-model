@@ -201,7 +201,10 @@ void WaterCycle::getStandValues(RUSpeciesShares &species_shares)
                 + mLAIs.lai_saplings // add "real" sapling LAI
                 + mLAIs.lai_understory; // add understory
 
-
+    if (mLAIs.lai_understory > 0.) {
+        // for now canopy conductance of understory is set to 0.02 (could be made PFT specific in the future, similar to psi_min)
+        mCanopyConductance += mLAIs.lai_understory * ground_vegetationCC;
+    }
 
     // handle cases with LAI < 1 (use generic "ground cover characteristics" instead)
     /* The LAI used here is derived from the "stockable" area (and not the stocked area).
