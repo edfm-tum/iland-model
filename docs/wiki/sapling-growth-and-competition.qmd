@@ -49,7 +49,7 @@ Note that iLand includes support for [resprouting](sprouts.qmd). Resprouted coho
 # structure and competition
 
 
-In the aboved described approach individual tree resource competition within a 2 x 2m LIF cell is not accounted for explicitly, i.e. competitive pressure is only exerted by surrounding overstory trees via *f<sub>light</sub>*. Furthermore, a 2 x 2m cell is simulates as structurally homogeneous (with the exception of distinguishing separate cohorts for different species), and a fixed height-diameter ratio for saplings is assumed [species-specific parameter](species-parameter.qmd)).
+In the vertical light profile approach, individual tree light competition within a $2\text{ m} \times 2\text{ m}$ LIF cell is accounted for explicitly. Available light at any height within the cell is attenuated by the leaf area of all cohorts (both saplings and understory plants) that are taller. See [Competition for light (<4m)](competition-for-light-under-4m.qmd) for details. A fixed height-diameter ratio for saplings is assumed ([species-specific parameter](species-parameter.qmd)).
 
 Although of no immediate functional relevance, stem numbers for every cell can be computed by implying an allometric self-thinning relationship in analogy to [Reinekes rule](http://en.wikipedia.org/wiki/Stand_Density_Index) (Eq. 5), e.g. in order to compute more detailed output related to regeneration structure, or to close biomass and C budgets.
 

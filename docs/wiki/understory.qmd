@@ -1,47 +1,196 @@
 ---
-title: "Understory Module"
+title: "Understory"
 ---
 
-The understory module in iLand simulates the dynamics of ground vegetation (moss, herbs, and shrubs) and requires two CSV configuration files: one for defining Plant Functional Types (PFTs) and one for defining the developmental states of these PFTs.
+The **Understory** module in iLand simulates the dynamic development of ground vegetation (mosses, herbs, and shrubs) and its interactions with forest structure. The model is designed to represent the understory's growth, decline, and mortality, as well as its competition with tree cohorts.
 
-## 1. PFT File
+## State and Transition Model
 
-This file defines the Plant Functional Types (PFTs) and their environmental response parameters.
+The module uses a state-and-transition framework to simulate understory vegetation. Ground vegetation is organized into Plant Functional Types (PFTs) and developmental size-class states.
 
-| Column Name | Type | Description |
-|:---|:---|:---|
-| `pftId` | String | Unique identifier/name for the PFT (e.g., "Vaccinium", "Ferns"). |
-| `estBaseProb` | Double | Base establishment probability ($\ge0$). |
-| `mortalityBaseProb` | Double | Base mortality probability ($\ge0$). |
-| `optimalGrowth` | Double | Optimal growth rate ($>0$). Relates to the time to reach the maximum state. |
-| `pDecline` | Double | Probability of decline (transition to the previous state) ($\ge0$). |
-| `lightResponse` | Expression | (Optional) Custom function for light response. <br>Default: `min(0.05 + 1.5/(1 + ((lr - (0.15*LightEIV-0.4))/(0.8-0.05*LightEIV))^2),1)` |
-| `LightEIV` | Double | Ellenberg Indicator Value for Light (1-9). <br>**Required** if the default `lightResponse` expression is used. |
-| `waterResponse` | Expression | (Optional) Custom function for water response. <br>Default: `min(0.05 + 1.3/(1 + ((swpgs + 14 + (10-MoistureEIV)*0.5)/3)^2),1)` |
-| `MoistureEIV` | Double | Ellenberg Indicator Value for Moisture (1-9). <br>**Required** if the default `waterResponse` expression is used. |
-| `nutrientResponse` | Expression | (Optional) Custom function for nutrient response. <br>Default: `min(0.05 + 1.5/(1 + ((PlantAvailN - (5*NutrientEIV+40))/20)^2),1)` |
-| `NutrientEIV` | Double | Ellenberg Indicator Value for Nutrients (1-9). <br>**Required** if the default `nutrientResponse` expression is used. |
-| `tempResponse` | Expression | (Optional) Custom function for temperature response. <br>Default: `min(0.05 + 1.2/(1 + ((meanTemp - (TemperatureEIV*1.5))/3)^2),1)` |
-| `TemperatureEIV` | Double | Ellenberg Indicator Value for Temperature (1-9). <br>**Required** if the default `tempResponse` expression is used. |
-| `stressFunction` | Expression | (Optional) Custom function for stress response. <br>Default: `0.5*exp(-x/stressSensitivity)` |
-| `stressSensitivity` | Double | Sensitivity to stress (0-1). <br>**Required** if the default `stressFunction` expression is used. |
+### PFTs and States
 
-## 2. States File
+A **Plant Functional Type (PFT)** represents a group of ground vegetation species sharing similar ecological traits (e.g., shade-tolerant mosses, light-demanding grasses, dwarf shrubs). Each PFT is modeled using a series of developmental size-class states, typically numbered from 1 to $N$, where state 0 represents an unoccupied or dead slot.
 
-This file defines the developmental states (size classes) for each PFT defined in the PFT file.
+A state represents both:
 
-| Column Name | Type | Description |
-|:---|:---|:---|
-| `pftId` | String | Name of the PFT this state belongs to. Must match a `pftId` in the PFT file. |
-| `size` | Integer | Size class index. Must be strictly increasing for each PFT (e.g., 1, 2, 3...). |
-| `slots` | Integer | Number of spatial slots a single plant in this state occupies (1-10). |
-| `LAI` | Double | Leaf Area Index of a plant in this state ($m^2/m^2$). |
-| `biomass` | Double | Biomass of a plant in this state ($kg/m^2$ or kg/plant, depending on internal scaling). |
-| `cover` | Double | Cover fraction of a plant in this state (0-1). |
-| `height` | Double | Height of a plant in this state (0-4m). |
+*   The proportion of groundcover (or dominance) within a cell.
+*   The physical dimensions (height, biomass, Leaf Area Index (LAI)). The unit for biomass in the state file is **$kg/ha$** (representing the biomass density if the cell were fully covered by that state).
 
-**Important Notes:**
+For example, a grass PFT might have states ranging from 1 (low cover, small height, minimal biomass) to 5 (high cover, maximum height, high biomass and LAI).
 
-*   **Consistency:** Every PFT defined in the PFT file must have at least one corresponding state in the states file.
-*   **Sequence:** The `size` column must be strictly increasing for the rows belonging to a single PFT.
-*   **Format:** Standard CSV (Comma Separated Values).
+### State Changes
+
+State changes occur annually and are evaluated at two distinct spatial scales: Resource Unit level ($100\text{ m} \times 100\text{ m}$) processes determine the initial filtering and potential establishment of PFTs, while Cell level ($2\text{ m} \times 2\text{ m}$) processes handle the detailed growth, decline, mortality, slot competition, and actual establishment checks.
+
+*   **Growth**: The probability that a PFT will advance to the next state ($i \to i+1$, up to $N$) under localized environmental responses.
+*   **Decline**: The probability that a PFT will regress to the previous state ($i \to i-1$) due to stress or disturbance. If state 1 declines, it transitions to state 0 (dieoff).
+*   **Mortality (Dieoff)**: The probability that a PFT will die completely on a cell (transition to state 0).
+*   **Establishment**: The probability that an unoccupied cell (state 0) is successfully colonized by a PFT at state 1, combining regional climate feasibility with local light availability.
+
+### Spatial Scale and Aggregation
+
+*   **Simulation Scale**: The core understory simulation is executed at a fine **$2\text{ m} \times 2\text{ m}$ spatial resolution** (matching the iLand light grid and sapling cohorts). Each $2\text{ m}$ cell contains a fixed number of slots (e.g., 5 slots) that can be occupied by different PFTs. 
+*   **Aggregation**: For landscape and resource unit outputs, understory properties (PFT presence, covered area, biomass, and LAI) are aggregated up to the **$100\text{ m} \times 100\text{ m}$ Resource Unit (RU)** level.
+
+---
+
+## Parameterization
+
+The understory module is configured using two CSV files:
+
+*   **PFT Configuration File**: Defines PFTs, base transition probabilities, environmental response curves, and user-defined response expressions.
+*   **States Configuration File**: Defines developmental states (size classes) and their corresponding structural values (slots, cover, height, biomass in $kg/ha$, LAI).
+
+For details on configuration settings, file layouts, and XML parameters, see the [Understory Module Configuration](understory-module.qmd) page.
+
+---
+
+## Resource Unit Level Processes
+
+Before evaluating cell-level dynamics, iLand performs resource unit level checks to determine which PFTs are eligible to establish on the RU ($100\text{ m} \times 100\text{ m}$) and to calculate the general abiotic environment.
+
+### 1. PFT Abiotic Feasibility Filter
+
+For each PFT, iLand calculates the average "abiotic" environmental response ($p_{\text{env}}$) across the Resource Unit (based on nitrogen, soil water potential, and annual temperature):
+
+$$p_{\text{env}} = \text{response}_{\text{nitrogen}} \times \text{response}_{\text{water}} \times \text{response}_{\text{temp}}$$
+
+A pre-selection check evaluates whether the PFT can establish on this RU. The PFT is skipped entirely for the current RU if:
+
+$$\text{rnd}() > p_{\text{base\_establishment}} \times p_{\text{env}}$$
+
+Where:
+
+*   $\text{rnd}()$ is a random number drawn from a uniform distribution $[0, 1)$.
+*   $p_{\text{base\_establishment}}$ is the PFT trait parameter `estBaseProb` (defined in the PFT configuration file).
+*   $p_{\text{env}}$ is the combined abiotic response computed above.
+
+### 2. Cell-Level Colonization Iteration
+
+If the PFT passes the abiotic filter for the RU, iLand loops through all 2500 $2\text{ m} \times 2\text{ m}$ cells within the Resource Unit:
+
+1.  **Selection**: The cell is tested with a probability of 20% (i.e., only 1 in 5 cells is tested per year on average).
+2.  **Exclusion**: The cell is skipped if it is already full (total occupied slots $\ge 10$) or if the PFT is already present on that cell.
+3.  **Local Test**: If eligible, local light conditions are calculated, and the local establishment probability is evaluated using the cell-level processes (see below).
+
+---
+
+## Cell Level Processes
+
+For cells that are selected for PFT establishment, or cells that already contain established PFT cohorts, the following processes are evaluated annually at the $2\text{ m} \times 2\text{ m}$ scale:
+
+### 1. Growth
+
+The probability that a living PFT cohort (state $> 0$) will grow to the next state ($p_{\text{growth}}$) is defined as:
+
+$$p_{\text{growth}} = \frac{N_{\text{states}}}{\text{optimalGrowth}} \times \text{response}_{\text{growth}}$$
+
+Where:
+
+*   $N_{\text{states}}$ is the total number of living states defined for the PFT.
+*   $\text{optimalGrowth}$ is the optimal growth time in years required to reach the maximum state (under ideal conditions).
+*   $\text{response}_{\text{growth}}$ is the growth environmental response factor ($0 \le \text{response}_{\text{growth}} \le 1$).
+
+### 2. Decline
+
+The probability that a living PFT cohort will regress to the previous state ($p_{\text{decline}}$) is a fixed base probability:
+
+$$p_{\text{decline}} = p_{\text{base\_decline}}$$
+
+Where $p_{\text{base\_decline}}$ is defined by the PFT parameter `pDecline`. If a PFT at state 1 declines, it transitions to state 0 (complete dieoff).
+
+### 3. Mortality
+
+The probability that a living PFT cohort will die completely ($p_{\text{mortality}}$) is computed combining a base mortality rate with stress-induced mortality:
+
+$$p_{\text{mortality}} = p_{\text{base\_mortality}} + f_{\text{stress}} - (p_{\text{base\_mortality}} \times f_{\text{stress}})$$
+
+Where:
+
+*   $p_{\text{base\_mortality}}$ is the PFT parameter `mortalityBaseProb`.
+*   $f_{\text{stress}}$ is the stress-induced mortality factor calculated from the combined environmental response ($\text{response}_{\text{growth}}$) using the user-defined `stressFunction` expression:
+    
+    $$f_{\text{stress}} = f_{\text{stress\_function}}(\text{response}_{\text{growth}})$$
+    
+    Default `stressFunction`: `0.5*exp(-x/stressSensitivity)`. If the response is optimal ($\text{response} = 1$), stress mortality is minimal. If the response is low, stress mortality increases up to a maximum of 0.5.
+
+### 4. Establishment
+
+For cells that pass the RU-level filter and are selected for colonization, the local adjusted probability of establishment ($p_{\text{adjusted}}$) is computed as:
+
+$$p_{\text{adjusted}} = 1 - (1 - \text{response}_{\text{establishment}})^{n_{\text{represented}}}$$
+
+Where:
+
+*   $\text{response}_{\text{establishment}}$ is the local establishment environmental response factor ($0 \le \text{response} \le 1$), evaluated using local light.
+*   $n_{\text{represented}}$ is the scale scaling factor (fixed at $5$, representing the inverse of the cell selection probability $1 / 0.2$).
+
+A random draw determines whether colonization at state 1 occurs on the cell.
+
+### 5. Slot Competition
+
+After growth and establishment changes are evaluated, iLand checks if the total space slots occupied by all living PFTs on the $2\text{ m}$ cell exceeds the maximum allowed ($slots > 10$). If over-occupied:
+
+*   PFT cohorts on the cell are sorted by their size (number of slots occupied).
+*   The smallest PFT cohorts (occupying the fewest slots) are killed and removed one by one until the total slot occupancy is $\le 10$.
+
+### 6. User-Defined Response Expressions
+
+Users can define custom mathematical expressions for environmental response functions in the PFT configuration file. 
+
+*   **Establishment Response (`establishmentResponse`)**: Default: `lightResponse` (since abiotic environmental factors are already accounted for at the RU level).
+*   **Growth Response (`growthResponse`)**: Default: `lightResponse * waterResponse * nutrientResponse * tempResponse`.
+
+If a custom expression is defined, the calculation uses the following variable inputs:
+
+*   `rlight`: Current light response factor.
+*   `rwater`: Current water response factor.
+*   `rtemp`: Current temperature response factor.
+*   `rnitrogen`: Current nitrogen response factor.
+
+If the expression is left blank in the CSV input file, iLand uses the hardcoded default functions directly, avoiding expression parsing overhead.
+
+---
+
+## Integration in iLand
+
+The understory module is fully integrated with other core ecosystem processes in iLand:
+
+### 1. Competition with Saplings
+
+Understory vegetation and sapling cohorts interact dynamically through light competition:
+
+*   **Sapling Growth**: Saplings grow in height and compete vertically using the [vertical light profile](competition-for-light-under-4m.qmd). A sapling's light availability is calculated based on its height.
+*   **Sapling & PFT Establishment**: The establishment of new tree saplings and understory PFTs uses the **ground light** ($RelGroundLight$). The ground light represents the light level *below* all ground vegetation layers, which is attenuated by both the adult tree canopy and the understory vegetation.
+
+### 2. Water Cycle & Transpiration
+
+Understory Leaf Area Index (LAI) and water stress traits affect water balance calculations:
+
+*   **Stand LAI**: Understory LAI is added to the total stand leaf area to calculate transpiration and canopy conductance:
+    
+    $$\text{LAI}_{\text{stand}} = \text{LAI}_{\text{adult}} + \text{LAI}_{\text{saplings}} + \text{LAI}_{\text{understory}}$$
+    
+*   **Understory Water Stress (`psiMin`)**: A new PFT parameter `psiMin` (MPa) defines the minimum soil water potential threshold for transpiration/growth.
+*   **Soil-Atmosphere Response**: 
+    *   Adult trees use species-specific LAI, VPD, and soil water potential responses.
+    *   The understory layer's response is computed using an aggregate, LAI-weighted average minimum water potential threshold ($\overline{\psi}_{\text{min}}$) of all understory PFTs present on the Resource Unit, the understory LAI on the RU, and a fixed VPD response exponent of $-0.6$.
+*   **Debug Outputs**: The daily `water` debug output records understory transpiration drivers in columns `understory_lai` and `understory_psimin`.
+
+### 3. Carbon Dynamics & Pools
+
+Understory biomass and litter are integrated into iLand's carbon cycles:
+
+*   **C/N Ratio**: The understory C/N ratio is fixed at $30$.
+*   **PFT Litter Traits**: Carbon flows are regulated by three PFT-level parameters:
+    *   `turnoverRate`: The annual fraction of biomass shed to litter.
+    *   `belowgroundFrac`: The fraction of PFT biomass allocated to belowground compartments.
+    *   `litterDecompRate`: The decomposition rate of understory litter from the PFT.
+*   **Litter Flux**: Calculated annually per Resource Unit as the sum of understory mortality (biomass from died cohorts) and turnover ($\text{biomass} \times \text{turnoverRate}$).
+*   **Decomposition and Belowground Fractions**: The RU-level decomposition rates and belowground fractions are calculated as weighted averages of PFT parameter values, using each PFT's total litter flux (turnover + mortality) as the weight.
+*   **Carbon Stocks**: Understory carbon stocks are tracked as part of the `understory_c` pool, which combines understory biomass carbon and moss biomass carbon (the latter in permafrost-affected areas).
+
+### 4. Mechanical Inhibition
+
+*   *(Mechanical inhibition of sapling establishment by dense understory cover is planned for future development).*

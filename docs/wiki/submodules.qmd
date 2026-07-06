@@ -15,8 +15,8 @@ The **Ungulate Browsing** submodule simulates the spatially explicit impact of b
 ### [Understory & Grass (Ground Vegetation)](ground-vegetation.qmd)
 The **Ground Vegetation** submodule models the forest floor vegetation layer (understory herbs, mosses, and grasses) and its competition with young tree cohorts for light and belowground resources.
 
-### [Understory Module](understory.qmd)
-The **Understory** submodule simulates the detailed dynamics of forest floor vegetation (moss, herbs, and shrubs) based on Plant Functional Types (PFTs) and developmental size-class states. It is configured using dedicated CSV files for PFT traits and developmental states.
+### [Understory](understory.qmd)
+The **Understory** submodule simulates the detailed dynamics of forest floor vegetation (moss, herbs, and shrubs) based on Plant Functional Types (PFTs) and developmental size-class states. For file configuration and parameter settings, see the [Understory Module Configuration](understory-module.qmd) page.
 
 ### [Microclimate Module](microclimate.qmd)
 The **Microclimate** submodule simulates dynamic temperature buffering beneath the canopy. It models subcanopy warming of daily minimum temperatures and cooling of maximum temperatures, affecting decomposition rates, spruce bark beetle generations and survival, and tree seedling establishment.

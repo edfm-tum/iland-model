@@ -18,6 +18,7 @@ title: "resource availability and competition"
 
 
 * [competition for light](competition-for-light.qmd)
+* [competition for light (<4m)](competition-for-light-under-4m.qmd)
 * [individual tree light availability](individual-tree-light-availability.qmd)
 
 

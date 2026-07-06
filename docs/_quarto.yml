@@ -94,6 +94,7 @@ website:
               contents:
                 - wiki/resource-availability-and-competition.qmd
                 - wiki/competition-for-light.qmd
+                - wiki/competition-for-light-under-4m.qmd
                 - wiki/individual-tree-light-availability.qmd
                 - wiki/competition-for-belowground-resources.qmd
                 - wiki/primary-production.qmd
@@ -173,6 +174,8 @@ website:
                 - wiki/ground-vegetation.qmd
                 - wiki/svd.qmd
                 - wiki/understory.qmd
+                - wiki/understory-module.qmd
+                - wiki/evaluation-light-profile.qmd
                 - wiki/microclimate.qmd
         - section: "Part 2: Working with iLand"
           contents:

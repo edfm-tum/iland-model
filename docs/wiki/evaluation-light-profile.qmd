@@ -1,0 +1,53 @@
+---
+title: "Evaluation light profile"
+---
+
+The vertical light profile update replaces height-based Leaf Influence Field (LIF) scaling with discrete, competitive height bins. This section presents a numerical evaluation of the model update under varying canopy configurations and reports landscape-level validation results from simulations in Germany.
+
+## Numerical Evaluation
+
+A numerical comparison was performed to analyze the effects of the vertical light profile update against previous versions of iLand (where relative light for saplings was derived from LIF corrected by actual tree height). 
+
+Table 1 provides the effective relative light levels at different heights (4m, 0.4m, and 0m/forest floor) under two canopy heights ($40\text{ m}$ and $8\text{ m}$) across three overstory canopy density levels (represented by Light Resource Index $LRI = 0.5$, $0.1$, and $0.02$). The updated version uses the relative light level entering the 4m sapling zone ($LRI_{\text{4m}}$) and updates it with Leaf Area Index (LAI) within the sapling and understory layers for LAI values of 0, 0.5, and 1.
+
+**Table 1: Numerical evaluation of the light calculation update**
+
+| Canopy Height | | 40m | | | 8m | |
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|
+| **Overstory LRI** | **0.5** | **0.1** | **0.02** | **0.5** | **0.1** | **0.02** |
+| $LRI_{\text{4m}}$ (entering sapling zone) | 0.2679 | 0.0126 | 0.0006 | 0.3536 | 0.0316 | 0.0028 |
+| $LRI_{\text{0.4m}}$ (old height scaling) | 0.2517 | 0.0102 | 0.0004 | 0.2504 | 0.0101 | 0.0004 |
+| $LRI_{\text{0m}}$ (old forest floor) | **0.2500** | **0.0100** | **0.0004** | **0.2500** | **0.0100** | **0.0004** |
+| | | | | | | |
+| **Forest Floor Light (New Profile)** | | | | | | |
+| **LAI (saplings + understory) = 0** | 0.268 | 0.013 | 0.001 | 0.354 | 0.032 | 0.003 |
+| **LAI (saplings + understory) = 0.5** | 0.209 | 0.010 | 0.000 | 0.275 | 0.025 | 0.002 |
+| **LAI (saplings + understory) = 1** | 0.163 | 0.008 | 0.000 | 0.214 | 0.019 | 0.002 |
+| | | | | | | |
+| **Deviation (New vs. Old Forest Floor)** | | | | | | |
+| LAI = 0 | +7.2% | +25.9% | +47.9% | +41.4% | +216.2% | +607.1% |
+| LAI = 0.5 | -16.5% | -2.0% | +15.2% | +10.1% | +146.3% | +450.7% |
+| LAI = 1 | -35.0% | -23.6% | -10.3% | -14.2% | +91.8% | +328.9% |
+
+### Key Observations
+*   The original height-scaled light values generally fall within the range of the updated model values.
+*   For low canopies and low LRIs, the old height-scaled values were significantly lower. Under these conditions, the new model predicts higher light availability due to the canopy structure, although forest floor establishment remains restricted in both cases.
+*   The new height-bin implementation ensures consistent calculations between saplings and understory cohorts while significantly improving computational efficiency.
+
+---
+
+## Landscape-Level Validation
+
+To verify the impact of these changes on long-term forest development, simulations were conducted on a large landscape in Germany. Results from the new vertical light profile version (denoted as **US**) were compared against the current development branch (**DEV**) and the older light logic (**old**).
+
+### 1. Dynamics of Adult Trees
+The simulation results show little to no impact on the overall dynamics (e.g., volume, biomass) of adult tree canopy cohorts:
+
+![Adult Tree Volume/Biomass Dynamics Comparison](/img/eval_img_1.png)
+
+### 2. Understory and Sapling Development
+The new understory submodel dynamics, including cover fraction and biomass accumulation over time, are presented below:
+
+![Understory Biomass and Cover Fraction Development](/img/eval_img_2.png)
+
+![Vertical Profile Attenuation and Cohort Density](/img/eval_img_3.png)

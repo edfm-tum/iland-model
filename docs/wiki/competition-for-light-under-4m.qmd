@@ -1,0 +1,36 @@
+---
+title: "Competition for light (<4m)"
+---
+
+Light competition within a single $2\text{ m} \times 2\text{ m}$ cell follows a typical gap-model logic. The leaf area of saplings and understory vegetation is assumed to be concentrated "at the top" of the plants, and the full leaf area of a cohort is assigned to one of four discrete vertical height bins.
+
+## Height Bins
+
+The sapling and understory zone (from ground level to 4 meters height) is divided into four concrete height bins:
+
+*   **Bin 0**: $0\text{ m} - 0.5\text{ m}$
+*   **Bin 1**: $0.5\text{ m} - 1.3\text{ m}$
+*   **Bin 2**: $1.3\text{ m} - 2\text{ m}$
+*   **Bin 3**: $2\text{ m} - 4\text{ m}$
+
+## Light Extinction Model
+
+The light environment is calculated starting from the top of the canopy down to the forest floor:
+
+1.  **Light Entering the Sapling Zone**: The available light entering at the 4m level is determined from the overstory canopy's Leaf Influence Field (LIF) corrected for a height of 4 meters. This value is interpreted as the relative light level entering Bin 3.
+2.  **Light Attenuation through Bins**: For every discrete height bin, starting from the top (Bin 3) down to the bottom (Bin 0), light is incrementally reduced using Beer's Law with a constant extinction coefficient $k = 0.5$:
+    
+    $$I_{\text{out}} = I_{\text{in}} \cdot e^{-k \cdot \text{LAI}_{\text{bin}}}$$
+    
+    Where:
+    *   $I_{\text{in}}$ is the relative light level entering the bin from above.
+    *   $\text{LAI}_{\text{bin}}$ is the sum of the Leaf Area Index of all saplings and understory plants whose height falls within that bin.
+3.  **Light reaching the Ground**: The ground light level ($RelLightGround$) is calculated at the bottom of Bin 0, representing the light reaching the forest floor after attenuation through all four vertical bins.
+
+Consequently, any plant at height $h$ receives the light level entering its respective bin from above (i.e. the light attenuated only by the leaf area of cohorts taller than its height bin). For establishment at $h = 0$, the available light is the ground light level.
+
+## Visualization
+
+The following diagram illustrates the vertical partition of leaf area and the corresponding light attenuation profile down to the ground:
+
+![Vertical Light Profile in the Understory and Sapling Zone](/img/light_profile.png)

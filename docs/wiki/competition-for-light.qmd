@@ -4,6 +4,11 @@ title: "competition for light"
 
 Intercepting radiation is the main process driving [primary production](primary-production.qmd) in iLand. Individual tree light resources are modeled in an approach that borrows from ecological field theory and the field of neighborhood approach. The resulting light resource index is applied to estimate an [individuals' contribution](individual-tree-light-availability.qmd) to resource unit level primary production.
 
+::: {.callout-note}
+For seedlings, saplings, and understory vegetation under 4 meters height, light competition is simulated using a vertical height-bin light profile. See [Competition for light (<4m)](competition-for-light-under-4m.qmd).
+:::
+
+
 
 
 

@@ -171,6 +171,8 @@ This output details the daily calculations of the water balance for a resource u
 | pf_unfrozen_fc_mm | The current field capacity (mm) of the unfrozen portion of the soil. |
 | moss_f_light | Light limitation factor (0-1) for moss growth on the current day. |
 | moss_f_deciduous | Deciduous litter inhibition factor (0-1) for moss growth on the current day. |
+| understory_lai | The leaf area index of the understory vegetation on the Resource Unit (m2/m2). |
+| understory_psimin | The average minimum soil water potential threshold (psiMin) of the understory, weighted by the PFT's LAI on the Resource Unit (MPa). |
 
 
 
