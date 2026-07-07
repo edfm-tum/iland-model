@@ -60,17 +60,21 @@ private:
     void saveSnagCore(Snag *s, QSqlQuery &q);
     void saveSaplings();
     void saveDeadTrees();
+    void saveUnderstory();
+    void saveUnderstoryRU(QList<int> stand_ids, bool ridmode);
     void loadTrees();
     void loadSoil(QSqlDatabase db=QSqlDatabase());
     void loadSnags(QSqlDatabase db=QSqlDatabase());
     void loadSaplings();
     void loadDeadTrees();
     void loadSaplingsOld();
+    void loadUnderstory(QSqlDatabase db=QSqlDatabase());
     QHash<int, ResourceUnit* > mRUHash;
     struct sContent {
-        sContent(): permafrost(false),deadtrees(false) {}
+        sContent(): permafrost(false),deadtrees(false),understory(false) {}
         bool permafrost;
         bool deadtrees;
+        bool understory;
     } dbcontent;
 };
 

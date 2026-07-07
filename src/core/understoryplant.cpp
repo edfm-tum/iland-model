@@ -482,3 +482,28 @@ void UnderstoryRU::updateStats()
 
 }
 
+void UnderstoryRU::clear()
+{
+    mStats.clear();
+    for (auto &stat : mPFTStats)
+        stat.clear();
+
+    for (auto &cell : mCells) {
+        if (cell.isValid()) {
+            for (int i=0; i<UnderstoryCell::NSlots; ++i) {
+                cell.mod_plants()[i].kill();
+            }
+            cell.update(*this);
+        }
+    }
+}
+
+void UnderstoryRU::recollectStats()
+{
+    mStats.clear();
+    for (auto &stat : mPFTStats)
+        stat.clear();
+    updateStats();
+}
+
+

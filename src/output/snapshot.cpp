@@ -34,11 +34,53 @@
 #include "gisgrid.h"
 #include "mapgrid.h"
 #include "fmdeadtreelist.h"
+#include "understory.h"
+#include "understoryplant.h"
 
 #include <QString>
 #include <QtSql>
 #include <QDataStream>
 //#include <QVector3D>
+
+QDataStream &operator<<(QDataStream &stream, const UnderstoryCell &cell)
+{
+    stream << static_cast<quint8>(cell.mState)
+           << static_cast<quint8>(cell.mOccupied);
+    for (int i=0; i<UnderstoryCell::NSlots; ++i) {
+        stream << static_cast<qint16>(cell.mPlants[i].stateId());
+    }
+    return stream;
+}
+
+QDataStream &operator>>(QDataStream &stream, UnderstoryCell &cell)
+{
+    quint8 state, occupied;
+    stream >> state >> occupied;
+    cell.mState = static_cast<UnderstoryCell::ECellState>(state);
+    cell.mOccupied = occupied;
+    for (int i=0; i<UnderstoryCell::NSlots; ++i) {
+        qint16 id;
+        stream >> id;
+        cell.mPlants[i].setState(id);
+    }
+    return stream;
+}
+
+QDataStream &operator<<(QDataStream &stream, const UnderstoryRU &ru)
+{
+    for (int i=0; i<cPxPerHectare; ++i) {
+        stream << ru.mCells[i];
+    }
+    return stream;
+}
+
+QDataStream &operator>>(QDataStream &stream, UnderstoryRU &ru)
+{
+    for (int i=0; i<cPxPerHectare; ++i) {
+        stream >> ru.mCells[i];
+    }
+    return stream;
+}
 
 
 class SnapshotItem {
@@ -179,6 +221,9 @@ bool Snapshot::openDatabase(const QString &file_name, const bool read)
         q.exec("drop table deadtrees");
         q.exec("create table deadtrees (RUindex integer, posx integer, posy integer, species text, isStanding integer, deathReason integer,"  \
                "yearsStandingDead integer, yearsDowned integer, volume float, initBiomass float, biomass float, crownRadius float)");
+        // understory
+        q.exec("drop table understory");
+        q.exec("create table understory (RUindex integer primary key, understory BLOB)");
         qDebug() << "Snapshot - tables created. Database" << file_name;
 
     }
@@ -194,8 +239,9 @@ void Snapshot::checkContent(QString dbname)
     dbcontent.permafrost = r.indexOf("MossBiomass")>=0; // permafrost columns included
     r = db.record("deadtrees");
     dbcontent.deadtrees = !r.isEmpty();
+    dbcontent.understory = db.tables().contains("understory");
 
-    qDebug() << "Snapshot content: permafrost: " << dbcontent.permafrost << "deadtrees:" << dbcontent.deadtrees;
+    qDebug() << "Snapshot content: permafrost: " << dbcontent.permafrost << "deadtrees:" << dbcontent.deadtrees << "understory:" << dbcontent.understory;
 
 }
 
@@ -229,6 +275,11 @@ bool Snapshot::createSnapshot(const QString &file_name)
     saveSaplings();
     // save deadtrees
     saveDeadTrees();
+    // save understory
+    bool understory_enabled = GlobalSettings::instance()->model()->understory() && GlobalSettings::instance()->model()->understory()->isValid();
+    if (understory_enabled) {
+        saveUnderstory();
+    }
     QSqlDatabase::database("snapshot").close();
     // save a grid of the indices
     QFileInfo fi(file_name);
@@ -296,6 +347,14 @@ bool Snapshot::loadSnapshot(const QString &file_name)
 
     }
 
+    bool understory_enabled = GlobalSettings::instance()->model()->understory() && GlobalSettings::instance()->model()->understory()->isValid();
+    if (understory_enabled) {
+        for (int i=0; i<GlobalSettings::instance()->model()->ruList().size(); ++i) {
+            UnderstoryRU *us_ru = GlobalSettings::instance()->model()->understory()->understoryRU(i);
+            if (us_ru)
+                us_ru->clear();
+        }
+    }
 
     loadTrees();
     loadSoil();
@@ -305,6 +364,9 @@ bool Snapshot::loadSnapshot(const QString &file_name)
     if (GlobalSettings::instance()->model()->settings().regenerationEnabled) {
         loadSaplings();
         //loadSaplingsOld();
+    }
+    if (dbcontent.understory && understory_enabled) {
+        loadUnderstory();
     }
     QSqlDatabase::database("snapshot").close();
 
@@ -363,7 +425,9 @@ bool Snapshot::saveStandSnapshot(const int stand_id, const MapGrid *stand_grid, 
                    "totalSWDC real, totalSWDN real, NSnags1 real, NSnags2 real, NSnags3 real, dbh1 real, dbh2 real, dbh3 real, height1 real, height2 real, height3 real, " \
                    "volume1 real, volume2 real, volume3 real, tsd1 real, tsd2 real, tsd3 real, ksw1 real, ksw2 real, ksw3 real, halflife1 real, halflife2 real, halflife3 real, " \
                    "branch1C real, branch1N real, branch2C real, branch2N real, branch3C real, branch3N real, branch4C real, branch4N real, branch5C real, branch5N real, branchIndex integer, branchAGFraction real)");
-
+            // understory
+            q.exec("drop table understory");
+            q.exec("create table understory (RUindex integer primary key, understory BLOB)");
 
         }
     }
@@ -644,6 +708,10 @@ bool Snapshot::saveStandCarbon(const int stand_id,  QList<int> ru_ids, bool rid_
     qDebug() << "Trying to save snags and soil pools for" << ru_ids.size() << "resource units. stand_id:" << stand_id << "using:" << (rid_mode ? "RID":"ruindex");
     saveSoilRU(ru_ids, rid_mode);
     saveSnagRU(ru_ids, rid_mode);
+    bool understory_enabled = GlobalSettings::instance()->model()->understory() && GlobalSettings::instance()->model()->understory()->isValid();
+    if (understory_enabled) {
+        saveUnderstoryRU(ru_ids, rid_mode);
+    }
     return true;
 }
 
@@ -664,6 +732,10 @@ bool Snapshot::loadStandCarbon()
     // now load soil carbon and snags from the standsnapshot databse
     loadSoil(db);
     loadSnags(db);
+    bool understory_enabled = GlobalSettings::instance()->model()->understory() && GlobalSettings::instance()->model()->understory()->isValid();
+    if (dbcontent.understory && understory_enabled) {
+        loadUnderstory(db);
+    }
     qDebug() << "finished loading stand carbon...";
     return true;
 
@@ -1439,5 +1511,115 @@ void Snapshot::loadSaplingsOld()
 //    qDebug() << "Snapshot: finished loading saplings. N=" << n << "from N in snapshot:" << ntotal;
 
 }
+
+void Snapshot::saveUnderstory()
+{
+    bool understory_enabled = GlobalSettings::instance()->model()->understory() && GlobalSettings::instance()->model()->understory()->isValid();
+    if (!understory_enabled)
+        return;
+
+    QSqlDatabase db = QSqlDatabase::database("snapshot");
+    QSqlQuery q(db);
+    if (!q.prepare("insert into understory (RUindex, understory) values (?,?)"))
+        throw IException(QString("Snapshot::saveUnderstory: prepare:") + q.lastError().text());
+
+    int n = 0;
+    db.transaction();
+    for (ResourceUnit *ru : GlobalSettings::instance()->model()->ruList()) {
+        UnderstoryRU *us_ru = GlobalSettings::instance()->model()->understory()->understoryRU(ru->index());
+        if (us_ru) {
+            QByteArray container;
+            QDataStream writer(&container, QIODevice::WriteOnly);
+            writer << (quint32)0xFFEEEEDD; // magic phrase
+            writer << *us_ru;
+
+            q.addBindValue(ru->index());
+            q.addBindValue(container);
+            if (!q.exec()) {
+                throw IException(QString("Snapshot::saveUnderstory: execute:") + q.lastError().text());
+            }
+            ++n;
+        }
+    }
+    db.commit();
+    qDebug() << "Snapshot: finished understory. N=" << n;
+}
+
+void Snapshot::saveUnderstoryRU(QList<int> stand_ids, bool ridmode)
+{
+    bool understory_enabled = GlobalSettings::instance()->model()->understory() && GlobalSettings::instance()->model()->understory()->isValid();
+    if (!understory_enabled)
+        return;
+
+    QSqlDatabase db = QSqlDatabase::database("snapshotstand");
+    QSqlQuery q(db);
+    if (!q.prepare("insert or replace into understory (RUindex, understory) values (?,?)"))
+        throw IException(QString("Snapshot::saveUnderstoryRU: prepare:") + q.lastError().text());
+
+    int n = 0;
+    db.transaction();
+    for (int i=0; i<stand_ids.size(); ++i) {
+        ResourceUnit *ru = ridmode ? GlobalSettings::instance()->model()->ruById(stand_ids[i]) : GlobalSettings::instance()->model()->ru(stand_ids[i]);
+        if (ru) {
+            UnderstoryRU *us_ru = GlobalSettings::instance()->model()->understory()->understoryRU(ru->index());
+            if (us_ru) {
+                QByteArray container;
+                QDataStream writer(&container, QIODevice::WriteOnly);
+                writer << (quint32)0xFFEEEEDD; // magic phrase
+                writer << *us_ru;
+
+                q.addBindValue(ru->index());
+                q.addBindValue(container);
+                if (!q.exec()) {
+                    throw IException(QString("Snapshot::saveUnderstoryRU: execute:") + q.lastError().text());
+                }
+                ++n;
+            }
+        }
+    }
+    db.commit();
+    qDebug() << "Snapshot: finished understory RU. N=" << n;
+}
+
+void Snapshot::loadUnderstory(QSqlDatabase db)
+{
+    bool understory_enabled = GlobalSettings::instance()->model()->understory() && GlobalSettings::instance()->model()->understory()->isValid();
+    if (!understory_enabled)
+        return;
+
+    if (!db.isValid())
+        db = QSqlDatabase::database("snapshot");
+
+    QSqlQuery q(db);
+    q.setForwardOnly(true);
+    if (!q.exec("select RUindex, understory from understory")) {
+        qDebug() << "Error when loading from understory table...." << q.lastError().text();
+        return;
+    }
+
+    int n = 0;
+    while (q.next()) {
+        int ru_index = q.value(0).toInt();
+        ResourceUnit *ru = mRUHash[ru_index];
+        if (!ru)
+            continue;
+
+        UnderstoryRU *us_ru = GlobalSettings::instance()->model()->understory()->understoryRU(ru->index());
+        if (us_ru) {
+            QByteArray data = q.value(1).toByteArray();
+            QDataStream stream(data);
+            quint32 magic;
+            stream >> magic;
+            if (magic != 0xFFEEEEDD)
+                throw IException("Snapshot::loadUnderstory: invalid magic number");
+
+            stream >> *us_ru;
+            us_ru->recollectStats();
+            ++n;
+        }
+    }
+    qDebug() << "Snapshot: finished loading understory. N=" << n;
+}
+
 
 

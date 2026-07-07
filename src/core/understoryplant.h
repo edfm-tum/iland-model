@@ -11,6 +11,8 @@ using UStateId = short int;
 
 class ResourceUnit; // forward
 class UnderstoryPFT; // forward
+class QDataStream;
+
 struct UnderstoryCellParams {
     ResourceUnit *RU; ///< pointer to resource unit
     SaplingCell *saplingCell; ///< corresponding sapling cell
@@ -148,6 +150,9 @@ private:
     /// current state of the cell
     ECellState mState { ECellState::CellInvalid };
     std::array<UnderstoryPlant, NSlots> mPlants;
+
+    friend QDataStream &operator<<(QDataStream &stream, const UnderstoryCell &cell);
+    friend QDataStream &operator>>(QDataStream &stream, UnderstoryCell &cell);
 };
 
 class UnderstoryState; // forward
@@ -197,6 +202,9 @@ public:
     UnderstoryStats stats(const UnderstoryPFT *pft) const;
     /// vector of states for all PFTs
     const QVector<UnderstoryStats> pftStats() const { return mPFTStats; }
+
+    void clear();
+    void recollectStats();
 private:
     /// accumulate data for RU level, scale to stockable area
     void updateStats();
@@ -204,6 +212,9 @@ private:
     QVector<UnderstoryStats> mPFTStats; ///< stats per PFT
     ResourceUnit *mRU {0};
     std::array<UnderstoryCell, cPxPerHectare> mCells;
+
+    friend QDataStream &operator<<(QDataStream &stream, const UnderstoryRU &ru);
+    friend QDataStream &operator>>(QDataStream &stream, UnderstoryRU &ru);
 };
 
 
