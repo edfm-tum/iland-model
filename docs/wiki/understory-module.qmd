@@ -74,3 +74,45 @@ The viewer supports several visualization layers. A **PFT Filter** dropdown allo
 *   **RU Slots Occupied**: The fraction ($0..1$) of all available slots on the Resource Unit that are occupied.
 *   **RU LAI**: The average understory Leaf Area Index across the Resource Unit ($m^2/m^2$).
 *   **RU Biomass**: The average understory biomass across the Resource Unit ($kg/ha$).
+
+---
+
+## 4. Settings and Configuration
+
+The understory module is configured in the project XML file under the `model.settings.understory` path:
+
+*   **enabled**: Boolean. Enables or disables the understory module.
+*   **pftFile**: File path (relative to project home) to the CSV file defining the understory Plant Functional Types (PFTs).
+*   **statesFile**: File path (relative to project home) to the CSV file defining the developmental states of the PFTs.
+*   **spinupSteps**: Integer. The number of steps (years) to run for the understory spinup at startup (default is `0`).
+
+---
+
+## 5. Initialization and Manipulation
+
+### The Spinup Process
+If `spinupSteps` is configured to a value greater than 0, iLand executes an initial spinup of the understory vegetation before the actual simulation begins. During the spinup, understory-specific processes (establishment, growth, and mortality) are simulated dynamically for the configured number of years. This allows the understory cover and biomass pools to adapt to the initial canopy structure of the forest.
+
+### Scripting Experiments and Resetting via JavaScript
+You can run multiple steps of understory calculations or reset the understory to an empty state using Javascript. The `Globals` object exposes the function `understoryRunSteps(n_steps, clear_understory)` for this purpose:
+
+```javascript
+// Run understory simulation for 10 years without resetting
+Globals.understoryRunSteps(10, false);
+
+// Reset all understory vegetation (remove plants and clear stats) and run a 20-year spinup
+Globals.understoryRunSteps(20, true);
+
+// Just reset/clear the understory without running any simulation steps
+Globals.understoryRunSteps(0, true);
+```
+
+### Vegetation Snapshots
+The state of the understory is automatically saved and loaded during model database snapshots. This ensures that understory plant coverage and developmental states are preserved across simulation restarts. See [Vegetation snapshots and Javascript](../blog/blogpost31-vegetation-snapshots-and-javascript.qmd) for details on snapshots.
+
+---
+
+## 6. Management of Understory
+
+Silvicultural management of the understory vegetation is not yet developed. Understory vegetation currently responds dynamically to canopy openings caused by natural mortality, wind, bark beetle outbreaks, or logging, but explicit silvicultural treatments (such as herbicide application or understory clearing) are not yet integrated into the [Forest Management Engine (ABE)](../wiki/abe.qmd).
+

@@ -9,6 +9,7 @@
 
 #include "understoryplant.h"
 #include "understorypft.h"
+#include "watercycle.h"
 
 Understory *Understory::mInstance = nullptr;
 
@@ -72,6 +73,8 @@ void Understory::setup()
 {
     DebugTimer t("Understory - setup");
     qDebug() << "Understory module - setup";
+    // settings
+    mSpinupSteps = Globals->settings().valueInt("model.settings.understory.spinupSteps", 0);
     // load PFTs from external file
     QString path = Globals->path(Globals->settings().value("model.settings.understory.pftFile"));
     CSVFile pft_file = CSVFile(path);
@@ -113,6 +116,53 @@ void Understory::setup()
 
     qDebug() << "Understory module setup complete.";
 
+}
+
+static void nc_run_understory(ResourceUnit *unit)
+{
+    Saplings *s = GlobalSettings::instance()->model()->saplings();
+    UnderstoryRU *us_ru = GlobalSettings::instance()->model()->understory()->understoryRU(unit->index());
+
+    LightProfile profile;
+
+    try {
+        // make sure that water cycle has been running
+        const_cast<WaterCycle*>(unit->waterCycle())->run();
+        // determine light profiles for resource unit
+        s->calculateLightProfile(unit, us_ru, profile);
+
+        us_ru->growth(profile);
+        us_ru->establishment(profile);
+
+        //us_ru->yearEnd(); // collect stats
+
+
+    } catch (const IException& e) {
+        GlobalSettings::instance()->model()->threadExec().throwError(e.message());
+    }
+
+}
+
+
+void Understory::runMultipleSteps(int n_steps)
+{
+    DebugTimer t("understory-spinup");
+    for (int i=0;i<n_steps;++i) {
+        Globals->model()->executePerResourceUnit(nc_run_understory, false /* true: force single threaded operation */);
+        qDebug() << "Understory spinup step" << i+1 << "/" << n_steps << "...";
+    }
+    
+    // Refresh stats for all resource units after all steps are finished
+    Globals->model()->threadExec().run(&UnderstoryRU::yearEnd, mUnderstoryRU, false);
+
+    qDebug() << "Understory spinup completed:" << t.elapsed() << "ms";
+}
+
+void Understory::clearUnderstory()
+{
+    for (int i=0; i<mUnderstoryRU.size(); ++i) {
+        mUnderstoryRU[i].clear();
+    }
 }
 
 

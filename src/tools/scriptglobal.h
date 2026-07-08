@@ -170,6 +170,7 @@ public slots:
     int addSaplings(int standId, double x, double y, double width, double height, QString species, double treeheight, int age);
     /// remove all saplings from a metric rectangle. See also `addSaplings()`.
     void removeSaplings(int standId, double x, double y, double width, double height);
+    void understoryRunSteps(int n_steps, bool clear_understory);
     // enable/disable outputs
     bool startOutput(QString table_name); ///< starts output 'table_name'. return true if successful
     bool stopOutput(QString table_name); ///< stops output 'table_name'. return true if successful

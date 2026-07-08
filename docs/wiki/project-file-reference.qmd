@@ -220,6 +220,7 @@ Enable/disable main model processes
 | `groundVegetationLAI` | numeric | `1` | **LAI ground vegetation**: minimum LAI that is assumed to be provided by ground vegetation in absence of tree vegetation |
 | `groundVegetationPsiMin` | numeric | `-1.5` | **PsiMin of ground vegetation**: [Transpiration And Conductance In Saplings](transpiration-and-conductance-in-saplings.qmd) |
 | `understory.enabled` | boolean | `false` | **Enable**: If checked, the understory module is enabled. |
+| `understory.spinupSteps` | numeric | `0` | **Spinup steps**: Set the number of steps (years) for the understory spinup at startup. |
 | `understory.pftFile` | file selection | `pft.csv` | **PFT File**: File containing the definition of the understory plant functional types (PFTs). |
 | `understory.statesFile` | file selection | `states.csv` | **States File**: File containing the definition of the developmental states of the PFTs. |
 

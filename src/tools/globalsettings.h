@@ -73,7 +73,7 @@ public:
     QString executeJSFunction(const QString function_name);
     QJSEngine *scriptEngine() const { return mScriptEngine; }
     void resetScriptEngine(); ///< re-creates the script engine (when the Model is re-created)
-
+    void destroyScriptEngine(); ///< explicitly destroy the script engine
     // system statistics
     SystemStatistics *systemStatistics() { return mSystemStatistics; }
 
@@ -132,6 +132,7 @@ private:
     ModelController *mModelController;
     OutputManager *mOutputManager;
     QPointer<QJSEngine> mScriptEngine;
+    QMetaObject::Connection mAboutToQuitConnection;
     int mRunYear;
     SystemStatistics *mSystemStatistics;
 

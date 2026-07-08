@@ -898,6 +898,13 @@ void Model::beforeRun()
 
     // force the compilation of initial stand statistics
     createStandStatistics();
+
+    if (Model::settings().understoryEnabled && mUnderstory && mUnderstory->isValid()) {
+        // spinup of understory after creating stand statistics (which
+        // populates LAI values required for water cycle)
+        mUnderstory->initialSpinup();
+    }
+
     }
 
     // initalization of ABE (now all stands are properly set up)

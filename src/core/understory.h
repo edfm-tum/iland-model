@@ -57,12 +57,18 @@ public:
     /// setup the understory module
     void setup();
 
+    /// run understory spinup (before start of the model)
+    void initialSpinup() { if (mSpinupSteps>0) runMultipleSteps(mSpinupSteps); }
+    void runMultipleSteps(int n_steps);
+    void clearUnderstory();
+
     bool isValid() const { return !mUnderstoryRU.isEmpty();}
 
 
 
 private:
     void checkStateSequence();
+    int mSpinupSteps {0};
 
     static Understory *mInstance;
     /// container of all PFTs in the system

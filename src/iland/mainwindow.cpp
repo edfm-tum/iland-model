@@ -164,7 +164,7 @@ void dumpMessages()
             *MainWindow::logStream() << s << Qt::endl;
         MainWindow::logStream()->flush();
 
-    } else {
+    } else if (MainWindow::logSpace()) {
         foreach(const QString &s, bufferedMessages)
             MainWindow::logSpace()->appendPlainText(s);
 
@@ -177,7 +177,9 @@ void dumpMessages()
     }
 
     bufferedMessages.clear();
-    qInstallMessageHandler(myMessageOutput);
+    if (MainWindow::logSpace() || MainWindow::logStream()) {
+        qInstallMessageHandler(myMessageOutput);
+    }
 }
 
 
@@ -418,6 +420,9 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    dumpMessages();
+    qInstallMessageHandler(nullptr);
+    mLogSpace = nullptr;
     mRemoteControl.destroy(); // delete model and free resources.
     delete mLinkxqt;
     delete ui;

@@ -454,7 +454,6 @@ HEADERS += \
     ../bite/biteoutputitem.h \
     ../core/permafrost.h \
     ../core/microclimate.h \
-
     ../core/understory.h \
     ../core/understorypft.h \
     ../core/understoryplant.h \

@@ -402,6 +402,7 @@ model.settings.svdStates.functioning = combo|3;5|Type|Number of LAI classes (3/5
 
 gui.layout = group|Understory|This section contains settings related to the understory module (TODO: Link).
 model.settings.understory.enabled = boolean|false|Enable|If checked, the understory module is enabled.|simple
+model.settings.understory.spinupSteps = numeric|0|Spinup steps|Set the number of steps (years) for the understory spinup at startup.|simple
 model.settings.understory.pftFile = file|pft.csv|PFT File|File containing the definition of the understory plant functional types (PFTs).|simple
 model.settings.understory.statesFile = file|states.csv|States File|File containing the definition of the developmental states of the PFTs.|simple
 

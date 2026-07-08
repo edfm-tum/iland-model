@@ -177,12 +177,28 @@ void GlobalSettings::resetScriptEngine()
     }
 
     mScriptEngine = new QJSEngine(QCoreApplication::instance());
+    
+    // Connect aboutToQuit to gracefully shut down the engine before the QApplication shuts down completely
+    QObject::disconnect(mAboutToQuitConnection);
+    mAboutToQuitConnection = QObject::connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit, [this]() {
+        destroyScriptEngine();
+    });
+
     // add "console" extension (enabling the Console API)
     mScriptEngine->installExtensions(QJSEngine::ConsoleExtension);
     // globals object: instatiate here, but ownership goes to script engine
     ScriptGlobal *global = new ScriptGlobal();
     QJSValue glb = mScriptEngine->newQObject(global);
     mScriptEngine->globalObject().setProperty("Globals", glb);
+}
+
+void GlobalSettings::destroyScriptEngine()
+{
+    if (mScriptEngine) {
+        mScriptEngine->collectGarbage();
+        delete mScriptEngine;
+        mScriptEngine = nullptr;
+    }
 }
 
 // debugging

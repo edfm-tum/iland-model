@@ -41,6 +41,7 @@
 #include "scriptgrid.h"
 #include "expressionwrapper.h"
 #include "watercycle.h"
+#include "understory.h"
 
 // for accessing script publishing functions
 #include "climateconverter.h"
@@ -987,6 +988,20 @@ void ScriptGlobal::removeSaplings(int standId, double x, double y, double width,
     }
     if (GlobalSettings::instance()->model()->saplings()) {
         GlobalSettings::instance()->model()->saplings()->clearSaplings(remove_rect, false, true);
+    }
+}
+
+void ScriptGlobal::understoryRunSteps(int n_steps, bool clear_understory)
+{
+    if (!Model::settings().understoryEnabled || !Globals->model()->understory())
+        return;
+    if (!Globals->model()->understory()->isValid())
+        return;
+    if (clear_understory) {
+        Globals->model()->understory()->clearUnderstory();
+    }
+    if (n_steps > 0) {
+        Globals->model()->understory()->runMultipleSteps(n_steps);
     }
 }
 

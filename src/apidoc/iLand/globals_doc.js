@@ -644,5 +644,17 @@ Javascript function call (as a string).
                      'emma_paula()': 'run the emma/paula storms' }) ;
 
 */
+
+/**
+Execute multiple annual simulation steps for the understory module.
+If `clear_understory` is true, it clears the current understory vegetation and resets statistics before running the simulation.
+
+@method understoryRunSteps
+@param {integer} n_steps number of annual steps to run (can be 0 if you only want to clear)
+@param {boolean} clear_understory if true, resets all understory plants and statistics
+@Example
+    // Clear understory and run 10 spinup years
+    Globals.understoryRunSteps(10, true);
+*/
 Globals = {
 }

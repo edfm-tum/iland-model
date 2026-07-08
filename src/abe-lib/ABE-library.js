@@ -60,7 +60,6 @@
 
 
 
-<<<<<<< HEAD
 function get_js_file_path() {
     try {
         throw new Error("give me the filename!");
@@ -89,8 +88,6 @@ function get_js_file_path() {
         };
     }
 }
-=======
->>>>>>> refs/heads/wiki_move
 var lib = {};
 
 // set lib.path to the root directory of the ABE-library
