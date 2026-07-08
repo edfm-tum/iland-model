@@ -350,11 +350,12 @@ void UnderstoryPFT::responseToTransitionProb(const double response, double &rPre
     // stress is a function of environment
     const double stress_factor = mExprStress.calculate(response);
 
+    // mortality is a fixed probability
     // mortality is based only on an annual prob. of mortality and stress
-    rMort = mBaseMortalityProb + stress_factor - (mBaseMortalityProb*stress_factor);
+    rMort = mBaseMortalityProb;
 
-    // decline is a fixed response
-    rPrevious = mPDecline;
+    // decline is a based on a base probabilty + stress
+    rPrevious = mPDecline + stress_factor - (mPDecline*stress_factor);
 
 
 

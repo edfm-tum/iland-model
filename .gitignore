@@ -6,6 +6,8 @@ deploy
 *.pdb
 *.a
 .Rproj.user
+/src/ilandc/*.stash
+/src/ilandc/Makefile
 project_file.xml
 .qtc_clangd
 build/
