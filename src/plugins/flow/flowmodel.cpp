@@ -178,8 +178,8 @@ bool FlowModel::run(const QString &type, int experimentId)
 
     // Run simulations concurrently using ThreadRunner (respects global settings)
     GlobalSettings::instance()->model()->threadExec().run([this](int startIdx) {
-        // Skip traversed start cells (already reached by previous flow paths)
-        {
+        // Skip traversed start cells (already reached by previous flow paths) if enabled
+        if (mParams.skip_traversed_cells) {
             std::lock_guard<std::mutex> lock(mOutputMutex);
             if (mEnergy[startIdx] > 0.0f) {
                 return;

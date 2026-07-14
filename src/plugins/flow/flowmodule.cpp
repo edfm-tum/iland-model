@@ -48,6 +48,7 @@ void loadParamsHelper(const XmlHelper &xml, FlowParameters &p) {
     p.exp = xml.valueDouble(".exp", p.exp);
     p.flux_threshold = xml.valueDouble(".fluxThreshold", p.flux_threshold);
     p.max_z_delta = xml.valueDouble(".maxZDelta", p.max_z_delta);
+    p.skip_traversed_cells = xml.valueBool(".skipTraversedCells", p.skip_traversed_cells);
 
     p.forest_friction_enabled = xml.valueBool(".forestFriction.enabled", p.forest_friction_enabled);
     p.max_added_friction_forest = xml.valueDouble(".forestFriction.maxAddedFriction", p.max_added_friction_forest);
@@ -79,9 +80,8 @@ void FlowModule::setup()
 }
 
 
-void FlowModule::loadParameters(bool do_reset)
+void FlowModule::loadParameters()
 {
-    Q_UNUSED(do_reset);
     const XmlHelper xmlGlobal = GlobalSettings::instance()->settings().node("modules.flow");
 
     mRunFunction = xmlGlobal.value(".executeJS", "");

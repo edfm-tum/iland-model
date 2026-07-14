@@ -67,7 +67,7 @@ public:
     static double cellsize() { return 10.; }
 
     void setup(); ///< general setup
-    void loadParameters(bool do_reset=true); ///< load params from XML
+    void loadParameters(); ///< load params from XML
 
 
     /// main function to run the flow module

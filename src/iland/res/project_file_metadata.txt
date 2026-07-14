@@ -572,6 +572,7 @@ modules.flow.executeJS = string||JS execution function|Name of Javascript functi
 modules.flow.alpha = numeric|30.0|Baseline friction angle|Baseline friction angle (degrees) representing Coulomb friction (mu = tan(alpha)).|simple
 modules.flow.fluxThreshold = numeric|0.0003|Flux threshold|Minimum routing flux threshold below which flow propagation stops. |simple
 modules.flow.maxZDelta = numeric|100.0|Max kinetic energy height|Maximum kinetic energy height Z_delta (meters) to prevent non-physical velocity build-up.|simple
+modules.flow.skipTraversedCells = boolean|true|Skip traversed cells|Toggle to skip starting/release cells that have already been traversed by a previous downhill path (FlowPy reference default).|simple
 
 gui.layout = group|Avalanche Settings
 modules.flow.avalanche.alpha = numeric|25.0|Baseline friction angle|Baseline friction angle for avalanche (degrees).|simple

@@ -41,18 +41,30 @@ public:
 signals:
 
 public slots:
+    // starting cells
     void setStartPoint(double x, double y);
     void setStartRectangle(double x1, double y1, double x2, double y2);
     void setStartStand(int standId);
     void setStartPolygon(int standId, ScriptGrid *grid=nullptr);
+    // infrastructure
+
     void setInfrastructure(ScriptGrid *grid);
+    /// set a fixed FSI grid (forest effect) instead of dynamic calculation
     void setFSI(ScriptGrid *grid);
+    /// toggle on/off whether forest vegetation is included
     void setForestEffect(bool enabled);
+    /// allow to set a custom DEM for Flow (which can be outside of the iLand project area)
     void setCustomLandscape(ScriptGrid *grid);
 
+    /// reload paramters of the model
+    /// this can be used for interactive parameter sensitivity tests
+    void reloadParameters();
 
+    /// run flow model with the process given by 'type' (avalanche, rockfall, mudflow)
+    /// you can provide an experimentID which is used for the output table.
     void run(QString type = "avalanche", int experimentID = 0);
 
+    /// retrieve a named grid from Flow
     QJSValue grid(QString type);
 
 

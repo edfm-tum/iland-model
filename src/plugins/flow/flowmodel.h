@@ -27,6 +27,10 @@ struct FlowParameters {
     /// Prevents non-physical velocity build-up in extremely long/steep channels.
     float max_z_delta = 100.0f;
 
+    /// Toggle to skip starting/release cells that have already been traversed by a previous downhill path.
+    /// Default is true (reproducing FlowPy reference behavior).
+    bool skip_traversed_cells = true;
+
     // --- Forest Friction Parameters ---
 
     /// Enable or disable the effect of forest structure (FSI) on friction dissipation.

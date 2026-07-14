@@ -143,6 +143,19 @@ void FlowScript::setCustomLandscape(ScriptGrid *grid)
     }
 }
 
+void FlowScript::reloadParameters()
+{
+    if (!mModule) return;
+    try {
+        mModule->loadParameters();
+        qDebug() << "Flow parameters reloaded from XML.";
+    } catch (const IException &e) {
+        ScriptGlobal::throwError(e.message());
+    } catch (const std::exception &e) {
+        ScriptGlobal::throwError(e.what());
+    }
+}
+
 void FlowScript::setStartStand(int standId)
 {
     if (!mModule) return;
