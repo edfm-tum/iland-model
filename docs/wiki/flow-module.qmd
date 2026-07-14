@@ -1,0 +1,263 @@
+---
+title: flow module
+---
+
+The flow module is a sub module of iLand for simulating gravitational mass flows (GMF) such as snow avalanches, rockfall, and mudflows. See [disturbance modules](disturbance-modules.qmd) for a list of available modules.
+
+Scientific background and the python reference implementation of FlowPy are available at:
+* **FlowPy Reference Implementation**: [inros/FlowPy on GitHub](https://github.com/inros/FlowPy) (Zenodo: [10.5281/zenodo.4764835](https://doi.org/10.5281/zenodo.4764835))
+* **Com4Flow**: Related model concepts for hazard and forest protection assessment (e.g., com4flow).
+
+---
+
+## general / high level principles
+
+The flow module uses a grid-based kinematic model of block movement with Coulomb friction, simulating mass routing and energy dissipation on a 10m grid.
+
+*   **Kinetic Energy Height ($Z_\delta$):** The model operates without explicit mass. The process velocity and intensity are tracked as a kinetic energy height ($Z_\delta$) in meters. As the flow travels downhill, the change in topographic elevation ($\Delta Z$) increases energy, while friction based on horizontal travel distance and a baseline friction angle ($\alpha$) dissipates energy:
+    $$\Delta Z_\delta = \Delta Z - \text{distance} \times \tan(\alpha)$$
+*   **Moore Neighborhood Routing:** In each step, the incoming flow (routing flux $R$) of a cell is distributed to its downslope neighbors in a 3x3 window based on:
+    1.  **Topographic Routing**: Slope-based weights scaled by a divergence exponent (`exp`). A higher exponent forces flow along the steepest descent path (steep ravines), while a lower exponent causes lateral spreading.
+    2.  **Persistence Routing (Momentum)**: Directional weights that prioritize paths preserving the incoming flow vector, simulating inertia (more pronounced at higher kinetic energy).
+*   **Stopping Criteria**:
+    1.  **Energy Dissipation**: Path simulation stops when $Z_\delta \le 0$ (all energy is lost to friction).
+    2.  **Flux Threshold**: If the distributed routing flux $R$ on a path drops below a threshold (`fluxThreshold`, e.g. $3 \times 10^{-4}$), that path is pruned to avoid infinite spreading.
+*   **Flux Conservation**: The redistribution logic ensures absolute conservation of total routing flux at each cell step.
+*   **Forest Interactions (FSI)**: The Forest Structure Index ($FSI$, $0..1$) scales how forest density affects flow:
+    -   **Forest Friction**: Increases the baseline friction angle ($\alpha$) in forested areas. The effect is linearly reduced as flow velocity increases, up to a cutoff velocity (`noFrictionEffectVelocity`).
+    -   **Forest Detrainment**: Flux is dynamically absorbed/deposited by forest structures, linearly reduced up to a cutoff velocity (`noDetrainmentEffectVelocity`).
+*   **Starting/Release Cells Processing**: Starting cells are sorted by elevation in descending order and executed sequentially. 
+    *   If `skipTraversedCells` is `true`, any starting cell that has already been traversed by a path originating from a higher altitude cell (energy height $Z_\delta > 0$) is skipped. This reproduces the FlowPy reference behavior (assuming lower release zones are incorporated into the downhill flow).
+    *   If `skipTraversedCells` is `false`, all starting cells are executed, representing independent triggers (worst-case scenario envelope).
+*   **Uphill Back-tracking**: When a flow path hits a cell designated as critical infrastructure ($>0$), the module performs a single-pass linear-time topological backward propagation along the ancestors of that path. The upslope cells contributing to the hazard exposure are mapped in the `backCalc` output grid with the maximum priority of the infrastructure they threaten.
+
+---
+
+## integration in iLand
+
+[Place holder: Detailed description of the Forest Structure Index (FSI) calculation for different hazard processes will be documented here later.]
+
+---
+
+## project file parameters
+
+The behavior of the flow module is configured in the XML [project file](project-file.qmd) under the section `modules.flow`. General defaults can be specified under `modules.flow`, and process-specific overrides can be specified under child nodes for `avalanche` (supporting also `avalance`), `rockfall`, or `mudflow`.
+
+**general parameters (under modules.flow)**
+
+| **key** | **datatype** | **description** |
+| --- | --- | --- |
+| alpha | double | Baseline friction angle in degrees. Macroscopic Coulomb friction coefficient ($\mu = \tan(\alpha)$). Typically 20° to 40°. |
+| exp | double | Divergence exponent controlling lateral flow spread. Higher values force flow along steepest descent (channelized), lower values spread. |
+| fluxThreshold | double | Minimum routing flux threshold. Below this value, flow propagation stops on that path. Default is 0.0003. |
+| maxZDelta | double | Maximum kinetic energy height $Z_\delta$ (meters) to prevent non-physical velocity build-up. |
+| skipTraversedCells | boolean | Toggle to skip starting/release cells that have already been traversed by a previous downhill path (default is `true` to reproduce Python FlowPy reference behavior). |
+
+**process-specific parameters (under modules.flow.avalanche, modules.flow.rockfall, etc.)**
+
+*   **forestFriction**
+    -   `enabled` (boolean): Enable or disable forest friction effects.
+    -   `maxAddedFriction` (double, degrees): Maximum friction angle added to baseline alpha in dense forest at rest.
+    -   `minAddedFriction` (double, degrees): Minimum friction angle added in sparse forest.
+    -   `noFrictionEffectVelocity` (double, m/s): Velocity threshold above which the forest friction effect reaches its minimum value.
+*   **forestDetrainment**
+    -   `enabled` (boolean): Enable or disable routing flux detrainment by forest structure.
+    -   `maxAddedDetrainment` (double, fraction): Maximum detrainment rate (fraction of flux lost per step) in dense forest at rest.
+    -   `minAddedDetrainment` (double, fraction): Minimum detrainment rate in sparse forest.
+    -   `noDetrainmentEffectVelocity` (double, m/s): Velocity threshold above which forest detrainment ceases.
+
+---
+
+## GUI visualization and grid description
+
+The flow module operates on a 10x10m grid. The following output layers are available in the iLand GUI Layer manager and can be exported as grids via Javascript:
+
+| **layer name** | **grid type** | **description** |
+| --- | --- | --- |
+| elevation | DEM | Digital elevation model (m) used for routing. |
+| FSI | FSI | Forest Structure Index ($0..1$). |
+| energy | energy | Maximum kinetic energy height $Z_\delta$ (m) reached on each cell. |
+| flux | flux | Maximum routing flux $R$ ($0..1$) passed through each cell. |
+| hitCount | hitCount | Cumulative number of times a cell was traversed by different paths. |
+| travelAngleFp | travelAngleFp | Flow-path travel angle in degrees. |
+| travelAngleSl | travelAngleSl | Straight-line travel angle in degrees. |
+| backCalc | backCalc | Exposure map showing upslope areas contributing to infrastructure hits. |
+| infrastructure | infrastructure | Map of critical infrastructure cells. |
+
+---
+
+## Javascript API
+
+When the flow module is active, a global Javascript object `Flow` is available.
+
+### Functions
+
+**Flow.setStartPoint(x, y)**  
+Sets a single starting release cell at metric coordinates `(x, y)`.
+
+**Flow.setStartRectangle(x1, y1, x2, y2)**  
+Sets a rectangular release area between metric coordinates `(x1, y1)` and `(x2, y2)`.
+
+**Flow.setStartPolygon(standId, [grid])**  
+Sets a release area from a stand polygon ID. If a custom [ScriptGrid](../apidoc/classes/iland/grid.qmd) `grid` is passed, the polygon lookup will be evaluated in that grid. If omitted, the default iLand stand grid is used. An exception is thrown if the grid cannot be resolved.
+
+**Flow.setStartStand(standId)**  
+Alias for `Flow.setStartPolygon(standId)`.
+
+**Flow.setInfrastructure(grid)**  
+Sets the critical infrastructure locations map using a [ScriptGrid](../apidoc/classes/iland/grid.qmd) `grid` (values $>0$ indicate infrastructure cells). Supports coordinate-based spatial interpolation if grid extents differ.
+
+**Flow.setFSI(grid)**  
+Sets a custom Forest Structure Index ($FSI$) grid using a [ScriptGrid](../apidoc/classes/iland/grid.qmd). When set, dynamic tree height-based FSI calculations are bypassed. Pass `null` or an empty grid to reset to dynamic calculations.
+
+**Flow.setForestEffect(enabled)**  
+Toggles whether the forest structure effect (FSI) should be applied when using dynamic FSI calculations. If set to `false`, an empty FSI grid (all `0`) is used, effectively running the simulation in a "no-forest" scenario. (Does not affect custom FSI grids loaded via `setFSI`).
+
+**Flow.setCustomLandscape(grid)**  
+Sets a custom digital elevation model (DEM) for the flow module using a [ScriptGrid](../apidoc/classes/iland/grid.qmd) `grid`.
+*   **Resolution**: The custom grid resolution must be exactly 10m.
+*   **Layout**: Automatically resizes all internal simulation buffers and visualizer grids to match the extent of the custom DEM.
+*   **Safety Guards**: When a custom landscape is set, the automatic yearly iLand simulation loop is disabled (will trigger an error), and running a simulation requires a custom FSI grid to be set via `setFSI` beforehand.
+
+**Flow.reloadParameters()**  
+Reloads the flow module parameters from the current project settings. This is useful for parameter sweep studies where the project settings are dynamically altered programmatically via `Globals.set()` from Javascript.
+
+**Grid Flow.grid(gridtype)**  
+Returns a copy of the flow module internal grid specified by `gridtype` (e.g. `'FSI'`, `'backCalc'`, `'energy'`, `'flux'`, `'hitCount'`, `'travelAngleFp'`, `'travelAngleSl'`). Returns a [ScriptGrid](../apidoc/classes/iland/grid.qmd).
+
+---
+
+## Running Flow with a Custom Landscape
+
+To reproduce runs or compare C++ simulation outputs with the Python FlowPy reference implementation, you can run the flow module on a custom DEM and custom FSI grid, independent of the active iLand simulation space.
+
+### Constraints
+
+1.  **Grid Resolution**: The custom DEM and FSI grids must have a cell size of exactly **10 meters**.
+2.  **Explicit FSI Requirement**: Because a custom landscape has no associated iLand tree height grid, dynamic FSI calculation is not possible. You **must** call `Flow.setFSI(grid)` with a grid matching the custom DEM before running the simulation.
+3.  **Automatic Execution Lock**: Once `setCustomLandscape` is called, the yearly simulation loop of iLand will trigger an error if it reaches the flow module, ensuring custom runs are only triggered manually via Javascript.
+
+### Custom Landscape Example
+
+```javascript
+/* Reproducing a Python FlowPy experiment on a custom DEM
+*/
+
+function runCustomComparison() {
+    var dem = new Grid();
+    var fsi = new Grid();
+    var infra = new Grid();
+    var startMask = new Grid();
+    
+    // Load ESRI ASC grids
+    dem.load('experiments/dem_50x50_10m.asc');
+    fsi.load('experiments/fsi_50x50_10m.asc');
+    infra.load('experiments/infrastructure_50x50.asc');
+    startMask.load('experiments/start_area_50x50.asc');
+    
+    // Initialize custom landscape and simulation parameters
+    Flow.setCustomLandscape(dem);
+    Flow.setFSI(fsi);
+    Flow.setInfrastructure(infra);
+    
+    // Set start area from the loaded mask grid (for polygon index 1)
+    Flow.setStartPolygon(1, startMask);
+    
+    // Run comparison simulation
+    Flow.run('avalanche');
+    
+    // Save results for offline analysis
+    Flow.grid('energy').save('experiments/output_energy.asc');
+    Flow.grid('backCalc').save('experiments/output_backCalc.asc');
+    console.log("Custom landscape comparison run complete.");
+}
+```
+
+---
+
+## Javascript Example (Standard Integration)
+
+```javascript
+/* Flow execution script
+*/ 
+
+// main function executed from iLand
+// this functions runs the experiments
+function runFlow() {
+    // Persist variables across function calls
+    if (typeof runFlow.mask === 'undefined') {
+        runFlow.mask = new Grid();
+        runFlow.infra = new Grid();
+        runFlow.mask.load('gis/slope_35_60.asc');
+        runFlow.infra.load('gis/infrastructure.asc');   
+    }
+
+    if (Globals.year % 10 != 0) {
+        console.log("flow: skip execution");
+        return;
+    }
+        
+    // set infrastructure and starting conditions
+    Flow.setInfrastructure(runFlow.infra);
+    Flow.setStartPolygon(1, runFlow.mask);
+
+    // execute avalanche simulation
+    Flow.run('avalanche');
+
+    if (Globals.year % 50 == 0)
+        saveGrids();
+    
+    // Flow.run('mudflow');
+    // Flow.run('rockfall');
+}
+
+function saveGrids() {
+    Flow.grid('FSI').save(`output/grid_FSI_${Globals.year}.asc`);
+    Flow.grid('backCalc').save(`output/grid_backCalc_${Globals.year}.asc`);
+    Flow.grid('energy').save(`output/grid_energy_${Globals.year}.asc`);
+}
+```
+
+---
+
+## Javascript Example (Parameter Sweep Study)
+
+This example demonstrates how to perform a parameter sweep study using `Globals.set()` and `Flow.reloadParameters()`:
+
+```javascript
+/* Parameter sweep study for Avalanche simulation
+*/
+
+function runParameterSweep() {
+    var mask = new Grid();
+    var infra = new Grid();
+    mask.load('gis/slope_35_60.asc');
+    infra.load('gis/infrastructure.asc');
+    
+    // Set static starting conditions and infrastructure
+    Flow.setInfrastructure(infra);
+    Flow.setStartPolygon(1, mask);
+    
+    // Define values of the divergence exponent to test
+    var divergenceValues = [5, 10, 15, 20, 25, 30];
+    
+    for (var i = 0; i < divergenceValues.length; i++) {
+        var expVal = divergenceValues[i];
+        console.log("Parameter sweep: setting modules.flow.avalanche.exp to " + expVal);
+        
+        // Dynamically update parameter in the project settings XML
+        Globals.set('modules.flow.avalanche.exp', expVal);
+        
+        // Reload parameters to apply change to the C++ Flow module
+        Flow.reloadParameters();
+        
+        // Execute avalanche simulation (using expVal as the unique experiment/run ID)
+        Flow.run('avalanche', expVal);
+        
+        // Save the resulting energy grid for this configuration
+        var energyGrid = Flow.grid('energy');
+        energyGrid.save("output/avalanche_sweep_exp" + expVal + ".asc");
+    }
+    console.log("Parameter sweep study completed successfully.");
+}
+```
