@@ -9,8 +9,8 @@ Welcome to the scientific and technical wiki for iLand. This section details the
 *   **[Growth & Carbon Allocation](growth.qmd)**
     *   Learn about primary production, allocation to plant compartments, and stem growth.
     *   Detailed equations are available on the [Allocation](allocation.qmd) page.
-*   **[Disturbances & Modules](fire-module.qmd)**
-    *   Technical details of the wildfire, wind, and bark beetle sub-modules.
-    *   For example, check out the [Fire Module Settings](fire-module.qmd) for parameters and scripting callbacks.
+*   **[Disturbances & Modules](disturbance-modules.qmd)**
+    *   Technical details of the wildfire, wind, bark beetle, and gravitational mass flow (flow) sub-modules.
+    *   For example, check out the [Fire Module Settings](fire-module.qmd) or the [Flow Module](flow-module.qmd) for parameters and scripting callbacks.
 *   **Landscape Parameterization & Initialization**
     *   Information on project files, species parameters, and GIS layers.

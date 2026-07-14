@@ -7,7 +7,7 @@ title: "disturbance modules"
 ## iLand modules
 
 
-The iLand core model includes the main processes like [growth], [mortality] and [regeneration]. Additional sub models are technically organized and bundles in "modules" or "plugins". Typical examples for such modules are disturbance agents like [wildfire] and [wind](wind-disturbance.qmd).
+The iLand core model includes the main processes like [growth](growth.qmd), [mortality](mortality.qmd) and [regeneration](regeneration.qmd). Additional sub models are technically organized and bundles in "modules" or "plugins". Typical examples for such modules are disturbance agents like [wildfire](wildfire.qmd) and [wind](wind-disturbance.qmd).
 Applying a "plugin" approach simplifies switching between different versions or types of sub modules and provides due to a clean separation between main model and modules an fairly easy way for third party contributors to add own sub modules to iLand.
 However, from a model user point of view, a module does not differ from the core iLand model: a section in the [project file](project-file.qmd) is specific for the module (including the *enabled* switch)).
 
@@ -20,9 +20,10 @@ However, from a model user point of view, a module does not differ from the core
 * the [fire module](fire-module.qmd) simulates the ignition, spread and the impacts of [wildfire](wildfire.qmd) on the landscape scale
 * the [wind module](wind-module.qmd) simulates the disturbance agent wind on landscape level
 * the [barkbeetle module](barkbeetle-module.qmd) simulates spruce bark beetles (*Ips typographus*)
-* the [biotic disturbance engine (BITE](bite.qmd)) provides a general framework for simulating biotic disturbances
+* the [biotic disturbance engine (BITE)](bite.qmd) provides a general framework for simulating biotic disturbances
+* the [flow module](flow-module.qmd) simulates gravitational mass flows (GMF) like snow avalanches, rockfall, and mudflows
 
-A special disturbance module in iLand is [BITE](bite.qmd) (the BIotic disTurbance Engine). BITE is a general model to simulate biotic disturbances in forest ecosystems. It is a modular and simple model that is general enough to simulate a wide range of biotic disturbance agents, from fungi to large mammals. The [BITE] page contains information about how to use BITE in iLand.
+A special disturbance module in iLand is [BITE](bite.qmd) (the BIotic disTurbance Engine). BITE is a general model to simulate biotic disturbances in forest ecosystems. It is a modular and simple model that is general enough to simulate a wide range of biotic disturbance agents, from fungi to large mammals. The [BITE](bite.qmd) page contains information about how to use BITE in iLand.
 
 
 

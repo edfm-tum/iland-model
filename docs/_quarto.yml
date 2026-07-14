@@ -143,6 +143,7 @@ website:
                 - wiki/barkbeetle-module.qmd
                 - wiki/bark-beetle-disturbance.qmd
                 - wiki/bite.qmd
+                - wiki/flow-module.qmd
             - section: "Forest Management"
               contents:
                 - wiki/management.qmd
