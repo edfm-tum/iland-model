@@ -29,9 +29,10 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v3
         with:
-          version: '6.11.0'
+          version: '6.11.1'
           modules: 'qtcharts'
           arch: ${{ matrix.os == 'windows-latest' && 'win64_msvc2022_64' || '' }}
+          aqtversion: '>=3.3.2'  # Forces the action to use the patched downloader
 
        # patch for macos -> necessary up to 6.11.0
       - name: Patch Qt Header for macOS arm64 (QTBUG-145239 Workaround)
@@ -112,6 +113,9 @@ jobs:
           # Note: Replace 'iland.png' with the actual path to your application icon in the repository
           echo -e "[Desktop Entry]\nName=iLand\nExec=iland\nIcon=iland\nType=Application\nCategories=Science;" > AppDir/iland.desktop
           touch AppDir/iland.png
+
+          # Keep only the SQLite driver; delete all others (Mimer, ODBC, PostgreSQL, etc.) to prevent ldd failures
+          find $QT_DIR/plugins/sqldrivers/ -type f -not -name 'libqsqlite.so' -delete
           
           # 6. Run linuxdeployqt
           wget -c "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
@@ -128,7 +132,7 @@ jobs:
         run: |
           mkdir deploy-mac
           cp -r src/iland/build/release/iland.app deploy-mac/
-          cp -r src/ilandc/build/release/ilandc.app deploy-mac/
+          cp -r src/ilandc/build/release/ilandc deploy-mac/
           macdeployqt deploy-mac/iland.app -qmldir=src/iland/qml
           cp build_log.txt deploy-mac/
 
