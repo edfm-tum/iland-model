@@ -34,7 +34,7 @@ jobs:
           arch: ${{ matrix.os == 'windows-latest' && 'win64_msvc2022_64' || '' }}
 
        # patch for macos -> necessary up to 6.11.0
-       - name: Patch Qt Header for macOS arm64 (QTBUG-145239 Workaround)
+      - name: Patch Qt Header for macOS arm64 (QTBUG-145239 Workaround)
         if: matrix.os == 'macos-latest'
         run: |
           HEADER_PATH="$Qt6_DIR/lib/QtCore.framework/Headers/qyieldcpu.h"
