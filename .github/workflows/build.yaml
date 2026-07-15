@@ -29,10 +29,9 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v3
         with:
-          version: '6.11.1'
+          version: '6.8.3'
           modules: 'qtcharts'
           arch: ${{ matrix.os == 'windows-latest' && 'win64_msvc2022_64' || '' }}
-          aqtversion: '==3.3.0'  # Forces the action to use the patched downloader
 
        # patch for macos -> necessary up to 6.11.0
       - name: Patch Qt Header for macOS arm64 (QTBUG-145239 Workaround)
