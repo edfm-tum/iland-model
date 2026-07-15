@@ -32,7 +32,7 @@ jobs:
           version: '6.11.1'
           modules: 'qtcharts'
           arch: ${{ matrix.os == 'windows-latest' && 'win64_msvc2022_64' || '' }}
-          aqtversion: '=3.3.0'  # Forces the action to use the patched downloader
+          aqtversion: '==3.3.0'  # Forces the action to use the patched downloader
 
        # patch for macos -> necessary up to 6.11.0
       - name: Patch Qt Header for macOS arm64 (QTBUG-145239 Workaround)
