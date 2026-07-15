@@ -610,6 +610,129 @@ def generate_bite_docs():
                 
         content = re.sub(r'\[([^\]]+)\]\(([^)]+)\.md\)', link_repl, content)
         
+        # 1.5. Translate other absolute/relative links pointing to class docs, wiki pages, etc.
+        def resolve_other_links(match):
+            label = match.group(1)
+            target = match.group(2).strip('\\')
+            
+            # cell object placeholder
+            if target == 'link!!':
+                if label.lower() == 'cell object' or 'cell' in label.lower():
+                    return f"[{label}](bitecell.qmd)"
+                return f"[{label}](index.qmd)"
+                
+            # apidoc classes links
+            # Matches: /apidoc/classes/Name.html, https://iland-model.org/apidoc/classes/Name.html, etc.
+            # Handles optional .org and optional trailing fragment
+            apidoc_match = re.match(r'^(?:https?://(?:www\.)?iland-model(?:\.org)?)?/?apidoc/classes/(\w+)\.html(?:#(\w+))?$', target)
+            if apidoc_match:
+                c_name = apidoc_match.group(1)
+                fragment = apidoc_match.group(2)
+                c_key = c_name.lower()
+                target_cat = None
+                
+                # Check parsed classes if populated
+                for parsed_c_name, parsed_c_data in classes.items():
+                    if parsed_c_name.lower() == c_key:
+                        target_cat = parsed_c_data['category']
+                        c_name = parsed_c_name
+                        break
+                        
+                if target_cat:
+                    res_url = f"../apidoc/classes/{target_cat}/{c_name.lower()}.qmd"
+                else:
+                    # Fallbacks
+                    if c_key in ["treelist", "saplinglist", "deadtreelist", "stand", "activity", "agent", "schedule"]:
+                        res_url = f"../apidoc/classes/abe/{c_key}.qmd"
+                    else:
+                        res_url = f"../apidoc/classes/iland/{c_key}.qmd"
+                if fragment:
+                    res_url += f"#{fragment.lower()}"
+                return f"[{label}]({res_url})"
+                
+            # general wiki pages or root links on iland-model.org
+            wiki_match = re.match(r'^(?:https?://(?:www\.)?iland-model\.org)?/([^?\s#]+)(?:#([^\s]*))?$', target)
+            if wiki_match:
+                page = wiki_match.group(1)
+                fragment = wiki_match.group(2)
+                page_clean = page.replace('+', '-').replace('%20', '-').lower()
+                
+                if page_clean == 'bite':
+                    res_url = "index.qmd"
+                    if fragment:
+                        res_url += f"#{fragment.lower()}"
+                    return f"[{label}]({res_url})"
+                    
+                if page_clean.startswith('bite/'):
+                    bite_page = page_clean[5:]
+                    res_url = "index.qmd" if (not bite_page or bite_page == 'index') else f"{bite_page}.qmd"
+                    if fragment:
+                        res_url += f"#{fragment.lower()}"
+                    return f"[{label}]({res_url})"
+                    
+                # check existing wiki file
+                wiki_dir = os.path.join(SCRIPT_DIR, "../wiki")
+                qmd_path = os.path.join(wiki_dir, f"{page_clean}.qmd")
+                if os.path.exists(qmd_path):
+                    res_url = f"../wiki/{page_clean}.qmd"
+                    if fragment:
+                        res_url += f"#{fragment.lower()}"
+                    return f"[{label}]({res_url})"
+                    
+            # general root link fallback
+            if target in ["https://iland-model.org", "https://iland-model.org/"]:
+                return f"[{label}](../index.qmd)"
+                
+            return match.group(0)
+
+        content = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', resolve_other_links, content)
+
+        # 1.6. Translate `<https://iland-model.org/...>` autolinks
+        def autolink_repl(match):
+            url = match.group(1).strip('\\')
+            # Match apidoc classes
+            apidoc_match = re.match(r'^(?:https?://(?:www\.)?iland-model(?:\.org)?)?/?apidoc/classes/(\w+)\.html(?:#(\w+))?$', url)
+            if apidoc_match:
+                c_name = apidoc_match.group(1)
+                fragment = apidoc_match.group(2)
+                c_key = c_name.lower()
+                target_cat = None
+                for parsed_c_name, parsed_c_data in classes.items():
+                    if parsed_c_name.lower() == c_key:
+                        target_cat = parsed_c_data['category']
+                        c_name = parsed_c_name
+                        break
+                if target_cat:
+                    res_url = f"../apidoc/classes/{target_cat}/{c_name.lower()}.qmd"
+                else:
+                    if c_key in ["treelist", "saplinglist", "deadtreelist", "stand", "activity", "agent", "schedule"]:
+                        res_url = f"../apidoc/classes/abe/{c_key}.qmd"
+                    else:
+                        res_url = f"../apidoc/classes/iland/{c_key}.qmd"
+                if fragment:
+                    res_url += f"#{fragment.lower()}"
+                return f"[{c_name}]({res_url})"
+            
+            # Match wiki pages
+            wiki_match = re.match(r'^(?:https?://(?:www\.)?iland-model\.org)?/([^?\s#]+)(?:#([^\s]*))?$', url)
+            if wiki_match:
+                page = wiki_match.group(1)
+                fragment = wiki_match.group(2)
+                page_clean = page.replace('+', '-').replace('%20', '-').lower()
+                
+                # Check existing wiki file
+                wiki_dir = os.path.join(SCRIPT_DIR, "../wiki")
+                qmd_path = os.path.join(wiki_dir, f"{page_clean}.qmd")
+                if os.path.exists(qmd_path):
+                    res_url = f"../wiki/{page_clean}.qmd"
+                    if fragment:
+                        res_url += f"#{fragment.lower()}"
+                    label = page_clean.replace('-', ' ').title()
+                    return f"[{label}]({res_url})"
+            return match.group(0)
+            
+        content = re.sub(r'<([^<>]+)>', autolink_repl, content)
+        
         # 2. Resolve image paths:
         # e.g. ![Bite](img/bite_overview.png ':size=600') -> ![Bite](/img/bite_overview.png){width=600px}
         def img_repl(match):

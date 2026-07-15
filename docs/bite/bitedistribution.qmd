@@ -18,7 +18,7 @@ loaded, then the internal grid is set to 1 on all cells.
 
 ## Properties
 
-* ### `grid` [Grid](https://iland-model.org/apidoc/classes/Grid.html)
+* ### `grid` [Grid](../apidoc/classes/iland/grid.qmd)
 The internal dispersal grid (see also `dispersalGrid` variable). 
 
 

@@ -6,8 +6,10 @@ deploy
 *.pdb
 *.a
 .Rproj.user
+/src/ilandc/*.stash
 project_file.xml
 .qtc_clangd
+/src/ilandc/Makefile
 build/
 .DS_Store
 _site
