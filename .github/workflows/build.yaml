@@ -29,14 +29,26 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v3
         with:
-          version: '6.11.1'
+          version: '6.11.0'
           modules: 'qtcharts'
           arch: ${{ matrix.os == 'windows-latest' && 'win64_msvc2022_64' || '' }}
 
+       # patch for macos -> necessary up to 6.11.0
+       - name: Patch Qt Header for macOS arm64 (QTBUG-145239 Workaround)
+        if: matrix.os == 'macos-latest'
+        run: |
+          HEADER_PATH="$Qt6_DIR/lib/QtCore.framework/Headers/qyieldcpu.h"
+          if [ -f "$HEADER_PATH" ]; then
+            echo "Patching $HEADER_PATH"
+            sed -i '' '1s/^/#include <arm_acle.h>\n/' "$HEADER_PATH"
+          else
+            echo "Warning: $HEADER_PATH not found"
+          fi
+          
       # --- dependencies ---
       - name: Install FreeImage (Linux)
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y libfreeimage-dev
+        run: sudo apt-get update && sudo apt-get install -y libfreeimage-dev libxcb-cursor0
 
       - name: Install FreeImage (macOS)
         if: runner.os == 'macOS'
