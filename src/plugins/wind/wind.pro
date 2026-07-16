@@ -7,13 +7,6 @@ TEMPLATE      = lib
 CONFIG       += plugin static
 CONFIG += exceptions
 
-# make sure to remove AGL (build with 6.8 in July 2026 - probably not necessary with >qt6.10
-macx {
-    LIBS -= -framework AGL
-    QMAKE_LIBS_OPENGL -= -framework AGL
-}
-
-
 INCLUDEPATH  += ../.. \
                 ../../tools \
                 ../../output \

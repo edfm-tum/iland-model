@@ -184,11 +184,6 @@ win32 {
 #QMAKE_CXXFLAGS_RELEASE += -Zi
 #QMAKE_LFLAGS_RELEASE += /DEBUG /OPT:REF /OPT:ICF
 
-# make sure to remove AGL (build with 6.8 in July 2026 - probably not necessary with >qt6.10
-macx {
-    LIBS -= -framework AGL
-    QMAKE_LIBS_OPENGL -= -framework AGL
-}
 
 # This is the UI version of iLand!
 DEFINES += ILAND_GUI
