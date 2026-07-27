@@ -31,14 +31,14 @@ jobs:
         with:
           # Use 6.8.3 for Windows and Linux, and 6.11.1 for macOS (required for Xcode/Clang compatibility)
           version: ${{ matrix.os == 'macos-latest' && '6.11.1' || '6.8.3' }}
-          modules: ${{ matrix.os == 'ubuntu-latest' && 'qtcharts qtwayland' || 'qtcharts' }}
+          modules: 'qtcharts'
           arch: ${{ matrix.os == 'windows-latest' && 'win64_msvc2022_64' || '' }}
 
           
       # --- dependencies ---
-      - name: Install FreeImage (Linux)
+      - name: Install Dependencies (Linux)
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y libfreeimage-dev libxcb-cursor0
+        run: sudo apt-get update && sudo apt-get install -y libfreeimage-dev libxcb-cursor0 libwayland-dev libxkbcommon-dev
 
       - name: Install FreeImage (macOS)
         if: runner.os == 'macOS'
