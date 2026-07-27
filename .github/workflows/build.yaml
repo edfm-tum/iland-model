@@ -29,9 +29,9 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v3
         with:
-          # Use 6.8.3 for Windows to avoid missing packages, and 6.11.0 for Mac/Linux
-          version: ${{ matrix.os == 'windows-latest' && '6.8.3' || '6.11.1' }}
-          modules: 'qtcharts'
+          # Use 6.8.3 for Windows and Linux, and 6.11.1 for macOS (required for Xcode/Clang compatibility)
+          version: ${{ matrix.os == 'macos-latest' && '6.11.1' || '6.8.3' }}
+          modules: ${{ matrix.os == 'ubuntu-latest' && 'qtcharts,qtwayland' || 'qtcharts' }}
           arch: ${{ matrix.os == 'windows-latest' && 'win64_msvc2022_64' || '' }}
 
           
@@ -119,13 +119,17 @@ jobs:
           # Keep only the SQLite driver; delete all others (Mimer, ODBC, PostgreSQL, etc.) to prevent ldd failures
           find $QT_DIR/plugins/sqldrivers/ -type f -not -name 'libqsqlite.so' -delete
           
-          # 7. Run linuxdeployqt (including wayland plugins as extra executables to resolve their dependencies)
+          # 7. Run linuxdeployqt (pass wayland platform plugins as extra executables to bundle their dependencies)
+          EXTRA_EXEC=""
+          for p in AppDir/usr/plugins/platforms/libqwayland*.so; do
+            if [ -f "$p" ]; then
+              EXTRA_EXEC="$EXTRA_EXEC -executable=$p"
+            fi
+          done
+
           wget -c "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
           chmod a+x linuxdeployqt-continuous-x86_64.AppImage
-          ./linuxdeployqt-continuous-x86_64.AppImage AppDir/usr/bin/iland \
-            -executable=AppDir/usr/plugins/platforms/libqwayland-egl.so \
-            -executable=AppDir/usr/plugins/platforms/libqwayland-generic.so \
-            -appimage -unsupported-allow-new-glibc -qmldir=src/iland/qml
+          ./linuxdeployqt-continuous-x86_64.AppImage AppDir/usr/bin/iland $EXTRA_EXEC -appimage -unsupported-allow-new-glibc -qmldir=src/iland/qml
           
           # 8. Move final artifacts
           mv iLand*.AppImage deploy-linux/
