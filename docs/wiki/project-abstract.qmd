@@ -1,0 +1,31 @@
+---
+title: "project abstract"
+---
+
+*Note that this page is part of a collection of iLand history pages and does not necessarily represent the current state of model development!*
+
+
+
+
+## The abstract of the iLand research proposal
+
+
+<u>[**Climate change**](http://www.ipcc.ch/)</u> is a major challenge for sustainable forest management. Impacts on the disturbance regime are particularly relevant in this regard. In a sound science-based sustainable forest management/ ecosystem management approach potential changes in climate and disturbance regimes need to be considered explicitly. **Disturbance dynamics**, however, are still poorly understood especially in ecosystems with interacting, climate-sensitive disturbance agents. Currently, most available model approaches suffer either from a limited spatial extent to address large scale interacting disturbance regimes (i.e. stand models) or a coarse structural resolution with regard to the information needs in resource management (i.e. landscape models).
+The **objective** of the project is to bridge this gap in
+
+* developing an integrated, **individual-based landscape modeling framework**;
+* adopting **process-oriented**, climate sensitive disturbance modules and utilizing existing ecological understanding to model disturbance interactions, and
+* testing the behaviour of the model framework in two case studies in the **temperate forest biome**.
+
+To successfully address (interactions between) disturbances as <u>[**emerging property**](http://en.wikipedia.org/wiki/Complex_adaptive_system)</u> of the modeled system as well as to provide relevant levels of information in the context of SFEM an individual-based, process-oriented landscape modeling approach is proposed. The development will bring together recent advances in <u>[forest landscape modeling](http://www.landis-ii.org/)</u> with efficient algorithms of modeling individual-based tree competition and process-based production. Existing disturbance models for selected agents will be adopted focusing on interactions and climate sensitivity. The framework will be parameterized and evaluated for two cases studies in the Eastern Alps (Austria) and the Pacific Northwest (USA), focusing on wind - bark beetle and fire - bark beetle disturbance interactions respectively. Overall, the integrated modeling framework aims at contributing to questions of **sustainable forest management** under changing climate and disturbance regimes and facilitating a landscape perspective in forest resource management.
+
+
+
+
+## A word cloud of the iLand research proposal
+
+
+<img src="/img/iland_proposal_wordle_sm.jpg" alt="Image" width="600" class="img-fluid" />
+
+Word cloud created with [Wordle](http://www.wordle.net).
+

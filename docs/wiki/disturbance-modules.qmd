@@ -1,0 +1,61 @@
+---
+title: "disturbance modules"
+---
+
+
+
+## iLand modules
+
+
+The iLand core model includes the main processes like [growth], [mortality] and [regeneration]. Additional sub models are technically organized and bundles in "modules" or "plugins". Typical examples for such modules are disturbance agents like [wildfire] and [wind](wind-disturbance.qmd).
+Applying a "plugin" approach simplifies switching between different versions or types of sub modules and provides due to a clean separation between main model and modules an fairly easy way for third party contributors to add own sub modules to iLand.
+However, from a model user point of view, a module does not differ from the core iLand model: a section in the [project file](project-file.qmd) is specific for the module (including the *enabled* switch)).
+
+
+
+## list of modules
+
+
+
+* the [fire module](fire-module.qmd) simulates the ignition, spread and the impacts of [wildfire](wildfire.qmd) on the landscape scale
+* the [wind module](wind-module.qmd) simulates the disturbance agent wind on landscape level
+* the [barkbeetle module](barkbeetle-module.qmd) simulates spruce bark beetles (*Ips typographus*)
+* the [biotic disturbance engine (BITE](bite.qmd)) provides a general framework for simulating biotic disturbances
+
+A special disturbance module in iLand is [BITE](bite.qmd) (the BIotic disTurbance Engine). BITE is a general model to simulate biotic disturbances in forest ecosystems. It is a modular and simple model that is general enough to simulate a wide range of biotic disturbance agents, from fungi to large mammals. The [BITE] page contains information about how to use BITE in iLand.
+
+
+
+## Setting module specific settings
+
+
+The [project file](project-file.qmd) contains a special section (*modules*) that contains options for each module in a sub section. See the documentation of the respective module for details. Each subsection provides at least an *enabled* switch, e.g. *modules.fire.enabled* is used to toggle on/off the [fire module](fire-module.qmd).
+
+
+
+## Module specific outputs
+
+
+Modules may include specific outputs similar to core iLand [organizing outputs](organizing-outputs.qmd). Like iLand core outputs, settings for module specific outputs are located in the *output* section. Again, details can be found in the module documentations.
+
+
+
+## implementation details
+
+
+Modules are 'activated' or run once a year. This happens late in the [simulation sequence](simulation-sequence.qmd), immediately before aggregating final stand statistics. If more than one modules is active, for each year the sequence of module activation is randomly varied and applied for the whole landscape.
+
+ 
+
+
+
+## technical implementation details
+
+
+The implementation of 'modules' in iLand is heavily based on the [plugin mechanism of Qt](http://doc.qt.nokia.com/4.7/qpluginloader.html) and the use of interface classes in C++. Currently, all available modules are linked statically into the main executable of iLand and optionally enabled.
+A module has three main entry points (defined in the *DisturbanceInterface*)
+
+* *setup()*: general setup of the module. The function is called after the model space is allocated but before initialization. Another interface function (*setupResourceUnit()*) (installed by adding the *SetupResourceUnitInterface*) can be used to handle specific setup per resource unit. This allows using the [environment file mechanism](simulation-extent.qmd).
+* *beginYear()*: is invoked at the beginning of every year - the dedicated slot to do some cleanup/setup.
+* *run()*: the main function of the module (see also above)
+ 

@@ -1,0 +1,47 @@
+---
+title: "iLand status report"
+date: "2011-04-09"
+author: "Rupert Seidl"
+---
+
+Hello world, hard to believe that two years have passed already since we started on this [modeling endeavor](../wiki/project-abstract.qmd). This also means that I (Rupert) am on my way back to Europe after two years in the Pacific Northwest – two truly great years, full of amazing people, forests, and ideas. I thus wanted to take this opportunity to share a bit more information about the current status of [iLand](../wiki/iland.qmd).
+
+The model currently
+
+* simulates individual tree ***regeneration***, ***growth ***and ***mortality ***in a process-based manner
+* scales seamlessly from the level of individual trees to ***landscapes ***(currently tested up to 10^4 ha)
+* simulates ***carbon***, ***nitrogen ***and ***water ***cycles (currently implemented at a resolution of 100m)
+* includes ***management ***and ***disturbance ***via a flexible [java script interface](index.qmd) (currently, those are modeled deterministically in the system, i.e. disturbance regime and landscape scale management allocation and patterns are not yet an emerging property of the simulation)
+
+
+For model testing, the hierarchical multi-scale approach taken in iLand proved to be highly useful, overcoming the frequent limitations of landscape models with regard to evaluation against empirical data. In a multi-criteria evaluation of iLand, we successfully tested the model against
+
+* tree growth and mortality in old-growth forest ecosystems of the Western Cascades in Oregon, using ***long-term vegetation data*** (at the individual tree level)
+* carbon compartments and stocks of the same long-term vegetation plots (stand level)
+* [forest inventory and analysis data](http://www.fia.fs.fed.us/) for ***stand productivity*** over a wide ecological gradient in Oregon and Austria (stand level)
+* [gradient nearest neighbor maps](http://www.fsl.orst.edu/lemma/main.php?project=method&id=home) of ***species distribution*** for a 6400 ha Western Cascades landscape (landscape level)
+* gradient nearest neighbor estimates of (wall-to-wall) ***stand structure*** for the same landscape (stand to landscape level)
+* indices of ***canopy complexity*** derived from [Lidar](http://en.wikipedia.org/wiki/LIDAR) (stand to landscape level)
+* aboveground ***carbon maps*** derived from Lidar (stand to landscape level)
+
+
+Based on these promising evaluation results, we are currently in the process of applying iLand to questions of landscape complexity and disturbance history at the [HJ Andrews experimental forest](http://andrewsforest.oregonstate.edu/) (for the bigger picture and some hypotheses, see [here](http://andrewsforest.oregonstate.edu/pubs/grants/lter/lter6.cfm?topnav=120)). More specifically, we’re aiming to use the model to
+
+* disentangle the functional importance and role of ***landscape heterogeneity*** (e.g. on ecosystem C exchange and storage)
+* address the effects of ***disturbances***, and particularly long-term disturbance ***legacies***, on structure and functioning of forest landscapes
+
+Here are some screenshots of the 6400ha HJ Andrews landscape simulated with iLand:
+
+<img src='/img/iLand_HJA_year1500.jpg' border='0' alt='image' width=700/>
+<img src='/img/iLand_HJA_year1840.jpg' border='0' alt='image' width=700/>
+<img src='/img/iLand_HJA_year2000.jpg' border='0' alt='image' width=700/>
+***Figure:*** Three screenshots of a 500 year iLand simulation for the 6400ha HJ Andrews watershed. *Top panel:* after a landscape scale high severity fire event around year 1500. *Middle panel:* before the fire period of the mid 19th century. *Lower panel:* in the year 2000, after a period of patch clear-cutting.
+
+
+Model development in the last year of the project will focus in particular of implementing process-oriented disturbance modules in order to simulate disturbance dynamics, and particularly the interaction between disturbances, as emerging property of the model. To that end we will
+
+* adopt an existing ***fire*** model tested and established for the Pacific Northwest
+* adopt a previously developed ***bark beetle*** model for the European spruce bark beetle (see [here](http://dx.doi.org/10.1016/j.ecolmodel.2007.04.002) for more details)
+* look into process-based ***wind ***disturbance models for incorporation into iLand, such as [WINDA](http://dx.doi.org/10.1016/j.ecolmodel.2003.10.009)
+
+So quite a lot going on, on the ‘[iLand](http://upload.wikimedia.org/wikipedia/commons/8/8c/Maui_panorama.jpg)’, as you can see… stay tuned to read about our [results](../wiki/iland-publications.qmd), and hear more [news](index.qmd) from the landscape modeling frontier!

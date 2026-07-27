@@ -1,0 +1,49 @@
+---
+title: "ABE activity scheduled"
+---
+
+ The “Scheduled” activity is a general purpose activity that makes use of the ABE Scheduler. The activity defines two phases: in the first phase ($onEvalulate$) trees are selected for removal, and in the second phase ($onExecute$) the planned harvest is executed. The timing of the execution is controlled by the ABE Scheduler.
+
+
+| **Property** | **Description** |
+| --- | --- |
+| onEvaluate | Javascript function that typically selects a population of trees to be harvested, using the management API (the *simulate*-property of the activity is true). If the function returns true, the activity is passed to the Scheduler for future execution. If the function returns false, the activity is canceled. |
+| onExecute | If onExecute is omitted, the default behaviour is to remove all trees that are marked for removal in the onEvaluate function. This default is overridden, if a function is provided. |
+
+
+The code below shows an example use of a scheduled activity used for a final cut.
+
+
+```javascript
+var a_clearcut =  { type: "scheduled",
+					schedule: { minRel: 0.90, optRel: 1, maxRel: 1.15, force: true },
+					onEvaluate: function(){
+                      trees.loadAll();
+                      if (stp.options.dbh!=undefined) {
+                          trees.harvest("dbh>" + stp.options.dbh );
+                          fmengine.log("clearcut: using threshold: " + stp.options.dbh );
+                      } else {
+                          trees.harvest("dbh>5");
+                      }
+                      return true; },
+					onExecute: function() {
+													trees.removeMarkedTrees(); // but do the same thing as the default operation
+												  },
+					onCreate: function() { activity.finalHarvest=true; }
+					};
+```
+
+
+The code snipped demostrates several concepts used by ABE:
+
+* the execution time of the activity is defined as 90% to 115% of the rotation period of the stand. The $force$ flag indicates that the activity does not expire (if, e.g., constraints prevent execution prior to the maximum of 115%)
+* the $onEvaluate$ function uses the Javascript object 'trees' to fetch all trees for of the stand, and applies an optional filter (i.e., harvest only trees with dbh>5 cm, when the stand treatment program defines that option). As it is a scheduled activity, calling harvest function s (e.g., *trees.harvest()* do not immediately harvest trees, but only mark those trees for later processing (in the *onExecute()* function)
+* the *onExecute* event is executed, when the ABE scheduler selects the stand for execution. The function actually harvests the previously selected trees (note that this is the default behavior, if the event handler is not specified).
+* The *onCreate* event is triggered once when the activity is created; here an option of the activity (*finalHarvest*) is set to 'true', which tells ABE that  a new rotation period starts after successfully executing the activity.
+
+
+
+::: {.callout-note title="citation"}
+[Rammer, W., Seidl, R., 2015](http://dx.doi.org/10.1016/j.gloenvcha.2015.10.003). Coupling human and natural systems: Simulating adaptive management agents in dynamically changing forest landscapes. Global Environmental Change, 35, 475-485.
+:::
+

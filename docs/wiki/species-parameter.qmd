@@ -1,0 +1,475 @@
+---
+title: "species parameter"
+---
+
+
+Species parameter are defined for each species in the input database. The *Name* of the variables is the name of the columns in the database. The *Short* name is the abbreviation used on the wiki pages and iLand related papers. iLand uses a [SQLite database](software-tools.qmd) for the species parameters. The parameters need to be provided in a table specified in the [project file](project-file.qmd); each tree species occupies a row in that table. iLand loads all species that are in the table and are 'active' (see below).
+
+
+<table class="wikitable table table-striped table-hover">
+	<tbody>
+		<tr>
+			<td class="wikicell">**Name**</td>
+			<td class="wikicell">**Short**</td>
+			<td class="wikicell">**Description**</td>
+			<td class="wikicell">**Example**</td>
+		</tr>
+		<tr>
+			<td class="wikicell" colspan="4">**General**</td>
+		</tr>
+		<tr>
+			<td class="wikicell">shortName</td>
+			<td class="wikicell"> </td>
+			<td class="wikicell">unique identifier for a species</td>
+			<td class="wikicell">piab</td>
+		</tr>
+		<tr>
+			<td class="wikicell">name</td>
+			<td class="wikicell"> </td>
+			<td class="wikicell">descriptive (longer) name of a species</td>
+			<td class="wikicell">Picea Abies</td>
+		</tr>
+		<tr>
+			<td class="wikicell">displayColor</td>
+			<td class="wikicell"> </td>
+			<td class="wikicell">color used for drawing trees. The color is defined as a 6-character hexadecimal color in the form 'rrggbb' (red, green, blue, without a # character).</td>
+			<td class="wikicell">3E9C49</td>
+		</tr>
+		<tr>
+			<td class="wikicell">active</td>
+			<td class="wikicell"> </td>
+			<td class="wikicell">flag that allows to disable a species. Disabled species are not loaded into iLand</td>
+			<td class="wikicell">1=enabled, 0=disableld</td>
+		</tr>
+		<tr>
+			<td class="wikicell">LIPFile</td>
+			<td class="wikicell"> </td>
+			<td class="wikicell">filename of the binary LIP (light influence pattern) file. See also [Path](filenames-and-paths.qmd), [LightInfluencePattern](individual-tree-light-availability.qmd)</td>
+			<td class="wikicell">piab.bin</td>
+		</tr>
+		<tr>
+			<td class="wikicell">isConiferous</td>
+			<td class="wikicell"> </td>
+			<td class="wikicell">0 for broadleaved species, 1 for conifers</td>
+			<td class="wikicell">1</td>
+		</tr>
+		<tr>
+			<td class="wikicell">isEvergreen</td>
+			<td class="wikicell"> </td>
+			<td class="wikicell">1 for wintergreen species</td>
+			<td class="wikicell">0</td>
+		</tr>
+		<tr>
+			<td class="wikicell" colspan="4">**Growth**</td>
+		</tr>
+		<tr>
+			<td class="wikicell">specificLeafArea</td>
+			<td class="wikicell">SLA</td>
+			<td class="wikicell">Factor to calculate LeafArea from Foliage Biomass (LA=FoliageMass*specificLeafArea)</td>
+			<td class="wikicell">5</td>
+		</tr>
+		<tr>
+			<td class="wikicell">turnoverLeaf</td>
+			<td class="wikicell">$\gamma_f$</td>
+			<td class="wikicell">Senescence factor of foliage. The yearly senescence is Mass*turnover. See also [allocation](allocation.qmd).</td>
+			<td class="wikicell">0.2</td>
+		</tr>
+		<tr>
+			<td class="wikicell">turnoverRoot</td>
+			<td class="wikicell">$\gamma_r$</td>
+			<td class="wikicell">senescence factor for fine roots. See also [allocation](allocation.qmd).</td>
+			<td class="wikicell">0.05</td>
+		</tr>
+		<tr>
+			<td class="wikicell">HDLow</td>
+			<td class="wikicell">hd<sub>min</sub></td>
+			<td class="wikicell">[expression](expression.qmd) lower bound of height to diameter ratios (i.e., open-grown trees). typical HD-ratios: 50-150. See also [stem growth](stem-growth.qmd).</td>
+			<td class="wikicell">max(40,80-8*sqrt(d))</td>
+		</tr>
+		<tr>
+			<td class="wikicell">HDhigh</td>
+			<td class="wikicell">hd<sub>max</sub></td>
+			<td class="wikicell">[expression](expression.qmd) upper bound of height to diameter ratio (for trees under heavy competition for light). typical HD-ratios: 50-150. See also [stem growth](stem-growth.qmd).</td>
+			<td class="wikicell">max(80,120-12*sqrt(d))</td>
+		</tr>
+		<tr>
+			<td class="wikicell">woodDensity</td>
+			<td class="wikicell">ρ</td>
+			<td class="wikicell">density of the stemwood (kg/m3) (used for calculating the tree volume). See also [stem growth](stem-growth.qmd).</td>
+			<td class="wikicell">300</td>
+		</tr>
+		<tr>
+			<td class="wikicell">formFactor</td>
+			<td class="wikicell">φ</td>
+			<td class="wikicell">taper factor of the stem (-) (used for calculating the tree volume).See also [stem growth](stem-growth.qmd).</td>
+			<td class="wikicell">0.3</td>
+		</tr>
+		<tr>
+			<td class="wikicell" colspan="4">**Biomass Compartments**</td>
+		</tr>
+		<tr>
+			<td class="wikicell">bmWoody_a</td>
+			<td class="wikicell">kW<sub>1</sub></td>
+			<td class="wikicell">Parameter a of the allometric equation for stem wood biomass.</td>
+			<td class="wikicell">0.03</td>
+		</tr>
+		<tr>
+			<td class="wikicell">bmWoody_b</td>
+			<td class="wikicell">kW<sub>2</sub></td>
+			<td class="wikicell">Parameter b of the allometric equation for stem wood biomass.</td>
+			<td class="wikicell">2.75</td>
+		</tr>
+		<tr>
+			<td class="wikicell">bmFoliage_a</td>
+			<td class="wikicell">kW<sub>3</sub></td>
+			<td class="wikicell">Parameter a of the allometric equation for foliage biomass.</td>
+			<td class="wikicell">0.069</td>
+		</tr>
+		<tr>
+			<td class="wikicell">bmFoliage_b</td>
+			<td class="wikicell">kW<sub>4</sub></td>
+			<td class="wikicell">Parameter b of the allometric equation for foliage biomass.</td>
+			<td class="wikicell">1.56</td>
+		</tr>
+		<tr>
+			<td class="wikicell">bmRoot_a</td>
+			<td class="wikicell"> </td>
+			<td class="wikicell">Parameter a of the allometric equation for coarse root biomass.</td>
+			<td class="wikicell">0.004</td>
+		</tr>
+		<tr>
+			<td class="wikicell">bmRoot_b</td>
+			<td class="wikicell"> </td>
+			<td class="wikicell">Parameter b of the allometric equation for coarse root biomass.</td>
+			<td class="wikicell">2.79</td>
+		</tr>
+		<tr>
+			<td class="wikicell">bmBranch_a</td>
+			<td class="wikicell">kW<sub>5</sub></td>
+			<td class="wikicell">Parameter a of the allometric equation for branch biomass.]</td>
+			<td class="wikicell">0.022</td>
+		</tr>
+		<tr>
+			<td class="wikicell">bmBranch_b</td>
+			<td class="wikicell">kW<sub>6</sub></td>
+			<td class="wikicell">Parameter b of the allometric equation for branch biomass</td>
+			<td class="wikicell">2.3</td>
+		</tr>
+		<tr>
+			<td class="wikicell">finerootFoliageRatio</td>
+			<td class="wikicell">p<sub>r</sub></td>
+			<td class="wikicell">the size of the fine root pool is defined relative to the size of the foliage pool (functional balance), i.e. fineRoots = poolsize foliage * finerootFoliageRatio.</td>
+			<td class="wikicell">1</td>
+		</tr>
+		<tr>
+			<td class="wikicell">cnFoliage</td>
+			<td class="wikicell">CN<sub>fol</sub></td>
+			<td class="wikicell">C/N ratio of foliage</td>
+			<td class="wikicell">75</td>
+		</tr>
+		<tr>
+			<td class="wikicell">cnFineroot</td>
+			<td class="wikicell">CN<sub>fr</sub></td>
+			<td class="wikicell">C/N ratio of fine roots</td>
+			<td class="wikicell">40</td>
+		</tr>
+		<tr>
+			<td class="wikicell">cnWood</td>
+			<td class="wikicell">CN<sub>w</sub></td>
+			<td class="wikicell">C/N ratio of woody tissues (branches, stem, coarse roots)</td>
+			<td class="wikicell">300</td>
+		</tr>
+		<tr>
+			<td class="wikicell">barkThickness</td>
+			<td class="wikicell"> </td>
+			<td class="wikicell">factor to calculate thickness of the bark (cm): thickness = dbh * barkThickness (see [wildfire](wildfire.qmd) ).</td>
+			<td class="wikicell">0.065</td>
+		</tr>
+		<tr>
+			<td class="wikicell" colspan="4">**Mortality**</td>
+		</tr>
+		<tr>
+			<td class="wikicell">probIntrinsic</td>
+			<td class="wikicell">p<sub>lucky</sub></td>
+			<td class="wikicell">probability of a tree to survive "maximumAge" years. See [base mortality](base-mortality.qmd). A value of 0.01 = 1%.</td>
+			<td class="wikicell">0.01</td>
+		</tr>
+		<tr>
+			<td class="wikicell">probStress</td>
+			<td class="wikicell">b<sub>s</sub></td>
+			<td class="wikicell">factor b_s (see [base mortality](base-mortality.qmd)) that determines the probability of death based based on a stress index (use values &gt;0).</td>
+			<td class="wikicell">6</td>
+		</tr>
+		<tr>
+			<td class="wikicell" colspan="4">**Aging**</td>
+		</tr>
+		<tr>
+			<td class="wikicell">maximumAge</td>
+			<td class="wikicell">A<sub>max</sub></td>
+			<td class="wikicell">indicates a maximum age for a species. Note that trees can grow older than this value in the model - this parameter is only used to determine aging and mortality probability and is not a deterministic cutoff age. See [base mortality](base-mortality.qmd) and [primary production](primary-production.qmd)</td>
+			<td class="wikicell">600</td>
+		</tr>
+		<tr>
+			<td class="wikicell">maximumHeight</td>
+			<td class="wikicell">H<sub>max</sub></td>
+			<td class="wikicell">indicates a maximum height for a species. Note that trees can grow taller than this value in the model - this parameter is only used to determine aging and mortality probability and is not a deterministic cutoff height. See [base mortality](base-mortality.qmd) and [expression](expression.qmd)</td>
+			<td class="wikicell">60</td>
+		</tr>
+		<tr>
+			<td class="wikicell">aging</td>
+			<td class="wikicell">f<sub>a</sub></td>
+			<td class="wikicell">used to calculate the decline in production efficiency with "age" (pysiological and/ or based on max. height growth). See [primary production](primary-production.qmd)</td>
+			<td class="wikicell">1/(1+(x/0.9)3)</td>
+		</tr>
+		<tr>
+			<td class="wikicell" colspan="4">**Environmental Responses**</td>
+		</tr>
+		<tr>
+			<td class="wikicell">lightResponseClass</td>
+			<td class="wikicell">kS</td>
+			<td class="wikicell">determines shade tolerance / efficiency to use low light levels, where 1=very light-demanding, and 5 is very shade tolerant. Floating point values are allowed. See the [project file](project-file.qmd) for the definition of the classes and the page on [individual tree light availability](individual-tree-light-availability.qmd).</td>
+			<td class="wikicell">3.4</td>
+		</tr>
+		<tr>
+			<td class="wikicell">respVpdExponent</td>
+			<td class="wikicell">kD</td>
+			<td class="wikicell">exponent in the calculation of growth response to vapor pressure deficit (resp=exp(respVpdExponen*vpd)), see [vapor pressure deficit response](vapor-pressure-deficit-response.qmd)</td>
+			<td class="wikicell">-0.5</td>
+		</tr>
+		<tr>
+			<td class="wikicell">respTempMin</td>
+			<td class="wikicell">kT{sub}</td>
+			<td class="wikicell">Lower threshold temperature for tree growth. See [temperature response](temperature-response.qmd)</td>
+			<td class="wikicell">-2</td>
+		</tr>
+		<tr>
+			<td class="wikicell">respTempMax</td>
+			<td class="wikicell">kT<sub>1</sub></td>
+			<td class="wikicell">Optimum temperature for tree growth. See [temperature response](temperature-response.qmd)</td>
+			<td class="wikicell">17</td>
+		</tr>
+		<tr>
+			<td class="wikicell">respNitrogenClass</td>
+			<td class="wikicell">k<sub>N</sub></td>
+			<td class="wikicell">Nitrogen response class. Value must be &gt;=1 and &lt;=3. 3= highly nitrogen-demanding, 1= efficient with low available nitrogen. Response values are interpolated between classes (see [project file](project-file.qmd) for class definition and the page on [nitrogen response](nitrogen-response.qmd)).</td>
+			<td class="wikicell">2.2</td>
+		</tr>
+		<tr>
+			<td class="wikicell">phenologyClass</td>
+			<td class="wikicell"> </td>
+			<td class="wikicell">link to a phenology class. 0= evergreen coniferous, 1= deciduous broadleaved, 2= deciduous coniferous. See [project file](project-file.qmd) for details as well as the page on [phenology](phenology.qmd).</td>
+			<td class="wikicell">0</td>
+		</tr>
+		<tr>
+			<td class="wikicell">maxCanopyConductance</td>
+			<td class="wikicell">gc<sub>max</sub></td>
+			<td class="wikicell">maximum conductance of the canopy for water. Used in the calculation of transpiration (m/s)</td>
+			<td class="wikicell">0.02</td>
+		</tr>
+		<tr>
+			<td class="wikicell">psiMin</td>
+			<td class="wikicell">$\Psi_{min}$</td>
+			<td class="wikicell">maximum soil water potential that a species can access (i.e. +/- a species' permanent wilting point), in MPa. See the page on [soil water response](soil-water-response.qmd)</td>
+			<td class="wikicell">-1.5</td>
+		</tr>
+		<tr>
+			<td class="wikicell" colspan="4">**Seed production / dispersal**</td>
+		</tr>
+		<tr>
+			<td class="wikicell">maturityYears</td>
+			<td class="wikicell">a<sub>mat</sub></td>
+			<td class="wikicell">minimum age required for a tree to produce seeds (years)</td>
+			<td class="wikicell">30</td>
+		</tr>
+		<tr>
+			<td class="wikicell">seedYearInterval</td>
+			<td class="wikicell">a<sub>seed</sub></td>
+			<td class="wikicell">Interval between seed years. Each year has a probability of 1/seedYearInterval that a year is a seed year. This is calculated once per species and year, and applies for the entire landscape (years).</td>
+			<td class="wikicell">5</td>
+		</tr>
+		<tr>
+			<td class="wikicell">nonSeedYearFraction</td>
+			<td class="wikicell">p<sub>nsy</sub></td>
+			<td class="wikicell">fraction of the seed production in non-seed-years.</td>
+			<td class="wikicell">0.25</td>
+		</tr>
+		<tr>
+			<td class="wikicell">fecundity_m2</td>
+			<td class="wikicell"> </td>
+			<td class="wikicell">seedlings produced and surviving the first weeks per m² canopy cover (see also [fecundity](fecundity.qmd)).</td>
+			<td class="wikicell">100</td>
+		</tr>
+		<tr>
+			<td class="wikicell">seedKernel_as1</td>
+			<td class="wikicell">kK<sub>1</sub></td>
+			<td class="wikicell">dispersal kernel parameter, following [Lischke et al. (2006)](http://dx.doi.org/10.1016/j.ecolmodel.2005.11.046), see [dispersal](dispersal.qmd). The shape parameter for wind / ballistic dispersal (1-1/e = ~63% of wind dispersal is between 0 and *as1* meter). Find full equation [here](seed-kernel-and-seed-distribution.qmd)</td>
+			<td class="wikicell">100</td>
+		</tr>
+		<tr>
+			<td class="wikicell">seedKernel_as2</td>
+			<td class="wikicell">kK<sub>2</sub></td>
+			<td class="wikicell">dispersal kernel parameter, following [Lischke et al. (2006)](http://dx.doi.org/10.1016/j.ecolmodel.2005.11.046), see [dispersal](dispersal.qmd). Shape parameter for zoochorous dispersal (~63% of zoochorous dispersals are below *as2* meter)</td>
+			<td class="wikicell">0</td>
+		</tr>
+		<tr>
+			<td class="wikicell">seedKernel_ks0</td>
+			<td class="wikicell">kK<sub>3</sub></td>
+			<td class="wikicell">dispersal kernel parameter, following [Lischke et al. (2006)](http://dx.doi.org/10.1016/j.ecolmodel.2005.11.046), see [dispersal](dispersal.qmd). Proportion of zoochorous dispersal (0..1)</td>
+			<td class="wikicell">0</td>
+		</tr>
+		<tr>
+			<td class="wikicell">serotinyFormula</td>
+			<td class="wikicell"> </td>
+			<td class="wikicell" colspan="2">function that decides (probabilistic) if a tree is serotinous. The variable is the age of the tree, expected return is a number between 0 and 1. <br/><br/>empty: [serotiny](serotiny.qmd) not active</td>
+		</tr>
+		<tr>
+			<td class="wikicell">serotinyFecundity</td>
+			<td class="wikicell"> </td>
+			<td class="wikicell" colspan="2">multiplier that increases fecundity for post-fire seed rain of serotinous species</td>
+		</tr>
+		<tr>
+			<td class="wikicell" colspan="4">**Establishment**</td>
+		</tr>
+		<tr>
+			<td class="wikicell">estMinTemp</td>
+			<td class="wikicell">kE<sub>tmin</sub></td>
+			<td class="wikicell">absolute minimum temperature for seed survival (°C)</td>
+			<td class="wikicell">-39</td>
+		</tr>
+		<tr>
+			<td class="wikicell">estChillRequirement</td>
+			<td class="wikicell">kE<sub>chill</sub></td>
+			<td class="wikicell">number of required days since the end of the last vegetation period between -5°C and +5°C.</td>
+			<td class="wikicell">56</td>
+		</tr>
+		<tr>
+			<td class="wikicell">estGDDMin</td>
+			<td class="wikicell">kE<sub>GDDmin</sub></td>
+			<td class="wikicell">minimum threshold of growing degree days for seedling establishment (GDD must be &gt;GDDMin and &lt; GDDMax to allow establishment)</td>
+			<td class="wikicell">177</td>
+		</tr>
+		<tr>
+			<td class="wikicell">estGDDMax</td>
+			<td class="wikicell">kE<sub>GDDmax</sub></td>
+			<td class="wikicell">maximum threshold of growing degree days for seedling establishment (GDD must be &gt;GDDMin and &lt; GDDMax to allow establishment)</td>
+			<td class="wikicell">3261</td>
+		</tr>
+		<tr>
+			<td class="wikicell">estGDDBaseTemp</td>
+			<td class="wikicell">kE<sub>GDDbase</sub></td>
+			<td class="wikicell">base temperature (°C) for GDD calculation. GDD is the running sum of (mean daily temp - GDDBaseTemp) for all days with mean temp &gt; GDDBaseTemp.</td>
+			<td class="wikicell">4.3</td>
+		</tr>
+		<tr>
+			<td class="wikicell">estBudBirstGDD</td>
+			<td class="wikicell">kE<sub>GDDbb</sub></td>
+			<td class="wikicell">required GDD before bud burst. Calculation is similar to GDD described above, except that the counter is reset when mean daily temp is below 0°C</td>
+			<td class="wikicell">255</td>
+		</tr>
+		<tr>
+			<td class="wikicell">estFrostFreeDays</td>
+			<td class="wikicell">kE<sub>FF</sub></td>
+			<td class="wikicell">required number of days without frost (daily minimum temperature &gt; 0°C) in the year</td>
+			<td class="wikicell">65</td>
+		</tr>
+		<tr>
+			<td class="wikicell">estFrostTolerance</td>
+			<td class="wikicell">kE<sub>FT</sub></td>
+			<td class="wikicell">frost tolerance parameter for frost events after bud burst (*kF* in Eq.2 of [establishment](establishment.qmd)).</td>
+			<td class="wikicell">0.5</td>
+		</tr>
+		<tr>
+			<td class="wikicell">estPsiMin</td>
+			<td class="wikicell">$k\Psi_r$</td>
+			<td class="wikicell">minimum soil water potential for establishment; establishment probability is reduced linearly between $k\Psi_r$ (p=0), and field capacity (p=1, no limitation). Null or 0 disables soil water limitation.</td>
+			<td class="wikicell">0</td>
+		</tr>
+		<tr>
+			<td class="wikicell">estSOLthickness</td>
+			<td class="wikicell"> </td>
+			<td class="wikicell">effect of thickness of the soil organic layer on establishment probability. Multiplier calculated as exp( -estSOLthickness * SOLdepth [cm] ). Null or 0 disables effect.</td>
+			<td class="wikicell">0</td>
+		</tr>
+		<tr>
+			<td class="wikicell" colspan="4">**Sapling growth**</td>
+		</tr>
+		<tr>
+			<td class="wikicell">sapHeightGrowthPotential</td>
+			<td class="wikicell"> </td>
+			<td class="wikicell">[expression](expression.qmd) to calculate the maximum height of the sapling for the next timestep. see [sapling growth and competition](sapling-growth-and-competition.qmd). The first variable is interpreted as "height" (m).</td>
+			<td class="wikicell">40 * (1 - (1 - (h/40)^(1/3)) * exp(-0.1))^3</td>
+		</tr>
+		<tr>
+			<td class="wikicell">sapMaxStressYears</td>
+			<td class="wikicell">kM<sub>ra</sub></td>
+			<td class="wikicell">number of consecutive years a sapling can withstand stress. If stress exceeds this threshold, the sapling cohort dies.</td>
+			<td class="wikicell">3</td>
+		</tr>
+		<tr>
+			<td class="wikicell">sapStressThreshold</td>
+			<td class="wikicell">kM<sub>rs</sub></td>
+			<td class="wikicell">defines threshold for stress. If actual height increment / potential height increment is below sapStressThreshold, the sapling is stressed. The ratio equals therefore *f<sub>env,yr</sub> * f<sub>light</sub>*</td>
+			<td class="wikicell">0.1</td>
+		</tr>
+		<tr>
+			<td class="wikicell">sapHDSapling</td>
+			<td class="wikicell">hd<sub>sap</sub></td>
+			<td class="wikicell">Saplings in iLand have a fixed height-diameter ratio, sapHDSapling, which is used to derive a diameter from sapling height</td>
+			<td class="wikicell">80</td>
+		</tr>
+		<tr>
+			<td class="wikicell">sapReferenceRatio</td>
+			<td class="wikicell">f<sub>ref</sub></td>
+			<td class="wikicell">The empirically parameterized sapling height growth model (see sapHeightGrowthPotential) uses the same physiological modifiers as adult trees in iLand. The ratio (*f<sub>ref</sub>*) grants consistency between saplings and adult trees in iLand by specifying the physiological constraints for an optimal site (as specified in sapHeightGrowthPotential); This is used in [calculation](sapling-growth-and-competition.qmd) of *f<sub>env,yr</sub>*.</td>
+			<td class="wikicell">1</td>
+		</tr>
+		<tr>
+			<td class="wikicell">sapReinekesR</td>
+			<td class="wikicell">SDI<sub>sap</sub></td>
+			<td class="wikicell">Stem number estimates of regeneration cohorts are derived by means of an allometric relationship to diameter following Reinekes stem density index, with sapReinekesR being the maximum stem number for a dg of 25.4 cm. See [sapling growth and competition](sapling-growth-and-competition.qmd)</td>
+			<td class="wikicell">1450.</td>
+		</tr>
+		<tr>
+			<td class="wikicell">sapSproutGrowth</td>
+			<td class="wikicell"> </td>
+			<td class="wikicell">multiplier for accelerated height growth of resprouted tree cohorts in the regeneration layer. Resprouting is enabled, when the value of <code>sapSproutGrowth</code> is not empty and &gt;0. See [sprouts](sprouts.qmd).</td>
+			<td class="wikicell"> </td>
+		</tr>
+		<tr>
+			<td class="wikicell" colspan="4">**Snags and carbon dynamics**</td>
+		</tr>
+		<tr>
+			<td class="wikicell">snagKSW</td>
+			<td class="wikicell">k<sub>SWD</sub></td>
+			<td class="wikicell">snag decomposition rate (10°C, optimal moisture content), (see [snag dynamics](snag-dynamics.qmd) ).</td>
+			<td class="wikicell">0.015</td>
+		</tr>
+		<tr>
+			<td class="wikicell">snagHalfLife</td>
+			<td class="wikicell">hl</td>
+			<td class="wikicell">half life (years) used for calculation of transition probability from snag to downded woody debris as described in [snag dynamics](snag-dynamics.qmd)</td>
+			<td class="wikicell">10</td>
+		</tr>
+		<tr>
+			<td class="wikicell">snagKYL</td>
+			<td class="wikicell">k<sub>litter</sub></td>
+			<td class="wikicell">litter decomposition rate (10°C, optimal moisture content), (for the labile soil pool)</td>
+			<td class="wikicell">0.15</td>
+		</tr>
+		<tr>
+			<td class="wikicell">snagKYR</td>
+			<td class="wikicell">k<sub>DWD</sub></td>
+			<td class="wikicell">downed woody debris (dwd) decomposition rate (10°C, optimal moisture content), (for the refractory pool)</td>
+			<td class="wikicell">0.0807</td>
+		</tr>
+		<tr>
+			<td class="wikicell">browsingProbability</td>
+			<td class="wikicell"> </td>
+			<td class="wikicell">annual probability that saplings (up to 2m height) are browsed by game and ungulates. See [browsing](browsing.qmd).</td>
+			<td class="wikicell">0.1</td>
+		</tr>
+	</tbody>
+</table>
+
+
+ 

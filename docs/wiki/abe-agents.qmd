@@ -1,0 +1,20 @@
+---
+title: "ABE agents"
+---
+
+
+
+## Overview
+
+
+In ABE, all forest managers are represented by *Agents*. *Agents* are responsible for the management of a specific part of the landscape. Each Agent is of a certain *Agent Type*. An *Agent Type* corresponds to a manager archetype such as “farmer” or “forest company”, while an *Agent* represents an individual manager with specific properties, e.g., the agents’ age. The behavioural rules, i.e., how agents respond to changes in the environment, are defined at the level of agent types, but considering the individual agent properties. This allows creating a population of agents with varying behaviour since agent properties can be sampled from property distributions upon populating the landscape with agents.
+
+Some pre-defined agent properties affect aspects of ABE like the [scheduling](abe-scheduling.qmd) of management operations, while other properties can be freely used in the implementation of agent behavior. One important agent property is the list of feasible stand treatment programs [STPs](abe-stp.qmd)), which represent an agent’s silvicultural knowledge and thus constrains the silvicultural practices the agent is able to implement. Enabling different STPs for different *Agent Types* can, for instance, be used to differentiate the skill level between different agent types, e.g., professional foresters in large companies vs. small scale forest owners.
+
+The behavior of agents is defined within the -+run()+- function of an agent type. Within this function, the state of the affected forest stands and, in aggregated form, of the whole planning unit is available via special objects. Similarly, the properties of the agent are accessible via an agent object. Whenever a decision to alter an aspect of forest management is reached, special API functions of ABE can be facilitated to inform the system.
+
+
+::: {.callout-note title="citation"}
+[Rammer, W., Seidl, R., 2015](http://dx.doi.org/10.1016/j.gloenvcha.2015.10.003). Coupling human and natural systems: Simulating adaptive management agents in dynamically changing forest landscapes. Global Environmental Change, 35, 475-485.
+:::
+

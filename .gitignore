@@ -8,7 +8,10 @@ deploy
 .Rproj.user
 /src/ilandc/*.stash
 /src/ilandc/Makefile
-project_file.xml
 .qtc_clangd
+/src/ilandc/Makefile
 build/
 .DS_Store
+_site
+.obsidian/
+.Rhistory

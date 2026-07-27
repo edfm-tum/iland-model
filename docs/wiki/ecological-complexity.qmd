@@ -1,0 +1,19 @@
+---
+title: "ecological complexity"
+---
+
+When we talk about ecological complexity here on these iLand pages, and refer to forest ecosystems as [complex adaptive systems](http://en.wikipedia.org/wiki/Complex_adaptive_system), we mean characteristics such as
+
+* a high degree of **heterogeneity in time and space**. This means that, for instance, in a mountainous environment, conditions for trees and other organisms might change virtually every 100m, e.g. with regard to soil and climate. Also, the [variability between years](http://dx.doi.org/10.1890/08-0073.1), for instance in climate, has a strong effect on the non-linear processes in ecosystems.
+
+* they contain a large number of [diverse components](http://dx.doi.org/10.1126/science.1183506), or agents, that **interact nonlinearly**. Picture a forest, with all the living things in it, from lichens to trees, and microbes to cougars (depending on where you are), and their intricate interctions. And then, if you will, go even one level deeper, in recognizing that no two trees are exactly the same, and thus neither will be their interactions.
+
+* ecosystems have **delayed responses** and/or [feedback loops](http://en.wikipedia.org/wiki/Feedback). This means that changes, like those in climate, might not be visible at once in the ecosystem, as trees, for instance, are very long-lived and their rates of change are small (for us human observers). Eventually, changes in one agent, however, might also feed back on others, which has the potential to amplify (or dampen) effects. I.e. when trees react to changes (e.g. by growing less, or dieback), other organisms might be forced to change too.
+
+* ecosystems are **thermodynamically open**, i.e. they exchange mass and energy with their environment, and are no closed systems
+
+For more information see for instance [Loehle (2004)](http://dx.doi.org/10.1016/j.ecocom.2003.09.001), [Grimm et al. (2005)](http://dx.doi.org/10.1126/science.1116681), [Green and Sadedin (2005)](http://dx.doi.org/10.1016/j.ecocom.2004.11.006) or [Green et al. (2005)](http://tinyurl.com/4cdz86b).
+
+
+
+

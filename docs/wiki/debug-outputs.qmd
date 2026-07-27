@@ -1,0 +1,359 @@
+---
+title: "Debug Outputs"
+---
+
+
+
+# Debug outputs
+
+
+The so called *debug outputs* are - besides the database oriented [Outputs] and the direct visualization - the third type of data outputs available in iLand. Debug outputs are usually on a very detailed level and are typically used during development and for debugging purposes (hence the name). In addition, debug output data is available within the iLand viewer application and is linked to iLand objects (e.g., trees or resource units). Outputs are enabled/disabled from the *Debug Data* menu of the GUI or via the [project file] and the keys *system.settings.debugOutput* and *system.settings.debugOutputAutoSave*. If *debugOutputAutoSave* is true, the debug data is written to the *temp* directory as CSV files (;-separated). The behavior is modified by the *model.parameter.debug_clear* switch: if *true* the debug output will be written every year (if auto-save is enabled) and then deleted from the memory. This limits the additional memory footprint of debug outputs (which can be quite high for larger simulations).
+
+Note that these codes can also be combined, i.e. "12" will trigger the two debug outputs "tree growth" and "standlevel NPP".
+
+Debug outputs based on individual trees (Tree NPP, Tree partition, Tree growth) produce potentially huge amounts of data and are therefore filtered by default. Only trees that satisfy the condition provided by the setting *debug_tree* (see [#parameter](project-file.qmd) ) are allowed producing debug output data.
+
+The following codes trigger the respective debug outputs:
+
+
+### Tree NPP (1)
+
+
+This output details the calculation of a tree's gross and net primary production (GPP, NPP) for the year. It shows how the available resources and the tree's state translate into potential growth.
+
+
+| **Name** | **Description** |
+| --- | --- |
+| Id | unique tree Id (numeric) |
+| Species | 4-character species code (e.g. 'psme') |
+| Dbh | diamter at breast height (cm) |
+| Height | tree height (m) |
+| x | x-coordinate of the tree (index of the pixel on the 2m grid) |
+| y | y-coordinate of the tree (index of the pixel on the 2m grid) |
+| ru_index | index of the resource unit that hosts the tree |
+| LRI | light-resource-index of the tree |
+| mStemMass | biomass (kg) of the stem (biomass states before growth) |
+| mCoarseRootMass | biomass (kg) of the coarse roots |
+| mFoliageMass | biomass (kg) of the foliage |
+| mLeafArea | leaf area (m2) of the tree |
+| LRI_modified | The Light Resource Index after being modified by the resource unit's modifier (e.g., from water stress). |
+| light_response | The tree's physiological response (0-1) to the modified LRI. |
+| effective_area | The effective light-intercepting area of the tree (m2), considering its leaf area and light response. |
+| raw_gpp | The raw Gross Primary Production (kg biomass) for the tree before accounting for age-related decline. |
+| gpp | The final GPP (kg biomass) for the tree after applying the species-specific aging factor. |
+| npp | The Net Primary Production (kg biomass), calculated as GPP reduced by autotrophic respiration losses. |
+| aging_factor | The aging factor (0-1) applied to the tree, which reduces GPP based on its age and height. |
+
+
+
+
+### Tree partition (2)
+
+
+The output focuses on how NPP is split between the tree compartments.
+Biomass pools are given after growth (at the end of the year).
+
+
+| **Name** | **Description** |
+| --- | --- |
+| Id | unique tree Id (numeric) |
+| Species | 4-character species code (e.g. 'psme') |
+| Dbh | diamter at breast height (cm) |
+| Height | tree height (m) |
+| x | x-coordinate of the tree (index of the pixel on the 2m grid) |
+| y | y-coordinate of the tree (index of the pixel on the 2m grid) |
+| ru_index | index of the resource unit that hosts the tree |
+| LRI | light-resource-index of the tree |
+| mWoody | biomass (kg) of the stem (biomass states after growth) |
+| mRoot | biomass (kg) of the coarse roots |
+| mFoliage | biomass (kg) of the foliage |
+| LA | leaf area (m2) of the tree |
+| mFineroot | biomass (kg) of fine roots |
+| mBranch | biomass (kg) of the branches |
+| npp_kg | NPP (kg biomass) produced by the tree in this year (note that the state of the reserve pool is added interally for distribution, and that the reserve pool (with increased size) is substracted again) |
+| apct_foliage | allocation (0..1) to the foliage compartment |
+| apct_wood | fraction of NPP that goes into woody organs (this is: stem, branches, reserve) |
+| apct_root | fraction of NPP that is routed to the roots (coarse + fine roots) |
+| delta_foliage | net increment of foliage biomass (kg) |
+| delta_woody | net increment of woody compartments (stem and branches, flow to reserve already subtracted). |
+| delta_root | net increment (kg) of roots (fine + coarse) |
+| biomass_loss | biomass (kg) that is lost due to senescene (fine roots, foliage) and coarse root turnover |
+| mNPPReserve | amount of the NPP reserve at the end of the year (kg) |
+| netStemInc | biomass increment (kg) of the stem (branch increment: delta_woody - netStemInc) |
+| stress_index | Carbon balance based stress index (see [base mortality](base-mortality.qmd) ) |
+
+
+
+
+### Tree growth (4)
+
+
+This output details the calculation of the stem diameter and height increment based on the net stem NPP allocated for the year.
+
+
+| **Name** | **Description** |
+| --- | --- |
+| Id | unique tree Id (numeric) |
+| Species | 4-character species code (e.g. 'psme') |
+| Dbh | diamter at breast height (cm) |
+| Height | tree height (m) |
+| x | x-coordinate of the tree (index of the pixel on the 2m grid) |
+| y | y-coordinate of the tree (index of the pixel on the 2m grid) |
+| ru_index | index of the resource unit that hosts the tree |
+| LRI | light-resource-index of the tree |
+| mStemMass | biomass (kg) of the stem (biomass states before growth) |
+| mCoarseRootMass | biomass (kg) of the coarse roots |
+| mFoliageMass | biomass (kg) of the foliage |
+| mLeafArea | leaf area (m2) of the tree |
+| net_stem_npp | The portion of NPP (kg biomass) allocated to stem growth for the year. |
+| stem_mass_before | The tree's stem mass (kg) at the beginning of the year, before the current increment is added. |
+| hd_growth_ratio | The relative height-to-diameter growth ratio for the year, determined by the tree's light environment (LRI). |
+| factor_diameter | A calculated conversion factor representing the diameter increment per kg of stem NPP. |
+| dbh_inc_estimate_cm | An initial estimate of the diameter increment (cm) for the year. |
+| dbh_inc_final_cm | The final calculated diameter increment (cm) for the year after iterative correction. |
+
+
+
+
+### Standlevel GPP (8)
+
+
+The output gives raw values for GPP productivity on resource unit x species level.
+
+
+| **Name** | **Description** |
+| --- | --- |
+| species | short name of the species |
+| RU_index | 0-based index of resource unit |
+| rid | ID of the resource unit (0 if no IDs are provided) |
+| lai | leaf area index (m2/m2) for trees >4m height of the species |
+| gpp_kg_m2 | GPP production (yearly) (kg Biomass) per m2 (stocked area) |
+| gpp_kg | Total GPP (kg Biomass) of the species on the whole resource unit (i.e., gpp_kg_m2 * stocked_area_m2) |
+| avg_aging | Average aging factor (0..1) of the species' trees on the resource unit. |
+| f_env_yr | Aggregated environmental factor [0..1] for the year, used for sapling growth calculations. See [sapling growth and competition](sapling-growth-and-competition.qmd) for details on on $f_{env,yr}$ |
+
+
+
+
+### Water Cycle (16)
+
+
+This output details the daily calculations of the water balance for a resource unit. The permafrost-related columns are only populated with meaningful values if the permafrost module is enabled in the project file; otherwise, they will be zero.
+
+
+| **Name** | **Description** |
+| --- | --- |
+| date | Date of the day (yyyymmdd) from the climate record. |
+| ruindex | Index of the RU (0-based). |
+| rid | ID of the resource unit. |
+| temp | Average day temp (°C). |
+| vpd | Vapour pressure deficit of the day (kPa). |
+| prec | Precipitation of the day (mm). |
+| rad | Global radiation (MJ/m2). |
+| combined_response | Combined daily response modifier (0-1) of all species on the RU, representing the minimum of the water and VPD responses. |
+| after_intercept | Precipitation that reaches the ground after canopy interception (mm). |
+| after_snow | Water input to the soil after accounting for the snow pack (i.e., snowmelt or rain passing through) (mm). |
+| et_canopy | Evapotranspiration of the day from the canopy (mm). |
+| evapo_intercepted | Evaporation from intercepted water on the canopy (mm). |
+| content | Current soil water content at the end of the day, after evapotranspiration (mm). |
+| psi_kpa | Soil water potential (kPa) at the beginning of the day, before evapotranspiration. |
+| excess_mm | Water that leaves the soil profile as runoff or deep percolation (mm). |
+| snow_height | Current snow height (mm). |
+| lai_effective | Effective leaf area index (m2/m2), i.e. the sum of LAI of adult trees, saplings, and ground vegetation. |
+| pf_top | Depth of the top of the frozen soil layer (m). During summer thaw, this value increases from zero. |
+| pf_bottom | Depth of the bottom of the frozen soil layer (m). |
+| pf_freezeback | Depth of the soil layer that is freezing from the surface downwards during autumn (m). |
+| pf_delta_water_mm | Daily change (mm) in the liquid water pool due to thawing (+) or freezing (-) of soil water. |
+| pf_delta_soil_m | Daily change in the depth of the unfrozen soil column (m). |
+| pf_k_unfrozen | Thermal conductivity of the unfrozen soil (W/m/K). |
+| pf_soil_frozen_m | Total current depth of frozen soil (m). |
+| pf_water_frozen_mm | Total water currently held in the frozen soil layer (mm). |
+| pf_unfrozen_fc_mm | The current field capacity (mm) of the unfrozen portion of the soil. |
+| moss_f_light | Light limitation factor (0-1) for moss growth on the current day. |
+| moss_f_deciduous | Deciduous litter inhibition factor (0-1) for moss growth on the current day. |
+
+
+
+
+### Daily responses (32)
+
+
+This output provides a detailed look at the monthly response functions for each species on a resource unit. These response functions are modifiers (typically 0-1) that represent limitations on growth due to various environmental factors. The final utilizableRadiation is the culmination of these factors applied to the absorbed radiation. Note that while the output is logged daily, the response values themselves are calculated and reported as monthly averages or sums.
+
+
+| **Name** | **Description** |
+| --- | --- |
+| day_id | Unique identifier for the day of the year (yyyymmdd). |
+| ru_index | 0-based index of the resource unit. |
+| ru_id | User-defined ID of the resource unit. |
+| species | 4-character species code. |
+| temp | Average daily temperature (°C). |
+| vpd | Vapour Pressure Deficit of the day (kPa). |
+| rad | Global radiation of the day (MJ/m2). |
+| resp_soil | Monthly average of the daily soil water response modifier (0-1). A value of 1 indicates no water limitation. |
+| resp_vpd | Monthly average of the daily Vapour Pressure Deficit (VPD) response modifier (0-1). A value of 1 indicates no limitation from atmospheric drought. |
+| resp_temp | Monthly average of the daily temperature response modifier (0-1). A value of 1 indicates optimal temperature for growth. |
+| resp_meteo | The monthly meteorological response, calculated as the monthly average of the daily minimum of soil water, VPD, and temperature responses. |
+| resp_pheno | Monthly phenology response (0 or 1), indicating if the species is photosynthetically active during the month. |
+| resp_co2 | The CO2 fertilization effect modifier for the month, based on atmospheric CO2 concentration. |
+| apar_mj_m2 | The total absorbed photosynthetically active radiation (APAR) for the month (MJ/m2). |
+| resp_daylength | Monthly average of the daily daylength response modifier (0-1). |
+| utilizable_rad | The utilizable radiation for the month (MJ/m2). This is the APAR value after being reduced by all preceding response modifiers (meteo, pheno, co2, daylength). |
+
+
+
+
+### Establishment (64)
+
+
+Note: The debug output is only created if seeds of the species are present on the resource unit.
+
+
+| **Name** | **Description** |
+| --- | --- |
+| species | short name of the species |
+| RU_index | 0-based index of resource unit |
+| rid | ID of the resource unit (0 if no IDs are provided) |
+| avgSeedDensity | Average seed density of the species on the resource unit. |
+| TACAminTemp | Boolean switch (true/false). Is false if the daily minimum temperature drops below the species-specific threshold. If false, establishment is not possible. |
+| TACAchill | Boolean switch (true/false). Is true if the species' chilling requirement is met. If false, establishment is not possible. |
+| TACAfrostFree | Boolean switch (true/false). Is true if the number of frost-free days exceeds the species-specific threshold. If false, establishment is not possible. |
+| TACAgdd | Boolean switch (true/false). Is true if the calculated growing degree days (GDD) are within the species-specific min/max thresholds. If false, establishment is not possible. |
+| frostDaysAfterBudburst | The number of frost days (Tmin <= 0°C) that occur after bud burst. This value is used to calculate a frost damage effect. |
+| waterLimitation | A value from 0 to 1 indicating the limitation on establishment due to soil water availability. A value of 1 means no limitation. |
+| GDD | The calculated growing degree days for the year. |
+| pAbiotic | The final probability (0-1) for establishment based on the abiotic environment. It is a multiplicative combination of the effects of frost after bud burst, water limitation, and limitations by the soil organic layer depth. It is only > 0 if all TACA-requirements (TACAminTemp, TACAchill, TACAfrostFree, TACAgdd) are met. |
+| fEnvYr | The aggregated environmental factor [0..1] from the 3PG production model for the resource unit and year. |
+| newSaplings | The number of new saplings of the species established on the resource unit in the current year. |
+
+
+
+
+
+### Sapling Growth (128)
+
+
+This output provides detailed statistics on the population dynamics of saplings (trees < 4m height) for each species on a resource unit. It is only created if there are living saplings of a species on the resource unit.
+
+
+| **Name** | **Description** |
+| --- | --- |
+| species | Short name of the species. |
+| RU_index | 0-based index of the resource unit. |
+| rid | User-defined ID of the resource unit. |
+| Living_cohorts | Number of living sapling cohorts for the species on the resource unit at the end of the year. |
+| averageHeight | Average height (m) of all surviving sapling cohorts. |
+| averageAge | Average age (years) of all surviving sapling cohorts. |
+| avgDeltaHPot | Average potential height increment (m) for the year, before considering competition effects. |
+| avgDeltaHRealized | Average realized height increment (m) for the year, after accounting for competition and environmental factors. |
+| added | Number of new sapling cohorts established from seed in the current year. |
+| addedVegetative | Number of new sapling cohorts created by vegetative sprouting in the current year. |
+| died | Number of sapling cohorts that died due to environmental stress in the current year. |
+| recruited | Number of sapling cohorts that grew taller than the 4m threshold and were recruited as adult trees into the main model. |
+| refRatio | The species-specific reference ratio parameter, used for scaling sapling growth responses. See [sapling growth and competition](sapling-growth-and-competition.qmd). |
+| carbonLiving | Total carbon (kg) stored in the biomass of all living saplings at the end of the year. |
+| carbonGain | Net carbon gain (kg) of the sapling pool during the current year. |
+
+
+
+
+### Carbon Cycle (256)
+
+
+This output details the state of various carbon and nitrogen pools and their fluxes for each resource unit. Note that values for snags (standing and downed dead wood) are for the stockable area of the resource unit, while the soil values (from the ICBM/2N model) are scaled to a full hectare.
+
+
+| **Name** | **Description** |
+| --- | --- |
+| SnagState_c | Total carbon content in all snag pools (standing dead wood, coarse roots, branches) (kg/ha). |
+| TotalC_in | Total carbon input into all snag pools from tree mortality (kg/ha). |
+| TotalC_toAtm | Total carbon flux to the atmosphere from the decay of all snag pools (kg/ha). |
+| SWDtoDWD_c,SWDtoDWD_n | Carbon and Nitrogen flux from standing dead wood (SWD) to downed dead wood (DWD) (kg/ha). |
+| toLabile_c, toLabile_n | Total C and N flux into the labile soil pool from litterfall and fine root turnover (kg/ha). |
+| toRefr_c, to_Refr_n | Total C and N flux into the refractory soil pool from the decay of coarse woody debris (kg/ha). |
+
+for each class X=1..3
+
+| **Name** | **Description** |
+| --- | --- |
+| swdX_c, swdX_n | Carbon and Nitrogen content in standing woody debris (SWD) class X (kg/ha). |
+| swdX_count | Number of individual snags in SWD class X. |
+| swdX_tsd | Average time since death (years) for snags in SWD class X. |
+| dbhX | Average DBH (cm) of snags in SWD class X. |
+| heightX | Average height (m) of snags in SWD class X. |
+| volumeX | Average volume (m³) of snags in SWD class X. |
+| toSwdX_c, toSwdX_n | Input flux of Carbon and Nitrogen into SWD class X from tree mortality (kg/ha). |
+
+other wood classes: X: 1..5
+
+| **Name** | **Description** |
+| --- | --- |
+| otherWoodX_c, otherWoodX_n | Carbon and Nitrogen content of other woody debris classes (e.g., branches, coarse roots) (kg/ha). |
+
+Soil (ICBM/2N)
+
+| **Name** | **Description** |
+| --- | --- |
+| iLabC, iLabN | Carbon and Nitrogen input to the soil's labile pool (t/ha). |
+| iKyl | Decomposition rate of the labile input pool. |
+| iRefC, iRefN | Carbon and Nitrogen input to the soil's refractory pool (t/ha). |
+| iKyr | Decomposition rate of the refractory input pool. |
+| re | Climate modifier for decomposition, based on temperature and moisture. |
+| kyl, kyr | Current annual decomposition rates for the labile and refractory pools, respectively. |
+| ylC, yLN | State of the young labile matter pool (C, N) in t/ha. |
+| yrC, yrN | State of the young refractory matter pool (C, N) in t/ha. |
+| somC, somN | State of the old soil organic matter pool (C, N) in t/ha. |
+| NAvailable | Total calculated plant-available nitrogen for the year (kg/ha). |
+| NAVLab | Plant-available nitrogen mineralized from the labile pool (kg/ha/yr). |
+| NAVRef | Plant-available nitrogen mineralized from the refractory pool (kg/ha/yr). |
+| NAVSom | Plant-available nitrogen mineralized from the old SOM pool, also including atmospheric N deposition (kg/ha/yr). |
+
+
+
+
+### Performance (512)
+
+
+This output provides a summary of key model performance metrics for each simulation year, including counts of simulated entities and execution times for major model processes. The time values are reported in milliseconds (ms).
+
+
+| **Name** | **Description** |
+| --- | --- |
+| year | Year of the simulation. |
+| treeCount | Total number of individual trees (> 4m height) in the simulation. |
+| saplingCount | Total number of sapling cohorts (< 4m height) in the simulation. |
+| newSaplings | Number of sapling cohorts newly established in the current year. |
+| management | Execution time spent in the management module (ms). |
+| applyPattern | Execution time for applying the Light Influence Patterns (LIP) of all trees to the light grid (ms). |
+| readPattern | Execution time for reading the light grid and calculating the Light Resource Index (LRI) for all trees (ms). |
+| treeGrowth | Execution time spent in the individual tree growth, partitioning, and mortality routines (ms). |
+| seedDistribution | Execution time for the seed dispersal module (ms). |
+| establishment | Execution time for the sapling establishment routine (ms). |
+| saplingGrowth | Execution time for the growth of all sapling cohorts (ms). |
+| carbonCycle | Execution time for the carbon cycle module, including snag and soil dynamics (ms). |
+| writeOutput | Time spent writing the standard database outputs (ms). |
+| totalYear | Total execution time for the entire year's simulation loop (ms). |
+
+
+
+
+### Dynamic Output
+
+
+The dynamic output produces statistics for all trees in the simulation. The "dynamic" output is configured in the [project file](project-file.qmd) section "output" (*output.dynamic*) and switched on/off there. In addition, the dynamic debug output can be switched on/off using the [Globals](../apidoc/classes/iland/globals.qmd) Javascript function *Globals.startOutput("debug_dynamic")* and stopOutput().
+The defintion of columns is similar to the [#dynamic_stand_output_by_species_RU|dynamic stand output](outputs.qmd).
+
+Example for the section in the project file:
+
+```
+<dynamic> <!-- clipboard -->
+      <!-- free defined output that uses expressions/filter on all trees of the simulation -->
+      <enabled>false</enabled>
+      <columns>dbh.mean, dbh.max, dbh.min, dbh.p5, dbh.p25, dbh.p75, dbh.p95,
+	  height.mean, height.max, height.min, height.p5,height.p95, height.p25,height.p75,
+	  stress.mean, stress.max, if(stress>0,1,0).sum, if(stress>0,stress,0).sum, if(dbh>0,1,0).sum,
+	  leafarea.sum,woodymass.sum,rootmass.sum,foliagemass.sum
+      </columns>
+    </dynamic>
+```
+

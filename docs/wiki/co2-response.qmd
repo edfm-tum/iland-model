@@ -1,0 +1,84 @@
+---
+title: "CO2 response"
+---
+
+Atmospheric CO<sub>2</sub> is the main source of C for the plants metabolism. Furthermore, anthropogenic fossil fuel emissions are increasing CO<sub>2</sub> levels in the atmosphere, constituting an important alteration of the environment for plants and a major source of [global climate change](http://www.ipcc.ch). Since iLand is particularly designed for applications under climate change, growth response to CO<sub>2</sub> is explicitly included in the model.
+
+
+
+
+
+
+# growth response to atmospheric CO<sub>2</sub>
+
+
+Many models applying the radiation use efficiency concept do not explicitly consider changing atmospheric CO<sub>2</sub> levels, assuming a constant photosynthetic efficiency per unit utilizable radiation (e.g, [Landsberg and Waring 1997](http://dx.doi.org/10.1016/S0378-1127(97), [Mäkelä et al. 2008](http://dx.doi.org/10.1111/j.1365-2486.2007.01463.x)). However, recent empirical evidence (e.g., [Norby et al. 2005](http://dx.doi.org/10.1073/pnas.0509478102)) corroborates the effect of raised CO<sub>2</sub> levels on primary production of forests.
+
+In line with the environmental modifier approach applied in iLand we calculate a monthly CO<sub>2</sub> response (using annual CO<sub>2</sub> concentrations and monthly environmental interactions, see below), *f<sub>CO2</sub>*, directly applied to modify radiation use efficiency (cf. the findings of [Norby et al. 2005](http://dx.doi.org/10.1073/pnas.0509478102), see [Kicklighter et al. 1999](http://dx.doi.org/10.1034/j.1600-0889.1999.00017.x) for a variety of other approaches at the approximately same process resolution). Following the analysis of [Friedlingstein et al. (1995)](http://dx.doi.org/10.1029/95GB02381) we adopt a Michaelis-Menten formulation for CO<sub>2</sub> response (Eq. 1)
+
+$$
+f_{CO2}=\frac{K_{1}(C_{t}-C_{b})}{1+K_{2}(C_{t}-C_{b})}
+$$
+
+where
+
+$$
+K_{1}=\frac{1+K_{2}(C_{0}-C_{b})}{C_{0}-C_{b}}
+$$
+
+
+$$
+K_{2}=\frac{(2C_{0}-C_{b})-r(C_{0}-C_{b})}{(r-1)(C_{0}-C_{b})(2C_{0}-C_{b})}
+$$
+
+
+$$
+r=\frac{NPP_{2\times CO2}}{NPP_{1\times CO2}}
+$$
+
+with *C<sub>t</sub>* and *C<sub>0</sub>* the current and reference CO<sub>2</sub> concentrations respectively (reference means the average concentration for which the base quantum use efficiency *ε<sub>0</sub>* was estimate), and *r* the productivity increase for a doubling of the CO<sub>2</sub> concentration. The Michaelis-Menten formulation is realistic in that it yields zero productivity for *C<sub>t</sub>*=*C<sub>b</sub>* the CO<sub>2</sub> compensation point, and it saturates to *K<sub>1</sub>*/*K<sub>2</sub>* when *C<sub>t</sub>* tends to infinity. Also *r* can be related to the frequently reported factor *β* by applying Eq. (2) (cf. [Friedlingstein et al. 1995](http://dx.doi.org/10.1029/95GB02381))
+
+$$
+r=1+ln(2)\beta
+$$
+
+*β* was found to be consistent over a variety of temperate forest ecosystems in the empirical data of [Norby et al. (2005)](http://dx.doi.org/10.1073/pnas.0509478102) at *β*=0.6
+
+        *
+
+
+
+
+# environmental sensitivity of CO<sub>2</sub> response
+
+
+Following [Friedlingstein et al. (1995)](http://dx.doi.org/10.1029/95GB02381) the actual response to CO<sub>2</sub> is modified by environmental factors. The response of CO<sub>2</sub> fertilization to water stress increases with increasing water stress. In other words, water use efficiency (ratio of carbon gain per unit water used) is expected to increase under elevated CO<sub>2</sub>, and water stressed plants are expected to benefit more from this effect. Furthermore, any potential CO<sub>2</sub> fertilization effect depends on the availability of nutrients to be realized. Consequently *β<sub>0</sub>* is modified by environmental modifiers accounting for these two effects (Eq. 3)
+
+$$
+\beta=\beta _{0}\cdot f_{N}\cdot (2-f_{sw})
+$$
+
+where *β<sub>0</sub>* is the baseline response and *f<sub>N</sub>* and *f<sub>sw</sub>* are the nitrogen and soil water response functions also applied in modeling [primary production](primary-production.qmd). *f<sub>CO2</sub>* is calculated monthly to capture the monthly variation in the environment, however, intra-annual variations in *C<sub>t</sub>* are neglected.
+
+        *
+
+
+
+
+# discussion
+
+
+This method of an environmentally sensitive CO<sub>2</sub> response has been successfully applied in global vegetation modeling (e.g., [Friedlingstein et al. 1995](http://dx.doi.org/10.1029/95GB02381), [Berthelot et al. 2005](http://dx.doi.org/10.1111/j.1365-2486.2005.00957.x)). [Kicklighter et al. (1999)](http://dx.doi.org/10.1034/j.1600-0889.1999.00017.x) present a study comparing different approach at the approximate same level of process resolution, including the one adapted for iLand.
+Since this effect is not included in models such as [PICUS](http://www.wabo.boku.ac.at/picusv14.html) or 3-PG, some more discussion points:
+
+* It is important to note that the CO<sub>2</sub> fertilization effect influences *GPP *and not timber growth. Environment-related changes in [allocation](allocation.qmd) (e.g. increasing harshness increases the allocation to root compartments) might strongly influence the simulated response of stem growth (cf. the findings of [Körner et al. 2005](http://dx.doi.org/10.1126/science.1113977)).
+* Furthermore, absolute effects are related to *GPP*, which in turn is also environmentally sensitive, i.e. although the CO<sub>2</sub> fertilization effect is highest under strong water stress *GPP *is simultaneously reduced by water stress. The absolute effect is thus highly dynamic and will vary both spatially and temporally.
+* We apply a generic CO<sub>2</sub> sensitivity, as supported by [Norby et al. (2005)](http://dx.doi.org/10.1073/pnas.0509478102). However, since environmental modifiers are species-specific also the CO<sub>2</sub> response will differ across species.
+* We currently only model the effect of atmospheric CO<sub>2</sub> on productivity. Other aspects, such as adaptations in tree ontogeny or leaf physiology are currently neglected in iLand. Also allocation changes in response to elevated CO<sub>2</sub> are not taken into account explicitly. For future modifications in this regard [Friedlingstein et al. (1999)](http://dx.doi.org/10.1046/j.1365-2486.1999.00269.x) present an approach that would be structurally suitable for implementation in iLand. However, within the scope of the current project, this effect is excluded, supported by the analysis of [Friedlingstein et al. (1999)](http://dx.doi.org/10.1046/j.1365-2486.1999.00269.x), who found very little allocation change for temperate forests both in the Pacific Northwest and Central Europe.
+
+
+
+::: {.callout-note title="citation"}
+[Seidl, R., Rammer, W., Scheller, R.M., Spies, T.A. 2012](http://dx.doi.org/10.1016/j.ecolmodel.2012.02.015). An individual-based process model to simulate landscape-scale forest ecosystem dynamics. Ecol. Model. 231, 87-100.
+:::
+

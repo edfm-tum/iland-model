@@ -185,6 +185,13 @@ win32 {
 #QMAKE_LFLAGS_RELEASE += /DEBUG /OPT:REF /OPT:ICF
 
 
+# make sure to remove AGL (build with 6.8 in July 2026 - probably not necessary with >qt6.10
+macx {
+    LIBS -= -framework AGL
+    QMAKE_LIBS_OPENGL -= -framework AGL
+}
+
+
 # This is the UI version of iLand!
 DEFINES += ILAND_GUI
 # enable/disble DBGMODE messages: dbg messages are removed when the define is added
@@ -514,9 +521,12 @@ DISTFILES += \
     ../abe-lib/planting/planting.js \
     ../abe-lib/thinning/selective.js \
     ../abe-lib/thinning/thinning.js \
+    ../apidoc/ABE/abe_context_doc.js \
+    ../apidoc/ABE/abe_doc.js \
     ../apidoc/ABE/abe_patches.js \
     ../apidoc/ABE/deadtreelist_doc.js \
     ../apidoc/ABE/saplinglist_doc.js \
+    ../apidoc/ABE/treelist_doc.js \
     ../apidoc/iLand/grid_doc.js \
     ../apidoc/iLand/map_doc.js \
     ../apidoc/iLand/factory_doc.js \

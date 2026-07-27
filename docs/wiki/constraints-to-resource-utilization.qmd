@@ -1,0 +1,23 @@
+---
+title: "constraints to resource utilization"
+---
+
+
+
+## daily timestep
+
+
+
+* [temperature response](temperature-response.qmd)
+* [vapor pressure deficit response](vapor-pressure-deficit-response.qmd)
+* [soil water response](soil-water-response.qmd)
+* [phenology](phenology.qmd)
+
+
+
+## monthly timestep and above
+
+
+
+* [CO2 response](co2-response.qmd)
+* [nitrogen response](nitrogen-response.qmd)

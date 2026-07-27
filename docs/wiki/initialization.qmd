@@ -1,0 +1,29 @@
+---
+title: "initialization"
+---
+
+This page gives an overview over how to set up the simulation extent and the properties of the landscape, and how to initialize tree individuals on the landscape.
+
+
+
+
+## [The simulation extent](simulation-extent.qmd)
+
+
+The actual landscape in iLand is defined by a grid of resource units with a size of 1 ha. Each resource unit may differ with regard to its physical (e.g. soil properties) and climatic properties.
+
+
+
+## [setup of the landscape](landscape-setup.qmd)
+
+
+The process of setting up of a real-world landscape including stand initialization is described [here](landscape-setup.qmd).
+
+
+
+## [Trees on the landscape](initialize-trees.qmd)
+
+
+Currently, iLand supports two text file based input formats. One handles a list of tree individuals with defined locations and properties and is compatible with the format used in [Picus](http://www.wabo.boku.ac.at/picus.html). The 2nd format deals with tree distributions and describes a stand using a couple of simple proxies.
+This topic is covered in more detail at the [initialize trees](initialize-trees.qmd) page.
+

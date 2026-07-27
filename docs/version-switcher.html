@@ -1,0 +1,47 @@
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  // Find the dropdown toggle button for Version
+  const versionToggle = Array.from(document.querySelectorAll(".nav-link.dropdown-toggle"))
+    .find(el => el.textContent.trim().toLowerCase().includes("version"));
+    
+  if (versionToggle) {
+    const dropdownMenu = versionToggle.nextElementSibling;
+    if (dropdownMenu) {
+      const versionLinks = dropdownMenu.querySelectorAll("a.dropdown-item");
+      versionLinks.forEach(link => {
+        const href = link.getAttribute("href");
+        if (href) {
+          link.addEventListener("click", function(e) {
+            e.preventDefault();
+            const targetVersionPath = href; // e.g. "/" or "/dev/" or "/2.0/"
+            const currentPath = window.location.pathname; // e.g. "/wiki/growth.html" or "/dev/wiki/growth.html"
+            
+            // List of subdirectories representing historical/dev versions
+            const versions = ["/dev/", "/2.1/", "/2.0/"];
+            let pageRelativePath = currentPath;
+            
+            // Strip any existing version prefix from the current path
+            for (const v of versions) {
+              if (currentPath.startsWith(v)) {
+                pageRelativePath = currentPath.substring(v.length - 1); // keep leading slash
+                break;
+              }
+            }
+            
+            // Assemble the target URL
+            let finalUrl = targetVersionPath;
+            if (targetVersionPath !== "/") {
+              // Strip the leading slash of the pageRelativePath to combine with "/dev/" cleanly
+              finalUrl += pageRelativePath.startsWith("/") ? pageRelativePath.substring(1) : pageRelativePath;
+            } else {
+              finalUrl += pageRelativePath.startsWith("/") ? pageRelativePath.substring(1) : pageRelativePath;
+            }
+            
+            window.location.href = finalUrl;
+          });
+        }
+      });
+    }
+  }
+});
+</script>

@@ -1,0 +1,65 @@
+---
+title: "Object ClimateConverter"
+---
+
+The *ClimateConverter* object is a customizable converter used to transform textfile based (csv) climate data to SQLite tables used by iLand.
+See the demo-script below for details.
+
+
+```javascript
+/* Climate Converter demo
+ WR 200909, update 201005
+   *** General ***
+   This script converts text based climate input files into the format that is internally used by iLand.
+   The delimiters used in the input file is automatically detected and could be either a comma, semicolon or tab.
+   The mechanism of the conversion itself is flexible, so that adapting to another input format should be easy: for
+   every target-value an "expression" defines a formula which is used to calculate the value. Data from  the input
+   is referenced by special variables which use the naming scheme "cX" with "X" the zero-based index of the column.
+   Thus, complex calculations can be performed during the conversion (see example below).
+
+   *** Notes ***
+   Modify path of source files in silvistratBatch() and the path to the target database in silvistratClimate()
+   The target climate tables are overwritten if they are already present.
+   The target database must not be used by a running iLand instance (locking problms).
+   Call "silvistratBatch()" from the iLand GUI to start the actual conversion.
+*/
+
+// invoke the processing of several climate files
+function silvistratBatch()
+{
+	var path = "E:\\Daten\\iLand\\environment\\daily climate\\";
+	silvistratClimate(path + "046_c.day", "Rovaniemi");
+	silvistratClimate(path + "008_c.day", "Montesquiu");
+	silvistratClimate(path + "019_c.day", "AUT8low");
+}
+
+// use the ClimateConverter object to process one climate file
+function silvistratClimate(infile, tablename)
+{
+/* columns of the input file: use in expressions as "cX" with x from 0 (year) to 9 (global radiation).
+0: year
+1: month
+2: day
+3: minimum  temperature  (°C)
+4: mean temperature      (°C)
+5: maximum  temperature  (°C)
+6: daily precipitation   (mm)
+7: rF                    (%)
+8: RTL relative sunshine (%)
+9: global radiation      (J/cm²)  */
+	var ldr = new ClimateConverter;
+	ldr.fileName = infile; // input file name
+	ldr.database = "E:\\Daten\\iLand\\projects\\test\\database\\silvistrat2.sqlite"; // !!! EDIT !!!
+	ldr.tableName  = tablename;
+	ldr.captions = false; // no captions in the first row
+	ldr.year = "c0";
+	ldr.month = "c1";
+	ldr.day = "c2";
+	ldr.minTemp = "c3";
+	ldr.temp = "c4";
+	ldr.prec = "c6";
+	ldr.rad = "c9 / 100"; // convert from J/cm2 to MJ/day
+	ldr.vpd = "(610.78*exp(17.269*c4/(c4+237.3)) - 610.78*exp(17.269*c3/(c3+237.3)))*0.001"; // Campbell & Norman, 1998
+	ldr.run(); // process the whole input file
+}
+```

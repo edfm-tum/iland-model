@@ -1,0 +1,152 @@
+---
+title: "management example: HJA fire history"
+---
+
+
+
+## background
+
+
+This example shows advanced javascript techniques to schedule different types of management actions. A [text file](../apidoc/classes/iland/csvfile.qmd) is used as the "management database" and contains the necessary information per each year with prescribed management.
+Moreover, it is demonstrated how [grids](../apidoc/classes/iland/map.qmd) are used for spatially explicit management operations.
+
+
+
+## some remarks
+
+
+
+* The design allows several management actions per year: the *mgmt_list* stores therefore an array of row-numbers and not only a single value.
+* It is easy to extend the parameters by simply adding new columns to the driver file or by adding new "types" of actions.
+* the spatial grid is "reused" as long as no new grid is loaded; thus, although possible, it is not necessary to provide for each management operation a dedicated grid file.
+
+
+
+## sample code
+
+
+
+```javascript
+/* Javascriptfile for iLand management. */
+
+// global variables
+var path = Globals.defaultDirectory("script"); // get project script folder; see also the "currentDir" property of
+var mgmt_list = {}; // empty array
+var mgmt_loaded = false;
+var mgmt_map; // GIS grid
+var input;
+
+/* Load the management descriptions from a CSV file.
+   Each line consists of a location (x/y), a year and a number of trees that should remain after management.
+   The data is stored as properties of an object (mgmt_list). */
+function load()
+{
+    mgmt_list = {};  // clear array
+    input = new CSVFile;
+    input.loadFile(path + "hja_driver.txt");
+    var key, value;
+    for (i=0;i<input.rowCount;i++) {
+        // create a combined key
+        key = input.value(i,"year") ; // year of management
+        print (key);
+        if (mgmt_list[key] == undefined) {
+            mgmt_list[key] = [i]; // empty array
+        } else {
+            mgmt_list[key].push(i); // add row of the input file
+        }
+    }
+    mgmt_map = new Map(); // start with default map
+}
+
+// helping function to query the "database" of management operations
+// returns <undefined> if no entry is inside the list
+function queryMgmtList(ruindex, year)
+{
+    var key = ruindex + '_' + year;
+    return mgmt_list[key];
+}
+
+// real fire event. action: underburn, low, moderate, severe
+function fire(action, where) {
+   if (action == 'underburn') {
+       // for underburn fires: only the regeneration layer is affected
+       management.killSaplings(mgmt_map, where);
+       return;
+   }
+   var trees=0;
+    management.loadFromMap(mgmt_map, where);
+    if (action == 'low') {
+        management.killSaplings(mgmt_map, where);
+        management.filter('dbh<20');
+        trees += management.remain( management.count * 0.2); // 20% of trees < 20cm survive
+        management.loadFromMap(mgmt_map, where);
+        management.filter('dbh>=20');
+        trees += management.remain( management.count * 0.9); // 90% of trees >= 20cm survive
+    }
+    // add other fire severity classes
+
+    print("fire event: " + action + " on grid-id " + where + ". " + trees + " trees removed.");
+}
+
+// Execute management
+// row: row number of the input file
+function executeManagement(row) {
+    var action = input.value(row, 'action');
+    var value = input.value(row, 'value');
+    if (action == 'map') {
+        // load a new map file
+        mgmt_map = new Map(path + value);
+        print("loaded map: " + value );
+    }
+    if (action == 'fire') {
+        var id = input.value(row, 'map'); // grid - id of the fire event
+        fire(action, id);
+        management.removeSoilCarbon(mgmt_map, id,  // polygon id
+                                    input.value(row, 'swd_frac'), // snags
+                                    input.value(row, 'dwd_frac'), // DWD
+                                    input.value(row, 'litter_frac'), //   soil litter
+                                    input.value(row, 'soil_frac')); // soil humus
+
+    }
+}
+
+/* callback function called by iLand.
+   dispatch management events */
+function manage(year)
+{
+    if (mgmt_loaded == false) {
+        print("1st call - loading management...");
+        load();
+        mgmt_loaded = true;
+        print("loading management finished....");
+    }
+    print("executing management - year " + year);
+    var list = mgmt_list[year];
+    if (list == undefined)
+        return; // no management defined for the current year
+    for (var row = 0; row<list.length; ++row) {
+        // access columns (as needed) from the input file...
+        executeManagement(list[row]);
+    }
+}
+```
+
+
+
+
+## driverfile
+
+
+For this management example the management operations are stored in a simple text file. An example is below:
+
+```
+#### HJA Example management
+###
+year	action	value	map	swd_frac	dwd_frac	litter_frac	soil_frac
+2001	map	map_file_name.txt	0	0	0	0	0
+2001	fire	severe	107	0.1	0.2	0.1	0.3
+2020	fire	low	223	0.01	0.1	0.1	0.1
+2044	map	second_map.txt
+2044	fire	low	1
+2044	fire	high	2
+```
