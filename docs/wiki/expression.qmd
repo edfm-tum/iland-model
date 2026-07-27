@@ -1,0 +1,131 @@
+---
+title: "Expression"
+---
+
+
+
+
+
+## What is an expression?
+
+
+A "expression" is a mathematical formula (usually a function) which is provided in a text form (e.g. "3*x+2". Expressions are either used internally (e.g. a species parameter is expressed as a function), or for data inspection and visualization.
+
+
+
+
+## How does it work?
+
+
+The expression class used in iLand was originally developed for the [Picus model](http://www.wabo.boku.ac.at/picus.html) and aims at a high performance for repeated executions. Expressions are parsed only once and converted to an internal "program" which can be executed with very little overhead. When using more complex mathematical functions (e.g. exp()), the overall performance is comparable to hard coded C++.
+
+
+
+## Types of variables
+
+
+The meaning of a variable name within an expression depends on the context. There are three main cases:
+
+* Expressions bound to "Objects" e.g. to Trees. In that case, the variable names are defined by the respective object. If an expression is bound to trees, one can use context sensitive variables like "dbh" or "volume" for trees. Depending on the context, this can be [tree variables](tree-variables.qmd), [resource unit variables](resource-unit-variables.qmd),  or [sapling variables](sapling-variables.qmd).
+* named variables: the names of variables are fixed programmatically. E.g: a expression with two named parameters ("x", "n") to calculate a weight could be "x/n" or more sophisticated "x*x/n*n"
+* unbound variables: In that case the name of the variable can be chosen freely. The value for the variable is set during the model execution and depends on the context. Example: the expressions for the calculation of biomass compartments (allometric equations) has one parameter (dbh). Valid expression are, e.g.:  "0.1*dbh^2" or "0.1*d^2" or "0.1*fish^2".
+
+
+
+## Basic operations
+
+
+Basically, expressions can consist of basic arithemtic operators, variables and functions. The basic operators +,-,* and / work as expected (incl. precedence rules). Additionally, the caret "^" can be used for power functions (e.g. x*x can be written as x^2). Parentheses work as expected (e.g. (a+b)*c is different from a+(b*c)).
+Floating point numbers must use the dot (".") for constants (e.g. 0.001). The comma "," is used to separate arguments in function calls.
+
+
+
+## Logical expressions
+
+
+Expressions can be used to evaluate *logical expressions*, i.e. expressions with a result value of either "true" or "false". Operators for logcal expressions are "and" and "or". Logical expressions are typically used to filter or select from a set of objects based on a criterion. E.g.: using the expression "dbh>30 and (stress>0.5 or leafarea<1)" as a filter, would result in a list of large, but stressed trees.
+Logical and "mathematical" operators can be used together: every non-zero value is evaluated as "*true*", zero (0) as "*false*". 'true' and 'false' are also available and internally converted to 1 and 0, respectively. Hence, a logical "not" can be expressed as *expression <> true*.
+
+
+
+## Constants
+
+
+Expressions provide a basic support for *constants*. A constant is a system-defined name with a fixed value that can be used instead of the numerical value. Currently, the species names / IDs are available and linked to the numerical index of the species for the current run:
+Therefore, you can use, e.g., 'species=Tsme' in a management-filter expression (having 'Tsme' as the ID of one [tree species](species-parameter.qmd)). Note, that no apostrophs are required. 'Tsme' is replaced with the numerical value (e.g. '1') during parsing time of the expression.
+
+
+
+
+## Functions
+
+
+The general form of function is:
+functionname(list of arguments)
+
+
+
+### Mathematical functions
+
+
+Generally, mathematical functions are executed without checking for the validity of the arguments (e.g. division by 0, or tan(pi/2)).
+
+| **Name, Arguments** | **Description** | **Example** |
+| --- | --- | --- |
+| sin(x) | the sin of x, x as radians. | sin(x) |
+| cos(x) | the cosine of x, x as radians | cos(x) |
+| tan(x) | the tangens of x, x as radians | tan(x) |
+| exp(x) | exponential function, e(1)=2.7182... | exp(-k*LAI) |
+| ln(x) | the logarithm of base *e*, ln(2.7182...)=1 | ln(x) |
+| sqrt(x) | the square root of x (equivalent to x^0.5) | sqrt(x) |
+| mod(x,y) | return the modulo (remainder) of x/y. e.g. mod(13,10)=3 | if(mod(id,2), 1, 0) |
+| round(x) | Returns the integral value that is nearest to x, with halfway cases rounded away from zero. | round(x) |
+
+
+
+
+### Logical functions
+
+
+
+
+| **Name, Arguments** | **Description** | **Example** |
+| --- | --- | --- |
+| min(x1,x2,...,xn) | returns the minimum value of the arguments. Argument count must be >1 and <10 | min(x,0) |
+| max(x1,x2,...,xn) | returns the maximum value of the arguments. Argument count must be >1 and <10 | max(min(x,1),0) |
+| if(condition, true, false) | logical if-then-else construct. if "condition" is true, the "true" is returned, "false" otherwise. E.g.: a abs()-function: if(x<0;-x;x). Note that both clauses are calculated in every case! | if(x<0;-x;x) |
+| in(value, arg1, arg2, ... , argn) | returns true if *value* is in the list or arguments, false otherwise. | in(year,100,200,300) |
+
+
+
+
+### More functions
+
+
+
+
+| **Name, Arguments** | **Description** | **Example** |
+| --- | --- | --- |
+| incsum(fn) | when used in SQL like expressions (e.g., [management](../apidoc/classes/iland/management.qmd), the function *incsum* cumulates its value over several calls. See the management functions *mean* and *sum* functions. | incsum(basalArea)<40 |
+| polygon(value, x1,y1, x2,y2, x3,y3, ..., xn,yn) | return is: y1 if value<x1, yn if value>xn, or the lineraly interpolated numeric y-value. | polygon(x, 0,0, 1,0.5) |
+| sigmoid(x, type, param1, param2) | The value of "sigmoid" curve at *x*. The type of curve is designated by *type* with the two parameters *param1* and *param2*. 0: [logistic](http://en.wikipedia.org/wiki/Logistic_function), 1: [Hill-function](http://en.wikipedia.org/wiki/Hill_function), 2: 1-logistic, 3: 1-hill | sigmoid(x, 0, 10, 100) |
+| rnd(from, to) | returns a uniformly distributed random function between *from* and *to*. | rnd(0,1) |
+| rndg(mean, stddev) | returns a random number drawn from a Gaussian normal distribution with 'mean' as the mean value 'stddev' as the standard deviation. | rndg(0,1) |
+
+
+
+
+## Useful examples
+
+
+
+* create an output only every 10 years: -+ mod(year,10)=0+-
+
+
+
+## Linearization
+
+
+To improve the calculation performance in certain situations, expressions can use precalculated function results to interpolate a function numerically. This works best for expressions with one variable and a defined range for the input, but also an implementation for expressions with two variables is available.
+For complex mathematical expressions the linearized version is up to 10 times faster than the regular expression engine.
+The linearization is globally enabled/disabled by the switch *system.settings.expressionLinearizationEnabled* in the [project file](project-file.qmd). Note, that this feature must be explicitly enabled for each expression used in the source code.

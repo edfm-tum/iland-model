@@ -1,0 +1,130 @@
+---
+title: "regeneration - technical details (2010)"
+---
+
+
+::: {.callout-note}
+This page refers to an older version of iLand.
+:::
+
+
+
+
+## Seed Dispersal - general concept
+
+
+The technical base for the seed dispersal process is a grid that is defined for each species. These grids cover the whole landscape and contain essentially seed availability probabilities. Currently, the assumed default grid size is 20x20 m. The grid is filled during the growth process: every tree that meets the "seed production" condition (e.g. has a sufficient tree height, i.e. is mature) sets its pixel in the seed map to 'one'. This results basically in a black/white image with black pixels (no seeding trees) and white pixels (with seeding trees).
+The seed dispersal algorithm itself consists of phases: (1) edge detection, and (2) seed dispersal. This approach performs well if the number of "edge"-pixels is relatively low; this seems to be a sensible assumption for species distribution patterns.
+
+
+
+### Edge Detection
+
+
+During the edge detection process those "white" pixels (i.e. which are a seed source) are marked, that have an empty (i.e. "black") pixel in the 8-pixel-neighborhood.
+
+
+
+### Seed Kernel
+
+
+The seeding properties of a species are defined by a "seed kernel" that defines the probability of seed availability as a function of the distance to the kernel center (the tree). Similar to the LIP-approach, the seed probabilities are encoded as a grid of floating point numbers. With regard to the realized probability pattern we follow loosely the Treemig-Approach (see Lischke & Löffler (2006)). See also [dispersal](dispersal.qmd). The  test species 'Norway spruce' has a maximum seed distribution distance of 460m which results in a kernel with 47x47 pixel (assuming 20x20m cells).
+
+
+
+### Seed Distribution
+
+
+The second phase of the seed distribution applies the species specific kernel to each "edge"-pixel that was detected in phase 1. The probabilities for given pixels are calculated as follows:
+
+
+$$
+p_{pixel}=1-\left ( 1-p_{pixel} \right )\cdot \left ( 1-p_{kernel} \right )
+$$
+
+with *p<sub>pixel</sub>* the probability on a given target pixel, and *p<sub>kernel</sub>* the value of the seed kernel originating from a given source pixel at the target pixel.
+
+
+
+### Implementation test
+
+
+Currently, an implementation of both phases in  "standard C++" is available, i.e. without any OpenCL/GPU-magic (although the seed dispersal problem seems to fit very well for that).
+A quick test was performed:
+
+* grid size 10000ha, 10x10m pixels
+* the seed map is filled randomly (filling degree approx. 2/3). This is presumably the worst case (a very high percentage of edge pixels)
+* the seed dispersal kernel is assumed to have a radius of 100m
+
+
+For this setup, the time to process the seed distribution is 270ms (HP laptop, no multi-threading, debug-mode). The edge detection takes about 5% of that time. Less scattered seed patterns and smaller seed kernels would increase performance.
+From this quick test one can conclude that the seed dispersal algorithm proposed here is viable.
+
+
+**PS**: the performance is much better in "release mode": the test finishes in 70ms.
+
+
+
+## Sapling growth - some thoughts
+
+
+See [sapling growth and competition](sapling-growth-and-competition.qmd) as reference!
+The estimation of height growth for a sapling is based on the following information:
+
+* Height growth potential (depending on current height)
+* growth fraction (defined by environment)
+* light influence (at the saplings homebase pixel)
+
+The height growth potential function is defined per species and has one parameter (the current height). Therefore it seems feasible to linearize the function using an expression[?](expression.qmd). That should be very fast.
+The realized growth fraction depends on - or basically is - the growth "performance" calculated in the 3PG model of the current year. That figure is easily derived as a byproduct of the 3PG calculations. So, again, very efficient.
+Local light conditions are the third component. The light modifier is ultimately  derived from the LIF-value at the sapling coordinates. Depending on the used "response-function", this operation should also be fast.
+
+The 2nd issue is the mortality during the sapling phase. For that reason each sapling needs to maintain a stress-counter. If the growth of the tree (the relative environmental response) is below a species specific threshold for a (species specific) number of consecutive years, the sapling dies.
+
+
+For each sapling the minimum information is:
+
+
+| **Item** | **Description** |
+| --- | --- |
+| position | index of the home pixel within the RU |
+| stress_years | number of years a sapling is stressed |
+| height | current height of the sapling (m) |
+
+
+If *position* and *stress_years* are packed into one integer, and a float is used for *height*, the memory consumption of one sapling is just eight bytes. This requires that the saplings are stored in a vector (not in a list), and that each species handles the own saplings.
+PS: The implemented *SaplingTree* consists of a pointer (to the LIF pixel), the packed age / stress data (two short unsigned int) and a float defining the height. This yields to a total of 12 Bytes (for 32Bit systems) per sapling tree.
+
+
+
+## Organizing the establishment
+
+
+Following the current concept of establishment a set of requirements needs to be met to allow the establishment of a sapling. The requirements are connected via a logical 'AND' (or a multiplication), thus allowing to give up further examinations when a zero (or a 'FALSE') is encountered. The requirements are (see [establishment](establishment.qmd) for details).
+
+* seed availability
+* abiotic environment
+* biotic environment (i.e. light availability)
+
+
+An approach that fits well with other parts of iLand dedicated to enabling efficient multi threading calculations could be:
+
+* loop over resource units and distribute the workload to available threads (as it is done for growth and light computations)
+* loop over species
+* scan the seed dispersal map of the species for the given RU
+* when the first non-zero value is found: do the TACA-model calculations. If *p_abiotic* is 0, return.
+* for seed-pixels with *p_seed*p_abiotic* > 0: loop over the LIF-grid (there are 10x10=100 LIF pixels covered by each seed-pixel) and calculate sapling probabilities.
+
+An alternative approach would be to calculate the TACA values for each species before scanning the seed-map for seeds. However, currently it seems to be more efficient to it as outlined above. Changing that processing order further down the road should be rather simple.
+
+Looking from a software design perspective (and considering the notions above) yields the following:
+
+* parameters for the TACA model are species specific
+* the seed maps are stored per species but cover the whole landscape
+* the calculation of establishment process (as outlined above) happens on the RU x species level (connected to the *ResourceUnitSpecies* class - this is also the level for calculating environmental responses of species).
+
+
+::: {.callout-note title="citation"}
+[Seidl, R., Spies, T.A., Rammer, W., Steel, E.A., Pabst, R.J., Olsen, K. 2012](http://dx.doi.org/10.1007/s10021-012-9587-2). Multi-scale drivers of spatial variation in old-growth forest carbon density disentangled with Lidar and an individual-based landscape model. Ecosystems, DOI: 10.1007/s10021-012-9587-2.
+:::
+

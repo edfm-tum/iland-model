@@ -160,6 +160,7 @@ private:
     void showResourceUnitDetails(const ResourceUnit *ru);
     bool showABEDetails(const QPointF &coord);
     void showRegenDetails(const QPointF &coord);
+    void showSnagsDetails(const ResourceUnit *ru, const QPointF &coord);
 
     void readSettings();
     void writeSettings();

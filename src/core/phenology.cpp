@@ -104,6 +104,13 @@ void Phenology::calculate()
     // convert yeardays to dates
     mClimate->toDate(day_start, &bDay, &bMon);
     mClimate->toDate(day_stop, &eDay, &eMon);
+    // if (mClimate->shiftedByHalfYear()) {
+    //     // climate year starts July 1st (southern hemisphere)
+    //     bMon -= 6;
+    //     eMon += 6;
+    //     if (bMon<0 || bMon>11 || eMon<0 || eMon>11)
+    //         throw IException("Phenology on southern hemisphere: invalid dates");
+    // }
     for (int i=0;i<12;i++) {
         if (i<bMon || i>eMon) {
             mPhenoFraction[i] = 0; // out of season

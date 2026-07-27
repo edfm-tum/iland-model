@@ -1,0 +1,208 @@
+---
+title: "development stages"
+---
+
+iLand includes a special output for assessing the development stage of forested cells on the landscape. The rule set to derive specific development stages is flexible (using a Javascript interface) in order to accomodate different ecosystems. Moreover, the base resolution of the grid is not fixed and can be 10m, 20m, 50m, or 100m.
+
+
+
+## Project file
+
+
+The 'devstage' output is configured in the 'output' section of the [project file.](project-file.qmd) See also the [outputs](outputs.qmd) page.
+
+ 
+
+
+| Setting | description |
+| --- | --- |
+| cellsize | defines the cell size in meters. The value need to align with the 100m / 10m cells.  Possible values are therfore: 10, 20, 50, 100 |
+| handler | The name of the Javascript object that is handling the calculation of development stages. See below. |
+| filter | filter to limit output to specific years (variable: simulation year, e.g., 'in(year, 100, 200, 300)' |
+| enabled | boolean switch to turn output on / off (true / false) |
+
+
+ 
+
+
+
+## Javascript
+
+
+The 'devstage' mechanism expects a Javascript object in the global Javascript workspace (loaded e.g. via the `system.javascript` setting of the project file). The Javascsript object should have the the following properties / functions:
+
+ 
+
+
+| name | description |
+| --- | --- |
+| types | An object that describes the possible development stages with a numeric Id, name, a color.See below. |
+| run() | function with the signature "int run(cell)". This function calculates for each 'cell' a development stage and returns the numeric value. The function is only executed for cells that contain stockable area. See below for details. |
+| on<x>finished() | function that is called after completion of the development stage calculations. Can be used to save e.g. grids. Signature: "void on<x>finished(cell)". Note: on<x>finished with an upper-case "F", which is not saved correctly in the wiki. |
+| grid() | grid() returns the full development stage grid as a [Javascript grid](../apidoc/classes/iland/grid.qmd). Use in combination with the 'on<x>finished' callback. |
+
+
+ 
+
+
+
+## The cell object
+
+
+The cell object provides access to a fixed set of properties pertaining to a given cell. Extending this list of properties requires adding properties in C++ (see devstageout.h / devstageout.cpp).
+
+The properties are either related to the trees on the cell (<4m, e.g., DBHMean), related to carbon pools (e.g., deadwoodShare), or special attributes (e.g., crown projection area CPA).
+
+ 
+
+
+| Property | Description |
+| --- | --- |
+| x | x position of the current cell (cell index of the development stage grid) |
+| y | y position of the current cell (cell index) |
+| DBHMin, DBHMean, DBHMedian, DBHMax | Minimum / mean / median / max DBH of all trees (>4m) on the cell (cm). |
+| HMean, HMedian, HMax | Mean / median / max tree height over all trees (>4m) on the cell (m). |
+| NQD | variation in DBH expressed as 100 * interquartile distance / median. Interquartile distance: 75th - 25th percentile of DBH on the cell. (trees >4m). |
+| N_ha | number of trees (>4m) per hectare (includes transformation from the cell size, but not stockable area within the cell) |
+| CPA | crown projection area (0..1). Calculates the crown projection of all trees (>4m) on a 2m grid using the tree crown radii. See also [SpatialAnalysis.html.](../apidoc/classes/iland/spatialanalysis.qmd) All 2m cells with more than 50% crown area are counted and the CPA is then calculated  as #total area of cells >50% crown cover / #stockable area. |
+| deadwoodShare | share of standing / lying (aboveground) deadwood relative to (aboveground) living biomass (Carbon). Values for standing / lying deadwood C are retrieved from the resource units (100m). Only the aboveground fraction of snags and coarse woody debris is counted. The deadwoodShare is calculated as: deadwood_carbon / living_aboveground_carbon(incl.regeneration). Note that deadwoodShare can become > 1. |
+| Pct_PMugo | percentage (0..100) of the (stockable) cell area, that is covered with trees of Pinus mugo with a height > 1.3m. |
+
+ 
+
+
+
+## Output
+
+
+The database output 'devstage' is described on the [outputs page.](outputs.qmd)
+
+To save the development stages as a grid, you can use JavaScript (see in the example below).
+
+ 
+
+
+
+## Example
+
+
+ 
+Below is an example of a classification (adapted after Zenner et al).
+
+The code contains the definition of stages (including names and colors), the actual classifcation tree ('run()'), and some auxiliary code. The latter shows how cell variables can be logged to a csv file for testing (see (and uncomment) the 'dumpCell()' function), as well as a mechanism that fills an extra grid with custom values and writes that also to disk.
+
+
+```javascript
+// Example Object for ecological classification
+
+function Logger(logfile) {
+this.path=logfile;
+this.text = "year;stand;text"; // the lines
+this.save = function() {  Globals.saveTextFile(Globals.path(this.path), this.text);  }
+this.log = function(txt) { //var line=Globals.year + ";" + stand.id + ";" + txt;
+this.text = this.text + "\n" + txt; }
+}
+
+var cell_acc;
+var temp_grid;
+
+const Stage_NonForest = 0;
+const Stage_Krummholz = 1;
+const Stage_Gap = 2;
+const Stage_Establishment = 3;
+const Stage_Early_Optimum = 4;
+const Stage_Mid_Optimum = 5;
+const Stage_Late_Optimum = 6;
+const Stage_Plenter = 7;
+const Stage_Terminal = 8;
+const Stage_Decay = 9;
+
+var devStage =  {
+   // define the available vegetation types
+   // class 0 is reserved for non-forest!
+   types:  { 0 : {name: "non forest", color: "#333333"},
+ 1: {name: "Krummholz", color: "#A0522D"},
+                 2: {name: "Gap/Regeneration", color: "#FFFF99"},
+ 3: {name: "Establishment", color: "#FFCC00"},
+ 4: {name: "Early Optimum", color: "#99FF99"},
+ 5: {name: "Mid Optimum", color: "#00CC00"},
+ 6: {name: "Late Optimum", color: "#006600"},
+ 7: {name: "Plenter", color: "#3399FF"},
+ 8: {name: "Terminal", color: "#4169E1"},
+ 9: {name: "Decay", color: "#000080"}
+
+   },
+
+   run: function(cell) {
+   //this.dumpCell(cell); // write content to CSV
+   //this.writeGrid(cell); // write variables to a grid
+
+   // Krummholz: >=50% of the area covered with Pinus mugo
+   if (cell.Pct_PMugo >= 50)
+  return Stage_Krummholz;
+
+   // Gap / Regeneration if crown projection area < 30%
+   if (cell.CPA <= 0.3)
+  return Stage_Gap;
+
+   // "Establishment": max DBH < 20cm
+   if (cell.DBHMax < 20)
+  return Stage_Establishment;
+
+   // if there is a large amount of deadwood, we have decay, or establishment, or early optimum
+   if (cell.deadwoodShare > 0.3) {
+   // "Decay" if large trees are present
+   if (cell.DBHMax >= 40)
+     return Stage_Decay;
+
+   // small mean dbh (<16) is "Establishment", "Early optimum" otherwise
+   if (cell.DBHMean < 16)
+     return Stage_Establishment;
+   else
+     return Stage_Early_Optimum;
+   }
+
+   // "Plenterforest" depends on DBH variation:
+   if (cell.NQD > 150)
+     return Stage_Plenter;
+
+   // Early / mid / late optimum depend on maximum DBH:
+   if (cell.DBHMax < 40)
+      return Stage_Early_Optimum; // "Early optimum"
+   if (cell.DBHMax < 60)
+      return Stage_Mid_Optimum;
+   if (cell.deadwoodShare <= 0.1)
+      return Stage_Late_Optimum; // dead wood share < 5%
+   else
+      return Stage_Terminal; // dead wood share >=5% (and <30%)
+
+
+   },
+   onFinished: function(cell) {
+   // called at the end of the year
+   cell.grid().save('temp/devstage_' + Globals.year + '.asc');
+   cell_acc = cell; // test access from outside...
+   // only necessary if writeGrid() is active:
+   if (temp_grid === undefined)
+  temp_grid = cell.grid().copy();
+   else
+      temp_grid.save('temp/extra_' + Globals.year + '.asc');
+   },
+   lg: new Logger("temp/test.csv"),
+
+   dumpCell: function(cell) {
+   var line = "" + cell.x + "," + cell.y + "," + cell.DBHMax + "," + cell.DBHMean + "," + cell.NQD + "," + cell.CPA + "," + cell.deadwoodShare;
+   this.lg.log(line);
+   },
+   writeGrid: function(cell) {
+   if (temp_grid !== undefined)
+       temp_grid.setValue( cell.x, cell.y, cell.NQD ); // fill the grid with the NQD variable
+   }
+};
+```
+
+ 
+
+ 
+
+ 

@@ -1,0 +1,29 @@
+---
+title: "transpiration and conductance in saplings"
+---
+
+The iLand [water cycle](water-cycle.qmd) calculations explicitly consider transpiration of foliage, feedbacks from atmospheric and soil drought as well as age-related decline of soil-plant-atmosphere conductivity on [#transpiration and canopy conductance|canopy conductance](water-cycle.qmd). This detailed calculations, however, require information about leaf area dynamics, which is not fully available for the [sapling layer](sapling-growth-and-competition.qmd), modeled in a spatially stratified mean tree approach in iLand. Furthermore, also on resource units that are not stocked with adult trees, regenerating species will have to compete for water with ground vegetation (which is not explicitly simulated in iLand currently).
+
+In order to include the vegetation layer &lt;4m height in the calculation of [soil water dynamics](water-cycle.qmd) we assume that
+
+* a RU has a minimum *LAI* , i.e. ground vegetation is occupying the area not stocked by trees. In conjunction with Eq. 5 [#transpiration and canopy conductance|here](water-cycle.qmd) this means that the maximum conductance from the vegetation layer does not approach zero, even if no adult trees are present on a RU. The minimum LAI has a default value of 1 and can be modified with the *groundVegetationLAI*parameter in the *model.settings*section of the [project file](project-file.qmd) .
+* the vegetation layer of ground vegetation and saplings &lt;1.3m height consumes water up to a *Ψ<sub>min</sub>* of -1.5MP (default) and responds to [atmospheric drought](vapor-pressure-deficit-response.qmd) with an exponent of -0.6 (see [Oren et al. 1999](http://dx.doi.org/10.1046/j.1365-3040.1999.00513.x)). We assume that there is a trade-off between tree regeneration and other ground vegetation with regard to water use (i.e. if a tree species would have a lower *Ψ<sub>min</sub>*, the difference to the PWP is consumed by competing ground vegetation. It also assumes that while adult individuals can reach *Ψ<sub>min</sub>* below the PWP, their progeny are not (yet) able to do so (e.g. due to a less developed root system). The $\Psi_{min}$ of the ground vegetation and cohorts &lt;1.3m is an editable parameter (*groundVegetationPsiMin*) in the model *model.settings* section of the [project file](project-file.qmd).
+* conductance from the vegetation layer &lt;4m is not subject to age-related limitations.
+* saplings with a height &gt;1.3m are included in the [water cycle](water-cycle.qmd)  calculations. The leaf area of saplings &gt;1.3m is derived by the following equation:
+
+
+$$
+LA_{sap}=N_{repr}\cdot kW_3 dbh_{m} ^ {kW_4} \cdot SLA
+$$
+
+with $N_{repr}$ the number of represented trees of the species as calculated by the Reineke approach (cohorts &gt; 1.3m), $dbh_m$ the arithmetic mean dbh of all cohorts &gt;1.3m, $kW_3$, $kW_4$ the species specific parameters for the leaf mass allometric function, and $SLA$ the specific leaf area of the species. The leaf area of saplings is included in all processes of the water cycle (e.g., interception, calculation of canopy conductance).
+
+In a situation where the sum of leaf area of individual adult trees and saplings (&gt;1.3m) is below the threhold (i.e. LAI&lt; *groundVegetationLAI*), then ground vegetation is assumed to fill the gap, i.e. the effective LAI is fixed to *groundVegetationLAI* and the canopy conductance is calculated as a leaf area weighted mean of ground vegetation and other vegetation. The total "effective" LAI (i.e., including adult trees, saplings and ground vegetation) is reported in the [Water output](outputs.qmd) and the water cycle [debug output](debug-outputs.qmd). Note also that this simplifying approach of generalizing ground vegetation and regeneration water demand might be limited in very arid and generally open ecosystems.
+
+
+
+
+::: {.callout-note title="citation"}
+[Seidl, R., Spies, T.A., Rammer, W., Steel, E.A., Pabst, R.J., Olsen, K. 2012](http://dx.doi.org/10.1007/s10021-012-9587-2). Multi-scale drivers of spatial variation in old-growth forest carbon density disentangled with Lidar and an individual-based landscape model. Ecosystems, DOI: 10.1007/s10021-012-9587-2.
+:::
+

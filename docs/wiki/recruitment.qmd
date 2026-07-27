@@ -1,0 +1,34 @@
+---
+title: "recruitment"
+---
+
+After reaching a certain height threshold in the [sapling stage](sapling-growth-and-competition.qmd) trees are recruited into the individual-based model structure of iLand.
+
+
+
+
+
+# Threshold for individual-based modeling in iLand
+
+
+There are no hard technical or conceptual limits to the number or size of individuals that can be modeled in iLands indidivual-based model structure (i.e. the model can realistically handle far more individuals than *LIF* cells). However, the discreet resolution used to render tree crowns and calculate the influence on neighboring individuals (see [here](competition-for-light.qmd)) suggests a decreasing utility of the approach below certain crown dimensions.
+
+We selected a tree height of 4m as threshold for recruiting individuals from the mean tree model of the [sapling stage](sapling-growth-and-competition.qmd). The rationale is that at this height (and the corresponding dbh) most tree species have exceeded a crown radius of 1m, thus occupying and influencing at least one *LIF* cell of the iLand structure. Furthermore, although dependent on site conditions, environment, species etc. this dimensions signify the onset of strong competition and differentiation in most temperate forests (i.e. stem exclusion stage, [Oliver and Larson 1996](http://tinyurl.com/ye4ymk9)). It is thus ecologically meaningful to simulate individual-tree competition for resources explicitly from this stage onwards.
+
+        *
+
+
+
+# Recruitment of individual trees
+
+
+The height of the recruited individuals is given by the height growth model of the sapling stage, i.e. trees are not initialized with a height of 4m sharp, but with the height as predicted in the sapling stage. This mean tree height is used to calculate the mean dbh by means of a species-specific sapling h/d ratio, which in turn gives the amount of trees to be recruited using Reinekes rule (see [here](sapling-growth-and-competition.qmd), minimum of recruited trees=1). A small amount of variation is created between the recruited individuals at every 2 x 2m cell to circumvent artificial homogeneity.
+Once individual trees are sucessfully recruited on a 2 x 2m cell, the sapling module of this cell is cleared, i.e. the first species emerging over the 4m threshold 'wins' the 2 x 2m cell.
+
+
+
+
+::: {.callout-note title="citation"}
+[Seidl, R., Spies, T.A., Rammer, W., Steel, E.A., Pabst, R.J., Olsen, K. 2012](http://dx.doi.org/10.1007/s10021-012-9587-2). Multi-scale drivers of spatial variation in old-growth forest carbon density disentangled with Lidar and an individual-based landscape model. Ecosystems, DOI: 10.1007/s10021-012-9587-2.
+:::
+

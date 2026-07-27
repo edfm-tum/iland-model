@@ -1,0 +1,36 @@
+---
+title: "Release of iLand 2.0"
+date: "2024-07-17"
+author: "Werner Rammer"
+---
+
+We are happy to release version 2.0 of iLand! While a lot of time passed since the last major release in 2016, model development has never cased, and continued with a good pace. The new version comes with new submodules (more below), updates of the user interface and numerous small improvements and bug fixes.
+This release includes more than just a new model version: 12 years after the first iLand paper 2012 in Ecological modeling, a new iLand paper is released today in the same journal (aptly named “The individual-based forest landscape and disturbance model iLand: Overview, progress, and outlook”). The new paper (https://doi.org/10.1016/j.ecolmodel.2024.110785) takes stock of the state of the model and provides a comprehensive starting point for all things iLand.
+The community of iLand users is continuing to grow. iLand has been applied on three continents and several labs use the model and contribute to iLand development and its applications. We therefore improve communication within the community with a new Discord-based channel, and by switching model development to GitHub.
+
+
+
+## iLand 2.0
+
+
+iLand 1.0 was released in 2016 and was our first “feature-complete” version, that is a version that included all the components that we planned to have originally. Since then, iLand saw further advancements in both model development and model application. Here we’d like to highlight just a few highlights:
+Model development
+•	A general module to simulate biotic disturbances (BITE, https://doi.org/10.1016/j.envsoft.2021.104977), from fungi to mammals
+•	A module to incorporate the interactions of forests with permafrost and soil-surface organic layers in boreal forests (POLE-FM, https://gmd.copernicus.org/articles/16/2011/2023/)
+Model application
+•	iLand has been successfully applied in temperate and boreal forests on three continents, namely Europe, North America, and Asia
+•	Over the years the parameters of 150 species and provenances have been collected and recently published (Thom et al 2024, Data in Brief, https://doi.org/10.1016/j.dib.2024.110662)
+•	We are currently aware of 51(!) scientific publications using iLand
+
+
+## Further updates
+
+
+With the release of iLand 2.0 we put a particular emphasis on new users of the model:
+•	Our new paper (https://doi.org/10.1016/j.ecolmodel.2024.110785) provides a comprehensive overview of the current state of iLand
+•	The iLand book (https://iland-model.org/iland-book/) is an online book with 130+ pages and was specifically created to provide a compact and accessible guide for working with iLand. It accompanies other model documentation streams (such as the website ([Welcome](../index.qmd)), and scientific papers ([publications](../wiki/iland-publications.qmd))) and is a resource for both iLand beginners and advanced users
+•	To facilitate communication within the growing number of model users, we started a Discord community channel for iLand: https://tinyurl.com/iland-discord
+Join the channel using this link: <new Discord invite link>!
+•	We moved the development of iLand to a public GitHub repository (https://github.com/edfm-tum/iland-model). The repository includes the full development history (imported from the previous Subversion system) and makes it easier for everyone to have a look at the code (of specific versions), update the code and contribute to iLand development!
+
+

@@ -67,3 +67,4 @@ HEADERS += mainwindow.h \
 FORMS += mainwindow.ui
 RESOURCES += res/fonstudio.qrc
 DEFINES += FONSTUDIO
+win32: DEFINES += _USE_MATH_DEFINES

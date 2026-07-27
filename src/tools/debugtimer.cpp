@@ -16,8 +16,11 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************************/
-#include "global.h"
 #include "debugtimer.h"
+#include <QDateTime>
+#include <QThread>
+#include <QCoreApplication>
+#include <QMutex>
 
 #include <QDateTime>
 #include <QMutexLocker>
@@ -25,8 +28,11 @@
 
 // static members
 QHash<QString, double> DebugTimer::mTimingList;
- bool DebugTimer::m_responsive_mode = false;
- qint64 DebugTimer::ms_since_epoch = 0;
+bool DebugTimer::m_responsive_mode = false;
+qint64 DebugTimer::ms_since_epoch = 0;
+
+QMutex timer_mutex;
+
 /*
 double DebugTimer::m_tick_p_s=0.;
 
@@ -54,7 +60,7 @@ DebugTimer::~DebugTimer()
 #ifndef FONSTUDIO
     if (responsiveMode()) {
         qint64 diff = QDateTime::currentMSecsSinceEpoch() - ms_since_epoch;
-        if (diff > 100) {
+        if (diff > 1000) {
             ms_since_epoch = QDateTime::currentMSecsSinceEpoch();
             // qDebug() << "DebugTimer:: process events after 100ms - now" << ms_since_epoch;
             // process events only if we are currently in the main thread (GUI)
@@ -65,13 +71,16 @@ DebugTimer::~DebugTimer()
 #endif
 
     double t = elapsed();
-    mTimingList[m_caption]+=t;
+    if (!m_caption.isEmpty()) {
+        QMutexLocker locker(&timer_mutex);
+        mTimingList[m_caption]+=t;
+    }
+
     // show message if timer is not set to silent, and if time > 100ms (if timer is set to hideShort (which is the default))
-    if (!m_silent && (!m_hideShort || t>100.))
+    if (!m_silent && (!m_hideShort || t>1000.))
         showElapsed();
 }
 
-QMutex timer_mutex;
 DebugTimer::DebugTimer(const QString &caption, bool silent)
 {
     ++m_count;
@@ -80,13 +89,15 @@ DebugTimer::DebugTimer(const QString &caption, bool silent)
         ms_since_epoch = QDateTime::currentMSecsSinceEpoch();
     }
 
-    m_caption = caption;
     m_silent=silent;
     m_hideShort=true;
-    if (!mTimingList.contains(caption)) {
-        QMutexLocker locker(&timer_mutex);
-        if (!mTimingList.contains(caption))
-            mTimingList[caption]=0.;
+    m_caption = caption;
+    if (!caption.isEmpty()) {
+        if (!mTimingList.contains(caption)) {
+            QMutexLocker locker(&timer_mutex);
+            if (!mTimingList.contains(caption))
+                mTimingList[caption]=0.;
+        }
     }
     start();
 
@@ -95,10 +106,10 @@ DebugTimer::DebugTimer(const QString &caption, bool silent)
 void DebugTimer::clearAllTimers()
 {
     QHash<QString, double>::iterator i = mTimingList.begin();
-     while (i != mTimingList.end()) {
-         i.value() = 0.;
-         ++i;
-     }
+    while (i != mTimingList.end()) {
+        i.value() = 0.;
+        ++i;
+    }
 }
 void DebugTimer::printAllTimers()
 {
@@ -106,12 +117,11 @@ void DebugTimer::printAllTimers()
     qWarning() << "Total timers\n================";
     double total=0.;
     while (i != mTimingList.end()) {
-         if (i.value()>0)
-             qWarning() << i.key() << ":" << timeStr(i.value());
-         total+=i.value();
-         ++i;
-     }
-    qWarning() << "Sum: " << total << "ms";
+        if (i.value()>0)
+            qWarning() << i.key() << ":" << timeStr(i.value());
+        total+=i.value();
+        ++i;
+    }
 }
 
 // pretty formatting of timing information
@@ -126,18 +136,18 @@ QString DebugTimer::timeStr(double value_ms, bool exact)
             return QString("%1m %2s").arg(floor(value_ms/60000)).arg(fmod(value_ms,60000)/1000);
 
         return QString("%1h %2m %3s").arg(floor(value_ms/3600000)) //h
-                .arg(floor(fmod(value_ms,3600000)/60000)) //m
-                .arg(qRound(fmod(value_ms,60000)/1000));    //s
+            .arg(floor(fmod(value_ms,3600000)/60000)) //m
+            .arg(qRound(fmod(value_ms,60000)/1000));    //s
     } else {
         if (value_ms<60000)
             return QString("%1s").arg(qRound(value_ms/1000.));
         if (value_ms<60000*60)
             return QString("%1:%2").arg(floor(value_ms/60000), 2, 'f', 0, QLatin1Char('0'))
-                    .arg(floor(fmod(value_ms,60000)/1000.), 2, 'f', 0, QLatin1Char('0'));
+                .arg(floor(fmod(value_ms,60000)/1000.), 2, 'f', 0, QLatin1Char('0'));
 
         return QString("%1:%2:%3").arg(floor(value_ms/3600000)) //h
-                .arg(floor(fmod(value_ms,3600000)/60000), 2, 'f', 0,  QLatin1Char('0')) //m
-                .arg(floor(fmod(value_ms,60000)/1000.), 2, 'f', 0, QLatin1Char('0'));    //s
+            .arg(floor(fmod(value_ms,3600000)/60000), 2, 'f', 0,  QLatin1Char('0')) //m
+            .arg(floor(fmod(value_ms,60000)/1000.), 2, 'f', 0, QLatin1Char('0'));    //s
 
     }
 }
@@ -152,14 +162,11 @@ void DebugTimer::interval(const QString &text)
 void DebugTimer::showElapsed()
 {
     if (!m_shown) {
-            qDebug() << "Timer" << m_caption << ":" << timeStr(elapsed());
+        qDebug() << "Timer" << m_caption << ":" << timeStr(elapsed());
     }
     m_shown=true;
 }
-double DebugTimer::elapsed()
-{
-    return t.elapsed()*1000;
-}
+
 
 void DebugTimer::start()
 {

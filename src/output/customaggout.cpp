@@ -243,6 +243,7 @@ void CustomAggOutLevel::runTrees()
             processTree(t, data);
         }
         writeResults(data, nullptr, 0);
+        break;
 
     }
     case CustomAggOut::sRU: {
@@ -569,6 +570,8 @@ void CustomAggOutLevel::processSnag(const DeadTree *dt, QMap<QString, QVector<QV
 {
     DeadTreeWrapper tw;
     tw.setDeadTree(dt);
+    if (!dt->species())
+        return; // already removed
 
     if (!data.contains(dt->species()->id()))
         data[dt->species()->id()] = QVector<QVector<double> >(mFieldList.size(), QVector<double>(0));

@@ -43,6 +43,7 @@ private:
     void addSpeciesProportions(const ResourceUnit *ru);
     void addDisturbanceHistory(const ResourceUnit *ru);
 
+    bool mUseSingleDeadTrees { true };
 };
 
 

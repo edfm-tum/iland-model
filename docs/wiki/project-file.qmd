@@ -1,0 +1,256 @@
+---
+title: "Project File Structure"
+---
+
+The project file is the main configuration file for running iLand. It defines the simulation extent (the *world*), site characteristics, climate data, initialization states, disturbance modules, and outputs.
+
+For the project file we use an XML-based structure which gives great flexibility and adaptability.
+
+There are two primary ways of editing the project file:
+
+1. **Graphical Editor**: Click **Edit Settings** in the iLand User Interface to open a dialog matching the hierarchical XML structure.
+2. **Text Editor**: Directly edit the XML file. Editors with XML schema validation or syntax highlighting (like VS Code or Notepad++) are recommended.
+
+You can add comments directly above a setting in the XML file using standard XML comments: `<!-- comment -->`. The iLand C++ graphical settings dialog parses and displays these comments (indicated by a pen icon).
+
+For a complete tabular list of all settings, including defaults, data types, and C++ tooltips, see the [Project Settings Reference](project-file-reference.qmd).
+
+## Example Files
+
+A complete example project file is provided with the [example landscape](download.qmd).
+
+---
+
+## Main Sections
+
+Each valid XML project file starts with a fixed header, and all sections are nested within the root `<project>` element:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>   
+<!-- project description -->
+<project>
+  <system> ... </system>
+  <model> ... </model>
+  <modules> ... </modules>
+  <output> ... </output>
+  <user> ... </user>
+</project>
+```
+
+* **system**: Core settings like file paths, database locations, logging, and script file inclusions.
+* **model**: Settings for the world extent, site/soil properties, climate, initialization, and management.
+* **modules**: Configurations for the active [disturbance modules](disturbance-modules.qmd).
+* **output**: Toggles and execution conditions for SQLite and debug outputs.
+* **user**: Custom settings that can be accessed via JavaScript during the simulation.
+
+---
+
+## System Settings (`system`)
+
+The system section controls the environment paths, databases, logging, and Javascript engine parameters.
+
+* **Paths (`system.path`)**: Defines default paths for files. See the [File Paths Settings Reference](project-file-reference.qmd#file-paths-systempath) and the [Filenames and Paths guide](filenames-and-paths.qmd).
+* **Databases (`system.database`)**: Links the input, output, and climate SQLite database files. See the [Databases Settings Reference](project-file-reference.qmd#databases-systemdatabase).
+* **System Settings (`system.settings`)**: Low-level technical configuration (multithreading, thread counts, random seeds, expression linearization). See the [System Settings Reference](project-file-reference.qmd#system-settings-systemsettings).
+* **Logging (`system.logging`)**: Configures log targets, files, and flush policies. See the [Logging Settings Reference](project-file-reference.qmd#logging-systemlogging).
+* **JavaScript (`system.javascript`)**: Specifies JavaScript scripts to load at model startup. See the [JavaScript Options Reference](project-file-reference.qmd#javascript-options-systemjavascript) and the [scripting guide](iland-scripting.qmd).
+
+---
+
+## Model Settings (`model`)
+
+The model section defines biophysical environment configurations, physiological parameters, management options, and initialization routines.
+
+### World (`model.world`)
+
+Describes the size, shape, and geographic orientation of the simulation area. 
+
+* See the [World & Spatial Setup Reference](project-file-reference.qmd#world-spatial-setup-modelworld) for grid settings.
+* Learn more about setting up landscape dimensions in the [Simulation Extent guide](simulation-extent.qmd).
+
+### Site (`model.site`)
+
+Defines biophysical variables like site fertility and soil horizons (sand, clay, young refractory carbon, som pools).
+
+* See the [Site & Soil Properties Reference](project-file-reference.qmd#site-soil-properties-modelsite).
+* Detailed soil parameterization is documented in the [Soil Parameterization guide](soil-parametrization-and-initialization.qmd).
+
+### Climate (`model.climate`)
+
+Defines the SQLite database tables and daily weather shift variables.
+
+* See the [Climate Configurations Reference](project-file-reference.qmd#climate-configurations-modelclimate) for all settings.
+* Learn more in the [Climate Data guide](climatedata.qmd).
+
+### Settings (`model.settings`)
+
+Controls main submodules (mortality, growth, regeneration, carbon cycle), radiation absorption formulas, water cycle parameters, seed dispersal, and grass competition.
+
+* See the [Model Settings Reference](project-file-reference.qmd#model-settings-modelsettings).
+* Includes dedicated settings for:
+    * **Seed Dispersal**: See [Seed Dispersal Reference](project-file-reference.qmd#seed-dispersal-modelsettingsseeddispersal).
+    * **Grass Cover**: See [Grass Cover Settings Reference](project-file-reference.qmd#grass-cover-settings-modelsettingsgrass).
+    * **Ungulate Browsing**: See [Browsing Settings Reference](project-file-reference.qmd#browsing-settings-modelsettingsbrowsing).
+    * **Soil ICBM Pools**: See [Soil Settings Reference](project-file-reference.qmd#soil-settings-modelsettingssoil).
+    * **Permafrost**: See [Permafrost Settings Reference](project-file-reference.qmd#permafrost-settings-modelsettingspermafrost).
+
+#### Seed Dispersal - Seed Belt Configuration
+
+The seed belt specifies a custom seed source zone surrounding the simulated landscape. You can define fine-grained species proportions within designated coordinate sectors (defined by `sizeX` and `sizeY`).
+
+* Keys are formatted dynamically as `species_X_Y` where `X` is the column index and `Y` is the row index.
+* *Example value for key `species_0_0`*: `"Psme 0.7 Abmi 0.2"` specifies that 70% of the seed belt pixel at index (0,0) is populated with Douglas-fir, and 20% with Grand fir.
+
+### Species Parameters (`model.species`) {#species}
+
+Identifies the source of tree species parameters, and configures response classes. Because some settings (such as nitrogen response and phenology groups) use repeated elements or custom attributes, they cannot be handled by the graphical settings editor and must be edited directly in the XML project file.
+
+* See the [Species Parameters Reference](project-file-reference.qmd#species-parameters-modelspecies) for the list of simple settings.
+* Complete lists of static database species parameters can be found in the [Species Parameters List](species-parameter.qmd).
+
+#### XML Example for Complex Species Settings:
+
+Below is a section of an active XML project file showing the structure of complex species settings:
+
+```xml
+<project>
+  <model>
+    <species>
+      <!-- Source table and LIP reader configuration -->
+      <source>species</source>
+      <reader>lip/reader.lip</reader>
+
+      <!-- 1. Nitrogen Response Classes -->
+      <!-- Defines the soil fertility response curve for classes 1, 2, and 3. -->
+      <!-- Each class is defined by coefficients 'a' and 'b'. -->
+      <nitrogenResponseClasses>
+          <class_1_a>-0.045</class_1_a>
+          <class_1_b>10</class_1_b>
+          <class_2_a>-0.055</class_2_a>
+          <class_2_b>25</class_2_b>
+          <class_3_a>-0.065</class_3_a>
+          <class_3_b>40</class_3_b>
+      </nitrogenResponseClasses>
+
+      <!-- 2. CO2 Response Parameters -->
+      <!-- Base concentration, compensation points, and doubled RUE multiplier (beta0) -->
+      <CO2Response>
+          <p0>1</p0>
+          <baseConcentration>380</baseConcentration>
+          <compensationPoint>80</compensationPoint>
+          <beta0>0.3</beta0>
+      </CO2Response>
+
+      <!-- 3. Light Response Formulas -->
+      <!-- Equations describing light response for shade-tolerant (class 1) and -->
+      <!-- shade-intolerant (class 5) species. Intermediate classes are interpolated. -->
+      <lightResponse>
+          <shadeTolerant>min(10*lri,max(0.1613*lri+0.7871,lri))</shadeTolerant>
+          <shadeIntolerant>1-exp(-5.5*(lri-0.05))</shadeIntolerant>
+          <LRImodifier>exp(ln(lri)/0.5*(1-0.5*relH))</LRImodifier>
+      </lightResponse>
+
+      <!-- 4. Phenology Groups -->
+      <!-- Defines leaf phenology groups using Jolly model limits. -->
+      <!-- Group 0 is reserved for evergreen species. -->
+      <phenology>
+          <!-- (Note: phenology groups are not supported by the settings editor GUI) -->
+          <type id="1">
+              <!-- deciduous broadleaved -->
+              <vpdMin>0.9</vpdMin>
+              <vpdMax>4.1</vpdMax>
+              <dayLengthMin>10</dayLengthMin>
+              <dayLengthMax>11</dayLengthMax>
+              <tempMin>-2</tempMin>
+              <tempMax>5</tempMax>
+          </type>
+          <type id="2">
+              <!-- deciduous coniferous -->
+              <vpdMin>1</vpdMin>
+              <vpdMax>4.1</vpdMax>
+              <dayLengthMin>10</dayLengthMin>
+              <dayLengthMax>11</dayLengthMax>
+              <tempMin>-4</tempMin>
+              <tempMax>3</tempMax>
+          </type>
+      </phenology>
+
+      <!-- Sprouting options -->
+      <sprouting>
+          <adultSproutProbability>0</adultSproutProbability>
+      </sprouting>
+    </species>
+  </model>
+</project>
+```
+
+#### Detailed Description of Complex Parameters:
+
+* **Nitrogen Response Classes** (`<nitrogenResponseClasses>`): Soils are classified into three classes mapping available nitrogen responses. The parameters `<class_X_a>` and `<class_X_b>` (where `X` is 1, 2, or 3) define the slope ($a$) and intercept ($b$) coefficients for Class 1, 2, and 3 response calculations. The response is calculated using the saturating exponential function:
+  $$y = 1 - e^{a \cdot (\text{availableNitrogen} - b)}$$
+  If the available nitrogen is less than or equal to $b$, the response is $0$.
+
+* **CO2 Response** (`<CO2Response>`): Defines the parameters for calculating productivity changes under different atmospheric $\text{CO}_2$ concentrations following Friedlingstein et al. (1995):
+  * `p0`: Starting multiplier (typically 1).
+  * `baseConcentration`: Atmospheric $\text{CO}_2$ concentration (in ppm) at which baseline Radiation Use Efficiency (RUE) is measured (typically 380 ppm).
+  * `compensationPoint`: Atmospheric $\text{CO}_2$ concentration (in ppm) below which net canopy production drops to zero (typically 80 ppm).
+  * `beta0`: Relative increase in RUE expected when doubling the baseline $\text{CO}_2$ concentration (typically 0.3).
+
+* **Light Response** (`<lightResponse>`): Equations are evaluated dynamically using tree Light Resource Index (`lri`) and height relative to canopy top (`relH`):
+  * `shadeTolerant`: Mathematical formula defining the response of shade-tolerant species (class 1) as a function of Light Resource Index (`lri`).
+  * `shadeIntolerant`: Mathematical formula defining the response of shade-intolerant species (class 5) as a function of Light Resource Index (`lri`).
+  * `LRImodifier`: Mathematical formula describing the Light Resource Index (LRI) modifier as a function of LRI and relative tree height (`relH`).
+
+* **Phenology Groups** (`<phenology>`): Defines leaf phenology groups using Jolly et al. (2005) climatic constraints to calculate the daily Growing Season Index (GSI). Groups are defined under `<type id="...">` tags, where group 0 is reserved for evergreen species. Jolly parameters represent climatic limits:
+  * `vpdMin` / `vpdMax`: Vapor Pressure Deficit constraints (kPa) defining the linear ramp range for dry air stress.
+  * `dayLengthMin` / `dayLengthMax`: Photoperiod thresholds (hours) defining the linear ramp range for day length.
+  * `tempMin` / `tempMax`: Temperature limits (°C) defining the linear ramp range for minimum daily temperature stress.
+
+* **Sprouting** (`<sprouting>`): Configures adult vegetative reproduction.
+  * `adultSproutProbability`: The annual probability that an adjacent 2x2m pixel is colonized by vegetative sprouts of an adult tree (>4m). It can be configured in two formats:
+    * **Global value**: A single decimal value (e.g., `<adultSproutProbability>0.1</adultSproutProbability>`) that applies globally to all species.
+    * **Species-specific list**: A space- or comma-separated list of pairs with species short name and its specific probability (e.g., `<adultSproutProbability>Fasy 0.05 Quro 0.2</adultSproutProbability>`).
+
+---
+
+### Initialization (`model.initialization`)
+
+Sets up the initial tree vegetation, snags, and remote-sensing LiDAR top height grids.
+
+* See the [Initialization Options Reference](project-file-reference.qmd#initialization-options-modelinitialization).
+* Detailed instructions are in [Initialize Trees](initialize-trees.qmd).
+
+### Forest Management (`model.management`)
+
+Configures scripting parameters for forest harvesting, thinning, planting, and the Agent-Based Management Engine (ABE).
+
+* See the [Forest Management & ABE Reference](project-file-reference.qmd#forest-management-abe-modelmanagement).
+* Detailed documentation can be found in the [Forest Management Guide](management.qmd) and the [ABE documentation](abe.qmd).
+
+### Advanced Parameters (`model.parameter`)
+
+Contains low-level switches (torus wraps, debug tree filters, console stamp dumps).
+
+* See the [Advanced Parameters Reference](project-file-reference.qmd#advanced-parameters-modelparameter).
+
+---
+
+## Module Settings (`modules`)
+
+Settings related to [disturbance modules](disturbance-modules.qmd) are configured under their own XML nodes below the `<project>` root element. 
+
+See the dedicated documentation for individual modules:
+
+* [Wind Module](wind-module.qmd)
+* [Wildfire Module](fire-module.qmd)
+* [Bark Beetle Module](barkbeetle-module.qmd)
+* [BITE (Biotic Disturbance Engine)](bite.qmd)
+
+---
+
+## Output Settings (`output`)
+
+Defines which outputs should be recorded, output formats, and execution filters.
+
+* See the [Output Settings Reference](project-file-reference.qmd#output-settings-output).
+* Details on specific output databases can be found in the [Outputs guide](outputs.qmd).

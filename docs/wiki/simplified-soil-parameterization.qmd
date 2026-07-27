@@ -1,0 +1,90 @@
+---
+title: "simplified soil parameterization"
+---
+
+iLand uses a simple yet powerful approach to model C and N in dead organic matter and soil pools, based on the ICBM/2N model ([Kätterer and Andrén 2001](http://dx.doi.org/10.1016/S0304-3800(00)) – see [here](soil-c-and-n-cycling.qmd) for a detailed description and rationale of model selection. The approach is generally able to simulate coupled C and N cycles. However, being a fairly simple model, it is not able to resolve the complexities of the forest N cycle and is thus not suitable for detailed analyses of N dynamics in forests (see for instance [DNDC](http://www.dndc.sr.unh.edu/)for a more suitable modeling approaches in this regard). The iLand soil module nonetheless offers a powerful tool to track detritus C through different pools and make inferences on forest C dynamics in response to changing climate, disturbance, and management regimes (e.g.,  Seidl et al.[2012](http://dx.doi.org/10.1007/s10021-012-9587-2), [2014](http://dx.doi.org/10.1890/14-0255.1), Thom et al., in prep.). The following page describes how to estimate the key parameters for such applications for a new landscape, making use of the [spinup]-routine for initializing vegetation.  
+
+
+
+## Background
+
+
+A usual starting point for estimating parameters of the iLand soil module is that some reference data for C stored in the downed deadwood, litter, and soil organic matter pool is available. These can come from soil cores taken in the field, or can be the result of previous surveys done for the study landscape. Yet even in the best of situations they are point measurements (and not continuous information) representing certain strata of the landscape, such as soil types, ecoregions, or elevation zones. Consequently, the starting point for parameter estimation is point-based soil information aggregated for meaningful strata (central tendency and a measure of within-stratum variation) and maps of the distribution of the strata on the landscape.
+
+
+
+## Determining the influx of dead organic matter
+
+
+First, the fluxes of dead organic matter simulated by iLand under given climate, disturbance, and management conditions need to be estimated. They can be derived directly from iLand [soil output](outputs.qmd), returning the simulated annual influx of C into the litter and deadwood pools. The output is annual and at the level or resource units [RU](resource-units.qmd)), and can thus be aggregated to the spatial strata for which reference soil data exist using post-processing tools such as R or GIS. Assuming that (i) the reference soil data pertain to the climate, management, and disturbance conditions of the recent past, and (ii) that these conditions are represented reasonably well by the iLand [spinup] procedure, these values can be extracted directly from the final iteration of spinup simulations (and no further additional simulations are required).
+
+
+
+## Estimating decay rates
+
+
+The iLand soil module applies simple first order kinetics, which means that its equations can be solved analytically. This feature of the model is exploited here to estimate the decay rates of the three detritus pools simulated, i.e., downed woody debris (DWD), litter, and soil organic matter. An important thing to note here is that the DWD debris pool in iLand does not only contain deadwood on the forest floor but also coarse roots and stumps. In analogy, the litter pool in iLand is comprised of foliage and fine root litter. However, iLand tracks the fraction of aboveground litter in the input, and the fraction of aboveground litter in the litter pools. Care has to be taken that the respective reference values for the calculation of decay rates follow a suitable definition for the parameterization routine described here to work properly.
+
+Decay rates are estimated so that the equilibrium C stocks resulting from the annual input estimated from the spinup (*input_lab* and *input_ref* (and the aboveground fractions *input_lab_ag*, *input_ref_ag*) for litter and DWD, respectively) corresponds to the reference C stocks estimated empirically (reference_lab and reference_ref for litter and DWD, respectively). Consequently, following Kätterer and Andrén (2001), decomposition rates are estimated as:
+
+
+$$
+For\ litter:\newline youngLabileDecompRate = \frac{input\_lab\_ag \cdot input\_lab}{reference\_lab}  \newline
+\newline
+For\ downed\ woody\ debris:\newline youngRefractoryDecompRate = \frac{input\_ref\_ag \cdot input\_ref}{reference\_ref}
+$$
+
+
+These are the actual decay rates i.e., the rates representing the decay under the given climatic conditions. However, the input parameters required by iLand are decay rates standardized for 10°C and optimal water supply, as iLand dynamically accounts for the influence of (changing) climate on the decay of dead organic matter, calculating the Q10 response of decay to diverging climatic conditions following Adair et al. (2008). In order to derive the final iLand parameters for the respective stratum we thus also have to account for the climate factor $re$:
+
+
+$$
+youngLabileDecompRate = \frac{youngLabileDecompRate}{re}
+\newline\newline
+youngRefractoryDecompRate = \frac{youngRefractoryDecompRate}{re}
+$$
+
+
+The value of $re$ representing the climatic conditions during the spinup is also available for the respective iLand [soilinput](outputs.qmd) output and can be used to calculate the decomposition rates for litter and DWD.
+
+The third decay rate that iLand requires is that of soil organic matter (SOM). It is derived following the same logic as those of for litter and DWD, with the difference that there is no direct input of detritus from trees to the SOM pool in iLand, but rather that material from the litter and DWD pool enters the SOM pool via the process of humification (see Kätterer and Andrén 2001). The respective humification constant ($h$) needs to be estimated beforehand, and can be set to vary with soil stratum (e.g., different humification rates with different soil types). Humification rates can also be obtained from the literature (see e.g., [Xenakis et al. (2008)](http://www.sciencedirect.com/science/article/pii/S0304380008003694), [Peltoniemi et al. (2004)](http://onlinelibrary.wiley.com/doi/10.1111/j.1365-2486.2004.00881.x/abstract)), and typically are in the range of between 0.05 and 0.5. Subsequently, the decomposition rate required for the simulated SOM to correspond to the observed value of $reference\_SOM$ is calculated as
+
+
+$$
+somDecompRate = \frac{(input\_lab + input\_ref) \cdot h}{reference\_SOM \cdot re}
+$$
+
+
+The parameters governing N fluxes ($qb$ - CN ratio of soil microbes, $qh$ - CN ratio of SOM, $leaching$, $el$ - microbal efficiency in the litter pool, $er$ - microbal efficiency in the DWD pool) can be set to default values, as the current parameterization is only concerned with C pools and fluxes. These values will not influence the C-related results in the simulation.
+
+Using these parameters in the simulation will on average produce the reference C pools under past climate, management, and disturbance regimes. Please note, however, that there will be spatial and temporal variability in the simulated detritus and soil stocks even within the individual strata using the same decay rates, depending on fluctuations in climate and recent pulses in detritus input (e.g., after a disturbance). This variation can be compared to the within-stratum variation obtained from the available soil samples to evaluate the model and gauge whether the simulated response to spatio-temporal variations in climate and disturbances are realistic. Also, as climate, management or disturbances change in scenario simulations with iLand, the respective soil responses will be tracked dynamically by the model.
+
+
+## Technical implementation
+
+
+After calculating the decay rates based on empirical data and the simulated input to the soil (see above) the last step is to update the respective parameters in iLand. The following table provides an overview:
+
+
+| **Spatially explicit data** |
+| --- |
+| Initial values for the soil pools |
+| Decomposition rate for SOM |
+
+**Not spatially explicit**
+
+| **Spatially explicit data** |
+| --- |
+| Decomposition rates for labile / refractory material |
+
+
+**Caveat**
+ the  [project file](project-file.qmd) includes values for the initial values for the decomposition rates (e.g., *model.site.youngLabileDecompRate*). Changing these values has only an effect in the first years of the simulation since input from iLand uses the species specific decomposition rates. Consequently, one has to update the species parameter table to calibrate the site specific carbon dynamics. This is unfortunate as this breaks the general goal of a single species parameter set that can be applied at different landscapes without modifications. Future versions of iLand might handle this differently.
+
+
+
+
+## A note on snags
+
+
+Snags (i.e., standing woody debris) are another pool of dead organic matter tracked explicitly in iLand. For the documentation of how snag dynamics is simulated see [here](snag-dynamics.qmd). Snags also have a decay rate (i.e., some of the snag C is lost to the atmosphere per year) and a half life determines how long they remain standing. These are parameters not estimated at the level of spatial strata in the landscape (and supplied to iLand in the environment file), but rather are species-specific and thus reside in the species parameter file. These parameters should be evaluated *before* initiating the parameterization routine above, e.g. by testing if the simulated number of snags and amount of C in standing woody debris corresponds with expectations for the region. Should the snag parameters be erroneous (e.g., the half life too long), also the influx into the DWD pool will be wrong (e.g., too low in the example of an overestimated snag half life), and the error is propagated on to the above described estimation of decay rates.

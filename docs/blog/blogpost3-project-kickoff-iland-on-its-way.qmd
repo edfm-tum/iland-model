@@ -1,0 +1,7 @@
+---
+title: "Project kickoff - iLand on its way"
+date: "2009-05-28"
+author: "Rupert Seidl"
+---
+
+Around the official project start date, April 1st 2009, we held two **kick-off meetings** in order to get the project team together and the work on the project finally started. On March 30th the **Austrian**-based part of the [project team](http://www.wabo.boku.ac.at/waldmod_dyn.html) (still including myself, at that date) gathered for a project kickoff, reviewing the proposed task and work structure and discussing approaches potentially relevant for the modeling tasks at hand. Having two weeks to digest this impulse (and also to get established in the lovely town of [Corvallis, Or](http://maps.google.com/maps?q=corvallis,or&oe=utf-8&client=firefox-a&ie=UTF8&split=0&gl=us&ei=Mf1PStPHKYLAsQOe29WqDQ&ll=44.571393,-123.275185&spn=0.123021,0.22625&t=h&z=12&iwloc=A)) iLand work started here in **Oregon** in mid April. The second half of the kick-off round together with [Tom Spies](http://www.cof.orst.edu/cof/fs/people/faculty/spies.php) and [Rob Scheller](http://www.consbio.org/about/staff-board-1/Robert-M.-Scheller-Ph.D) was held soon thereafter, on May 6th. Overall, discussion and comments were very stimulating and diverse – and I’m looking forward to catalyzing some of them in bringing together ideas from individual-based population dynamics and landscape ecology through the project. Stay tuned for more…

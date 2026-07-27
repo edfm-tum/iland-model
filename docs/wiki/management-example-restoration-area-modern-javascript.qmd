@@ -1,0 +1,78 @@
+---
+title: "management example: restoration area (modern Javascript)"
+---
+
+This example demostrates the use of modern Javascript for manipulating input data.
+
+The script mimicks restoration efforts, i.e. planting of trees in given years of specific stands.
+The code reads a CSV file (scripts/mgmtData.csv) and creates a data structure in memory. The table is structured as an iLand initialization file, and includes and additional column 'year'.
+
+The code looks every year if work needs to be done, and then splits the data for each stand and executes some operation.
+
+
+```javascript
+/* Load a tabular data set into a JS Object.
+   Each row is stored as an object with name-value pairs in an array.
+   Example:
+   inifile = loadFromFile("init/test.csv");
+   var elem = inifile[0].stand_id; // access via row number
+   elem = inifile.find(row => row.stand_id == 2); // search for certain element by value
+   elem = inifile.filter(row => row.stand_id > 10); // get a subset of elements
+*/
+
+function loadFromFile(filename) {
+	var res = [];
+	// load CSV File
+	var csv = Factory.newCSVFile(Globals.path(filename));
+	// convert each row to an object with column names as property names
+	for (var r=0;r<csv.rowCount;++r) {
+		var obj = {};
+		for (var c=0;c<csv.colCount;++c) {
+			obj[csv.columnName(c)] = csv.jsValue(r,c);
+		}
+		res.push(obj);
+	}
+	return res;
+}
+
+// convert to CSV
+// https://stackoverflow.com/questions/11257062/converting-json-object-to-csv-format-in-javascript
+function convertToCSV(arr) {
+  const array = [Object.keys(arr[0])].concat(arr)
+
+  return array.map(it => {
+    return Object.values(it).toString()
+  }).join('\n')
+}
+
+// load a CSV file that looks like this:
+// ID,year,species,count,dbh_from,dbh_to,hd,age
+// 1,258,pigl,1700,5.1,5.1,78.44,10
+// ...
+// (ID: stand-id, year: year of management)
+var init_file = loadFromFile("scripts/mgmtData.csv");
+
+function runManagement(year) {
+	// look for all lines with the current year
+	let elems = init_file.filter(x => x.year == year);
+	if (elems.length == 0)
+		return; // nothing to do this year
+
+	// get a unique list of stands that are to be processed this year
+	let stand_ids = [ ...new Set(elems.map( x => x.ID)) ];
+	stand_ids = Array.from(stand_ids); // convert to array
+
+	// loop over all stands
+	for (i in stand_ids) {
+		console.log("Stand: " + stand_ids[i] );
+		let single_init = elems.filter(x => x.ID == stand_ids[i]);
+		let mgmt_str = convertToCSV(single_init);
+
+		console.log("Mgmt content: \n" + mgmt_str);
+
+		// Globals.addTreesOnMap(x, mgmt_str)
+		// do other things here....
+	}
+}
+```
+

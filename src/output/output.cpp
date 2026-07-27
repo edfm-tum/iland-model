@@ -304,14 +304,176 @@ void Output::saveFile()
     newRow();
 }
 
+static QString wikiToMarkdown(const QString &text)
+{
+    QStringList lines = text.split("\n");
+    QStringList resultLines;
+    bool inTable = false;
+    bool inXml = false;
+    QString rootTag;
+
+    for (int i = 0; i < lines.size(); ++i) {
+        QString originalLine = lines[i].remove('\r');
+        QString line = originalLine.trimmed();
+
+        if (inXml) {
+            resultLines.append(originalLine);
+            if (line.contains("</" + rootTag + ">")) {
+                resultLines.append("```");
+                inXml = false;
+                rootTag = "";
+            }
+            continue;
+        }
+
+        // Check for start of XML block
+        if (line.startsWith("<") && !line.startsWith("</") && !line.startsWith("<!--") && !line.startsWith("<?")) {
+            int end = line.indexOf(">");
+            if (end != -1) {
+                int space = line.indexOf(" ");
+                int tagEnd = (space != -1 && space < end) ? space : end;
+                QString tagName = line.mid(1, tagEnd - 1);
+                if (!tagName.isEmpty()) {
+                    inXml = true;
+                    rootTag = tagName;
+                    if (inTable) {
+                        inTable = false;
+                    }
+                    // Ensure a blank line before the XML block starts
+                    if (!resultLines.isEmpty() && !resultLines.last().isEmpty()) {
+                        resultLines.append("");
+                    }
+                    resultLines.append("```xml");
+                    resultLines.append(originalLine);
+
+                    // In case the tag is closed on the same line
+                    if (line.contains("</" + rootTag + ">")) {
+                        resultLines.append("```");
+                        inXml = false;
+                        rootTag = "";
+                    }
+                    continue;
+                }
+            }
+        }
+
+        // Handle headings
+        if (line.startsWith("!!!")) {
+            line = "### " + line.mid(3).trimmed();
+        } else if (line.startsWith("!!")) {
+            line = "## " + line.mid(2).trimmed();
+        } else if (line.startsWith("!")) {
+            line = "# " + line.mid(1).trimmed();
+        }
+
+        // Handle TikiWiki tables
+        if (line.startsWith("||")) {
+            inTable = true;
+            QString headerLine = line.mid(2);
+            bool endsWithDoublePipe = false;
+            if (headerLine.endsWith("||")) {
+                headerLine = headerLine.left(headerLine.length() - 2);
+                endsWithDoublePipe = true;
+            }
+            QStringList headers = headerLine.split("|");
+
+            // Ensure a blank line before the table starts
+            if (!resultLines.isEmpty() && !resultLines.last().isEmpty()) {
+                resultLines.append("");
+            }
+
+            QString mdHeader = "|";
+            QString mdSeparator = "|";
+            for (const QString &h : headers) {
+                QString cleanH = h.trimmed();
+                if (cleanH.startsWith("__") && cleanH.endsWith("__") && cleanH.length() > 4) {
+                    cleanH = "**" + cleanH.mid(2, cleanH.length() - 4) + "**";
+                } else {
+                    cleanH.replace("__", "**");
+                }
+                cleanH.replace("''", "*");
+                cleanH.replace("$", "\\$");
+                mdHeader += " " + cleanH + " |";
+                mdSeparator += " --- |";
+            }
+            resultLines.append(mdHeader);
+            resultLines.append(mdSeparator);
+
+            if (endsWithDoublePipe) {
+                inTable = false;
+            }
+            continue;
+        }
+
+        if (inTable) {
+            bool endsWithDoublePipe = false;
+            QString rowLine = line;
+            if (rowLine.endsWith("||")) {
+                rowLine = rowLine.left(rowLine.length() - 2);
+                endsWithDoublePipe = true;
+            }
+
+            QStringList cells = rowLine.split("|");
+            QString mdRow = "|";
+            for (const QString &c : cells) {
+                QString cleanC = c.trimmed();
+                cleanC.replace("''", "*");
+                cleanC.replace("__", "**");
+                cleanC.replace("$", "\\$");
+                mdRow += " " + cleanC + " |";
+            }
+            resultLines.append(mdRow);
+
+            if (endsWithDoublePipe) {
+                inTable = false;
+            }
+            continue;
+        }
+
+        // Handle inline replacements for non-XML/non-table lines
+        line.replace("''", "*");
+        line.replace("__", "**");
+        line.replace("$", "\\$");
+
+        // Append line with proper spacing
+        if (line.isEmpty()) {
+            if (resultLines.isEmpty() || !resultLines.last().isEmpty()) {
+                resultLines.append("");
+            }
+        } else {
+            // Ensure heading or paragraph line has a blank line before it if appropriate
+            if (!resultLines.isEmpty()) {
+                QString prev = resultLines.last();
+                if (!prev.isEmpty()) {
+                    resultLines.append("");
+                }
+            }
+            resultLines.append(line);
+        }
+    }
+
+    if (inXml) {
+        resultLines.append("```");
+    }
+
+    return resultLines.join("\n");
+}
+
 QString Output::wikiFormat() const
 {
-    QString result=QString("!!%1\nTable Name: %2\n%3\n\n").arg(name(), tableName(), description());
-    // loop over columns...
-    result += "||__caption__|__datatype__|__description__\n"; // table begin
-    foreach(const OutputColumn &col, mColumns)
-        result+=QString("%1|%2|%3\n").arg(col.name(), col.datatype(), col.description());
-    result[result.length()-1]=' '; // clear last newline
-    result+="||\n";
+    QString cleanDesc = wikiToMarkdown(description());
+    QString result = QString("## %1\n\n**Table Name:** **%2**\n\n%3\n\n").arg(name(), tableName(), cleanDesc);
+    
+    // Add columns table
+    result += "| **caption** | **datatype** | **description** |\n";
+    result += "| --- | --- | --- |\n";
+    foreach(const OutputColumn &col, mColumns) {
+        QString colDesc = col.description();
+        colDesc.replace("''", "*");
+        colDesc.replace("__", "**");
+        colDesc.replace("$", "\\$"); // Escape dollar sign in column description too
+        result += QString("| %1 | %2 | %3 |\n").arg(col.name(), col.datatype(), colDesc);
+    }
     return result;
 }
+

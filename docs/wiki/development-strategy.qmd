@@ -1,0 +1,104 @@
+---
+title: "development strategy"
+---
+
+*Note that this page is part of a collection of iLand history pages and does not necessarily represent the current state of model development!*
+
+
+We see model development as a continuous cycle of various phases and steps with feedbacks and interactions between all of them (cf. [Grimm and Railsback 2005](http://tinyurl.com/nj757y)). iLand development advances in three phases, from initial parameterization and testing to large scale [Bayesian calibration](http://treephys.oxfordjournals.org/cgi/reprint/25/7/915) and evaluation in specific application cases.
+
+<img src="/img/dev_strategy.jpg" alt="Image" width="350" class="img-fluid" />
+
+The overall iLand model design corresponds directly to its intended [domain of application](project-abstract.qmd). [Process resolution and level of complexity](iland-model-complexity-and-its-niche-in-the-landscape-of-models.qmd) are selected accordingly, yet taking feasability of implementation in the project duration into account. An initial model design overview can be [found here](model-design.qmd).
+
+
+
+
+# Phase 1
+
+
+Phase 1, the initial development and parameterization of the model, is a hierarchical sequence of seven steps with frequent feedbacks and links to previous steps. The stepwise design embraces a bottom-up approach, starting from the interactions between individual trees and incrementally adding higher level processes.
+
+
+
+## Step 1: individual tree competition for light
+
+
+
+* **Focal processes and entities:** light resource index (LRI) for relative competitive strength of the individuals for light resources, field of neighborhood patterns
+* **Scale:** individual tree, stand
+* **Parameterization:** crown shapes, allometric equations for biomass compartments
+* **Evaluation:** available light per individual compared to PICUS and SORTIE light models for various stand structures; forest floor light patterns
+* **Objective:** light resource index established and evaluated
+
+
+
+## Step 2: tree growth relations, controlled environment
+
+
+
+* **Focal processes and entities:** NPP, allocation, tree morphology, density-dependent mortality, base management (simple removal of trees at stand level)
+* **Scale:** individual tree, stand
+* **Parameterization:** literature values for QUE, respiration, allometric equations; yield table data and published values for tree morphology (h/d relationships); tree species silvics (e.g., shade tolerance)
+* **Evaluation:** literature values for stand level productivity, yield table data, tree shapes and taper, Yoda & Reinekes power laws and observed stem numbers
+* **Objective:** dynamic individual tree growth relations established, maximum tree dimension under optimal environmental conditions achieved
+
+
+
+## Step 3: environment
+
+
+
+* **Focal processes and entities:** water cycle, soil resource index (SRI) for relative competitive strength of the individuals for soil resources, environmental response functions for growth, environmental thresholds for mortality
+* **Scale:** stand, landscape
+* **Parameterization:** tree species silvics, prior model parameters (ZELIG, ForClim, PICUS), literature, empirical data (according to availability)
+* **Evaluation:** plant available water, growth relationships, strand structures and compositions under different environmental conditions
+* **Objective:** realistic environmental sensitivity of processes growth and mortality established, realistic site water differences as emerging property of iLand
+
+
+
+## Step 4: regeneration
+
+
+
+* **Focal processes and entities:** regeneration
+* **Scale:** stand, landscape
+* **Parameterization:** tree species silvics, prior model parameters (ZELIG, ForClim, PICUS), literature, empirical data (according to availability)
+* **Evaluation:** natural species composition, successional dynamics, spatial regeneration patterns
+* **Objective:** regeneration niches modeled, ecosystem dynamics at landscape level (sans disturbances and management)
+
+
+
+## Step 5: soil carbon
+
+
+
+* **Focal processes and entities:** soil C cycle,
+* **Scale:** stand, landscape
+* **Parameterization:** literature
+* **Evaluation:** (equilibrium) belowground C pools
+* **Objective:** soil pools and dynamics established
+
+
+
+## Step 6: management
+
+
+
+* **Focal processes and entities:** management
+* **Scale:** individual to landscape
+* **Parameterization:** literature, management records, management concepts
+* **Evaluation:** management patterns and effects, empirical data (according to availability)
+* **Objective:** ecosystem dynamics in managed landscapes
+
+
+
+## Step 7: disturbances
+
+
+
+* **Focal processes and entities:** fire, insects, wind
+* **Scale:** stand, landscape
+* **Parameterization:** literature, empirical data (according to availability)
+* **Evaluation:** landscape patterns, empirical data (according to availability)
+* **Objective:** ecosystem dynamics including disturbances

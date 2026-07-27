@@ -4,6 +4,7 @@
 #include <QtGui>
 #include <QtXml>
 #include <QMessageBox>
+#include <QFileDialog>
 #include <imagestamp.h>
 #include "lightroom.h"
 #include "stampcontainer.h"
@@ -24,6 +25,31 @@ StampContainer *stamp_container=0;
 StampContainer *reader_stamp_container=0;
 QList<Species*> tree_species;
 
+
+// helper functions
+QString fileDialog(const QString &title, const QString &start_directory="", const QString &filter="", const QString &type = "file", QWidget *parent=0)
+{
+    QString the_filter = filter;
+    if (the_filter.isEmpty())
+        the_filter = "All files (*.*)";
+    else
+        the_filter += ";;All files (*.*)"; // as 2nd filter
+    QFileDialog dialog(parent);
+    dialog.setFileMode(QFileDialog::Directory);
+
+    QString fileName;
+
+    if ( type == "directory") {
+        fileName = dialog.getExistingDirectory(parent,
+                                               title, start_directory);
+    }
+    else if (type == "file") {
+        fileName = dialog.getOpenFileName(parent,
+                                          title, start_directory, the_filter);
+    }
+
+    return fileName;
+}
 
 
 
@@ -314,8 +340,11 @@ void MainWindow::on_lrProcess_clicked()
     qDebug() << "cutting stamps when averaged absoulte value of rings is below"<<cut_threshold;
     qDebug() << "reading binary stamp reader file" << binaryReaderStampFile;
 
-    if (!Helper::question(QString("Create writer stamps?\ntarget=%1, \nreader stamps=%2").arg(output_file, binaryReaderStampFile)))
+    if (QMessageBox::question(this, "iLand",
+                              QString("Create writer stamps?\ntarget=%1, \nreader stamps=%2").arg(output_file, binaryReaderStampFile),
+                              QMessageBox::Yes | QMessageBox::No) != QMessageBox::Yes)
         return;
+
     float crown, height, bhd;
     QString formula, name;
 
@@ -481,7 +510,7 @@ void MainWindow::on_lrProcess_clicked()
 void MainWindow::on_lrLoadStamps_clicked()
 {
     {
-        QString fileName = Helper::fileDialog("Name for binary stamp file");
+        QString fileName = fileDialog("Name for binary stamp file");
         if (fileName.isEmpty())
             return;
         QFile infile(fileName);
@@ -535,7 +564,10 @@ void MainWindow::on_lrReadStamps_clicked()
     } // for (radius)
     qDebug() << "tested a total of" << totcount;
     QString targetFile = xmldoc.documentElement().firstChildElement("readerStamp").text();
-    if (!Helper::question(QString("Save readerfile to %1?").arg(targetFile))) {
+
+    if (QMessageBox::question(this, "iLand",
+                              QString("Save readerfile to %1?").arg(targetFile),
+                              QMessageBox::Yes | QMessageBox::No) != QMessageBox::Yes) {
         qDebug() << container.dump();
         return;
     }
@@ -556,7 +588,7 @@ void MainWindow::on_lrReadStamps_clicked()
 
 void MainWindow::on_openFile_clicked()
 {
-    QString fileName = Helper::fileDialog("select XML-ini file for FonStudio...");
+    QString fileName = fileDialog("select XML-ini file for FonStudio...");
     if (fileName.isEmpty())
         return;
     ui->initFileName->setText(fileName);

@@ -1,0 +1,15 @@
+---
+title: "download statistics"
+---
+
+The use of iLand is documented by the increasing number of [scientific publications](iland-publications.qmd), but also by increasing downloads over time:
+
+<img src="/img/iLand_downloads_bar.png" alt="Image" class="img-fluid" />
+
+
+When downloading the model, users provide (if they want) their country. We can therefore map the downloads:
+
+<img src="/img/iLand_download_map.png" alt="Image" class="img-fluid" />
+
+
+(Data from August 2025).

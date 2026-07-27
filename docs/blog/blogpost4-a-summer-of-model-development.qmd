@@ -1,0 +1,7 @@
+---
+title: "A summer of model development"
+date: "2009-07-05"
+author: "Rupert Seidl"
+---
+
+The summer high pressure has settled over the Pacific Northwest, temperatures are well in the 90ies (30°C) and campuses here at [OSU](http://oregonstate.edu/) and elsewhere are getting pretty empty… yet a quite summer is not whats on our minds as we dive deeper into the development of [iLand](../wiki/iland.qmd). [Werner Rammer](http://www.wabo.boku.ac.at/rammer.html), the principal technical developer of iLand, has arrived here in Corvallis for a summer of model development and we’ve started to structure the development cycles ahead of us (see an illustration [here](http://books.google.com/books/p/princeton?id=12MvUbMeog8C&lpg=PP1&pg=PA27)). Currently we’re spending some time over the question how individual trees compete for resources (light, water, nutrients) and how such processes can be efficiently abstracted for implementation at landscape scales. Our initial efforts to derive a process-oriented [field of neighborhood](http://dx.doi.org/10.1016/S0304-3800(00) patterns of individual tree interactions look quite promising… and is constantly exposed to real world comparisons as we hike through the stunning [forests of the Pacific Northwest](http://www.fs.fed.us/r6/) on the weekends. Speaking of which- happy Independence Day, we’re now going BBQ…

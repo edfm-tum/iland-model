@@ -1,0 +1,115 @@
+---
+title: "stem growth"
+---
+
+Based on the allocation of biomass increment to the [#reserve and allocation to stem growth|stem compartment](allocation.qmd) tree dimensions are updated dynamically, accounting for the influence of light competition on the stem growth strategy of trees.
+
+
+
+
+
+
+# height to diameter ratio of stem increment
+
+
+Altering the partitioning regime between height and diameter increment is a major tree response to competition for light. Ecological theory ([Grime 1979](http://tinyurl.com/yjpoyzs)) suggests that height growth is favored over diameter increment with decreasing light levels for the individual, as a strategy to improve its competitive status in the canopy. This is also supported by empirical findings, documenting a non-constant allometric relationship between height and diameter growth of individual trees as a result of their competitive status (e.g., [Henry and Aarssen 1999](http://dx.doi.org/10.1046/j.1461-0248.1999.22054.x)). [Niklas (1995)](http://dx.doi.org/10.1006/anbo.1995.1015), for instance, found the rate of height growth to diameter increment greater for trees growing in stands compared to open-grown trees.
+
+To simulate this behavior as emerging property of the model (cf. also the analysis of [Seidl et al. 2010](http://dx.doi.org/10.1007/s00468-009-0387-z)) we extend the approach of [Bossel (1996)](http://dx.doi.org/10.1016/0304-3800(95), who defined two height-diameter bounds (with and without competition) for allocation of annual increments (see also [Peng et al. 2002](http://dx.doi.org/10.1016/S0304-3800(01)). In iLand, diameter-dependent h/d-thresholds are defined per species. Upper limits (*h/d<sub>max</sub>*)are derived from densly stocked, even-aged stands (e.g., yield table stands), while lower limits (*h/d<sub>min</sub>*) are parameterized from growth records for open-grown trees (e.g., [Hasenauer et al. 1997](http://dx.doi.org/10.1016/S0378-1127(97)). The specific h/d-ratio for the increment of a tree at a given diameter (*r<sub>h/d</sub>*) is subsequently derived using *[LRI](competition-for-light.qmd)* as measure of light competition (Eq. 1a)
+
+$$
+r_{h/d}=h/d_{min}\cdot LRI+h/d_{max}\cdot (1-LRI)
+$$
+
+For an open-grown tree *LRI*→1, i.e. *r<sub>h/d</sub>* will be close to its *h/d<sub>min</sub>*, while for conditions of intense light competition *LRI*→0 and *r<sub>h/d</sub>*→*h/d<sub>max</sub>*.
+
+**Note for the parameterization of species**
+The *h/d<sub>min</sub>* and *h/d<sub>max</sub>* are typically expressed as an allometric relationship:
+
+
+$$
+\frac{H}{D} = a \cdot dbh^b
+$$
+
+
+The equation in this form describes the state of the H/D-ratio of a tree with a given diameter (this expression is used e.g., for the generation of [light influence patterns](lightroom.qmd)).
+However, the equation needs to be reformulated, when used dynamically for the H/D increment. Rearranging for height and differentiating with respect to *dbh* yields:
+
+
+$$
+H=a \cdot dbh^{b+1}
+$$
+
+
+$$
+\frac{d H}{d dbh}={a}{(b+1)}dbh^b
+$$
+
+
+Using the equation in the form *a (b+1) dbh<sup>b</sup>* for the H/D increment makes sure, that the realized H/D ratios (e.g., for an open grown tree) are consistent with the specified H/D equation (*a dbh<sup>b</sup>*):
+
+        *
+
+
+
+# stem update
+
+
+The biomass of an individual stem (*W<sub>s</sub>*) is defined as Eq. 2
+
+$$
+W_{s}=dbh^2\cdot H \cdot \phi
+$$
+
+with
+
+$$
+\phi=\frac{\rho\varphi \pi }{4}
+$$
+
+
+, *H* the tree height, *ρ* the species-specific wood density, and *φ*; the form factor (cf. [Bossel 1996](http://dx.doi.org/10.1016/0304-3800(95)). Substituting Eq. 1 into Eq. 2 and differentiating to derive stem increment yields
+
+$$
+\frac{\delta W_s}{\delta dbh} = \phi dbh^2(2\frac{H}{dbh}+r_{h/d})
+$$
+
+This can be solved for *dbh* increment (Eq. 4):
+
+$$
+\delta dbh = \frac{\delta W_s}{\phi dbh^2(2\frac{H}{dbh}+r_{h/d})}
+$$
+
+and linearized
+
+$$
+\Delta dbh=\frac{1}{\phi dbh^2(2\frac{H}{dbh}+r_{h/d})}w_{s}
+$$
+
+with
+
+$$
+\Delta H=\Delta dbh\cdot r_{h/d}
+$$
+
+A linearization as given in Eq. 5 is erroneous due to the high non-linear nature of the stem growth derivate (but see [Peng et al. 2002](http://dx.doi.org/10.1016/S0304-3800(01)). We thus use the previous years *dbh* increment as well as a redistribution of residuals to ultimately derive Δ*dbh* and Δ*H*, granting consistency with overall *w<sub>f</sub>* but avoiding a computationally expensive iterative soluation. Eq. 7 shows the inclusion of the *dbh* increment of last year:
+
+$$
+\Delta dbh = \frac{1}{\phi (dbh + \Delta dbh_{t+1})^2(2\frac{H}{dbh}+r_{h/d})}w_s
+$$
+
+
+The correction of the estimate after the update is provided by Eq. 8 (note that *W<sub>s</sub>* in Eq. 8 is the stem wood biomass including *w<sub>s</sub>*):
+
+$$
+\Delta dbh = \Delta dbh - \frac{\Delta dbh}{w_s}(\phi (dbh + \Delta dbh)^2)\cdot(h+\Delta dbh \cdot r_{h/d})-W_s)
+$$
+
+Only if after these steps of approximating a solution the estimated stemwood increment resulting from the estimated diameter and height increment differs substantially from the stemwood increment expected from allocation of biomass an iterative solution is sought.
+
+
+
+
+::: {.callout-note title="citation"}
+[Seidl, R., Rammer, W., Scheller, R.M., Spies, T.A. 2012](http://dx.doi.org/10.1016/j.ecolmodel.2012.02.015). An individual-based process model to simulate landscape-scale forest ecosystem dynamics. Ecol. Model. 231, 87-100.
+:::
+

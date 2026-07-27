@@ -1,0 +1,483 @@
+---
+title: "iLand publications"
+---
+
+
+
+
+# Overview papers
+
+
+
+[**Seidl, R., Rammer, W., Scheller, R.M., Spies, T.A., 2012**](http://dx.doi.org/10.1016/j.ecolmodel.2012.02.015) An individual-based process model to simulate landscape-scale forest ecosystem dynamics. Ecol. Model. 231, 87-100, http://dx.doi.org/10.1016/j.ecolmodel.2012.02.015
+
+[**Rammer, W., Thom, D., Baumann, M., Braziunas, K., Dollinger, C., Kerber, J., Mohr, J., Seidl, R., 2024**](https://doi.org/10.1016/j.ecolmodel.2024.110785)The individual-based forest landscape and disturbance model iLand: Overview, progress, and outlook. Ecological Modelling 495, https://doi.org/10.1016/j.ecolmodel.2024.110785
+
+[**Thom, D., Rammer, W., Albrich, K., Braziunas, K.H., Dobor, L., Dollinger, C., Hansen, W.D., Harvey, B.J., Hlásny, T., Hoecker, T.J., Honkaniemi, J., Keeton, W.S., Kobayashi, Y., Kruszka, S.S., Mori, A., Morris, J.E., Peters-Collaer, S., Ratajczak, Z., Simensen, T., Storms, I., Suzuki, K.F., Taylor, A.R., Turner, M.G., Willis, S., Seidl, R., 2024**](https://doi.org/10.1016/j.dib.2024.110662)  Parameters of 150 temperate and boreal tree species and provenances for an individual-based forest landscape and disturbance model. Data in Brief 110662, https://doi.org/10.1016/j.dib.2024.110662
+
+
+
+
+# Modeling
+
+
+[**Braziunas, K. H., Rammer, W., De Frenne, P., Díaz-Calafat, J., Hedwall, P.-O., Senf, C., Thom, D., Zellweger, F., & Seidl, R. (2025).**](https://doi.org/10.1007/s10980-025-02054-8) Microclimate temperature effects propagate across scales in forest ecosystems. Landscape Ecology, 40(2), 37. https://doi.org/10.1007/s10980-025-02054-8
+
+
+::: {.callout-note collapse="true" title="Abstract"}
+*Context*: Forest canopies shape subcanopy environments, affecting biodiversity and ecosystem processes. Empirical forest microclimate studies are often restricted to local scales and short-term effects, but forest dynamics unfold at landscape scales and over long time periods.
+
+*Objectives*: We developed the first explicit and dynamic implementation of microclimate temperature buffering in a forest landscape model and investigated effects on simulated forest dynamics and outcomes.
+
+*Methods*: We adapted the individual-based forest landscape and disturbance model iLand to use microclimate temperature for three processes [decomposition, bark beetle (Ips typographus L.) development, and tree seedling establishment]. We simulated forest dynamics with or without microclimate temperature buffering in a temperate European mountain landscape under historical climate and disturbance conditions.
+
+*Results*: Temperature buffering effects propagated from local to landscape scales. After 1,000 simulation years, average total carbon and cumulative net ecosystem productivity were 2% and 21% higher, respectively, and tree species composition differed in simulations including versus excluding microclimate buffering. When microclimate buffering was included, Norway spruce (Picea abies (L.) Karst.) increased by 9% and European beech (Fagus sylvatica L.) decreased by 12% in mean basal area share. Some effects were amplified across scales, such as a mean 16% decrease in local-scale bark beetle development rates resulting in a mean 45% decrease in landscape-scale bark beetle-caused mortality.
+
+*Conclusions*: Microclimate effects on forests scaled nonlinearly from stand to landscape and days to millennia, underlining the utility of complex simulation models for dynamic upscaling in space and time. Microclimate temperature buffering can alter forest dynamics at landscape scales.
+:::
+
+
+[**Das, A. K., Baldo, M., Dobor, L., Seidl, R., Rammer, W., Modlinger, R., Washaya, P., Merganičová, K., & Hlásny, T. (2025).**](https://doi.org/10.1007/s10980-025-02125-w) The increasing role of drought as an inciting factor of bark beetle outbreaks can cause large-scale transformation of Central European forests. Landscape Ecology, 40(6). https://doi.org/10.1007/s10980-025-02125-w
+
+
+::: {.callout-note collapse="true" title="Abstract"}
+*Context*: Historically, large-scale outbreaks of the European spruce bark beetle were initiated mainly by windthrows. However, after 2018, a severe drought triggered the hitherto largest bark beetle outbreak observed in Europe, signalling a major shift in the disturbance regime.
+
+*Objectives*: Develop and test an approach that allows simulating this novel disturbance dynamics and evaluate landscape-scale compound impacts of wind- and drought-initiated outbreaks throughout the twenty-first century.
+
+*Methods*: We incorporated drought-initiated outbreaks into the forest landscape simulation model iLand, using critical values of vapour pressure deficit as the outbreak trigger. Forest management records and remote sensing-based disturbance maps were used to derive model parameters and evaluate simulated dynamics in a Central European forest landscape (41,000 hectares). The period 1961–2021 was used for model evaluation, and the years until 2100 for scenario analysis.
+
+*Results*: Incorporating drought as outbreak trigger led to a notable decoupling of wind and bark beetle disturbances, which have historically formed a typical disturbance cascade in European forests. While forest growing stock and species composition were resilient to a wind-dominated disturbance regime, this resilience diminished under the compounded impact of wind- and drought-triggered disturbances. The new disturbance regime caused a persistent decline in Norway spruce and resulted in an overall decrease in landscape-level growing stock.
+
+*Conclusions*: Our findings underscore the urgent need for new approaches to evaluate increasingly complex disturbance dynamics and suggest that the future impacts of bark beetles on forest landscapes may be greater than previously anticipated.
+:::
+
+
+[**Hansen, W. D., Foster, A., Gaglioti, B., Seidl, R., & Rammer, W. (2023).**](https://gmd.copernicus.org/articles/16/2011/2023) The Permafrost and Organic LayEr module for Forest Models (POLE-FM) 1.0. Geoscientific Model Development, 16(7), 2011–2036. https://doi.org/10.5194/gmd-16-2011-2023
+
+
+::: {.callout-note collapse="true" title="Abstract"}
+Climate change and increased fire are eroding the resilience of boreal forests. This is problematic because boreal vegetation and the cold soils underneath store approximately 30 % of all terrestrial carbon. Society urgently needs projections of where, when, and why boreal forests are likely to change. Permafrost (i.e., subsurface material that remains frozen for at least 2 consecutive years) and the thick soil-surface organic layers (SOLs) that insulate permafrost are important controls of boreal forest dynamics and carbon cycling. However, both are rarely included in process-based vegetation models used to simulate future ecosystem trajectories. To address this challenge, we developed a computationally efficient permafrost and SOL module named the Permafrost and Organic LayEr module for Forest Models (POLE-FM) that operates at fine spatial (1 ha) and temporal (daily) resolutions. The module mechanistically simulates daily changes in depth to permafrost, annual SOL accumulation, and their complex effects on boreal forest structure and functions. We coupled the module to an established forest landscape model, iLand, and benchmarked the model in interior Alaska at spatial scales of stands (1 ha) to landscapes (61 000 ha) and over temporal scales of days to centuries. The coupled model generated intra- and inter-annual patterns of snow accumulation and active layer depth (portion of soil column that thaws throughout the year) generally consistent with independent observations in 17 instrumented forest stands. The model also represented the distribution of near-surface permafrost presence in a topographically complex landscape. We simulated 39.3 % of forested area in the landscape as underlain by permafrost, compared to the estimated 33.4 % from the benchmarking product. We further determined that the model could accurately simulate moss biomass, SOL accumulation, fire activity, tree species composition, and stand structure at the landscape scale. Modular and flexible representations of key biophysical processes that underpin 21st-century ecological change are an essential next step in vegetation simulation to reduce uncertainty in future projections and to support innovative environmental decision-making. We show that coupling a new permafrost and SOL module to an existing forest landscape model increases the model's utility for projecting forest futures at high latitudes. Process-based models that represent relevant dynamics will catalyze opportunities to address previously intractable questions about boreal forest resilience, biogeochemical cycling, and feedbacks to regional and global climate.
+:::
+
+
+[**Honkaniemi, J., Rammer, W., & Seidl, R. (2021).**](https://doi.org/10.1016/j.envsoft.2021.104977) From mycelia to mastodons – a general approach for simulating biotic disturbances in forest ecosystems. Environmental Modelling & Software, 138, 104977.
+
+
+::: {.callout-note collapse="true" title="Abstract"}
+Forest disturbance regimes are changing around the globe. Of particular concern are biotic disturbance agents, as they respond strongly to climate warming and invade new ecosystems as alien pests and pathogens. To date, biotic disturbances are either ignored in simulations of vegetation dynamics or only a small number of common agents are considered explicitly. Here we present BITE, a general, process-based approach to simulate biotic forest disturbance agents from fungi to large mammals. BITE considers the processes of agent introduction, dispersal, colonization, population dynamics, and vegetation impact explicitly. Here we parameterize the model for six widely different biotic disturbance agents (Heterobasidion annosum, Hymenoscyphus fraxineus, Lymanthia dispar, Anoplophora glabripennis, Capreolus capreolus, Mammut americanum) and evaluate it using pattern-oriented modeling. BITE enables the inclusion of both established and novel biotic disturbance agents in vegetation models, and is a step towards the comprehensive simulation of forest disturbance regimes in a changing world.
+:::
+
+
+[**Seidl, R., Rammer, W., 2016**](http://link.springer.com/article/10.1007/s10980-016-0396-4) Climate change amplifies the interactions between wind and bark beetle disturbances in forest landscapes. Landscape Ecol (2017). doi:10.1007/s10980-016-0396-4
+
+
+::: {.callout-note collapse="true" title="Abstract"}
+*Context*: Growing evidence suggests that climate change could substantially alter forest disturbances. Interactions between individual disturbance agents are a major component of disturbance regimes, yet how interactions contribute to their climate sensitivity remains largely unknown.
+
+*Objectives*: Here, our aim was to assess the climate sensitivity of disturbance interactions, focusing on wind and bark beetle disturbances.
+
+*Methods*: We developed a process-based model of bark beetle disturbance, integrated into the dynamic forest landscape model iLand (already including a detailed model of wind disturbance). We evaluated the integrated model against observations from three wind events and a subsequent bark beetle outbreak, affecting 530.2 ha (3.8 %) of a mountain forest landscape in Austria between 2007 and 2014. Subsequently, we conducted a factorial experiment determining the effect of changes in climate variables on the area disturbed by wind and bark beetles separately and in combination.
+
+*Results*: iLand was well able to reproduce observations with regard to area, temporal sequence, and spatial pattern of disturbance. The observed disturbance dynamics was strongly driven by interactions, with 64.3 % of the area disturbed attributed to interaction effects. A +4 °C warming increased the disturbed area by +264.7 % and the area-weighted mean patch size by +1794.3 %. Interactions were found to have a ten times higher sensitivity to temperature changes than main effects, considerably amplifying the climate sensitivity of the disturbance regime.
+
+*Conclusions*: Disturbance interactions are a key component of the forest disturbance regime. Neglecting interaction effects can lead to a substantial underestimation of the climate change sensitivity of disturbance regimes.
+:::
+
+
+[**Rammer, W., Seidl, R., 2015**](http://dx.doi.org/10.1016/j.gloenvcha.2015.10.003) Coupling human and natural systems: Simulating adaptive management agents in dynamically changing forest landscapes. Global Environmental Change, 35, 475-485.
+
+
+::: {.callout-note collapse="true" title="Abstract"}
+Global change poses considerable challenges for ecosystems and their managers. To address these challenges it is increasingly clear that a coupled human and natural systems perspective is needed. While this science has advanced greatly in recent years, its mainstreaming into operational ecosystem management has proven to be difficult. One aspect complicating the application of a coupled human and natural systems approach has been the lack of tools that are simultaneously able to accommodate the complexities of ecological and social systems. However, neglecting their full interactions and feedbacks could lead to either an overestimation of the systems’ vulnerability to global change (e.g., where the social adaptive capacity is disregarded in assessments based solely on ecosystem models), or to the pretense of stability (e.g., where the dynamic responses of ecosystem processes to environmental changes are neglected in models of the social system). These issues are of particular importance in forest ecosystems, where human interventions affect ecosystem dynamics for decades to centuries. In order to improve the assessments of future forest trajectories, our objectives here were (i) to operationalize and describe the coupling of human and natural systems in the context of landscape-scale forest ecosystem management, and (ii) to demonstrate simulated interactions between the social and ecological spheres in the context of adaptation to a changing climate. We developed an agent-based model accounting for different spatial (stand and management unit) and temporal (operational and strategic) levels of forest management decision making and coupled it with the forest landscape simulator iLand. We show that the coupled human and natural systems model is autonomously able to reproduce meaningful trajectories of managed mountain forest landscape in Central Europe over the extended period of multiple centuries. Experimenting with different decision heuristics of managing agents suggests that both passive (reactive) and active (prospective) adaptive behavior might be necessary to successfully stabilize system trajectories under rapidly changing environmental conditions. Furthermore, investigating multi-agent landscapes we found that diversity in managerial responses to environmental changes increases the heterogeneity on the landscape, with positive effects on the temporal stability of ecosystem trajectories. We conclude that an integrated consideration of human and natural systems is important to realistically project trajectories of managed forests under global change, and highlight the potential of social–ecological feedbacks and heterogeneity in stabilizing the provisioning of ecosystem services in a changing environment.
+%%%
+%%%
+***Keywords:*** Forest ecosystem management; Global change; Social-ecological systems; Adaptive management; Forest landscape model; Agent-based model; iLand; ABE
+:::
+
+[**Seidl, R., Rammer, W., Blennow, K. 2014**](http://dx.doi.org/10.1016/j.envsoft.2013.09.018) Simulating wind disturbance impacts on forest landscapes: Tree-level heterogeneity matters. Environmental Modelling and Software 51, 1-11.
+
+
+::: {.callout-note collapse="true" title="Abstract"}
+Wind is the most detrimental disturbance agent in Europe’s forest ecosystems. In recent years, disturbance frequency and severity have been increasing at continental scale, a trend that is expected to continue under future anthropogenic climate change. Disturbance management is thus increasingly important for sustainable stewardship of forests, and requires tools to evaluate the effects of management alternatives and climatic changes on disturbance risk and ecosystem services. We here present a process-based model of wind disturbance impacts on forest ecosystems, integrated into the dynamic landscape simulation model iLand. The model operates at the level of individual trees and simulates wind disturbance events iteratively, i.e., dynamically accounting for changes in forest structure and newly created edges during the course of a storm. Both upwind gap size and local shelter from neighboring
+trees are considered in this regard, and critical wind speeds for uprooting and stem breakage are distinguished. The simulated disturbance size, pattern, and severity are thus emergent properties of the model. We evaluated the new simulation tool against satellite-derived data on the impact of the storm Gudrun (January 2005) on a 1391 ha forest landscape in south central Sweden. Both the overall damage percentage (observation: 21.7%, simulation: 21.4%) as well as the comparison of spatial damage patterns showed good correspondence between observations and predictions (prediction accuracy: 60.4%) if the full satellite-derived structural and spatial heterogeneity of the landscape was taken into account. Neglecting within-stand heterogeneity in forest conditions, i.e., the state-of-the-art in many stand-level risk models, resulted in a considerable underestimation of simulated damage, supporting the notion that tree-level complexity matters for assessing and modeling large-scale disturbances. A sensitivity analysis further showed that changes in wind speed and soil freezing could have potentially large impacts on disturbed area and patch size. The model presented here is available as open source. It can be used to study the effects of different silvicultural systems and future climates on wind risk, as well as to quantify the impacts of wind disturbance on ecosystem services such as carbon sequestration. It thus contributes
+to improving our capacity to address changing disturbance regimes in ecosystem management.
+%%%
+%%%
+***Keywords:*** forest disturbance, wind model, landscape modeling, windthrow, ecosystem heterogeneity, iLand
+:::
+
+
+[**Seidl, R., Spies, T.A., Rammer, W., Steel, E.A., Pabst, R.J., Olsen, K. (2012).**](https://dx.doi.org/10.1007/s10021-012-9587-2) Multi-scale drivers of spatial variation in old-growth forest carbon density disentangled with Lidar and an individual-based landscape model. Ecosystems, DOI: 10.1007/s10021-012-9587-2.
+
+
+::: {.callout-note collapse="true" title="Abstract"}
+Forest ecosystems are the most important terrestrial carbon (C) storage globally, and presently mitigate anthropogenic climate change by acting as a large and persistent sink for atmospheric CO2. Yet, forest C density varies greatly in space, both globally and at stand and landscape levels. Understanding the multi-scale drivers of this variation is a prerequisite for robust and effective climate change mitigation in ecosystem management. Here, we used airborne light detection and ranging (Lidar) and a novel high-resolution simulation model of landscape dynamics (iLand) to identify the drivers of variation in C density for an old-growth forest landscape in Oregon, USA. With total ecosystem C in excess of 1 Gt ha−1 these ecosystems are among the most C-rich globally. Our findings revealed considerable spatial variability in stand-level C density across the landscape. Notwithstanding the distinct environmental gradients in our mountainous study area only 55.3% of this variation was explained by environmental drivers, with radiation and soil physical properties having a stronger influence than temperature and precipitation. The remaining variation in C stocks was largely attributable to emerging properties of stand dynamics (that is, stand structure and composition). Not only were density- and size-related indicators positively associated with C stocks but also diversity in composition and structure, documenting a close link between biodiversity and ecosystem functioning. We conclude that the complexity of old-growth forests contributes to their sustained high C levels, a finding that is relevant to managing forests for climate change mitigation.
+:::
+
+
+
+**Seidl, R., Rammer, W., Scheller, R.M., Spies, T.A., Lexer, M.J., 2010.** Developing a mechanistic approach to model the effects of climate change on forest dynamics in complex mountain landscapes. [MtnClim 2010, June 7-10, Blue River, OR, USA](http://www.fs.fed.us/psw/mtnclim/).
+
+
+::: {.callout-note collapse="true" title="Abstract"}
+Anthropogenic climate change has the potential to impact a variety of natural processes across scales in forest ecosystems, affecting their structure, composition and functioning. The mechanisms governing these processes are frequently characterized by nonlinearities and threshold behavior, which underscores the importance of considering climate change exposure levels at high spatial resolution. Particularly complex mountain landscapes, characterized by high spatial heterogeneity, require a fine grained multi-scale approach to assess forest ecosystem impacts and resilience under a changing climate. With the aim of modeling these aspects mechanistically as emerging system properties we developed a simulation approach balancing functional and structural process representation while granting scalability from individual trees to forest landscapes. As the core processes of forest dynamics we explicitly modeled individual tree competition for resources and their utilization following generalized physiological principles, applying a hierarchical multi-scale framework. Here we present the general modeling approach as well as a multi-attribute evaluation. Functional aspects (e.g., productivity) were evaluated against FIA plot data over an ecological transect ranging from coastal forest types to mountain forest ecosystems both windward and in the rain shadow of the Cascade mountains in Oregon. To evaluate aspects of forest structure and composition independent long-term vegetation study data of the HJ Andrews experimental forest were used. Our results showed generally good agreement between modeled and empirical data for the initial suite of indicators examined. In addition, the ability to encompass spatial complexity was evaluated by analyzing scalability of the approach. In an optimized implementation of the pattern-based individual tree model computation was found to scale linearly with the number of individuals, making it suitable for landscape-scale simulations of forest dynamics. In conclusion, the current study presents a step towards an improved consideration of ecological heterogeneity in process-based modeling, strengthening the predictive capacities for complex mountain forest landscapes under climate change.
+%%%
+[download the poster](/img/seidl_etal_mtnclim2010_poster.pdf)
+%%%
+:::
+
+
+
+
+# Applications
+
+
+
+
+
+## Cross continents
+
+
+
+[**Dollinger, C., Turner, M. G., Rammer, W., Keller, T. T., Mori, A. S., Suzuki, K. F., & Seidl, R. (2026).**](https://doi.org/10.1029/2025GB008970) Forest Reorganization Sustains Carbon Sequestration Under Climate Change. Global Biogeochemical Cycles, 40(2), e2025GB008970. https://doi.org/10.1029/2025GB008970
+
+
+[**Dollinger, C., Rammer, W., Mori, A. S., Turner, M. G., & Seidl, R. (2025).**](https://doi.org/10.1111/geb.70140) Disentangling Compound Effects of Changing Disturbance and Regeneration Across Temperate Forest Landscapes. Global Ecology and Biogeography, 34(10), e70140. https://doi.org/10.1111/geb.70140
+
+
+[**Dollinger, C., Rammer, W., Suzuki, F. K., Braziunas, K.H., Keller T., Kobayashi, Y., Mohr, J. Mori, A. S., Turner M. G., Seidl R. (2024)**](https://doi.org/10.1111/gcb.17468) Beyond resilience: Responses to changing climate and disturbance regimes in temperate forest landscapes across the Northern Hemisphere, Global Change Biology, https://doi.org/10.1111/gcb.17468
+
+
+
+## Europe
+
+
+
+[**Storms, I., Thom, D., Verbist, B., Van Meerbeek, K., Gobin, A., Van Winckel, S., Van Orshoven, J., & Muys, B. (2025)**](https://doi.org/10.1007/s10113-025-02393-x) Atlantic lowland forests face shifts in composition and structure under climatic change. Regional Environmental Change, 25(2), 60. https://doi.org/10.1007/s10113-025-02393-x
+
+
+[**Mina, M., Marzini, S., Crespi, A., & Albrich, K. (2025)**](https://doi.org/10.62320/fm.v2i1.19) Building virtual forest landscapes to support forest management: The challenge of parameterization. Forests Monitor, 2(1), 49–96. https://doi.org/10.62320/fm.v2i1.19
+
+
+[**Marzini, S., Tasser, E., Wellstein, C., Albrich, K., Rammer, W., & Mina, M.(2025)**](https://doi.org/10.1007/s10980-025-02070-8) Future expansion of upper forest-grassland ecotone under land-use and climate change in the Eastern Alps. Landscape Ecology, 40(3), 55. https://doi.org/10.1007/s10980-025-02070-8
+
+
+[**Braziunas, K. H., Geres, L., Richter, T., Glasmann, F., Senf, C., Thom, D., Seibold, S., & Seidl, R. (2024).**](https://doi.org/10.1111/gcb.17121) Projected climate and canopy change lead to thermophilization and homogenization of forest floor vegetation in a hotspot of plant species richness. Global Change Biology, 30, e17121. https://doi.org/10.1111/gcb.17121
+
+
+[**Repo, A., Albrich, K., Jantunen, A, Aalto, J., Lehtonen, I., Honkaniemi, J., (2024)**](https://doi.org/10.1016/j.jenvman.2024.123124) Contrasting forest management strategies: Impacts on biodiversity and ecosystem services under changing climate and disturbance regimes. Journal of Environmental Management, https://doi.org/10.1016/j.jenvman.2024.123124
+
+
+[**Schafstall, N., Dobor, L., Baldo, M., Liebhold, A.M., Rammer, W., Honkaniemi, J., Hlasny, T. (2024)**](https://doi.org/10.1016/j.fecs.2024.100226) Assessing the effect of invasive organisms on forests under information uncertainty: The case of pine wood nematode in continental Europe. Forest Ecosystems, https://doi.org/10.1016/j.fecs.2024.100226
+
+
+[**Holzer, D., Bödeker, K., Rammer, W., Knoke, T. (2024)**](https://doi.org/10.1016/j.ecolmodel.2024.110741) Evaluating dynamic tree-species-shifting and height development caused by ungulate browsing in forest regeneration using a process-based modeling approach.Ecological Modelling,https://doi.org/10.1016/j.ecolmodel.2024.110741
+
+
+[**Dobor, L., Baldo, M., Bílek, I., Mális, F., Stepánek, P., Hlasny, T., (2024).**](https://doi.org/10.1111/gcb.17194) The interacting effect of climate change and herbivory can trigger large-scale transformations of European temperate forests. Global Change Biology, https://doi.org/10.1111/gcb.17194
+
+
+[**Dollinger, C., Rammer. W., Seidl, R. (2023).**](https://doi.org/10.1111/1365-2664.14520) Climate change accelerates ecosystem restoration in the mountain forests of Central Europe. Journal of Applied Ecology, https://doi.org/10.1111/1365-2664.14520
+
+
+[**Albrich, K., Seidl, R., Rammer, W., & Thom, D. (2023).**](https://doi.org/10.1093/forestry/cpac022) From sink to source: changing climate and disturbance regimes could tip the 21st century carbon balance of an unmanaged mountain forest landscape. Forestry: An International Journal of Forest Research, 1–11. https://doi.org/10.1093/forestry/cpac022
+
+
+[**Thom, D., Rammer, W., Laux, P., Smiatek, G., Kunstmann, H., Seibold, S., & Seidl, R. (2022).**](https://doi.org/10.1111/gcb.16133) Will forest dynamics continue to accelerate throughout the 21st century in the Northern Alps? Global Change Biology, December 2021, 1–15. https://doi.org/10.1111/gcb.16133
+
+
+[**Sebald, J., Thrippleton, T., Rammer, W., Bugmann, H., & Seidl, R. (2021).**](https://doi.org/10.1111/1365-2664.13912) Mixing tree species at different spatial scales: The effect of alpha, beta and gamma diversity on disturbance impacts under climate change. Journal of Applied Ecology, 58(8), 1749–1763. https://doi.org/10.1111/1365-2664.13912
+
+
+[**Albrich, K., Thom, D., Rammer, W., & Seidl, R. (2021).**](https://doi.org/10.1111/jvs.13052) The long way back: Development of Central European mountain forests towards old-growth conditions after cessation of management. Journal of Vegetation Science, 32(4). https://doi.org/10.1111/jvs.13052
+
+
+[**Hlasny, T., Augusttynczik, A.L.D., Dobor, L. (2021).**](https://doi.org/10.1016/j.scitotenv.2021.149377) Time matters: Resilience of a post-disturbance forest landscape. Science of the Total Environment, 799, https://doi.org/10.1016/j.scitotenv.2021.149377
+
+
+[**Sommerfeld, A., Rammer, W., Heurich, M., Hilmers, T., Müller, J., & Seidl, R. (2020)**](https://doi.org/10.1111/1365-2745.13502). Do bark beetle outbreaks amplify or dampen future bark beetle disturbances in Central Europe? Journal of Ecology, July, 1–13. https://doi.org/10.1111/1365-2745.13502
+
+
+[**Honkaniemi, J., Rammer, W., & Seidl, R. (2020)**](https://doi.org/10.1007/s10980-019-00964-y). Norway spruce at the trailing edge: the effect of landscape configuration and composition on climate resilience. Landscape Ecology, 35(3), 591–606. https://doi.org/10.1007/s10980-019-00964-y
+
+
+[**Albrich, K., Rammer, W., & Seidl, R. (2020)**](https://doi.org/10.1111/gcb.15118). Climate change causes critical transitions and irreversible alterations of mountain forests. Global Change Biology, March, 1–15. https://doi.org/10.1111/gcb.15118
+
+
+[**Scheidl, C., Heiser, M., Kamper, S., Thaler, T., Klebinder, K., Nagl, F., Lechner, V., Markart, G., Rammer, W., & Seidl, R. (2020)**](https://doi.org/10.1016/j.scitotenv.2020.140588). The influence of climate change and canopy disturbances on landslide susceptibility in headwater catchments. Science of The Total Environment, 742, 140588. https://doi.org/10.1016/j.scitotenv.2020.140588
+
+
+[**Dobor, L., Hlásny, T., & Zimová, S. (2020).**](https://doi.org/10.1002/ece3.6854) Contrasting vulnerability of monospecific and species‐diverse forests to wind and bark beetle disturbance: The role of management. Ecology and Evolution, 10(21), 12233–12245. https://doi.org/10.1002/ece3.6854
+
+
+[**Zimová, S., Dobor, L., Hlásny, T., Rammer, W., & Seidl, R. (2020).**](https://doi.org/10.1016/j.foreco.2020.118408) Reducing rotation age to address increasing disturbances in Central Europe: Potential and limitations. Forest Ecology and Management. https://doi.org/10.1016/j.foreco.2020.118408
+
+
+[**Dobor, L., Hlásny, T., Rammer, W., Zimová, S., Barka, I., & Seidl, R., 2020**](https://doi.org/10.1016/j.jenvman.2019.109792) Spatial configuration matters when removing windfelled trees to manage bark beetle disturbances in Central European forest landscapes. Journal of Environmental Management, 254(June 2019). https://doi.org/10.1016/j.jenvman.2019.109792
+
+
+[**Dobor, L., Hlásny, T., Rammer, W., Zimová, S., Barka, I., & Seidl, R., 2019**](https://besjournals.onlinelibrary.wiley.com/doi/abs/10.1111/1365-2664.13518) Is salvage logging effectively dampening bark beetle outbreaks and preserving forest carbon stocks? Journal of Applied Ecology, (April), 1–10. https://doi.org/10.1111/1365-2664.13518
+
+
+[**Albrich, K., Rammer, W., Thom, D., & Seidl, R., 2018**](https://esajournals.onlinelibrary.wiley.com/doi/abs/10.1002/eap.1785) Trade-offs between temporal stability and level of forest ecosystem services provisioning under climate change. Ecological Applications, 28(7), 1884–1896. https://doi.org/10.1002/eap.1785
+
+
+[**Seidl, R., Albrich, K., Erb, K., Formayer, H., Leidinger, D., Leitinger, G., … Rammer, W., 2019**](https://linkinghub.elsevier.com/retrieve/pii/S0378112718322825) What drives the future supply of regulating ecosystem services in a mountain forest landscape? Forest Ecology and Management, 445(March), 37–47. https://doi.org/10.1016/j.foreco.2019.03.047
+
+
+[**Dobor, L., Hlásny, T., Rammer, W., Barka, I., Trombik, J., Pavlenda, P., Seidl, R., 2018**](https://linkinghub.elsevier.com/retrieve/pii/S0168192318302946) Post-disturbance recovery of forest carbon in a temperate forest landscape under climate change. Agricultural and Forest Meteorology, 263, 308–322. https://doi.org/10.1016/j.agrformet.2018.08.028
+
+
+[**Thom, D., Rammer, W., Garstenauer, R., & Seidl, R. ,2018**](https://www.biogeosciences.net/15/5699/2018/) Legacies of past land use have a stronger effect on forest carbon exchange than future climate change in a temperate forest landscape. Biogeosciences, 15(18), 5699–5713. https://doi.org/10.5194/bg-15-5699-2018
+
+
+[**Seidl, R., Albrich, K., Thom, D., & Rammer, W., 2018**](https://doi.org/10.1016/j.jenvman.2017.12.014) Harnessing landscape heterogeneity for managing future disturbance risks in forest ecosystems. Journal of Environmental Management, 209, 46–56. https://doi.org/10.1016/j.jenvman.2017.12.014
+
+
+[**Silva Pedro, M., Rammer, W., & Seidl, R., 2017**](http://doi.wiley.com/10.1111/jvs.12505) Disentangling the effects of compositional and structural diversity on forest productivity. Journal of Vegetation Science, 28(3), 649–658. https://doi.org/10.1111/jvs.12505
+
+
+[**Thom, D., Rammer, W., Seidl, R., 2017**](http://onlinelibrary.wiley.com/doi/10.1002/ecm.1272/full)
+The impact of future forest dynamics on climate: interactive effects of changing vegetation and disturbance regimes, Ecological Monographs, doi: 10.1002/ecm.1272
+
+
+::: {.callout-note collapse="true" title="Abstract"}
+Currently, the temperate forest biome cools the earth's climate and dampens anthropogenic climate change. However, climate change will substantially alter forest dynamics in the future, affecting the climate regulation function of forests. Increasing natural disturbances can reduce carbon uptake and evaporative cooling, but at the same time increase the albedo of a landscape. Simultaneous changes in vegetation composition can mitigate disturbance impacts, but also influence climate regulation directly (e.g., via albedo changes). As a result of a number of interactive drivers (changes in climate, vegetation, and disturbance) and their simultaneous effects on climate-relevant processes (carbon exchange, albedo, latent heat flux) the future climate regulation function of forests remains highly uncertain. Here we address these complex interactions to assess the effect of future forest dynamics on the climate system. Our specific objectives were (1) to investigate the long-term interactions between changing vegetation composition and disturbance regimes under climate change, (2) to quantify the response of climate regulation to changes in forest dynamics, and (3) to identify the main drivers of the future influence of forests on the climate system. We investigated these issues using the individual-based forest landscape and disturbance model (iLand). Simulations were run over 200 yr for Kalkalpen National Park (Austria), assuming different future climate projections, and incorporating dynamically responding wind and bark beetle disturbances. To consistently assess the net effect on climate the simulated responses of carbon exchange, albedo, and latent heat flux were expressed as contributions to radiative forcing. We found that climate change increased disturbances (+27.7% over 200 yr) and specifically bark beetle activity during the 21st century. However, negative feedbacks from a simultaneously changing tree species composition (+28.0% broadleaved species) decreased disturbance activity in the long run (−10.1%), mainly by reducing the host trees available for bark beetles. Climate change and the resulting future forest dynamics significantly reduced the climate regulation function of the landscape, increasing radiative forcing by up to +10.2% on average over 200 yr. Overall, radiative forcing was most strongly driven by carbon exchange. We conclude that future changes in forest dynamics can cause amplifying climate feedbacks from temperate forest ecosystems.
+:::
+
+
+[**Silva Pedro, M., Rammer, W., Seidl, R. **](http://onlinelibrary.wiley.com/doi/10.1111/jvs.12505/full)
+Disentangling the effects of compositional and structural diversity on forest productivity, Journal of vegetation science. doi: 10.1111/jvs.12505
+
+
+::: {.callout-note collapse="true" title="Abstract"}
+**Questions**
+Tree species diversity is widely reported to positively influence forest productivity. Yet, a consistent attribution of productivity effects is complicated by the fact that compositional and structural diversity are often related in forest ecosystems. Here, our objective was to disentangle the effects of diversity in species and structures on forest productivity. We further assessed whether the influence of structure and composition on productivity changes over the course of forest development.
+
+**Location**
+Hainich National Park, central Germany.
+
+**Methods**
+We conducted a factorial simulation experiment in which 63 unique combinations of six different tree species were studied over 500 yr of forest development. The model used was iLand, a process-based simulator operating at individual tree resolution. The indicators of compositional diversity considered included species richness, entropy, evenness and identity, while structural diversity was characterized by indicators describing vertical and horizontal stand structure. Net primary production (NPP) was studied as the response variable, and random forest analysis was used to synthesize simulation output.
+
+**Results**
+We found positive effects of both compositional and structural diversity on productivity, but their influence changed distinctly over the course of forest development. In early-seral stages, diversity effects on NPP were dominated by aspects of tree species composition, and displayed a strong positive selection effect for European beech (Fagus sylvatica L.). In later stages of forest development, diversity effects on NPP were dominated by structural diversity, with productivity increasing with increased variation in tree diameter and canopy complexity.
+
+**Conclusion**
+To better understand the effects of diversity on ecosystem functioning, both the compositional and structural dimensions of diversity in forest ecosystems (and their changes over time) need to be considered. In the context of ecosystem management our results suggest that the reduction in productivity associated with the loss of a canopy tree species (e.g. due to the invasion of an alien pest species) can to some degree be compensated through increased structural diversity. Fostering both compositional and structural diversity are important means to increase the robustness of forest ecosystem functioning.
+:::
+
+
+[**Seidl, R., Vigl, F., Rössler, G., Neumann, M., Rammer, W., 2016**](http://www.sciencedirect.com/science/article/pii/S0378112716310581)
+Assessing the resilience of Norway spruce forests through a model-based reanalysis of thinning trials, Forest Ecology and Management. doi: 10.1016/j.foreco.2016.11.030
+
+
+::: {.callout-note collapse="true" title="Abstract"}
+As a result of a rapidly changing climate the resilience of forests is an increasingly important property for ecosystem management. Recent efforts have improved the theoretical understanding of resilience, yet its operational quantification remains challenging. Furthermore, there is growing awareness that resilience is not only a means to addressing the consequences of climate change but is also affected by it, necessitating a better understanding of the climate sensitivity of resilience. Quantifying current and future resilience is thus an important step towards mainstreaming resilience thinking into ecosystem management. Here, we present a novel approach for quantifying forest resilience from thinning trials, and assess the climate sensitivity of resilience using process-based ecosystem modeling. We reinterpret the wide range of removal intensities and frequencies in thinning trials as an experimental gradient of perturbation, and estimate resilience as the recovery rate after perturbation. Our specific objectives were (i) to determine how resilience varies with stand and site conditions, (ii) to assess the climate sensitivity of resilience across a range of potential future climate scenarios, and (iii) to evaluate the robustness of resilience estimates to different focal indicators and assessment methodologies. We analyzed three long-term thinning trials in Norway spruce (Picea abies (L.) Karst.) forests across an elevation gradient in Austria, evaluating and applying the individual-based process model iLand. The resilience of Norway spruce was highest at the montane site, and decreased at lower elevations. Resilience also decreased with increasing stand age and basal area. The effects of climate change were strongly context-dependent: At the montane site, where precipitation levels were ample even under climate change, warming increased resilience in all scenarios. At lower elevations, however, rising temperatures decreased resilience, particularly at precipitation levels below 750–800 mm. Our results were largely robust to different focal variables and resilience definitions. Based on our findings management can improve the capacity to recover from partial disturbances by avoiding overmature and overstocked conditions. At increasingly water limited sites a strongly decreasing resilience of Norway spruce will require a shift towards tree species better adapted to the expected future conditions.
+:::
+
+
+[**Thom, D., Rammer, W., Seidl, R., 2016**](http://onlinelibrary.wiley.com/doi/10.1111/gcb.13506/full) Disturbances catalyze the adaptation of forest ecosystems to changing climate conditions. Global Change Biology. doi:10.1111/gcb.13506
+
+
+::: {.callout-note collapse="true" title="Abstract"}
+The rates of anthropogenic climate change substantially exceed those at which forest ecosystems - dominated by immobile, long-lived organisms - are able to adapt. The resulting maladaptation of forests has potentially detrimental effects on ecosystem functioning. Furthermore, as many forest-dwelling species are highly dependent on the prevailing tree species, a delayed response of the latter to a changing climate can contribute to an extinction debt, and mask climate-induced biodiversity loss. However, climate change will likely also intensify forest disturbances. Here, we tested the hypothesis that disturbances foster the reorganization of ecosystems and catalyze the adaptation of forest composition to climate change. Our specific objectives were (i) to quantify the rate of autonomous forest adaptation to climate change, (ii) examine the role of disturbance in the adaptation process, and (iii) investigate spatial differences in climate-induced species turnover in an unmanaged mountain forest landscape (Kalkalpen National Park, Austria). Simulations with a process-based forest landscape model were performed for 36 unique combinations of climate and disturbance scenarios over 1,000 years. We found that climate change strongly favored European beech and oak species (currently prevailing in mid- to low elevation areas), with novel species associations emerging on the landscape. Yet, it took between 357 and 706 years before the landscape attained a dynamic equilibrium with the climate system. Disturbances generally catalyzed adaptation and decreased the time needed to attain equilibrium by up to 211 years. However, while increasing disturbance frequency and severity accelerated adaptation, increasing disturbance size had the opposite effect. Spatial analyses suggest that particularly the lowest and highest elevation areas will be hotspots of future species change. We conclude that the growing maladaptation of forests to climate and the long lead times of autonomous adaptation need to be considered more explicitly in the ongoing efforts to safeguard biodiversity and ecosystem services provisioning.
+:::
+
+
+[**Thom, D., Rammer, W., Dirnböck, T., Müller, J., Kobler, J., Katzensteiner, K., Helm, N., Seidl, R., 2016**](http://dx.doi.org/10.1111/1365-2664.12644) The impacts of climate change and disturbance on spatio-temporal trajectories of biodiversity in a temperate forest landscape. J Appl Ecol. doi:10.1111/1365-2664.12644
+
+
+::: {.callout-note collapse="true" title="Abstract"}
+The ongoing changes to climate challenge the conservation of forest biodiversity. Yet, in thermally limited systems, such as temperate forests, not all species groups might be affected negatively. Furthermore, simultaneous changes in the disturbance regime have the potential to mitigate climate-related impacts on forest species. Here, we (i) investigated the potential long-term effect of climate change on biodiversity in a mountain forest landscape, (ii) assessed the effects of different disturbance frequencies, severities and sizes and (iii) identified biodiversity hotspots at the landscape scale to facilitate conservation management.
+We employed the model iLand to dynamically simulate the tree vegetation on 13 865 ha of the Kalkalpen National Park in Austria over 1000 years, and investigated 36 unique combinations of different disturbance and climate scenarios. We used simulated changes in tree cover and composition as well as projected temperature and precipitation to predict changes in the diversity of Araneae, Carabidae, ground vegetation, Hemiptera, Hymenoptera, Mollusca, saproxylic beetles, Symphyta and Syrphidae, using empirical response functions.
+Our findings revealed widely varying responses of biodiversity indicators to climate change. Five indicators showed overall negative effects, with Carabidae, saproxylic beetles and tree species diversity projected to decrease by more than 33%. Six indicators responded positively to climate change, with Hymenoptera, Mollusca and Syrphidae diversity projected to increase more than twofold.
+Disturbances were generally beneficial for the studied indicators of biodiversity. Our results indicated that increasing disturbance frequency and severity have a positive effect on biodiversity, while increasing disturbance size has a moderately negative effect. Spatial hotspots of biodiversity were currently found in low- to mid-elevation areas of the mountainous study landscape, but shifted to higher-elevation zones under changing climate conditions.
+Synthesis and applications. Our results highlight that intensifying disturbance regimes may alleviate some of the impacts of climate change on forest biodiversity. However, the projected shift in biodiversity hotspots is a challenge for static conservation areas. In this regard, overlapping hotspots under current and expected future conditions highlight priority areas for robust conservation management.
+:::
+
+
+[**Silva Pedro, M., Rammer, W., Seidl, R., 2016**](http://dx.doi.org/10.1007/s10980-015-0317-y) A disturbance-induced increase in tree species diversity
+facilitates forest productivity. Landscape Ecology, in press.
+
+
+::: {.callout-note collapse="true" title="Abstract"}
+Context. Natural disturbances can have a considerable negative impact on the productivity of forest landscapes. Yet, disturbances are also important drivers of diversity, with diversity generally contributing positively to forest productivity. While the direct effects of disturbance have been investigated extensively it remains unclear how disturbance-mediated changes in diversity influence landscape productivity. Considering that disturbances are increasing in many ecosystems a better understanding of disturbance impacts is of growing importance for ecosystem management.
+
+Objectives. Here, our objectives were to study the effect of disturbance on tree species diversity at different spatial scales (α and β diversity), and to analyze how a disturbance-mediated variation in tree species diversity affects forest productivity.
+
+Methods. To account for long-term interactions between disturbance, diversity, and productivity and test a range of disturbance scenarios we used simulation modeling, focusing on a temperate forest landscape in Central Europe.
+
+Results. We found an overall positive effect of disturbance on tree species diversity both with regard to α and β diversity, persisting under elevated disturbance frequencies. Productivity was enhanced by within- and between-stand diversity, with the effect of α diversity decreasing and that of β diversity increasing through the successional development. Positive diversity effects were found to be strongly contingent on the available species pool, with landscapes containing species with different life-history strategies responding most strongly to disturbance-mediated diversity.
+
+Conclusions. We conclude that, rather than homogenizing disturbed areas, forest managers should incorporate the diversity created by disturbances into stand development to capitalize on a positive diversity effect on productivity.
+:::
+
+
+[**Silva Pedro, M., Rammer, W., Seidl, R., 2015**](http://dx.doi.org/10.1007/s00442-014-3150-0) Tree species diversity mitigates disturbance impacts on the forest carbon cycle. Oecologia 177, 619-630.
+
+
+::: {.callout-note collapse="true" title="Abstract"}
+Biodiversity fosters the functioning and stability of forest ecosystems and, consequently, the provision of crucial ecosystem services that support human well-being and quality of life. In particular, it has been suggested that tree species diversity buffers ecosystems against the impacts of disturbances, a relationship known as the “insurance hypothesis”. Natural disturbances have increased across Europe in recent decades and climate change is expected to amplify the frequency and severity of disturbance events. In this context, mitigating disturbance impacts and increasing the resilience of forest ecosystems is of growing importance. We have tested how tree species diversity modulates the impact of disturbance on net primary production and the total carbon stored in living biomass for a temperate forest landscape in Central Europe. Using the simulation model iLand to study the effect of different disturbance regimes on landscapes with varying levels of tree species richness, we found that increasing diversity generally reduces the disturbance impact on carbon storage and uptake, but that this effect weakens or even reverses with successional development. Our simulations indicate a clear positive relationship between diversity and resilience, with more diverse systems experiencing lower disturbance-induced variability in their trajectories of ecosystem functioning. We found that positive effects of tree species diversity are mainly driven by an increase in functional diversity and a modulation of traits related to recolonization and resource usage. The results of our study suggest that increasing tree species diversity could mitigate the effects of intensifying disturbance regimes on ecosystem functioning and improve the robustness of forest carbon storage and the role of forests in climate change mitigation.
+:::
+
+ 
+
+
+
+## North America
+
+
+
+[**Keller, T. T., Abendroth, D. C., Braziunas, K. H., Dollinger, C., Hood, P. R., Knowlton, G. J., Seidl, R., & Turner, M. G. (2025).**](https://doi.org/10.1002/eap.70121) Can Fire Exclusion Zones Enhance Postfire Tree Regeneration? A Simulation Study in Subalpine Conifer Forests. Ecological Applications, 35(7), e70121. https://doi.org/10.1002/eap.70121
+
+
+[**Willis, S., Taylor, A.R., Thom, D., L. D’Orangeville (2023).**](https://pubs.cif-ifc.org/doi/10.5558/tfc2023-021)Calibrating a process-based simulation model for the Acadian forest region. The Forestry Chronicle, 99(2), 226–240. https://doi.org/10.5558/tfc2023-021
+
+[**Turner, M. G., Braziunas, K. H., Hansen, W. D., Hoecker, T. J., Rammer, W., Ratajczak, Z., Westerling, A. L., & Seidl, R. (2022).**](https://doi.org/10.1002/ecm.1485) The magnitude, direction, and tempo of forest change in Greater Yellowstone in a warmer world with more fire. Ecological Monographs, 92(1), 1–27. https://doi.org/10.1002/ecm.1485
+
+[**Hoecker, T. J., & Turner, M. G. (2022).**](https://doi.org/10.1111/ddi.13470) Combined effects of climate and fire-driven vegetation change constrain the distributions of forest vertebrates during the 21st century. Diversity and Distributions, 28(4), 727–744. https://doi.org/10.1111/ddi.13470
+
+
+[**Braziunas, K. H., Seidl, R., Rammer, W., & Turner, M. G. (2021).**](https://doi.org/10.1007/s10980-020-01162-x) Can we manage a future with more fire? Effectiveness of defensible space treatment depends on housing amount and configuration. Landscape Ecology, 36(2), 309–330. https://doi.org/10.1007/s10980-020-01162-x
+
+
+[**Hansen, W. D., Fitzsimmons, R., Olnes, J., & Williams, A. P. (2021).**](https://doi.org/10.1111/1365-2745.13446) An alternate vegetation type proves resilient and persists for decades following forest conversion in the North American boreal biome. Journal of Ecology, 109(1), 85–98. https://doi.org/10.1111/1365-2745.13446
+
+
+[**Hansen, W. D., Abendroth, D., Rammer, W., Seidl, R., & Turner, M. G., 2020**](https://onlinelibrary.wiley.com/doi/abs/10.1002/eap.2030) Can wildland fire management alter 21 st ‐century subalpine fire and forests in Grand Teton National Park, Wyoming, USA? Ecological Applications, 0(0), eap.2030. https://doi.org/10.1002/eap.2030
+
+
+[**Turner, M. G., Braziunas, K. H., Hansen, W. D., & Harvey, B. J. (2019).**](https://doi.org/10.1073/pnas.1902841116) Short-interval severe fire erodes the resilience of subalpine lodgepole pine forests. Proceedings of the National Academy of Sciences, 116(23), 11319–11328. https://doi.org/10.1073/pnas.1902841116
+
+
+[**Braziunas, K. H., Hansen, W. D., Seidl, R., Rammer, W., & Turner, M. G., 2018**](https://linkinghub.elsevier.com/retrieve/pii/S0378112718311423) Looking beyond the mean: Drivers of variability in postfire stand development of conifers in Greater Yellowstone. Forest Ecology and Management, 430, 460–471. https://doi.org/10.1016/j.foreco.2018.08.034
+
+
+[**Hansen, W. D., Braziunas, K. H., Rammer, W., Seidl, R., & Turner, M. G., 2018**](http://doi.wiley.com/10.1002/ecy.2181) It takes a few to tango: changing climate and fire regimes can cause regeneration failure of two subalpine conifers. Ecology, 99(4), 966–977. https://doi.org/10.1002/ecy.2181
+
+
+[**Seidl, R., Rammer, W., Spies, T.A., 2014**](http://dx.doi.org/10.1890/14-0255.1) Disturbance legacies increase the resilience of forest ecosystem structure, composition, and functioning. Ecological Applications, 24, 2063–2077.
+
+
+::: {.callout-note collapse="true" title="Abstract"}
+Disturbances are key drivers of forest ecosystem dynamics, and forests are well adapted to their natural disturbance regimes. However, as a result of climate change, disturbance frequency is expected to increase in the future in many regions. It is not yet clear how such changes might affect forest ecosystems, and which mechanisms contribute to (current and future) disturbance resilience. We studied a 6364-ha landscape in the western Cascades of Oregon, USA, to investigate how patches of remnant old-growth trees (as one important class of biological legacies) affect the resilience of forest ecosystems to disturbance. Using the spatially explicit, individual-based forest landscape model iLand we analyzed the effect of three different levels of remnant patches (0%, 12%, and 24% of the landscape) on 500-year recovery trajectories after a large, high severity wildfire. In addition, we evaluated how three different levels of fire frequency modulate the effects of initial legacies. We found that remnant live trees enhanced the recovery of total ecosystem carbon (TEC) stocks after disturbance, increased structural complexity of forest canopies, and facilitated the recolonization of late-seral species (LSS). Legacy effects were most persistent for indicators of species composition (still significant 500 years after disturbance), while TEC (i.e., a measure of ecosystem functioning) was least affected, with no significant differences among legacy scenarios after 236 years. Compounding disturbances were found to dampen legacy effects on all indicators, and higher initial legacy levels resulted in elevated fire severity in the second half of the study period. Overall, disturbance frequency had a stronger effect on ecosystem properties than the initial level of remnant old-growth trees. A doubling of the historically observed fire frequency to a mean fire return interval of 131 years reduced TEC by 10.5% and lowered the presence of LSS on the landscape by 18.1% on average, demonstrating that an increase in disturbance frequency (a potential climate change effect) may considerably alter the structure, composition, and functioning of forest landscapes. Our results indicate that live tree legacies are an important component of disturbance resilience, underlining the potential of retention forestry to address challenges in ecosystem management.
+%%%
+%%%
+***Keywords:*** natural disturbance, biological legacy, fire frequency, ecosystem carbon storage, remnant live trees, canopy structural diversity, species succession, tree species diversity, iLand model, HJ Andrews Experimental Forest
+:::
+
+
+[**Seidl, R., Spies, T.A., Rammer, W., Steel, E.A., Pabst, R.J., Olsen, K., 2012**](http://dx.doi.org/10.1007/s10021-012-9587-2) Multi-scale Drivers of Spatial Variation in Old-Growth Forest Carbon Density Disentangled with Lidar and an Individual-Based Landscape Model. Ecosystems 15, 1321-1335.
+
+
+::: {.callout-note collapse="true" title="Abstract"}
+Forest ecosystems are the most important terrestrial carbon (C) storage globally, and presently mitigate anthropogenic climate change by acting as a large and persistent sink for atmospheric CO2. Yet, forest C density varies greatly in space, both globally and at stand and landscape levels. Understanding the multi-scale drivers of this variation is a prerequisite for robust and effective climate change mitigation in ecosystem management. Here, we used airborne light detection and ranging (Lidar) and a novel high-resolution simulation model of landscape dynamics (iLand) to identify the drivers of variation in C density for an old-growth forest landscape in Oregon, USA. With total ecosystem C in excess of 1 Gt ha-1 these ecosystems are among the most C-rich globally. Our findings revealed considerable spatial variability in stand-level C density across the landscape. Notwithstanding the distinct environmental gradients in our mountainous study area only 55.3% of this variation was explained by environmental drivers, with radiation and soil physical properties having a stronger influence than temperature and precipitation. The remaining variation in C stocks was largely attributable to emerging properties of stand dynamics (that is, stand structure and composition). Not only were density- and size-related indicators positively associated with C stocks but also diversity in composition and structure, documenting a close link between biodiversity and ecosystem functioning. We conclude that the complexity of old-growth forests contributes to their sustained high C levels, a finding that is relevant to managing forests for climate change mitigation.
+%%%
+%%%
+***Keywords:*** forest carbon storage, old-growth forests, climate change mitigation, ecosystem structure and functioning, functional diversity, forest stand dynamics, airborne Lidar, individual-based modeling, iLand
+:::
+
+
+
+## Japan
+
+
+
+[**Kobayashi, Y., Seidl, R., Rammer, W., Suzuki, K. F., & Mori, A. S. (2022).**](https://doi.org/10.1111/rec.13681) Identifying effective tree planting schemes to restore forest carbon and biodiversity in Shiretoko National Park, Japan. Restoration Ecology, 1–12. https://doi.org/10.1111/rec.13681
+
+
+
+# related
+
+
+
+[**Rammer, W., Guérin, E., Marais, P., Peytavie, A., Kapp, K., Galin, E., Seidl, R., & Gain, J. (2026).**](https://doi.org/10.1002/ecog.08198) EcoViz: A tool for visual analysis and photorealistic rendering of forest landscape model simulations. Ecography, 2026(4), e08198. https://doi.org/10.1002/ecog.08198
+
+
+[**Mohr, J. S., Bastit, F., Grünig, M., Knoke, T., Rammer, W., Senf, C., Thom, D., & Seidl, R. (2025).**](https://doi.org/10.1038/s41558-025-02408-9) Rising cost of disturbances for forestry in Europe under climate change. Nature Climate Change. https://doi.org/10.1038/s41558-025-02408-9
+
+
+[**Díaz‐Yáñez, O., Käber, Y., Anders, T., Bohn, F., Braziunas, K.H., Brůna, J., Fischer, R., Fischer, S.M., Hetzer, J., Hickler, T., Hochauer, C., Lexer, M.J., Lischke, H., Mairota, P., Merganič, J., Merganičová, K., Mette, T., Mina, M., Morin, X., Nieberg, M., Rammer, W., Reyer, C.P.O., Scheiter, S., Scherrer, D., Bugmann, H. (2024)**](https://doi.org/10.1002/ecs2.4807). Tree regeneration in models of forest dynamics: A key priority for further research. Ecosphere, 15. https://doi.org/10.1002/ecs2.4807
+
+
+[**Petter, G., Mairota, P., Albrich, K., Bebi, P., Brůna, J., Bugmann, H., Haffenden, A., Scheller, R. M., Schmatz, D. R., Seidl, R., Speich, M., Vacchiano, G., & Lischke, H. (2020)**](https://doi.org/10.1016/j.envsoft.2020.104844). How robust are future projections of forest landscape dynamics? Insights from a systematic comparison of four forest landscape models. Environmental Modelling and Software, 134. https://doi.org/10.1016/j.envsoft.2020.104844
+
+
+[**Rammer, W., & Seidl, R., 2019**](http://doi.wiley.com/10.1111/2041-210X.13171) A scalable model of vegetation transitions using deep neural networks. Methods in Ecology and Evolution, 2019(February), 1–12. https://doi.org/10.1111/2041-210X.13171
+
+
+[**Bugmann, H., Seidl, R., Hartig, F., Bohn, F., Brůna, J., Cailleret, M., … Reyer, C. P. O., 2019**](http://doi.wiley.com/10.1002/ecs2.2616) Tree mortality submodels drive simulated long-term forest dynamics: assessing 15 models from the stand to global scale. Ecosphere, 10(2), e02616. https://doi.org/10.1002/ecs2.2616
+
+
+[**Seidl, R., Aggestam, F., Rammer, W., Blennow, K., Wolfslehner, B. 2016**](http://dx.doi.org/10.1007/s13280-015-0737-6)The sensitivity of current and future forest managers to climate-induced changes in ecological processes. Ambio 45:430. doi:10.1007/s13280-015-0737-6
+
+
+
+::: {.callout-note collapse="true" title="Abstract"}
+Climate vulnerability of managed forest ecosystems is not only determined by ecological processes but also influenced by the adaptive capacity of forest managers. To better understand adaptive behaviour, we conducted a questionnaire study among current and future forest managers (i.e. active managers and forestry students) in Austria. We found widespread belief in climate change (94.7 % of respondents), and no significant difference between current and future managers. Based on intended responses to climate-induced ecosystem changes, we distinguished four groups: highly sensitive managers (27.7 %), those mainly sensitive to changes in growth and regeneration processes (46.7 %), managers primarily sensitive to regeneration changes (11.2 %), and insensitive managers (14.4 %). Experiences and beliefs with regard to disturbance-related tree mortality were found to particularly influence a manager’s sensitivity to climate change. Our findings underline the importance of the social dimension of climate change adaptation, and suggest potentially strong adaptive feedbacks between ecosystems and their managers.
+:::
+
+
+[**Seidl, R., Eastaugh, C.S., Kramer, K., Maroschek, M., Reyer, C., Socha, J., Vacchiano, G., Zlatanov, T., Hasenauer, H. 2013**](http://dx.doi.org/10.1007/s10342-013-0725-y) Scaling issues in forest ecosystem management and how to address them with models. European Journal of Forest Research 132, 653-666.
+
+
+::: {.callout-note collapse="true" title="Abstract"}
+Scaling is widely recognized as a central issue in ecology. The associated cross-scale interactions and process transmutations make scaling (i.e., a change in spatial or temporal grain and extent) an important issue in understanding ecosystem structure and functioning. Moreover, current concepts of ecosystem stewardship, such as sustainability and resilience, are inherently scale-dependent. The importance of scale and scaling in the context of forest management is likely to further increase in the future because of the growing relevance of ecosystem services beyond timber production. As a result, a consideration of processes both below (e.g., leaf-level carbon uptake in the context of climate change mitigation) and above (e.g., managing for biodiversity conservation at the landscape scale) the traditional focus on the stand level is required in forest ecosystem management. Furthermore, climate change will affect a variety of ecosystem processes across scales, ranging from photosynthesis (tree organs) to disturbance regimes (landscape scale). Assessing potential climate change impacts on ecosystem services thus requires a multi-scale perspective. However, scaling issues have received comparatively little attention in the forest management community to date. Our objectives here are thus first, to synthesize scaling issues relevant to forest management, and second, to elucidate ways of dealing with such complex scaling problems by highlighting examples of how they can be addressed with ecosystem models. We have focused on three current management issues of particular importance in European forestry: (i) climate change mitigation through carbon sequestration, (ii) multi-functional stand management for biodiversity and non-timber goods and services, and (iii) improving the resilience to natural disturbances. We conclude that taking into account the full spatio-temporal heterogeneity and dynamics of forest ecosystems in management decision making is likely to make management more robust to increasing environmental and societal pressures. Models can aid this process through explicitly accounting for system dynamics and changing conditions, operationally addressing the complexity of cross-scale interactions and emerging properties. Our synthesis indicates that increased attention to scaling issues can help forest managers to integrate traditional management objectives with emerging concerns for ecosystem services, and therefore deserves more attention in forestry.
+%%%
+%%%
+***Keywords:*** scale, scaling, ecosystem modelling, sustainable forest management, multi-scale approach, emergence
+%%%
+:::
+
+
+[**Seidl, R., Blennow, K., 2012**](http://dx.doi.org/) Pervasive growth reduction in Norway spruce forests following wind disturbance. PLoS ONE 7(3): e33301.
+
+
+::: {.callout-note collapse="true" title="Abstract"}
+***Background:*** In recent decades the frequency and severity of natural disturbances by e.g., strong winds and insect outbreaks has increased considerably in many forest ecosystems around the world. Future climate change is expected to further intensify disturbance regimes, which makes addressing disturbances in ecosystem management a top priority. As a prerequisite a broader understanding of disturbance impacts and ecosystem responses is needed. With regard to the effects of strong winds – the most detrimental disturbance agent in Europe – monitoring and management has focused on structural damage, i.e., tree mortality from uprooting and stem breakage. Effects on the functioning of trees surviving the storm (e.g., their productivity and allocation) have been rarely accounted for to date.
+%%%
+***Methodology/Principal Findings:*** Here we show that growth reduction was significant and pervasive in a 6.79 million hectare forest landscape in southern Sweden following the storm Gudrun (January 2005). Wind-related growth reduction in Norway spruce (Picea abies (L.) Karst.) forests surviving the storm exceeded 10% in the worst hit regions, and was closely related to maximum gust wind speed (R2=0.849) and structural wind damage (R2=0.782). At the landscape scale, wind-related growth reduction amounted to 3.0 million m3 in the three years following Gudrun. It thus exceeds secondary damage from bark beetles after Gudrun as well as the long-term average storm damage from uprooting and stem breakage in Sweden.
+%%%
+***Conclusions/Significance***: We conclude that the impact of strong winds on forest ecosystems is not limited to the immediately visible area of structural damage, and call for a broader consideration of disturbance effects on ecosystem structure and functioning in the context of forest management and climate change mitigation.
+%%%
+:::
+
+
+[**Seidl, R., Schelhaas, M.J., Lexer, M.J., 2011**](http://dx.doi.org/10.1111/j.1365-2486.2011.02452.x) Unraveling the drivers of intensifying forest disturbance regimes in Europe. Glob. Change Biol. 17, 2842-2852.
+
+
+::: {.callout-note collapse="true" title="Abstract"}
+Natural disturbances like wildfire, windthrow and insect outbreaks are critical drivers of composition, structure and functioning of forest ecosystems. They are strongly climate-sensitive, and are thus likely to be distinctly affected by climatic changes. Observations across Europe show that in recent decades, forest disturbance regimes have intensified markedly, resulting in a strong increase in damage from wind, bark beetles and wildfires. Climate change is frequently hypothesized as the main driving force behind this intensification, but changes in forest structure and composition associated with management activities such as promoting conifers and increasing standing timber volume (i.e. ‘forest change’) also strongly influence susceptibility to disturbances. Here, we show that from 1958 to 2001, forest change contributed in the same order of magnitude as climate change to the increase in disturbance damage in Europe’s forests. Climate change was the main driver of the increase in area burnt, while changes in forest extent, structure and composition particularly affected the variation in wind and bark beetle damage. For all three disturbance agents, damage was most severe when conducive weather conditions and increased forest susceptibility coincided. We conclude that a continuing trend towards more disturbance-prone conditions is likely for large parts of Europe’s forests, and can have strong detrimental effects on forest carbon storage and other ecosystem services. Understanding the interacting drivers of natural disturbance regimes is thus a prerequisite for climate change mitigation and adaptation in forest ecosystem management.
+%%%
+%%%
+***Keywords:*** bark beetles, climate change, European forest ecosystems, forest management, natural disturbance, wildfire, wind
+%%%
+:::
+
+
+[**Seidl, R., Fernandes, P.M., Fonseca, T.F., Gillet, F., Jönsson, A.M., Merganicova, K., Netherer, S., Arpaci, A., Bontemps, J.D., Bugmann, H., Gonzalez-Olabarria, J.R., Lasch, P., Meredieu, C., Moreira, F., Schelhaas, M.J., Mohren, F., 2011.**](http://dx.doi.org/10.1016/j.ecolmodel.2010.09.040) Modelling natural disturbances in forest ecosystems: a review. Ecol. Model. 222, 903-924.
+
+
+::: {.callout-note collapse="true" title="Abstract"}
+Natural disturbances play a key role in ecosystem dynamics and are important factors for sustainable forest ecosystem management. Quantitative models are frequently employed to tackle the complexities associated with disturbance processes. Here we review the wide variety of approaches to modelling natural disturbances in forest ecosystems, addressing the full spectrum of disturbance modelling from single events to integrated disturbance regimes. We applied a general, process-based framework founded in disturbance ecology to analyze modelling approaches for drought, wind, forest fires, insect pests and ungulate browsing. Modelling approaches were reviewed by disturbance agent and mechanism, and a set of general disturbance modelling concepts was deduced. We found that although the number of disturbance modelling approaches emerging over the last 15 years has increased strongly, statistical concepts for descriptive modelling are still largely prevalent over mechanistic concepts for explanatory and predictive applications. Yet, considering the increasing importance of disturbances for forest dynamics and ecosystem stewardship under anthropogenic climate change, the latter concepts are crucial tool for understanding and coping with change in forest ecosystems. Current challenges for disturbance modelling in forest ecosystems are thus (i) to overcome remaining limits in process understanding, (ii) to further a mechanistic foundation in disturbance modelling, (iii) to integrate multiple disturbance processes in dynamic ecosystem models for decision support in forest management, and (iv) to bring together scaling capabilities across several levels of organization with a representation of system complexity that captures the emergent behaviour of disturbance regimes.
+%%%
+%%%
+***Keywords:*** disturbance modelling, wildfire, wind storm, drought, insect herbivory, browsing
+%%%
+:::
+
+
+[**Wolfslehner, B., Seidl, R., 2010.**](http://dx.doi.org/10.1007/s00267-009-9414-5) Harnessing ecosystem models and multi-criteria decision analysis for the support of forest management. Environ. Manage. 46, 850-861.
+
+
+::: {.callout-note collapse="true" title="Abstract"}
+The decision-making environment in forest management (FM) has changed drastically during the last decades. FM planning is facing increasing complexity due to a widening portfolio of forest goods and services, a societal demand for a rational, transparent decision process and rising uncertainties concerning future environmental conditions. Methodological responses to these challanges include an intensified use of ecosystem models to provide an enriched, quantitative information base for FM planning. Furthermore, multi-criteria methods are increasingly used to amalgamate information, preferences, expert judgments and value expressions, in support of the participatory and communicative dimensions of modern forestry. Although the potential of combining these two approaches has been dem-onstrated in a number of studies, methodological aspects in interfacing forest ecosystem mod-els (FEM) and multi-criteria decision analysis (MCDA) are scarcely addressed explicitly. In this contribution we review the state of the art in FEM and MCDA in the context of FM planning and highlight some of the crucial issues when combining ecosystem and preference modeling. We discuss issues and requirements in selecting approaches suitable for supporting FM planning problems from the growing body of FEM and MCDA concepts. We furthermore identify two major challenges in a harmonized application of FEM-MCDA: (i) the design and implementation of an indicator-based analysis framework capturing ecological and social aspects and their interactions relevant for the decision process, and (ii) holistic information management that supports consistent use of different information sources, provides meta-information as well as information on uncertainties throughout the planning process.
+%%%
+%%%
+***Keywords:*** sustainable forest management, forest planning, forest ecosystem modelling, multi-criteria decision analysis, indicators
+%%%
+:::
+
+ 

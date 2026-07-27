@@ -1,0 +1,32 @@
+---
+title: "ABE activity salvage"
+---
+
+ The “salvage” activity handles salvage harvesting of timber after disturbances. In addition to removing/harvesting killed trees (see *disturbanceCondition*), the salvage activity detects if large areas are cleared and either restarts the rotation or, if the stand area is only partially cleared, splits the current stand in homogeneous sub stands.
+The detailed examination of the stand structure is started, if 10m³ of timber volume per hectare has been killed in the stand by disturbance. If so, the post disturbance top tree height at 10m resolution is used to detect gaps in the forest cover. Gaps are areas with the top height smaller than 33% of the maximum tree height of the stand. If the fraction of gaps is < *thresholdSplitStand* (default: 25%), then nothing happens. If more than *thresholdClearStand* (default: 95%) are cleared, then the whole stand is “reset”. For damage intensities between the thresholds, a splitting algorithm is executed. The algorithm searches for contiguous disturbed areas (applying a simple flood fill routine), and creates new stands for gaps with at least the size of 0.25 ha. New stands share planning unit and stand treatment programme but get a new unique stand id. For newly created and for fully disturbed stands, clean-up activities can be defined in the *onExecute* handler.
+
+
+| **Property** | **Description** |
+| --- | --- |
+| disturbanceCondition | If provided, the expression *disturbanceCcondition* is used to assess whether a tree killed by disturbances should be salvage-harvested or not. If the expression returns true, the tree is removed. Example: “dbh>10”. All tree variables are available. |
+| maxPrepone | If activities (e.g. thinnings) are scheduled in the near future, they might be executed earlier (together with the salvage operation). The *maxPrepone* defines the maximum number of years activities are preponed. |
+| thresholdIgnoreDamage | Damages below this threshold (in m³/ha) are ignored, i.e. no tests on stand clearing/splitting are performed. |
+| thresholdClearStand | If the relative damage (0..1) is larger than this threshold (or if the fraction of 10m pixels <33% of the max height (10m) (=gaps) is >50% and the remaining non-gap area <0.5ha), the stand is reset (see *onExecute*). |
+| thresholdSplitStand | If the relative damage (0..1) is larger than this threshold (and smaller than *thresholdClearStand*) the stand is split in a disturbed and an undisturbed sub stand (see text). |
+| debugSplit | If true, GIS grids are written to disk during the splitting of a stand (temp-folder) |
+| onExecute | The *onExecute* handler is called for heavily disturbed stands before the new rotation is started. *onExeute* is also called for newly created stands. |
+| bool onBarkBeetleAttack( generations, infested_pixels_ha) | This event has two parameters that are the number of bark beetle generations and the number of infested pixels (at the beginning of the year, after potential storm events) per hectare. The event can be used to create trap trees for beetles; the return value is Boolean, and true should be returned when the forest structure was affected (e.g., by killing trees). |
+
+
+
+
+## Example
+
+
+tbd
+
+
+::: {.callout-note title="citation"}
+[Rammer, W., Seidl, R., 2015](http://dx.doi.org/10.1016/j.gloenvcha.2015.10.003). Coupling human and natural systems: Simulating adaptive management agents in dynamically changing forest landscapes. Global Environmental Change, 35, 475-485.
+:::
+

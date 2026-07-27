@@ -1,0 +1,79 @@
+---
+title: "establishment"
+---
+
+Establishment is driven by three factors in iLand, i.e. [seed availability](dispersal.qmd) as well as the abiotic (i.e. climate, soil) and biotic (i.e. light availability) environment for seedlings.
+
+
+
+
+
+# abiotic environment
+
+
+A phenology-based, mechanistic approach is adopted in iLand to account for environmental limitations for tree establishment. The TACA model of [Nitschke and Innes (2008)](http://dx.doi.org/10.1016/j.ecolmodel.2007.07.026) is based on the phenology-driven gap model ZELIG++ ([Burton and Cumming 1995](http://dx.doi.org/10.1007/BF01182850)) and considers establishment thresholds for minimum winter temperature, minimum and maximum growing degree days (GDD), as well as for the growing degree days required for successful bud burst (BB). Both GDD thresholds require dormancy to be lifted, i.e. a winter chilling requirement to be fulfilled (i.e. a number of days with temperatures between +5˚C and -5˚C, counted from the end of the previous growing season), before starting to accumulate. The end of the growing season is determined by iLands [foliage phenology module](phenology.qmd). Both minimum winter temperature and min. and max. GDDs are exclusion thresholds (i.e. if thresholds are exceeded *p<sub>abiotic</sub>*=0 else *p<sub>abiotic</sub>*=1)
+
+Lack of water during the growing season is an important factor for can hamper the successful establishment of trees. In iLand, the probability of establishment is 0, if the minimum soil water potential in the vegetation period (calculated as a running average with a 14 days window) is below the species-specific paramter $k\Psi_r$ (Eq 1).
+
+$$
+p_{sw} = \frac{\Psi_{2week}-k\Psi_{r}}{\Psi_{fc}-k\Psi_{r}}
+$$
+
+with $\Psi_{fc}$ the field capacity ($\Psi_{fc}=-0.015 MPa$), and $\Psi_{2week}$ the minimum water potential (within the vegetation period) calculated as a 2-week running average of the daily water potential (using a window width of 14 days), and $k\Psi_r$ a species specific coefficient (Note that setting the parameter to 0 or an empty string disables the water limitation effect).
+
+Frost is another important factor in this phenological approach to model regeneration establishment. Late frost during the accumulation of the GDDs for bud burst reset the development (i.e. BB GDDs are reset to zero). In addition, a filter for the minimum required frost-free growing season is applied. Furthermore, establishment probability is modified if growing season frost events occur ([Nitschke and Innes 2008](http://dx.doi.org/10.1016/j.ecolmodel.2007.07.026)). Tolerance to frost events occurring during the growing season (*d<sub>frost</sub>*, i.e. number of frost days after bud burst) accounts for frost hardening, i.e. the impact of successive frost events on establishment probability is decreasing (Eq.2).
+
+
+$$
+p_{abiotic}=p_{abiotic}\cdot kF^{(d_{frost})^{0.5}} \cdot p_{sw}
+$$
+
+with *kF* a species-specific tolerance parameter. Figure 1 visualizes the phenological approach of a process-based model of the species regeneration niche.
+
+<img src="/img/burton_cumming_phenology.jpg" alt="Image" width="400" class="img-fluid" />
+**Figure 1: Phenological processes modeling regeneration (source: [Burton and Cumming 1995](http://dx.doi.org/10.1007/BF01182850)).**
+
+
+
+TACA is an event-based model, basically focusing on limitations to establishment. Long-term stand-alone applications of the model thus rely on averaging results over a number of years or climate scenarios to arrive at an average establishment probability. In iLand, however, we use the models ability to assess mechanistic limitations to tree establishment given year to year climate variations.
+
+        *
+
+
+
+# biotic environment
+
+
+Light availability in iLand is represented by the continuously calculated light influence field *[(LIF](competition-for-light.qmd))*. We use *LIF* values to characterize light conditions for regeneration at a 2x2m resolution and account for the asymmetric light distribution throughout the canopy by relating the top of the iLand regeneration layer (set to 4m) to the local Z* of the patch, modifying *LRI<sub>regen</sub>* analogous to *LRI* (see Eq. 8 [here](competition-for-light.qmd)).
+Subsequently, *LRI<sub>regen</sub>* is used to calculate *f<sub>light</sub>* for the regeneration for every given pixel, accounting for species-specific light utilization potentials analog to [mature trees](individual-tree-light-availability.qmd). Finally, this [0,1] modifier is employ as *p<sub>biotic</sub>* in the computation of establishment probability.
+
+        *
+
+
+
+# tree establishment
+
+
+For trees to establish (*est*) the availability of seeds as well as suitable abiotic and biotic environments are required (Eq.2)
+
+$$
+est=seed\;  \cap \; abiotic\;  \cap \; biotic
+$$
+
+Thus, the establishment probability is calculated as (Eq.3)
+
+$$
+p_{est}=p_{seed}\cdot p_{abiotic}\cdot p_{biotic}
+$$
+
+In conjunction with a random number *p<sub>est</sub>* determines whether a species establishes on a 2 x 2m *LIF* pixel. In order to aid computational efficiency the implementation exploits the nested spatial scales that these three processes (seed: 20m, abiotic: 100m (cf. [RU](resource-units.qmd)), biotic: 2m (cf. [light competition](competition-for-light.qmd))) operate on in iLand. First, only if seeds are potentially present (i.e. if *p<sub>seed</sub>*>0) the *p<sub>est</sub>* calculation is initiated in the model. Second, the abiotic environment, i.e. the filter operating at the lowest spatial resolution, is evaluated against a random number. Only if the environment (at [RU scale](resource-units.qmd)) was found favorable for regeneration, the other two requirements, i.e. seed and light availability, are evaluated (against a new random number) to ultimately determine if a species will regenerate at a given 2m cell.
+
+If several species exceed the probability threshold, multiple species cohorts are established on the pixel in that year. Pixels are only available for establishment of additional species if none of the previously established [saplings](sapling-growth-and-competition.qmd) has reached breast height yet (i.e. <1.3m height). I.e. although light competition within the regeneration layer is not considered explicitly, it is assumed that beyond 1.3m height a cell is fully occupied and not enough light for new seedlings is available at the forest floor. This essentially allows a time-window for multiple species cohorts to be established at a given 2 x 2m cell. Multiple cohorts of the same species are omitted for performance reasons (see also [here](recruitment.qmd)).
+
+
+
+
+::: {.callout-note title="citation"}
+[Seidl, R., Spies, T.A., Rammer, W., Steel, E.A., Pabst, R.J., Olsen, K. 2012](http://dx.doi.org/10.1007/s10021-012-9587-2). Multi-scale drivers of spatial variation in old-growth forest carbon density disentangled with Lidar and an individual-based landscape model. Ecosystems, DOI: 10.1007/s10021-012-9587-2.
+:::
+
