@@ -88,6 +88,7 @@ jobs:
           
           # 2. Set up the AppDir structure
           mkdir -p AppDir/usr/bin
+          mkdir -p AppDir/usr/lib
           mkdir -p AppDir/usr/plugins/platforms
           mkdir -p AppDir/usr/plugins/platformthemes
           
@@ -96,13 +97,21 @@ jobs:
           cp src/ilandc/build/release/ilandc AppDir/usr/bin/
           cp src/fonstudio/build/release/fonstudio AppDir/usr/bin/
           
-          # 4. Inject Wayland and GTK3 plugins before packaging
+          # 4. Copy Qt Wayland shared libraries into AppDir/usr/lib/
+          cp -d $QT_DIR/lib/libQt6Wayland*.so* AppDir/usr/lib/ 2>/dev/null || true
+          cp -d $QT_DIR/lib/libQt6WlShellIntegration*.so* AppDir/usr/lib/ 2>/dev/null || true
+          
+          # 5. Inject Wayland, Portal, GTK3, and Input plugins
           cp -d $QT_DIR/plugins/platforms/libqwayland*.so AppDir/usr/plugins/platforms/
           cp -rd $QT_DIR/plugins/wayland-shell-integration AppDir/usr/plugins/
           cp -rd $QT_DIR/plugins/wayland-graphics-integration-client AppDir/usr/plugins/
+          cp -rd $QT_DIR/plugins/wayland-decoration-client AppDir/usr/plugins/ 2>/dev/null || true
           cp -d $QT_DIR/plugins/platformthemes/libqgtk3.so AppDir/usr/plugins/platformthemes/
+          cp -d $QT_DIR/plugins/platformthemes/libqxdgdesktopportal.so AppDir/usr/plugins/platformthemes/ 2>/dev/null || true
+          cp -rd $QT_DIR/plugins/platforminputcontexts AppDir/usr/plugins/ 2>/dev/null || true
+          cp -rd $QT_DIR/plugins/xcbglintegrations AppDir/usr/plugins/ 2>/dev/null || true
           
-          # 5. Setup .desktop file and icon (required by linuxdeployqt for AppImage creation)
+          # 6. Setup .desktop file and icon (required by linuxdeployqt for AppImage creation)
           # Note: Replace 'iland.png' with the actual path to your application icon in the repository
           echo -e "[Desktop Entry]\nName=iLand\nExec=iland\nIcon=iland\nType=Application\nCategories=Science;" > AppDir/iland.desktop
           touch AppDir/iland.png
@@ -110,12 +119,15 @@ jobs:
           # Keep only the SQLite driver; delete all others (Mimer, ODBC, PostgreSQL, etc.) to prevent ldd failures
           find $QT_DIR/plugins/sqldrivers/ -type f -not -name 'libqsqlite.so' -delete
           
-          # 6. Run linuxdeployqt
+          # 7. Run linuxdeployqt (including wayland plugins as extra executables to resolve their dependencies)
           wget -c "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
           chmod a+x linuxdeployqt-continuous-x86_64.AppImage
-          ./linuxdeployqt-continuous-x86_64.AppImage AppDir/usr/bin/iland -appimage -unsupported-allow-new-glibc -qmldir=src/iland/qml
+          ./linuxdeployqt-continuous-x86_64.AppImage AppDir/usr/bin/iland \
+            -executable=AppDir/usr/plugins/platforms/libqwayland-egl.so \
+            -executable=AppDir/usr/plugins/platforms/libqwayland-generic.so \
+            -appimage -unsupported-allow-new-glibc -qmldir=src/iland/qml
           
-          # 7. Move final artifacts
+          # 8. Move final artifacts
           mv iLand*.AppImage deploy-linux/
           cp build_log.txt deploy-linux/
 
