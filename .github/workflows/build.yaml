@@ -133,8 +133,17 @@ jobs:
           chmod a+x linuxdeployqt-continuous-x86_64.AppImage
           ./linuxdeployqt-continuous-x86_64.AppImage AppDir/usr/bin/iland $EXTRA_EXEC -appimage -unsupported-allow-new-glibc -qmldir=src/iland/qml
           
-          # 8. Move final artifacts
-          mv iLand*.AppImage deploy-linux/
+          # 8. Create Console AppDir and AppImage for ilandc
+          mkdir -p AppDirConsole/usr/bin
+          cp src/ilandc/build/release/ilandc AppDirConsole/usr/bin/
+          echo -e "[Desktop Entry]\nName=ilandc\nExec=ilandc\nIcon=iland\nType=Application\nCategories=Science;\nTerminal=true;" > AppDirConsole/ilandc.desktop
+          touch AppDirConsole/iland.png
+
+          ./linuxdeployqt-continuous-x86_64.AppImage AppDirConsole/usr/bin/ilandc -appimage -unsupported-allow-new-glibc
+
+          # 9. Move final Linux artifacts with clean predictable filenames
+          mv iLand*.AppImage deploy-linux/iLand-x86_64.AppImage 2>/dev/null || true
+          mv ilandc*.AppImage deploy-linux/ilandc-x86_64.AppImage 2>/dev/null || true
           cp build_log.txt deploy-linux/
 
       # 3. macOS
@@ -143,7 +152,7 @@ jobs:
         run: |
           mkdir deploy-mac
           cp -r src/iland/build/release/iland.app deploy-mac/
-          cp -r src/ilandc/build/release/ilandc deploy-mac/
+          cp src/ilandc/build/release/ilandc deploy-mac/ilandc-macOS
           macdeployqt deploy-mac/iland.app -qmldir=src/iland/qml -dmg
           mv deploy-mac/iland.dmg deploy-mac/iLand-macOS.dmg 2>/dev/null || true
           cp build_log.txt deploy-mac/
@@ -169,8 +178,7 @@ jobs:
           files: |
             iLand-Windows.zip
             deploy-linux/*.AppImage
-            deploy-linux/ilandc
             deploy-mac/iLand-macOS.dmg
-            deploy-mac/ilandc
+            deploy-mac/ilandc-macOS
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

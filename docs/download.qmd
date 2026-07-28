@@ -70,7 +70,7 @@ See [download statistics](wiki/download-statistics.qmd) for details.
             <p style="margin: 0;">
                 <strong>Release Date:</strong> 2026-07-28.<br>
                 Source code is available on <a href="https://github.com/edfm-tum/iland-model/releases/tag/v2.2">GitHub</a>.<br>
-                Find more details on the iLand <a href="blog/blogpost61-release-iland-22.qmd">blog</a>.
+                Find more details on the iLand <a href="blog/blogpost62-release-iland-22.qmd">blog</a>.
             </p>
         </div>
       </div>
