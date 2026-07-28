@@ -58,46 +58,45 @@ See [download statistics](wiki/download-statistics.qmd) for details.
 
 
 ```{=html}
-
 <div class="panel expandable">
   <div class="panel-heading" style="text-align: left; font-weight: normal; cursor: pointer">
 
     <div class="download-container" style="display: flex; flex-direction: column; gap: 20px;">
 
       <div class="download-info-row" style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
-        <img src="/img/b_download.png" width="80" alt="Download iLand" style="flex-shrink: 0;"/>
+        <img src="/img/download.png" width="80" alt="Download iLand" style="flex-shrink: 0;"/>
         <div>
-            <h3 style="margin-top: 0; margin-bottom: 10px;">iLand version 2.1 for Windows, macOS & Linux</h3>
+            <h3 style="margin-top: 0; margin-bottom: 10px;">iLand version 2.2 for Windows, macOS & Linux</h3>
             <p style="margin: 0;">
-                <strong>Release Date:</strong> 2025-08-08.<br>
-                Source code is available on <a href="https://github.com/edfm-tum/iland-model/releases/tag/v2.1">GitHub</a>.<br>
-                Find more details on the iLand <a href="blog/blogpost61-release-iland-21.qmd">blog</a>.
+                <strong>Release Date:</strong> 2026-07-28.<br>
+                Source code is available on <a href="https://github.com/edfm-tum/iland-model/releases/tag/v2.2">GitHub</a>.<br>
+                Find more details on the iLand <a href="blog/blogpost61-release-iland-22.qmd">blog</a>.
             </p>
         </div>
       </div>
 
       <div class="download-form-container" style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #ddd;">
 
-        <form action="/get_iland/iland_download.php" name="downloadform100" onsubmit="return validateDownloadForm('downloadform100');" method="post">
-          <input type="hidden" name="file" value="iLandPackage2.1-win.zip">
+        <form action="/get_iland/iland_download_github.php" name="downloadform100" onsubmit="return validateDownloadForm('downloadform100');" method="post">
+          <input type="hidden" name="file" value="v2.2/iLand-Windows.zip">
 
           <div style="margin-bottom: 20px;">
             <label style="display: block; margin-bottom: 10px; font-weight: bold;">1. Select your Operating System</label>
             <div id="os-chooser" style="display: flex; gap: 5px; flex-wrap: wrap;">
-              <button type="button" class="os-button active" onclick="selectOS(this)" data-file="iLandPackage2.1-win.zip" data-target="#win-info">Windows</button>
-              <button type="button" class="os-button" onclick="selectOS(this)" data-file="iLandPackage2.1-mac.dmg" data-target="#mac-info">macOS</button>
-              <button type="button" class="os-button" onclick="selectOS(this)" data-file="iLandPackage2.1-linux.tar.gz" data-target="#linux-info">Linux</button>
+              <button type="button" class="os-button active" onclick="selectOS(this)" data-file="iLand-Windows.zip" data-target="#win-info">Windows</button>
+              <button type="button" class="os-button" onclick="selectOS(this)" data-file="v2.2/iLand-macOS.dmg" data-target="#mac-info">macOS</button>
+              <button type="button" class="os-button" onclick="selectOS(this)" data-file="v2.2/iLand-x86_64.AppImage " data-target="#linux-info">Linux</button>
             </div>
           </div>
 
           <div id="win-info" class="os-info" style="border: 1px solid #cce5ff; background-color:#f0f8ff; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
-            <p style="margin:0;"><strong>Info:</strong> iLand 2.1 for Windows.</p>
+            <p style="margin:0;"><strong>Info:</strong> iLand 2.2 for Windows. Unzip and run iland.exe.</p>
           </div>
           <div id="mac-info" class="os-info" style="display: none; border: 1px solid #cce5ff; background-color:#f0f8ff; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
             <p style="margin:0;"><strong>Info:</strong> See also <a href="wiki/iland-software.qmd#mac">installation notes for Mac</a>.</p>
           </div>
           <div id="linux-info" class="os-info" style="display: none; border: 1px solid #cce5ff; background-color:#f0f8ff; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
-            <p style="margin:0;"><strong>Info:</strong> We are working on an installation package for Linux, but it is not ready yet - sorry! In the meanwhile consider compiling iLand from source on Linux (it is not that hard, see the <a href="https://iland-model.org/iland-book/Building_iLand.html">iLand development chapter</a> in the book).</p>
+            <p style="margin:0;"><strong>Info:</strong> Download the AppImage, make executable (chmod +x filename), and run. Alternative: compile iLand from source on Linux (it is not that hard, see the <a href="https://iland-model.org/iland-book/Building_iLand.html">iLand development chapter</a> in the book).</p>
           </div>
 
           <label style="display: block; margin-bottom: 10px; font-weight: bold;">2. Enter your Details</label>
