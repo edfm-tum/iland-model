@@ -3,4 +3,4 @@ title: "iLand model documentation"
 ---
 
 iLand model logic is documented in a growing number of linked Wiki pages (currently >120 pages, containing more than 300 reference-hyperlinks to the scientific literature that model development is based on), in an effort to defying the 'black box' character sometimes inherent in simulation modeling.
-The documentation pages are currently only available to the core model developers, until major parts of the model are [published](iland-publications.qmd) in the peer-reviewed scientific literature. So check back regularly for updates, and don't hesitate to contact [our team](team.qmd) if you have questions.
+The documentation pages are currently only available to the core model developers, until major parts of the model are [published](../iland-publications.qmd) in the peer-reviewed scientific literature. So check back regularly for updates, and don't hesitate to contact [our team](team.qmd) if you have questions.

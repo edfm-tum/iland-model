@@ -44,4 +44,4 @@ Model development in the last year of the project will focus in particular of im
 * adopt a previously developed ***bark beetle*** model for the European spruce bark beetle (see [here](http://dx.doi.org/10.1016/j.ecolmodel.2007.04.002) for more details)
 * look into process-based ***wind ***disturbance models for incorporation into iLand, such as [WINDA](http://dx.doi.org/10.1016/j.ecolmodel.2003.10.009)
 
-So quite a lot going on, on the ‘[iLand](http://upload.wikimedia.org/wikipedia/commons/8/8c/Maui_panorama.jpg)’, as you can see… stay tuned to read about our [results](../wiki/iland-publications.qmd), and hear more [news](index.qmd) from the landscape modeling frontier!
+So quite a lot going on, on the ‘[iLand](http://upload.wikimedia.org/wikipedia/commons/8/8c/Maui_panorama.jpg)’, as you can see… stay tuned to read about our [results](../iland-publications.qmd), and hear more [news](index.qmd) from the landscape modeling frontier!

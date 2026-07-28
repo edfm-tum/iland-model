@@ -2,7 +2,7 @@
 title: "download statistics"
 ---
 
-The use of iLand is documented by the increasing number of [scientific publications](iland-publications.qmd), but also by increasing downloads over time:
+The use of iLand is documented by the increasing number of [scientific publications](../iland-publications.qmd), but also by increasing downloads over time:
 
 <img src="/img/iLand_downloads_bar.png" alt="Image" class="img-fluid" />
 

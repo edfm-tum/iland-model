@@ -17,7 +17,7 @@ For a complete tabular list of all settings, including defaults, data types, and
 
 ## Example Files
 
-A complete example project file is provided with the [example landscape](download.qmd).
+A complete example project file is provided with the [example landscape](../download.qmd).
 
 ---
 

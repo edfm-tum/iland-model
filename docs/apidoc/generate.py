@@ -827,15 +827,23 @@ def generate_settings_doc():
         
         page_clean = page.replace('+', '-').replace('%20', '-').lower()
         
+        docs_dir = os.path.join(SCRIPT_DIR, "..")
         wiki_dir = os.path.join(SCRIPT_DIR, "../wiki")
-        qmd_path = os.path.join(wiki_dir, f"{page_clean}.qmd")
+        qmd_wiki_path = os.path.join(wiki_dir, f"{page_clean}.qmd")
+        qmd_top_path = os.path.join(docs_dir, f"{page_clean}.qmd")
         
-        if os.path.exists(qmd_path):
+        if os.path.exists(qmd_wiki_path):
             rel_target = f"{page_clean}.qmd"
             if fragment:
                 fragment_clean = fragment.replace('+', '-').replace('%20', '-')
                 rel_target += f"#{fragment_clean}"
-            
+            link_text = page_clean.replace('-', ' ').title()
+            return f"[{link_text}]({rel_target})"
+        elif os.path.exists(qmd_top_path):
+            rel_target = f"../{page_clean}.qmd"
+            if fragment:
+                fragment_clean = fragment.replace('+', '-').replace('%20', '-')
+                rel_target += f"#{fragment_clean}"
             link_text = page_clean.replace('-', ' ').title()
             return f"[{link_text}]({rel_target})"
         else:

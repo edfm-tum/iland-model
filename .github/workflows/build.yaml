@@ -1,5 +1,8 @@
 name: Qt qmake Cross-Platform Build
 
+permissions:
+  contents: write
+
 on:
   release:
     types: [published]
@@ -12,6 +15,9 @@ on:
   push:
     tags:
       - 'v*'
+    branches:
+      - main
+      - dev
 
 jobs:
   build:
@@ -34,7 +40,6 @@ jobs:
           modules: 'qtcharts'
           arch: ${{ matrix.os == 'windows-latest' && 'win64_msvc2022_64' || '' }}
 
-
       # --- dependencies ---
       - name: Install Dependencies (Linux)
         if: runner.os == 'Linux'
@@ -48,7 +53,7 @@ jobs:
       - name: Setup MSVC (Windows)
         if: matrix.os == 'windows-latest'
         uses: ilammy/msvc-dev-cmd@v1
-
+        
       - name: Build Project (Windows)
         if: matrix.os == 'windows-latest'
         shell: pwsh
@@ -76,31 +81,32 @@ jobs:
           copy libs/win/FreeImage.dll deploy-win/
           windeployqt --release --no-translations --compiler-runtime --qmldir src/iland/qml deploy-win/iland.exe
           move build_log.txt deploy-win/
+          Compress-Archive -Path deploy-win/* -DestinationPath iLand-Windows.zip
 
       # 2. Linux
       - name: Linux Deployment
         if: matrix.os == 'ubuntu-latest'
         run: |
           mkdir deploy-linux
-
+          
           # 1. Locate the Qt installation path provided by the jurplel action
           QT_DIR=$(qmake -query QT_INSTALL_PREFIX)
-
+          
           # 2. Set up the AppDir structure
           mkdir -p AppDir/usr/bin
           mkdir -p AppDir/usr/lib
           mkdir -p AppDir/usr/plugins/platforms
           mkdir -p AppDir/usr/plugins/platformthemes
-
+          
           # 3. Copy built executables
           cp src/iland/build/release/iland AppDir/usr/bin/
           cp src/ilandc/build/release/ilandc AppDir/usr/bin/
           cp src/fonstudio/build/release/fonstudio AppDir/usr/bin/
-
+          
           # 4. Copy Qt Wayland shared libraries into AppDir/usr/lib/
           cp -d $QT_DIR/lib/libQt6Wayland*.so* AppDir/usr/lib/ 2>/dev/null || true
           cp -d $QT_DIR/lib/libQt6WlShellIntegration*.so* AppDir/usr/lib/ 2>/dev/null || true
-
+          
           # 5. Inject Wayland, Portal, GTK3, and Input plugins
           cp -d $QT_DIR/plugins/platforms/libqwayland*.so AppDir/usr/plugins/platforms/
           cp -rd $QT_DIR/plugins/wayland-shell-integration AppDir/usr/plugins/
@@ -110,15 +116,14 @@ jobs:
           cp -d $QT_DIR/plugins/platformthemes/libqxdgdesktopportal.so AppDir/usr/plugins/platformthemes/ 2>/dev/null || true
           cp -rd $QT_DIR/plugins/platforminputcontexts AppDir/usr/plugins/ 2>/dev/null || true
           cp -rd $QT_DIR/plugins/xcbglintegrations AppDir/usr/plugins/ 2>/dev/null || true
-
+          
           # 6. Setup .desktop file and icon (required by linuxdeployqt for AppImage creation)
-          # Note: Replace 'iland.png' with the actual path to your application icon in the repository
           echo -e "[Desktop Entry]\nName=iLand\nExec=iland\nIcon=iland\nType=Application\nCategories=Science;" > AppDir/iland.desktop
           touch AppDir/iland.png
 
           # Keep only the SQLite driver; delete all others (Mimer, ODBC, PostgreSQL, etc.) to prevent ldd failures
           find $QT_DIR/plugins/sqldrivers/ -type f -not -name 'libqsqlite.so' -delete
-
+          
           # 7. Run linuxdeployqt (pass wayland platform plugins as extra executables to bundle their dependencies)
           EXTRA_EXEC=""
           for p in AppDir/usr/plugins/platforms/libqwayland*.so; do
@@ -130,7 +135,7 @@ jobs:
           wget -c "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
           chmod a+x linuxdeployqt-continuous-x86_64.AppImage
           ./linuxdeployqt-continuous-x86_64.AppImage AppDir/usr/bin/iland $EXTRA_EXEC -appimage -unsupported-allow-new-glibc -qmldir=src/iland/qml
-
+          
           # 8. Move final artifacts
           mv iLand*.AppImage deploy-linux/
           cp build_log.txt deploy-linux/
@@ -142,10 +147,11 @@ jobs:
           mkdir deploy-mac
           cp -r src/iland/build/release/iland.app deploy-mac/
           cp -r src/ilandc/build/release/ilandc deploy-mac/
-          macdeployqt deploy-mac/iland.app -qmldir=src/iland/qml
+          macdeployqt deploy-mac/iland.app -qmldir=src/iland/qml -dmg
+          mv deploy-mac/iland.dmg deploy-mac/iLand-macOS.dmg 2>/dev/null || true
           cp build_log.txt deploy-mac/
 
-      # --- Artifact Upload ---
+      # --- Artifact Upload (For Actions tab history) ---
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -154,3 +160,20 @@ jobs:
             deploy-win/
             deploy-linux/
             deploy-mac/
+
+      # --- Release Asset Upload (For GitHub Releases / Development Build Latest) ---
+      - name: Publish to GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
+        with:
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || (github.event_name == 'release' && github.event.release.tag_name || 'dev-latest') }}
+          name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || (github.event_name == 'release' && github.event.release.name || 'Development build (latest)') }}
+          prerelease: ${{ !startsWith(github.ref, 'refs/tags/') && github.event_name != 'release' }}
+          files: |
+            iLand-Windows.zip
+            deploy-linux/*.AppImage
+            deploy-linux/ilandc
+            deploy-mac/iLand-macOS.dmg
+            deploy-mac/ilandc
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

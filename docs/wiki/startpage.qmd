@@ -12,8 +12,8 @@ pagetitle: "iLand"
   <a href="../hub.html" class="quick-link-btn"><i class="bi bi-chevron-right"></i> Docs</a>
   <a href="https://discord.gg/e5trneUKav" target="_blank" class="quick-link-btn"><i class="bi bi-chevron-right"></i> Discord</a>
   <a href="https://iland-model.org/iland-book" target="_blank" class="quick-link-btn"><i class="bi bi-chevron-right"></i> iLand Book</a>
-  <a href="iland-publications.html" class="quick-link-btn"><i class="bi bi-file-earmark-text"></i> Publications</a>
-  <a href="download.html" class="quick-link-btn"><i class="bi bi-download"></i> Get iLand</a>
+  <a href="../iland-publications.html" class="quick-link-btn"><i class="bi bi-file-earmark-text"></i> Publications</a>
+  <a href="../download.html" class="quick-link-btn"><i class="bi bi-download"></i> Get iLand</a>
 </div>
 
 <hr class="homepage-divider" />
@@ -39,9 +39,9 @@ pagetitle: "iLand"
 </div>
 
 <div class="hp_box">
-  <a href="download.html"><img src="/img/iLand_gfx6.png" align="right" alt="Can I use it?" /></a>
+  <a href="../download.html"><img src="/img/iLand_gfx6.png" align="right" alt="Can I use it?" /></a>
   <span class="hpcaption">Can I use it?</span>
-  <p class="hptext">Sure! iLand is a research tool already used by a growing number of scientists around the world. The iLand software is released under the GNU General Public License and <a href="download.html">freely available.</a></p>
+  <p class="hptext">Sure! iLand is a research tool already used by a growing number of scientists around the world. The iLand software is released under the GNU General Public License and <a href="../download.html">freely available.</a></p>
 </div>
 
 <div class="hp_box">

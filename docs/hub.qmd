@@ -291,7 +291,7 @@ Welcome to the central portal for navigating the **iLand** (individual-based for
           Connect with other iLand developers or browse model applications.
         </p>
         <ul class="small ps-3">
-          <li><a href="wiki/iland-publications.html">Scientific Publications</a></li>
+          <li><a href="iland-publications.html">Scientific Publications</a></li>
           <li><a href="https://iland-model.org/iland-book" target="_blank">The iLand Book (Quarto Guide)</a></li>
           <li><a href="https://discord.gg/e5trneUKav" target="_blank">Join iLand Discord Channel</a></li>
           <li><a href="wiki/release-notes.html">iLand Version Release Notes</a></li>

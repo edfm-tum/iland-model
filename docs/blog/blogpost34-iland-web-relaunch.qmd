@@ -10,7 +10,7 @@ author: "Werner Rammer"
 
 
 
-	During the last three and a half years, the iLand wiki continuously growed along the [modelling concepts](../wiki/abstract.qmd) and the [model software](../wiki/iland-software.qmd) - but for registered users only. Now it is time to raise the curtain! The first official [iLand publication](../wiki/iland-publications.qmd) is (finally) in press (see[this blog post](blogpost33-on-publishing-a-model.qmd) for some philosphical musings  over this process), and the Marie Curie Fellowship that provided the main funding for the development has almost ended.
+	During the last three and a half years, the iLand wiki continuously growed along the [modelling concepts](../wiki/abstract.qmd) and the [model software](../wiki/iland-software.qmd) - but for registered users only. Now it is time to raise the curtain! The first official [iLand publication](../iland-publications.qmd) is (finally) in press (see[this blog post](blogpost33-on-publishing-a-model.qmd) for some philosphical musings  over this process), and the Marie Curie Fellowship that provided the main funding for the development has almost ended.
 
 
 
@@ -18,7 +18,7 @@ author: "Werner Rammer"
 
 
 
-	We also re-designed the [public start page](../wiki/iland.qmd) trying to provide a visually pleasing and informative entry point for our site. Also new is the [download](../wiki/download.qmd) page that allows free download of the iLand software and source code. Currently, we have a total number of 110 public wiki pages - something we are quite proud of.
+	We also re-designed the [public start page](../wiki/iland.qmd) trying to provide a visually pleasing and informative entry point for our site. Also new is the [download](../download.qmd) page that allows free download of the iLand software and source code. Currently, we have a total number of 110 public wiki pages - something we are quite proud of.
 
 
 

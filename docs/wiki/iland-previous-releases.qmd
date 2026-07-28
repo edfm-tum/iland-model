@@ -2,7 +2,7 @@
 title: "iLand - previous releases"
 ---
 
-This page contains older official releases of the iLand software and example package. Find the latest release on the [download](download.qmd) page.
+This page contains older official releases of the iLand software and example package. Find the latest release on the [download](../download.qmd) page.
 
 
 

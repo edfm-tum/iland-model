@@ -24,7 +24,7 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 
 You should have received a copy of the GNU General Public License along with this program.  If not, see [http://www.gnu.org/licenses/gpl.html](http://www.gnu.org/licenses/gpl.html).
 
-iLand should be cited in publications and presentations using one or several of the [scientific papers related to iLand](iland-publications.qmd). Good starting points are:
+iLand should be cited in publications and presentations using one or several of the [scientific papers related to iLand](../iland-publications.qmd). Good starting points are:
 
 * [**Rammer, W., Thom, D., Baumann, M., Braziunas, K., Dollinger, C., Kerber, J., Mohr, J., Seidl, R., 2024**](https://doi.org/10.1016/j.ecolmodel.2024.110785)The individual-based forest landscape and disturbance model iLand: Overview, progress, and outlook. Ecological Modelling 495, [https://doi.org/10.1016/j.ecolmodel.2024.110785](https://doi.org/10.1016/j.ecolmodel.2024.110785)
 

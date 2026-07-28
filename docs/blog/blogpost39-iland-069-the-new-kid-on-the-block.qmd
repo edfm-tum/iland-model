@@ -4,7 +4,7 @@ date: "2012-09-27"
 author: "Werner Rammer"
 ---
 
-After the going online of the new iLand [paper](http://dx.doi.org/10.1007/s10021-012-9587-2) in Ecosystems, we proudly present a new release of the iLand model that was described and used in the aforementioned study. The [download](../wiki/download.qmd) package contains the iLand software (compiled for Windows) and an extensive, fully functional example (a part of the HJ Andrews forest, see the screenshot).
+After the going online of the new iLand [paper](http://dx.doi.org/10.1007/s10021-012-9587-2) in Ecosystems, we proudly present a new release of the iLand model that was described and used in the aforementioned study. The [download](../download.qmd) package contains the iLand software (compiled for Windows) and an extensive, fully functional example (a part of the HJ Andrews forest, see the screenshot).
 
 <img alt="iLand 0.69 running with example" src="/img/iLandScreen069.png" style="height:306px;width:400px;float:right; margin-left: 20px;" />
 

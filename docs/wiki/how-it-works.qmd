@@ -2,7 +2,7 @@
 title: "How iLand works - in a nutshell"
 ---
 
-This section gives a brief overview of iLand's design principles. For more details, consult the [iLand publications](iland-publications.qmd) and the other sections of this documentation.
+This section gives a brief overview of iLand's design principles. For more details, consult the [iLand publications](../iland-publications.qmd) and the other sections of this documentation.
 
 ## Design Principles
 

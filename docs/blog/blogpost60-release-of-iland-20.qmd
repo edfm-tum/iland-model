@@ -28,7 +28,7 @@ Model application
 
 With the release of iLand 2.0 we put a particular emphasis on new users of the model:
 •	Our new paper (https://doi.org/10.1016/j.ecolmodel.2024.110785) provides a comprehensive overview of the current state of iLand
-•	The iLand book (https://iland-model.org/iland-book/) is an online book with 130+ pages and was specifically created to provide a compact and accessible guide for working with iLand. It accompanies other model documentation streams (such as the website ([Welcome](../index.qmd)), and scientific papers ([publications](../wiki/iland-publications.qmd))) and is a resource for both iLand beginners and advanced users
+•	The iLand book (https://iland-model.org/iland-book/) is an online book with 130+ pages and was specifically created to provide a compact and accessible guide for working with iLand. It accompanies other model documentation streams (such as the website ([Welcome](../index.qmd)), and scientific papers ([publications](../iland-publications.qmd))) and is a resource for both iLand beginners and advanced users
 •	To facilitate communication within the growing number of model users, we started a Discord community channel for iLand: https://tinyurl.com/iland-discord
 Join the channel using this link: <new Discord invite link>!
 •	We moved the development of iLand to a public GitHub repository (https://github.com/edfm-tum/iland-model). The repository includes the full development history (imported from the previous Subversion system) and makes it easier for everyone to have a look at the code (of specific versions), update the code and contribute to iLand development!

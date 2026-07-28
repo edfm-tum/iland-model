@@ -2,7 +2,7 @@
 title: "download"
 ---
 
-iLand is a research tool, and is publicly available as open source software. We have developed the software relying solely on open source components, in order to facilitate its use and further development by others (see [here](../blog/index.qmd) for some ideas on iLand software development). The software is released under the [GNU General Public Licence](http://www.gnu.org/licenses/gpl.html) (GPL).
+iLand is a research tool, and is publicly available as open source software. We have developed the software relying solely on open source components, in order to facilitate its use and further development by others (see [here](blog/index.qmd) for some ideas on iLand software development). The software is released under the [GNU General Public Licence](http://www.gnu.org/licenses/gpl.html) (GPL).
 
 
 
@@ -16,7 +16,7 @@ iLand @ GitHub: https://github.com/edfm-tum/iland-model
 #### Building instructions
 
 
-See here in the [wiki](software-getting-started.qmd#building-iland-from-source)and in the [online book](https://iland-model.org/iland-book/Building_iLand.html)
+See here in the [wiki](wiki/software-getting-started.qmd#building-iland-from-source)and in the [online book](https://iland-model.org/iland-book/Building_iLand.html)
 
 
 
@@ -53,12 +53,12 @@ PDF-Version: <https://iland-model.org/downloads/iland-book.pdf>
 ### Download statistics
 
 
-See [download statistics](download-statistics.qmd) for details.
-
+See [download statistics](wiki/download-statistics.qmd) for details.
 
 
 
 ```{=html}
+
 <div class="panel expandable">
   <div class="panel-heading" style="text-align: left; font-weight: normal; cursor: pointer">
 
@@ -71,7 +71,7 @@ See [download statistics](download-statistics.qmd) for details.
             <p style="margin: 0;">
                 <strong>Release Date:</strong> 2025-08-08.<br>
                 Source code is available on <a href="https://github.com/edfm-tum/iland-model/releases/tag/v2.1">GitHub</a>.<br>
-                Find more details on the iLand <a href="../blog/blogpost61-release-iland-21.qmd">blog</a>.
+                Find more details on the iLand <a href="blog/blogpost61-release-iland-21.qmd">blog</a>.
             </p>
         </div>
       </div>
@@ -94,7 +94,7 @@ See [download statistics](download-statistics.qmd) for details.
             <p style="margin:0;"><strong>Info:</strong> iLand 2.1 for Windows.</p>
           </div>
           <div id="mac-info" class="os-info" style="display: none; border: 1px solid #cce5ff; background-color:#f0f8ff; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
-            <p style="margin:0;"><strong>Info:</strong> See also <a href="iland-software.qmd#mac">installation notes for Mac</a>.</p>
+            <p style="margin:0;"><strong>Info:</strong> See also <a href="wiki/iland-software.qmd#mac">installation notes for Mac</a>.</p>
           </div>
           <div id="linux-info" class="os-info" style="display: none; border: 1px solid #cce5ff; background-color:#f0f8ff; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
             <p style="margin:0;"><strong>Info:</strong> We are working on an installation package for Linux, but it is not ready yet - sorry! In the meanwhile consider compiling iLand from source on Linux (it is not that hard, see the <a href="https://iland-model.org/iland-book/Building_iLand.html">iLand development chapter</a> in the book).</p>
@@ -114,7 +114,7 @@ See [download statistics](download-statistics.qmd) for details.
 
           <div style="margin-bottom: 20px;">
             <input type="checkbox" id="agree100" name="agree" value="Bike" style="vertical-align: middle;">
-            <label for="agree100" style="vertical-align: middle;"> I accept the <a href="terms-and-conditions.qmd">terms and conditions</a>.</label>
+            <label for="agree100" style="vertical-align: middle;"> I accept the <a href="wiki/terms-and-conditions.qmd">terms and conditions</a>.</label>
           </div>
 
           <input type="submit" value="Download iLand" style="width: 100%; background-color: #2a8442; color: white; padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 1.2em; font-weight: bold;">
@@ -163,5 +163,4 @@ See [download statistics](download-statistics.qmd) for details.
 </script>
 ```
 
-
-See [iLand - previous releases](iland-previous-releases.qmd) for earlier releases of iLand!
+See [iLand - previous releases](wiki/iland-previous-releases.qmd) for earlier releases of iLand!

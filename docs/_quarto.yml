@@ -19,7 +19,7 @@ website:
           - text: "Team"
             href: wiki/team.qmd
           - text: "Publications"
-            href: wiki/iland-publications.qmd
+            href: iland-publications.qmd
           - text: "News"
             href: blog/index.qmd
       - text: "Model Documentation"
@@ -38,6 +38,8 @@ website:
             href: wiki/submodules.qmd
       - text: "Working with iLand"
         menu:
+          - text: "Download"
+            href: download.qmd
           - text: "iLand Software"
             href: wiki/iland-software.qmd
           - text: "Landscape Initialization"
@@ -65,12 +67,12 @@ website:
     right:
       - text: "Version"
         menu:
-          - text: "latest (2.1)"
+          - text: "latest (2.2)"
             href: /
           - text: "dev"
             href: /dev/
-          - text: "2.0"
-            href: /2.0/
+          - text: "2.2"
+            href: /2.2/
       - icon: github
         href: https://github.com/edfm-tum/iland-model
 
@@ -220,7 +222,7 @@ website:
             - wiki/debug-outputs.qmd
             - wiki/organizing-outputs.qmd
             - wiki/dynamic-outputs.qmd
-            - wiki/iland-publications.qmd
+            - iland-publications.qmd
             - wiki/terms-and-conditions.qmd
             - wiki/release-notes.qmd
 

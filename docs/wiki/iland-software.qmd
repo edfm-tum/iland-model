@@ -15,7 +15,7 @@ The iLand software consists of several components:
 * The [iLand console](iland-console.qmd) application (*ilandc*): a non-GUI version of the model, which will be useful as a command line based workhorse for large simulation jobs or for simulations jobs in a computer cluster.
 * The [LightRoom](lightroom.qmd) is the auxiliary tool used to create the pre calculated light influence pattern that are consequently [used in the core model](competition-for-light.qmd).
 
-From time to time, we create "official" iLand releases; usually this are versions of the model that are used for some "important" simulations (e.g. those that are used to produce [publications](iland-publications.qmd)). This helps, together with the source code repository, to keep the model development process traceable and transparent. The more technical [release notes](release-notes.qmd) page contains useful information on single iLand releases (e.g. for upgrading database tables).
+From time to time, we create "official" iLand releases; usually this are versions of the model that are used for some "important" simulations (e.g. those that are used to produce [publications](../iland-publications.qmd)). This helps, together with the source code repository, to keep the model development process traceable and transparent. The more technical [release notes](release-notes.qmd) page contains useful information on single iLand releases (e.g. for upgrading database tables).
 
 
 
@@ -29,7 +29,7 @@ The iLand software itself is released under the [GPL](http://www.gnu.org/copylef
 ## Building iLand
 
 
-The source code of iLand is bundled with the [download package](download.qmd) of the model  and is also available online at http://iland-model.org/publicsvn . Within the download package, the full source code of the model is in the ZIP archive “sourcecode.zip”. In order to be able to modify and compile iLand for yourself, you will need Qt and the QtCreator IDE. Both packages are freely available at http://qt.io/ .
+The source code of iLand is bundled with the [download package](../download.qmd) of the model  and is also available online at http://iland-model.org/publicsvn . Within the download package, the full source code of the model is in the ZIP archive “sourcecode.zip”. In order to be able to modify and compile iLand for yourself, you will need Qt and the QtCreator IDE. Both packages are freely available at http://qt.io/ .
 After installing the Qt Creator IDE, open the “iland.pro” project in the “src/iland” folder (be sure to preserve file paths when extracting the source code). iLand uses no external libraries (except the Qt libraries) which should simplify the building process considerably – a click to “build” should suffice.
 
 
@@ -37,7 +37,7 @@ After installing the Qt Creator IDE, open the “iland.pro” project in the “
 ## Installing iLand
 
 
-Get the iLand executable package from the [download](download.qmd) page, select your operating system.
+Get the iLand executable package from the [download](../download.qmd) page, select your operating system.
 
 
 
