@@ -15,9 +15,6 @@ on:
   push:
     tags:
       - 'v*'
-    branches:
-      - main
-      - dev
 
 jobs:
   build:
