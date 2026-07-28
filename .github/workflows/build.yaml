@@ -136,7 +136,7 @@ jobs:
           # 8. Create Console AppDir and AppImage for ilandc
           mkdir -p AppDirConsole/usr/bin
           cp src/ilandc/build/release/ilandc AppDirConsole/usr/bin/
-          echo -e "[Desktop Entry]\nName=ilandc\nExec=ilandc\nIcon=iland\nType=Application\nCategories=Science;\nTerminal=true;" > AppDirConsole/ilandc.desktop
+          echo -e "[Desktop Entry]\nName=ilandc\nExec=ilandc\nIcon=iland\nType=Application\nCategories=Science;\nTerminal=true" > AppDirConsole/ilandc.desktop
           touch AppDirConsole/iland.png
 
           ./linuxdeployqt-continuous-x86_64.AppImage AppDirConsole/usr/bin/ilandc -appimage -unsupported-allow-new-glibc
