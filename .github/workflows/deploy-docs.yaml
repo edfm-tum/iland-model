@@ -27,6 +27,15 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Generate API Documentation Pages
+        run: |
+          python3 docs/apidoc/generate.py
+
       - name: Setup Quarto
         uses: quarto-dev/quarto-actions/setup@v2
         with:
@@ -36,15 +45,14 @@ jobs:
         run: |
           quarto render docs/
 
-      - name: Configure SSH Key
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-      - name: Add Server Host Key to Known Hosts
+      - name: Configure SSH Private Key & Host Verification
         run: |
           mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -p ${{ secrets.SERVER_PORT || 22 }} ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
 
       - name: Deploy via Rsync over SSH
         run: |
@@ -52,7 +60,7 @@ jobs:
           echo "Deploying rendered docs to /var/www/html/iland-docs/${TARGET}/..."
           
           rsync -avz --delete \
-            -e "ssh -p ${{ secrets.SERVER_PORT || 22 }}" \
+            -e "ssh -i ~/.ssh/id_ed25519 -p ${{ secrets.SERVER_PORT || 22 }}" \
             docs/_site/ \
             ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/var/www/html/iland-docs/${TARGET}/
 
@@ -62,5 +70,5 @@ jobs:
           TARGET="${{ inputs.target_version }}"
           echo "Updating 'latest' symlink -> ${TARGET}..."
           
-          ssh -p ${{ secrets.SERVER_PORT || 22 }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
+          ssh -i ~/.ssh/id_ed25519 -p ${{ secrets.SERVER_PORT || 22 }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
             "ln -sfn /var/www/html/iland-docs/${TARGET} /var/www/html/iland-docs/latest"
