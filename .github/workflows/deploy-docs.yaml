@@ -65,12 +65,12 @@ jobs:
           SERVER_PORT: ${{ secrets.SERVER_PORT || 22 }}
         run: |
           TARGET="${{ inputs.target_version }}"
-          echo "Deploying rendered docs to /var/www/html/iland-docs/${TARGET}/..."
+          echo "Deploying rendered docs to /var/www/iland-model.org/html/iland-docs/${TARGET}/..."
           
           rsync -avz --delete \
             -e "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=accept-new -p ${SERVER_PORT}" \
             docs/_site/ \
-            ${SERVER_USER}@${SERVER_HOST}:/var/www/html/iland-docs/${TARGET}/
+            ${SERVER_USER}@${SERVER_HOST}:/var/www/iland-model.org/html/iland-docs/${TARGET}/
 
       - name: Update 'latest' Symlink (Optional)
         if: inputs.update_latest_symlink == true
@@ -83,4 +83,4 @@ jobs:
           echo "Updating 'latest' symlink -> ${TARGET}..."
           
           ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=accept-new -p ${SERVER_PORT} ${SERVER_USER}@${SERVER_HOST} \
-            "ln -sfn /var/www/html/iland-docs/${TARGET} /var/www/html/iland-docs/latest"
+            "ln -sfn /var/www/iland-model.org/html/iland-docs/${TARGET} /var/www/iland-model.org/html/iland-docs/latest"
