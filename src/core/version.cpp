@@ -21,7 +21,7 @@
 #include <QString>
 #include <QRegularExpression>
 
-static const char *version = "2.2";
+static const char *version = "2.2.dev";
 const char *currentVersion(){ return version;}
 
 // compiler version
