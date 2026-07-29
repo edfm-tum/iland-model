@@ -9,37 +9,39 @@ document.addEventListener("DOMContentLoaded", function() {
     if (dropdownMenu) {
       const versionLinks = dropdownMenu.querySelectorAll("a.dropdown-item");
       versionLinks.forEach(link => {
-        const href = link.getAttribute("href");
-        if (href) {
-          link.addEventListener("click", function(e) {
-            e.preventDefault();
-            const targetVersionPath = href; // e.g. "/" or "/dev/" or "/2.0/"
-            const currentPath = window.location.pathname; // e.g. "/wiki/growth.html" or "/dev/wiki/growth.html"
-            
-            // List of subdirectories representing historical/dev versions
-            const versions = ["/dev/", "/2.1/", "/2.0/"];
-            let pageRelativePath = currentPath;
-            
-            // Strip any existing version prefix from the current path
-            for (const v of versions) {
-              if (currentPath.startsWith(v)) {
-                pageRelativePath = currentPath.substring(v.length - 1); // keep leading slash
-                break;
-              }
+        link.addEventListener("click", function(e) {
+          e.preventDefault();
+          
+          const text = link.textContent.trim();
+          const href = link.getAttribute("href") || "";
+          
+          // Determine target version prefix dynamically
+          let targetPrefix = "";
+          if (text.toLowerCase().includes("latest")) {
+            targetPrefix = "";
+          } else {
+            // Match version patterns like 'dev', '2.2', '2.3', 'v3.0.1', etc.
+            const versionMatch = text.match(/(?:v)?\d+\.\d+(?:\.\d+)?|dev/i) || href.match(/(?:v)?\d+\.\d+(?:\.\d+)?|dev/i);
+            if (versionMatch) {
+              targetPrefix = "/" + versionMatch[0].toLowerCase();
             }
-            
-            // Assemble the target URL
-            let finalUrl = targetVersionPath;
-            if (targetVersionPath !== "/") {
-              // Strip the leading slash of the pageRelativePath to combine with "/dev/" cleanly
-              finalUrl += pageRelativePath.startsWith("/") ? pageRelativePath.substring(1) : pageRelativePath;
-            } else {
-              finalUrl += pageRelativePath.startsWith("/") ? pageRelativePath.substring(1) : pageRelativePath;
-            }
-            
-            window.location.href = finalUrl;
-          });
-        }
+          }
+          
+          const currentPath = window.location.pathname;
+          
+          // Dynamically strip any existing version prefix from current path (/dev/, /2.2/, /3.0/, /latest/)
+          const versionPrefixRegex = /^\/((?:v)?\d+\.\d+(?:\.\d+)?|dev|latest)(\/.*)?$/i;
+          const match = currentPath.match(versionPrefixRegex);
+          const cleanPath = (match && match[2]) ? match[2] : (currentPath.startsWith("/") ? currentPath : "/" + currentPath);
+          
+          // Construct target URL
+          let newUrl = targetPrefix + cleanPath;
+          if (!newUrl.startsWith("/")) {
+            newUrl = "/" + newUrl;
+          }
+          
+          window.location.href = newUrl;
+        });
       });
     }
   }

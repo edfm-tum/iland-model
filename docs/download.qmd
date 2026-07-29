@@ -77,7 +77,7 @@ See [download statistics](wiki/download-statistics.qmd) for details.
 
       <div class="download-form-container" style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #ddd;">
 
-        <form action="/get_iland/iland_download_github.php" name="downloadform100" onsubmit="return validateDownloadForm('downloadform100');" method="post">
+        <form action="/get_iland/iland_download.php" name="downloadform100" onsubmit="return validateDownloadForm('downloadform100');" method="post">
           <input type="hidden" name="file" value="v2.2/iLand-Windows.zip">
 
           <div style="margin-bottom: 20px;">
