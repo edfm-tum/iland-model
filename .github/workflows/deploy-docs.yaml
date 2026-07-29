@@ -1,0 +1,66 @@
+name: Build & Deploy Documentation
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_version:
+        description: 'Target Version Folder in iland-docs/ (e.g., dev, 2.2, 2.3)'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - '2.2'
+          - '2.3'
+      update_latest_symlink:
+        description: 'Update "latest" symlink to point to this version?'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  build-and-deploy:
+    name: Render Quarto & Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          version: release
+
+      - name: Render Quarto Documentation
+        run: |
+          quarto render docs/
+
+      - name: Configure SSH Key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add Server Host Key to Known Hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -p ${{ secrets.SERVER_PORT || 22 }} ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy via Rsync over SSH
+        run: |
+          TARGET="${{ inputs.target_version }}"
+          echo "Deploying rendered docs to /var/www/html/iland-docs/${TARGET}/..."
+          
+          rsync -avz --delete \
+            -e "ssh -p ${{ secrets.SERVER_PORT || 22 }}" \
+            docs/_site/ \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/var/www/html/iland-docs/${TARGET}/
+
+      - name: Update 'latest' Symlink (Optional)
+        if: inputs.update_latest_symlink == true
+        run: |
+          TARGET="${{ inputs.target_version }}"
+          echo "Updating 'latest' symlink -> ${TARGET}..."
+          
+          ssh -p ${{ secrets.SERVER_PORT || 22 }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
+            "ln -sfn /var/www/html/iland-docs/${TARGET} /var/www/html/iland-docs/latest"

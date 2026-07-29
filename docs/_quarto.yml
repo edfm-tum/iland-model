@@ -6,6 +6,7 @@ project:
 
 website:
   title: "iLand"
+  google-analytics: "G-TRG2J4Z0X7"
   navbar:
     logo: img/iland-logo.png
     logo-href: /index.qmd
