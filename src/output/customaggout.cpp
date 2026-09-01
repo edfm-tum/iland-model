@@ -340,6 +340,8 @@ void CustomAggOutLevel::runSnags()
         writeResults(data, nullptr, 0);
 
     }
+    break;
+
     case CustomAggOut::sRU: {
 
         for (const auto &ru : Globals->model()->ruList()) {

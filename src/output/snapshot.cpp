@@ -1197,8 +1197,8 @@ void Snapshot::saveDeadTrees()
     QSqlDatabase db=QSqlDatabase::database("snapshot");
     QSqlQuery q(db);
     if (!q.prepare("insert into deadtrees (RUindex, posx, posy, species, isStanding, deathReason, "  \
-           "yearsStandingDead, yearsDowned, volume, initBiomass, biomass, crownRadius)" \
-                   " values (?,?,?,?, ?,?,?,?, ?,?,?,?)") )
+           "yearsStandingDead, yearsDowned, volume, initBiomass, biomass, crownRadius, dbh)" \
+                   " values (?,?,?,?, ?,?,?,?, ?,?,?,?, ?)") )
         throw IException(QString("Snapshot::saveDeadTrees: prepare:") + q.lastError().text());
 
 
@@ -1219,6 +1219,7 @@ void Snapshot::saveDeadTrees()
             q.addBindValue(dt.initialBiomass());
             q.addBindValue(dt.biomass());
             q.addBindValue(dt.crownRadius());
+            q.addBindValue(dt.dbh());
             if (!q.exec()) {
                 throw IException(QString("Snapshot::saveStandSnapshot, deadtrees: execute:") + q.lastError().text());
             }
@@ -1316,7 +1317,7 @@ void Snapshot::loadDeadTrees()
     QSqlQuery q(db);
     q.setForwardOnly(true); // avoid huge memory usage in query component
     if (!q.exec("select RUindex, posx, posy, species, isStanding, deathReason, "  \
-                "yearsStandingDead, yearsDowned, volume, initBiomass, biomass, crownRadius from deadtrees")) {
+                "yearsStandingDead, yearsDowned, volume, initBiomass, biomass, crownRadius, dbh from deadtrees")) {
         qDebug() << "Error when loading from deadtrees table...." << q.lastError().text();
         return;
     }
