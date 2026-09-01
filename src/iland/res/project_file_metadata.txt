@@ -198,6 +198,7 @@ model.climate.co2startYear = numeric|1840|CO2 start year|If a co2pathway is used
 gui.layout = group|Static climate offset|Define a constant offset for temperature and precipitation
 model.climate.temperatureShift = numeric|0|Temperature shift|Simple option to modify the climate. The value is added to each daily temperature (default = 0)|simple
 model.climate.precipitationShift = numeric|1|Precipitation shift|Simple option to modify the climate. The daily precipitation is multiplied for each day with this value. (default = 1).|simple
+model.climate.dayLengthLimit = numeric|14.5|Day length limit|Threshold day length (hours) after which autumn generation development stops. Default is 14.5 hours.|simple
 
 ; ********************************************
 ; **** Disturbance modules
@@ -535,6 +536,15 @@ gui.layout = layout|hl
 gui.layout = group|Winter mortality
 modules.barkbeetle.baseWinterMortality = string|string|Base Mortality|string|simple
 modules.barkbeetle.winterMortalityFormula = string|string|Formula|string|simple
+modules.barkbeetle.winterMortalityShareUnderBark = numeric|1.0|Share under bark|Share (0..1) of beetles overwintering under tree bark. Default is 1.0.|simple
+modules.barkbeetle.winterMortalityShareInSoil = numeric|0.0|Share in soil|Share (0..1) of beetles overwintering in soil/litter layer. Default is 0.0.|simple
+modules.barkbeetle.winterMortalityInSoil = numeric|0.05|Mortality in soil|Fixed winter mortality rate (0..1) for beetles overwintering in soil. Default is 0.05.|simple
+
+gui.layout = layout|hl
+gui.layout = group|Thermal limits
+modules.barkbeetle.airTempMaxLimit = numeric|16.5|Air temp max limit|Air temperature threshold (°C) required for swarming and brood establishment. Default is 16.5.|simple
+modules.barkbeetle.tempSumLimit = numeric|140.3|Degree-day threshold|Cumulative degree-day sum needed to start spring development. Default is 140.3.|simple
+modules.barkbeetle.ddLimit = numeric|557.0|Degree-day total limit|Degree-days required for complete development of a generation. Default is 557.0.|simple
 
 gui.layout = layout|hl
 gui.layout = group|Spread kernel
