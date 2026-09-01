@@ -39,7 +39,7 @@ jobs:
       - name: Setup Quarto
         uses: quarto-dev/quarto-actions/setup@v2
         with:
-          version: release
+          version: "1.6.42"
 
       - name: Render Quarto Documentation
         run: |
