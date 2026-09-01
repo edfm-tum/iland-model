@@ -135,6 +135,7 @@ The table name in the climate database and a SQL filter to select a subset of da
 | `co2startYear` | numeric | `1840` | **CO2 start year**: If a co2pathway is used, then co2startYear defines the starting point of CO2 concentration within the simulation. |
 | `temperatureShift` | numeric | `0` | **Temperature shift**: Simple option to modify the climate. The value is added to each daily temperature (default = 0) |
 | `precipitationShift` | numeric | `1` | **Precipitation shift**: Simple option to modify the climate. The daily precipitation is multiplied for each day with this value. (default = 1). |
+| `dayLengthLimit` | numeric | `14.5` | **Day length limit**: Threshold day length (hours) after which autumn generation development stops. Default is 14.5 hours. |
 | `microclimate.enabled` | boolean | `false` | **Enable**: Enables the submodule |
 | `microclimate.barkbeetle` | boolean | `true` | **Effect on bark beetles**: Enables the effect of microclimate buffering for overwintering success of Spruce bark beetles |
 | `microclimate.decomposition` | boolean | `true` | **Effect on decomposition**: Enables the microclimate buffering effect for decomposition of dead wood and litter |
@@ -442,6 +443,12 @@ The barkbeetle module simulates a specific biotic agent, namely the European Spr
 | `stormInfestationProbability` | string | `string` | **Storm related**: string |
 | `baseWinterMortality` | string | `string` | **Base Mortality**: string |
 | `winterMortalityFormula` | string | `string` | **Formula**: string |
+| `winterMortalityShareUnderBark` | numeric | `1.0` | **Share under bark**: Share (0..1) of beetles overwintering under tree bark. Default is 1.0. |
+| `winterMortalityShareInSoil` | numeric | `0.0` | **Share in soil**: Share (0..1) of beetles overwintering in soil/litter layer. Default is 0.0. |
+| `winterMortalityInSoil` | numeric | `0.05` | **Mortality in soil**: Fixed winter mortality rate (0..1) for beetles overwintering in soil. Default is 0.05. |
+| `airTempMaxLimit` | numeric | `16.5` | **Air temp max limit**: Air temperature threshold (°C) required for swarming and brood establishment. Default is 16.5. |
+| `tempSumLimit` | numeric | `140.3` | **Degree-day threshold**: Cumulative degree-day sum needed to start spring development. Default is 140.3. |
+| `ddLimit` | numeric | `557.0` | **Degree-day total limit**: Degree-days required for complete development of a generation. Default is 557.0. |
 | `spreadKernelFormula` | string | `string` | **Formula**: string |
 | `spreadKernelMaxDistance` | string | `string` | **Max. distance**: string |
 | `cohortsPerGeneration` | string | `string` | **Per generation**: string |

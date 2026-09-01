@@ -303,12 +303,9 @@ QStringList GlobalSettings::debugListCaptions(const DebugOutputs dbg)
                              << "pf_soil_frozen_m" << "pf_water_frozen_mm" << "pf_unfrozen_fc_mm"
                              << "moss_f_light" << "moss_f_deciduous";
 
-    case dDailyResponses:
-        return QStringList() << "id" << "type" << "year" << "day_id" << "ru_index" << "ru_id" << "species"
-                             << "temp" << "vpd" << "rad"
-                             << "resp_soil" << "resp_vpd" << "resp_temp" << "resp_meteo"
-                             << "resp_pheno" << "resp_co2" << "apar_mj_m2"
-                             << "resp_daylength" << "utilizable_rad";
+    case dDailyResponses: return QStringList() << "id" << "type" << "year" << "species" << "date" << "RU_index" << "rid"
+                             << "waterResponse" << "tempResponse" << "VpdResponse" << "Radiation_day" << "utilizableRad";
+
     case dEstablishment:
         return QStringList() << "id" << "type" << "year" << "species" << "RU_index" << "rid"
                              << "avgSeedDensity" << "TACAminTemp" << "TACAchill" << "TACAfrostFree" << "TACAgdd"

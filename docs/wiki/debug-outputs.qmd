@@ -178,27 +178,20 @@ This output details the daily calculations of the water balance for a resource u
 ### Daily responses (32)
 
 
-This output provides a detailed look at the monthly response functions for each species on a resource unit. These response functions are modifiers (typically 0-1) that represent limitations on growth due to various environmental factors. The final utilizableRadiation is the culmination of these factors applied to the absorbed radiation. Note that while the output is logged daily, the response values themselves are calculated and reported as monthly averages or sums.
+This output provides daily environmental response functions and radiation calculations for each species on a resource unit. On a daily basis during the vegetation period, environmental response modifiers (0-1) for soil water (`waterResponse`), temperature (`tempResponse`), and VPD (`VpdResponse`) are calculated for each species. The minimum of these responses reduces global daily radiation (`Radiation_day`) to determine daily utilizable radiation (`utilizableRad`). Outside the vegetation period, `utilizableRad` is 0.
 
 
 | **Name** | **Description** |
 | --- | --- |
-| day_id | Unique identifier for the day of the year (yyyymmdd). |
-| ru_index | 0-based index of the resource unit. |
-| ru_id | User-defined ID of the resource unit. |
-| species | 4-character species code. |
-| temp | Average daily temperature (°C). |
-| vpd | Vapour Pressure Deficit of the day (kPa). |
-| rad | Global radiation of the day (MJ/m2). |
-| resp_soil | Monthly average of the daily soil water response modifier (0-1). A value of 1 indicates no water limitation. |
-| resp_vpd | Monthly average of the daily Vapour Pressure Deficit (VPD) response modifier (0-1). A value of 1 indicates no limitation from atmospheric drought. |
-| resp_temp | Monthly average of the daily temperature response modifier (0-1). A value of 1 indicates optimal temperature for growth. |
-| resp_meteo | The monthly meteorological response, calculated as the monthly average of the daily minimum of soil water, VPD, and temperature responses. |
-| resp_pheno | Monthly phenology response (0 or 1), indicating if the species is photosynthetically active during the month. |
-| resp_co2 | The CO2 fertilization effect modifier for the month, based on atmospheric CO2 concentration. |
-| apar_mj_m2 | The total absorbed photosynthetically active radiation (APAR) for the month (MJ/m2). |
-| resp_daylength | Monthly average of the daily daylength response modifier (0-1). |
-| utilizable_rad | The utilizable radiation for the month (MJ/m2). This is the APAR value after being reduced by all preceding response modifiers (meteo, pheno, co2, daylength). |
+| species | 4-character species code (e.g. 'piab', 'fasy'). |
+| date | Day of the year (1..365/366). |
+| RU_index | 0-based index of the resource unit. |
+| rid | User-defined ID of the resource unit (0 if no IDs are provided). |
+| waterResponse | Daily soil water response modifier (0-1) for the species, calculated from soil water potential. A value of 1 indicates no water limitation. |
+| tempResponse | Daily temperature response modifier (0-1) for the species, calculated from delayed daily temperature. A value of 1 indicates optimal temperature for growth. |
+| VpdResponse | Daily Vapour Pressure Deficit (VPD) response modifier (0-1) for the species. A value of 1 indicates no limitation from atmospheric drought. |
+| Radiation_day | Global radiation of the day (MJ/m2). |
+| utilizableRad | Daily utilizable radiation (MJ/m2) for the species, calculated as `Radiation_day * min(waterResponse, tempResponse, VpdResponse)` during the vegetation period (0 outside the vegetation period). |
 
 
 

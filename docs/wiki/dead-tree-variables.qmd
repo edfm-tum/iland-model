@@ -18,4 +18,5 @@ See also: [tree variables](tree-variables.qmd), [resource unit variables](resour
 | yearsStanding | years standing since death. The counter is set to 1 in the year following the year of death |
 | yearsDowned | number of years the stem is on the ground. The total number of years since death is yearsStanding + yearsDowned. |
 | reason | Reason of death: 1: normal mortality, 2: bark beetle, 3: wind, 4: fire, 5: management |
+| dbh | DBH (cm) of the tree at the time of death |
 
