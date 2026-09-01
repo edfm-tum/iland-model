@@ -22,6 +22,8 @@
 #include "resourceunit.h"
 #include "climate.h"
 #include "microclimate.h"
+#include "globalsettings.h"
+#include "xmlhelper.h"
 
 /** @class BBGenerations
     @ingroup beetlemodule
@@ -29,6 +31,19 @@
   */
 BBGenerations::BBGenerations()
 {
+}
+
+void BBGenerations::setup()
+{
+    loadParameters();
+}
+
+void BBGenerations::loadParameters()
+{
+    const XmlHelper xml = GlobalSettings::instance()->settings().node("modules.barkbeetle");
+    params.airTempMaxLimit = xml.valueDouble(".airTempMaxLimit", params.airTempMaxLimit);
+    params.tempSumLimit = xml.valueDouble(".tempSumLimit", params.tempSumLimit);
+    params.ddLimit = xml.valueDouble(".ddLimit", params.ddLimit);
 }
 
 /**
@@ -41,21 +56,20 @@ double BBGenerations::calculateGenerations(const ResourceUnit *ru)
     calculateBarkTemperature(ru);
     bool use_microclimate = Model::settings().microclimateEnabled && ru->microClimate()->settings().barkbeetle_effect;
 
-    // start at the 1. of April, and wait for 140.3 degree days (with a threhsold of 8.3 degrees)
     const ClimateDay *clim = ru->climate()->day(4-1,1-1); // 0-based indices
     const ClimateDay *last_day = ru->climate()->day(10-1,31-1); // 0-based indices -> Oct 31
-    const ClimateDay * day_too_short = ru->climate()->dayOfYear(ru->climate()->sun().dayShorter14_5hrs()); // the first doy where the day is shorter than 14.5 hours
+    const ClimateDay * day_too_short = ru->climate()->dayOfYear(ru->climate()->sun().dayShorterXhrs());
 
     double dd=0.;
-    while (dd<140.3 && clim<last_day) {
+    while (dd<params.tempSumLimit && clim<last_day) {
         double tmax = clim->max_temperature + ( use_microclimate ? ru->microClimate()->maximumMicroclimateBufferingRU(clim->month-1) : 0);
         dd+=std::max(tmax-8.3, 0.);
         ++clim;
     }
-    // now wait for a decent warm day with tmax > 16.5 degrees
+    // wait for a warm day above airTempMaxLimit
     while (clim<last_day) {
         double tmax = clim->max_temperature + ( use_microclimate ? ru->microClimate()->maximumMicroclimateBufferingRU(clim->month-1) : 0);
-        if (tmax > 16.5)
+        if (tmax > params.airTempMaxLimit)
             break;
         ++clim;
     }
@@ -79,7 +93,7 @@ double BBGenerations::calculateGenerations(const ResourceUnit *ru)
         double t_sum=0.;
         bool added_sister_brood = false;
         while (c < last_day) {
-            t_sum = (mEffectiveBarkTemp[doy]-base_temp) / 557.;
+            t_sum = (mEffectiveBarkTemp[doy]-base_temp) / params.ddLimit;
             if (t_sum>=1.) {
                 if (c<day_too_short) {
                     // start a new parental generation (a full cycle), only if the current
@@ -93,9 +107,9 @@ double BBGenerations::calculateGenerations(const ResourceUnit *ru)
                 break;
             } else if (t_sum>0.5 && !added_sister_brood) {
                 // start a sister brood, *if* the maximum air temperature is high enough, and if the
-                // length of the day > 14.5 hours
+                // day length threshold has not passed
                 double tmax = c->max_temperature + (use_microclimate ? ru->microClimate()->maximumMicroclimateBufferingRU(c->month-1) : 0 );
-                if ( tmax>16.5 && c<day_too_short) {
+                if ( tmax>params.airTempMaxLimit && c<day_too_short) {
                     mGenerations.append(BBGeneration(doy, true, bb.gen)); // add a sister brood generation (true), keep gen. of originating brood
                     added_sister_brood = true;
                 }

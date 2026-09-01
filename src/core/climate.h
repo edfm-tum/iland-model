@@ -53,13 +53,15 @@ public:
     int longestDay() const { return mDayWithMaxLength; }
     bool northernHemishere() const { return mDayWithMaxLength<300; }
     int dayShorter10_5hrs() const { return mDayWith10_5hrs; }
-    int dayShorter14_5hrs() const { return mDayWith14_5hrs; }
+    int dayShorter14_5hrs() const { return mDayWithXhrs; }
+    int dayShorterXhrs() const { return mDayWithXhrs; }
 private:
     double mLatitude; ///< latitude in radians
     int mDayWithMaxLength; ///< day of year with maximum day length
     double mDaylength_h[366]; ///< daylength per day in hours
     int mDayWith10_5hrs; // last day of year with a day length > 10.5 hours (see Establishment)
-    int mDayWith14_5hrs; // last doy with at least 14.5 hours of day length
+    int mDayWithXhrs; // last doy with at least x (dayLengthLimit) hours of day length
+    double mDayLengthLimit; // configurable day length limit (hours)
 };
 
 class Climate

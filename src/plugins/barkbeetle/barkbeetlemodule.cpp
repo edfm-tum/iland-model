@@ -84,7 +84,7 @@ void BarkBeetleModule::setup()
 
     // load settings from the XML file
     loadParameters();
-
+    mGenerations.setup();
 }
 
 void BarkBeetleModule::setup(const ResourceUnit *ru)
@@ -125,8 +125,14 @@ void BarkBeetleModule::loadParameters(bool do_reset)
     QString formula = xml.value(".colonizeProbabilityFormula", "0.1");
     mColonizeProbability.setExpression(formula);
 
+    params.winterMortalityBaseLevel = xml.valueDouble(".baseWinterMortality", 0.5);
+    params.winterMortalityShareUnderBark = xml.valueDouble(".winterMortalityShareUnderBark", params.winterMortalityShareUnderBark);
+    params.winterMortalityShareInSoil = xml.valueDouble(".winterMortalityShareInSoil", params.winterMortalityShareInSoil);
+    params.winterMortalityInSoil = xml.valueDouble(".winterMortalityInSoil", params.winterMortalityInSoil);
+
     formula = xml.value(".winterMortalityFormula", "polygon(days, 0,0, 30, 0.6)");
     mWinterMortalityFormula.setExpression(formula);
+    mGenerations.loadParameters();
 
     formula = xml.value(".outbreakClimateSensitivityFormula", "1");
     mOutbreakClimateSensitivityFormula.setExpression(formula);
@@ -463,6 +469,9 @@ void BarkBeetleModule::startSpread()
     // calculate winter mortality
     //  probability of infestation
     for (BarkBeetleCell *b=mGrid.begin();b!=mGrid.end();++b) {
+        b->cold_days = 0;
+        b->winter_mortality_by_formula = 0.f;
+        b->winter_mortality_final = 0.f;
         if (b->infested) {
             stats.infestedStart++;
             // base mortality (Mbg)
@@ -473,7 +482,13 @@ void BarkBeetleModule::startSpread()
             } else {
                 // winter mortality - maybe the beetles die due to low winter temperatures (Mw)
                 int cold_days = mRUGrid.constValueAt(mGrid.cellCenterPoint(mGrid.indexOf(b))).cold_days;
-                double p_winter = mWinterMortalityFormula.calculate(cold_days);
+                double p_winter_by_formula = mWinterMortalityFormula.calculate(cold_days);
+                double p_winter = params.winterMortalityShareUnderBark * p_winter_by_formula +
+                                  params.winterMortalityShareInSoil * params.winterMortalityInSoil;
+
+                b->cold_days = cold_days;
+                b->winter_mortality_by_formula = static_cast<float>(p_winter_by_formula);
+                b->winter_mortality_final = static_cast<float>(p_winter);
                 if (drandom()<p_winter) {
                     b->setInfested(false);
                     stats.NWinterMortality++;
@@ -808,6 +823,9 @@ double BarkBeetleLayers::value(const BarkBeetleCell &data, const int param_index
     case 8: return GlobalSettings::instance()->currentYear() - data.outbreakYear;
     case 9: return data.n_events; // number of events on a specific pixel
     case 10: return static_cast<double>(data.sum_volume_killed); // total sum of trees killed for a pixel
+    case 11: return static_cast<int>(data.cold_days); // cold days
+    case 12: return static_cast<double>(data.winter_mortality_by_formula); // winter mortality by formula
+    case 13: return static_cast<double>(data.winter_mortality_final); // final winter mortality
     default: throw IException(QString("invalid variable index for a BarkBeetleCell: %1").arg(param_index));
     }
 }
@@ -827,7 +845,10 @@ const QVector<LayeredGridBase::LayerElement> &BarkBeetleLayers::names()
                 << LayeredGridBase::LayerElement(QStringLiteral("deadwood"), QStringLiteral("10: trees killed by storm, 8: trap trees, 5: active vicinity of 10/8, 0: no dead trees"), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QStringLiteral("outbreakAge"), QStringLiteral("age of the outbreak that led to the infestation of the pixel."), GridViewGray)
                 << LayeredGridBase::LayerElement(QStringLiteral("nEvents"), QStringLiteral("number of events (total since start of simulation) that killed trees on a pixel."), GridViewReds)
-                << LayeredGridBase::LayerElement(QStringLiteral("sumVolume"), QStringLiteral("running sum of damages trees (volume, m3)."), GridViewReds);
+                << LayeredGridBase::LayerElement(QStringLiteral("sumVolume"), QStringLiteral("running sum of damages trees (volume, m3)."), GridViewReds)
+                << LayeredGridBase::LayerElement(QStringLiteral("cold_days"), QStringLiteral("cold days."), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QStringLiteral("winter_mortality_by_formula"), QStringLiteral("Winter mortality by formula."), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QStringLiteral("winter_mortality_final"), QStringLiteral("Final winter mortality."), GridViewRainbow);
     return mNames;
 
 }

@@ -39,7 +39,8 @@ public:
     BarkBeetleCell() { reset(); }
     void clear() { n=0; n_total=0; killedYear=0; outbreakYear=0.f; infested=false;  p_colonize=0.f; deadtrees=NoDeadTrees; packageOutbreakYear=0.f; }
     /// full reset of the pixel
-    void reset() {clear(); dbh=0.f; tree_stress=0.f; outbreakYear=0.f; n_events=0; sum_volume_killed=0.f; }
+    void reset() {clear(); dbh=0.f; tree_stress=0.f; outbreakYear=0.f; n_events=0; sum_volume_killed=0.f;
+        cold_days=0; winter_mortality_by_formula=0.f; winter_mortality_final=0.f; }
     bool isHost() const { return dbh>0.f; }
     bool isPotentialHost() const {return dbh>0.f && killedYear==0 && infested==false; }
     /// sets the 'infested' state (true: the cell is newly infested, false: the cell stops being infested, e.g. by winter mortality)
@@ -59,6 +60,10 @@ public:
     float packageOutbreakYear; // outbreak year of packages landing on a cell
     int n_events; // total number of events on the pixel since the start of the simulation
     float sum_volume_killed; // total killed volume (since start of the simulation) on a pixel (m3)
+
+    int cold_days;                          ///< number of cold days for winter mortality
+    float winter_mortality_by_formula;      ///< under-bark winter mortality rate calculated by formula
+    float winter_mortality_final;           ///< combined final winter mortality rate
     enum DeadTrees { NoDeadTrees=0, StormDamage=10, SinkInVicinity=5, BeetleTrapTree=8 };
     DeadTrees deadtrees;
     /// return true if either storm damaged trees or trap trees are on the pixel or in the Moore neighborhood of the cell
@@ -179,6 +184,7 @@ private:
         SBBParams(): minDbh(10.f), cohortsPerGeneration(30), cohortsPerSisterbrood(50),
             spreadKernelMaxDistance(100.), backgroundInfestationProbability(0.0001), initialInfestationProbability(0.),
             stormInfestationProbability(1.), winterMortalityBaseLevel(0.),
+            winterMortalityShareUnderBark(1.0), winterMortalityShareInSoil(0.0), winterMortalityInSoil(0.05),
             outbreakDurationMin(0.), outbreakDurationMax(0.), deadTreeSelectivity(1.),
             sanitationTreatmentProb(0.) {}
         float minDbh; ///< minimum dbh of spruce trees that are considered as potential hosts
@@ -190,6 +196,9 @@ private:
         double initialInfestationProbability; ///< p that a pixel is infested at startup (as a result of pre-simulation dynamics)
         double stormInfestationProbability; ///< p that a pixel with storm damage gets infested
         double winterMortalityBaseLevel; ///< p that a infested pixel dies out over the winter (due to antagonists, bad luck, ...)
+        double winterMortalityShareUnderBark; ///< share of beetles overwintering under bark (0..1)
+        double winterMortalityShareInSoil;    ///< share of beetles overwintering in soil/litter (0..1)
+        double winterMortalityInSoil;         ///< mortality rate for beetles in soil (0..1)
         double outbreakDurationMin; ///< minimum value for the duration of a barkbeetle outbreak
         double outbreakDurationMax; ///< maximum value for the duration of a barkbeetle outbreak#
         double deadTreeSelectivity; ///< how effectively beetles are attracted by dead trees (e.g. windthrown) (5x5 pixel). 1: all beetles go into dead trees, 0: no effect of dead trees

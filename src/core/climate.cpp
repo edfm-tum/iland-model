@@ -64,10 +64,14 @@ void Sun::setup(double latitude_rad)
             break;
         }
     }
-    mDayWith14_5hrs = 0;
+    GlobalSettings *g = GlobalSettings::instance();
+    XmlHelper xml(g->settings().node("model.climate"));
+    mDayLengthLimit = xml.valueDouble("dayLengthLimit", 14.5);
+
+    mDayWithXhrs = 0;
     for (int day=mDayWithMaxLength;day<366;day++) {
-        if (mDaylength_h[day]<14.5) {
-            mDayWith14_5hrs = day;
+        if (mDaylength_h[day]<mDayLengthLimit) {
+            mDayWithXhrs = day;
             break;
         }
     }

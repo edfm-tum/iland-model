@@ -28,6 +28,8 @@ class BBGenerations
 {
 public:
     BBGenerations();
+    void setup(); ///< general setup
+    void loadParameters(); ///< load params from XML
     /// calculate the number of barbeetle generations for the given resource unit.
     double calculateGenerations(const ResourceUnit *ru);
 
@@ -62,6 +64,15 @@ private:
     int mFrostDaysLate; ///< frost days from summer to Dec 31
 
     double mEffectiveBarkTemp[366];
+
+    struct BBGParams {
+        BBGParams():
+            airTempMaxLimit(16.5), tempSumLimit(140.3), ddLimit(557.0)
+        {}
+        double airTempMaxLimit; ///< max air temp limit (°C) for swarming
+        double tempSumLimit;    ///< temperature degree-day sum limit to start spring development
+        double ddLimit;         ///< degree-day sum for complete generation development
+    } params;
 };
 
 #endif // BBGENERATIONS_H
