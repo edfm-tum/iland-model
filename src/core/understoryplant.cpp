@@ -196,8 +196,11 @@ void UnderstoryRU::establishment(const LightProfile &profile)
     ucp.psiGrowingSeason = mRU->waterCycle()->meanPsiGrowingSeason();
     //ucp.SWCgrowingSeason = mRU->waterCycle()->meanGrowingSeasonSWC();
     ucp.availableNitrogen = mRU->resouceUnitVariables().nitrogenAvailable;
-    // TODO: switch to microclimate?
+    // use standard mean temperature or include microclimate buffering (if enabled)
     ucp.meanTemperature = mRU->climate()->meanAnnualTemperature();
+    if (Model::settings().microclimateEnabled && mRU->microClimate()->settings().understory_effect)
+        ucp.meanTemperature += mRU->microClimate()->meanAnnualMicroclimateBufferingRU();
+
     ucp.lightProfile = &profile;
 
     for (const auto &pft : Understory::instance().PFTs()) {
@@ -262,10 +265,12 @@ void UnderstoryRU::growth(const LightProfile &profile)
     UnderstoryCellParams ucp;
     ucp.RU = mRU;
 
-    //ucp.SWCgrowingSeason = mRU->waterCycle()->meanGrowingSeasonSWC();
     ucp.psiGrowingSeason = mRU->waterCycle()->meanPsiGrowingSeason();
     ucp.availableNitrogen = mRU->resouceUnitVariables().nitrogenAvailable;
     ucp.meanTemperature = mRU->climate()->meanAnnualTemperature();
+    if (Model::settings().microclimateEnabled && mRU->microClimate()->settings().understory_effect)
+        ucp.meanTemperature += mRU->microClimate()->meanAnnualMicroclimateBufferingRU();
+
     ucp.lightProfile = &profile;
 
     int isc = 0; // index on 2m cell on LIF grid

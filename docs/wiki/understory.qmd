@@ -4,6 +4,8 @@ title: "Understory"
 
 The **Understory** module in iLand simulates the dynamic development of ground vegetation (mosses, herbs, and shrubs) and its interactions with forest structure. The model is designed to represent the understory's growth, decline, and mortality, as well as its competition with tree cohorts.
 
+For more information on the technical implementation, configuration files, and XML parameters, see the [Understory Module](understory-module.qmd) page.
+
 ## State and Transition Model
 
 The module uses a state-and-transition framework to simulate understory vegetation. Ground vegetation is organized into Plant Functional Types (PFTs) and developmental size-class states.
@@ -55,6 +57,10 @@ Before evaluating cell-level dynamics, iLand performs resource unit level checks
 For each PFT, iLand calculates the average "abiotic" environmental response ($p_{\text{env}}$) across the Resource Unit (based on nitrogen, soil water potential, and annual temperature):
 
 $$p_{\text{env}} = \text{response}_{\text{nitrogen}} \times \text{response}_{\text{water}} \times \text{response}_{\text{temp}}$$
+
+The temperature response ($\text{response}_{\text{temp}}$) is evaluated using the Resource Unit's mean annual temperature. By default, this is the macroclimate mean annual temperature. When the [microclimate module](microclimate.qmd) is enabled (`model.climate.microclimate.understory = true`), this temperature includes the RU-level mean annual microclimate buffering offset:
+
+$$T_{\text{mean}} = T_{\text{macro, mean}} + \Delta T_{\text{mean, annual}}$$
 
 A pre-selection check evaluates whether the PFT can establish on this RU. The PFT is skipped entirely for the current RU if:
 
@@ -146,7 +152,7 @@ If a custom expression is defined, the calculation uses the following variable i
 
 *   `rlight`: Current light response factor.
 *   `rwater`: Current water response factor.
-*   `rtemp`: Current temperature response factor.
+*   `rtemp`: Current temperature response factor (evaluated using `meanTemp`, which includes the microclimate buffering offset if enabled).
 *   `rnitrogen`: Current nitrogen response factor.
 
 If the expression is left blank in the CSV input file, iLand uses the hardcoded default functions directly, avoiding expression parsing overhead.
@@ -191,7 +197,15 @@ Understory biomass and litter are integrated into iLand's carbon cycles:
 *   **Decomposition and Belowground Fractions**: The RU-level decomposition rates and belowground fractions are calculated as weighted averages of PFT parameter values, using each PFT's total litter flux (turnover + mortality) as the weight.
 *   **Carbon Stocks**: Understory carbon stocks are tracked as part of the `understory_c` pool, which combines understory biomass carbon and moss biomass carbon (the latter in permafrost-affected areas).
 
-### 4. Mechanical Inhibition
+### 4. Microclimate Temperature Buffering
+
+When the [Microclimate module](microclimate.qmd) is enabled (`model.climate.microclimate.enabled = true` and `model.climate.microclimate.understory = true`), understory dynamics are coupled to canopy-buffered subcanopy temperatures:
+
+*   **Annual Buffering**: For each Resource Unit, an annual mean buffering offset ($\Delta T_{\text{mean, annual}}$) is computed by averaging the monthly mean buffering over all 12 months.
+*   **Establishment**: The Resource Unit abiotic feasibility filter ($p_{\text{env}}$) evaluates the temperature response using the buffered mean annual temperature ($T_{\text{macro, mean}} + \Delta T_{\text{mean, annual}}$).
+*   **Growth**: Cell-level cohort growth evaluates the temperature response factor using the same buffered mean annual temperature.
+
+### 5. Mechanical Inhibition
 
 *   *(Mechanical inhibition of sapling establishment by dense understory cover is planned for future development).*
 

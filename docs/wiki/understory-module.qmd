@@ -4,6 +4,8 @@ title: "Understory Module"
 
 The understory module in iLand simulates the dynamics of ground vegetation (moss, herbs, and shrubs) and requires two CSV configuration files: one for defining Plant Functional Types (PFTs) and one for defining the developmental states of these PFTs.
 
+For more information on the concept, ecological processes, and model integration, see the [Understory](understory.qmd) page.
+
 ## 1. PFT File
 
 This file defines the Plant Functional Types (PFTs) and their environmental response parameters.
@@ -26,7 +28,7 @@ This file defines the Plant Functional Types (PFTs) and their environmental resp
 | `MoistureEIV` | Double | Ellenberg Indicator Value for Moisture (1-9). <br>**Required** if the default `waterResponse` expression is used. |
 | `nutrientResponse` | Expression | (Optional) Custom function for nutrient response. <br>Default: `min(0.05 + 1.5/(1 + ( (PlantAvailN - (5*NutrientEIV+40)) / 20 )^2),1)` |
 | `NutrientEIV` | Double | Ellenberg Indicator Value for Nutrients (1-9). <br>**Required** if the default `nutrientResponse` expression is used. |
-| `tempResponse` | Expression | (Optional) Custom function for temperature response. <br>Default: `min(0.05 + 1.2/(1 + ( (meanTemp - (TemperatureEIV*1.5)) / 3 )^2),1)` |
+| `tempResponse` | Expression | (Optional) Custom function for temperature response. <br>Default: `min(0.05 + 1.2/(1 + ( (meanTemp - (TemperatureEIV*1.5)) / 3 )^2),1)`. <br>Note: `meanTemp` is the Resource Unit mean annual temperature and accounts for microclimate buffering if enabled (`model.climate.microclimate.understory = true`). |
 | `TemperatureEIV` | Double | Ellenberg Indicator Value for Temperature (1-9). <br>**Required** if the default `tempResponse` expression is used. |
 | `stressFunction` | Expression | (Optional) Custom function for stress response. <br>Default: `0.5*exp(-x/stressSensitivity)` |
 | `stressSensitivity` | Double | Sensitivity to stress (0-1). <br>**Required** if the default `stressFunction` expression is used. |
@@ -85,6 +87,8 @@ The understory module is configured in the project XML file under the `model.set
 *   **pftFile**: File path (relative to project home) to the CSV file defining the understory Plant Functional Types (PFTs).
 *   **statesFile**: File path (relative to project home) to the CSV file defining the developmental states of the PFTs.
 *   **spinupSteps**: Integer. The number of steps (years) to run for the understory spinup at startup (default is `0`).
+
+Additionally, temperature buffering effects on understory establishment and growth can be toggled in the microclimate configuration via `model.climate.microclimate.understory` (default: `true`). See the [Microclimate Module](microclimate.qmd).
 
 ---
 

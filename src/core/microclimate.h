@@ -88,6 +88,9 @@ public:
     /// mean buffering per RU for month [0..11]
     double meanMicroclimateBufferingRU(int month) const;
 
+    /// mean over all month
+    double meanAnnualMicroclimateBufferingRU() const;
+
 
     MicroclimateCell &cell(int index) { Q_ASSERT(index>=0 && index < 100); return mCells[index]; }
     const MicroclimateCell &constCell(int index) const { Q_ASSERT(index>=0 && index < 100); return mCells[index]; }
@@ -100,6 +103,7 @@ public:
         bool barkbeetle_effect;
         bool decomposition_effect;
         bool establishment_effect;
+        bool understory_effect;
     };
     const MicroClimateSettings &settings() const { return mSettings; }
 private:
@@ -108,8 +112,10 @@ private:
     const ResourceUnit *mRU;
     MicroclimateCell *mCells;
     QPair<float, float> mRUvalues[12]; // save min/max buffering per month
+    float mRUMeanBuffering; // mean annual buffering
     bool mIsSetup;
 
+    // settings for *all* RUs (static)
     static MicroClimateSettings mSettings;
 };
 

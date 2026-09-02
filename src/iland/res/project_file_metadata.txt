@@ -384,6 +384,7 @@ model.climate.microclimate.enabled = boolean|false|Enable|Enables the submodule|
 model.climate.microclimate.barkbeetle = boolean|true|Effect on bark beetles|Enables the effect of microclimate buffering for overwintering success of Spruce bark beetles|simple
 model.climate.microclimate.decomposition = boolean|true|Effect on decomposition|Enables the microclimate buffering effect for decomposition of dead wood and litter|simple
 model.climate.microclimate.establishment = boolean|true|Effect on establishment|Enables the effect of microclimate buffering for tree establishment|simple
+model.climate.microclimate.understory = boolean|true|Effect on understory|Enables the effect of microclimate buffering for understory module (temperature response)|simple
 
 gui.layout = group|Grass|This section contains settings related to the ground vegetation (grass and herbs) and its effect on regeneration success.
 model.settings.grass.enabled = boolean|false|Enable Grass|enable/disable the submodule. Default is false.|simple

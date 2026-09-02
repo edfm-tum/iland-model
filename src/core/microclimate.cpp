@@ -20,6 +20,7 @@ Microclimate::Microclimate(const ResourceUnit *ru)
     mSettings.barkbeetle_effect = GlobalSettings::instance()->settings().valueBool("model.climate.microclimate.barkbeetle");
     mSettings.decomposition_effect = GlobalSettings::instance()->settings().valueBool("model.climate.microclimate.decomposition");
     mSettings.establishment_effect = GlobalSettings::instance()->settings().valueBool("model.climate.microclimate.establishment");
+    mSettings.understory_effect = GlobalSettings::instance()->settings().valueBool("model.climate.microclimate.understory");
 }
 
 Microclimate::~Microclimate()
@@ -94,6 +95,7 @@ void Microclimate::calculateRUMeanValues()
     }
 
     // run calculations
+    double mean_buffering = 0.;
     for (int m=0;m<12;++m) {
         // loop over all cells and calculate buffering
         buffer_min=0.;
@@ -122,12 +124,15 @@ void Microclimate::calculateRUMeanValues()
         //    buffer_min = buffer_mean;
         //    buffer_max = buffer_mean;
         //}
+        mean_buffering += (buffer_max + buffer_min) / 2.;
 
 
         mRUvalues[m] = QPair<float, float>(static_cast<float>(buffer_min),
                                              static_cast<float>(buffer_max));
 
     }
+
+    mRUMeanBuffering = static_cast<float>( mean_buffering / 12.);
 
 }
 
@@ -148,6 +153,11 @@ double Microclimate::meanMicroclimateBufferingRU(int month) const
     double buffer = ( minimumMicroclimateBufferingRU(month) +
                      maximumMicroclimateBufferingRU(month) ) / 2.;
     return buffer;
+}
+
+double Microclimate::meanAnnualMicroclimateBufferingRU() const
+{
+    return mRUMeanBuffering;
 }
 
 
@@ -234,7 +244,8 @@ void MicroclimateVisualizer::setupVisualization()
     QStringList varlist = {"Microclimate - LAI", "Microclimate - ShadeTol", // 0,1
                            "Microclimate - TPI", "Microclimate - Northness",  // 2,3
                            "Microclimate - Min.Buffer(June)", "Microclimate - Min.Buffer(Dec)", // 4,5
-                           "Microclimate - Max.Buffer(June)", "Microclimate - Max.Buffer(Dec)"};  // 6,7
+                           "Microclimate - Max.Buffer(June)", "Microclimate - Max.Buffer(Dec)", // 6,7
+                           "Microclimate - Mean Annual Buffer"};  // 8
 
     QVector<GridViewType> paint_types = {GridViewTurbo, GridViewTurbo, GridViewTurbo,
                                          GridViewTurbo, GridViewTurbo,
@@ -264,6 +275,7 @@ Grid<double> *MicroclimateVisualizer::paintGrid(QString what, QStringList &names
     if (what == "Microclimate - Min.Buffer(Dec)") index=5;
     if (what == "Microclimate - Max.Buffer(June)") index=6;
     if (what == "Microclimate - Max.Buffer(Dec)") index=7;
+    if (what == "Microclimate - Mean Annual Buffer") index=8;
 
     // fill the grid with the expected variable
 
@@ -286,6 +298,8 @@ Grid<double> *MicroclimateVisualizer::paintGrid(QString what, QStringList &names
             case 6:  value = clim->constCell(cell_index).maximumMicroclimateBuffering(ru, 5); break;
                 // max winter
             case 7:  value = clim->constCell(cell_index).maximumMicroclimateBuffering(ru, 0); break;
+                // mean annual buffering
+            case 8:  value = clim->meanAnnualMicroclimateBufferingRU(); break;
             }
 
             *gridptr = value;
@@ -307,6 +321,7 @@ Grid<double> *MicroclimateVisualizer::grid(QString what, int month)
     if (what == "Northness") index = 3;
     if (what == "MinTBuffer") index=4;
     if (what == "MaxTBuffer") index=5;
+    if (what == "MeanAnnualBuffer") index=6;
 
     if (index < 0)
         throw IException("Microclimate: invalid grid name");
@@ -327,6 +342,7 @@ Grid<double> *MicroclimateVisualizer::grid(QString what, int month)
             case 3: value = clim->constCell(cell_index).northness(); break;
             case 4:  value = clim->constCell(cell_index).minimumMicroclimateBuffering(ru, month); break;
             case 5:  value = clim->constCell(cell_index).maximumMicroclimateBuffering(ru, month); break;
+            case 6:  value = clim->meanAnnualMicroclimateBufferingRU(); break;
             }
 
             *gridptr = value;

@@ -9,7 +9,7 @@ Detailed descriptions and research results of the module's implementation and im
 
 ## Concept
 
-Forest canopies act as an insulating blanket, mitigating extreme understory temperature conditions relative to open/free-air conditions. In general, canopies cool maximum temperatures during the summer (cooling effect), warm minimum temperatures during the winter (warming effect), and consistently warm minimum temperatures across all seasons. These temperature modifications propagate into critical understory processes, affecting the decay rate of deadwood, spruce bark beetle development and survival, and the establishment success of tree seedlings.
+Forest canopies act as an insulating blanket, mitigating extreme understory temperature conditions relative to open/free-air conditions. In general, canopies cool maximum temperatures during the summer (cooling effect), warm minimum temperatures during the winter (warming effect), and consistently warm minimum temperatures across all seasons. These temperature modifications propagate into critical understory processes, affecting the decay rate of deadwood, spruce bark beetle development and survival, the establishment success of tree seedlings, and the growth and establishment dynamics of ground vegetation (understory).
 
 ## Implementation
 
@@ -17,7 +17,7 @@ The module calculates monthly average daily minimum and maximum temperature offs
 
 ### Spatial Resolution and Aggregation
 
-Calculations are performed at two nested spatial scales. The primary microclimate variables (vegetation structure and topography) are calculated at a $10\text{ m} \times 10\text{ m}$ resolution. For each $10\text{ m}$ cell, the temperature buffering capacities are computed daily. To optimize performance and match the resolution of the temperature-dependent submodels, these cell-level buffering values are averaged (arithmetic mean) over the stockable $10\text{ m}$ cells within each $100\text{ m} \times 100\text{ m}$ Resource Unit (RU). Cells that are not stockable (e.g., bare rock or water bodies) are excluded from this aggregation. The resulting monthly aggregated RU-level minimum and maximum buffering values are then used at the $100\text{ m}$ resolution to adjust daily macroclimate temperatures for the establishment, decomposition, and bark beetle submodels.
+Calculations are performed at two nested spatial scales. The primary microclimate variables (vegetation structure and topography) are calculated at a $10\text{ m} \times 10\text{ m}$ resolution. For each $10\text{ m}$ cell, the temperature buffering capacities are computed daily. To optimize performance and match the resolution of the temperature-dependent submodels, these cell-level buffering values are averaged (arithmetic mean) over the stockable $10\text{ m}$ cells within each $100\text{ m} \times 100\text{ m}$ Resource Unit (RU). Cells that are not stockable (e.g., bare rock or water bodies) are excluded from this aggregation. The resulting monthly aggregated RU-level minimum and maximum buffering values are then used at the $100\text{ m}$ resolution to adjust daily macroclimate temperatures for the establishment, decomposition, and bark beetle submodels. In addition, an annual mean buffering offset ($\Delta T_{mean, annual}$) is computed by averaging the monthly mean buffering over all 12 months for use in the understory module.
 
 ### Data Requirements and Topographic Factors
 
@@ -53,6 +53,10 @@ Decomposition rates of snags, downed wood, litter, and soil organic matter follo
 
 Seedling germination and first-year survival must pass several species-specific temperature-sensitive filters in the TACA (Temperature, Moisture, Chilling, Frost) framework. Daily minimum microclimate temperature ($T_{macro, min} + \Delta T_{min}$) is used to evaluate minimum winter temperature limits and count growing season frost events. Since canopies warm winter minima, this alleviates cold filters and enables warm-preferring species to establish at higher elevations. Daily mean microclimate temperature ($T_{macro, mean} + \Delta T_{mean}$) is used to evaluate winter chilling requirements and Growing Degree Days (GDD). For details on the TACA parameters, see [Establishment](establishment.qmd).
 
+### [Understory Vegetation Dynamics](understory.qmd)
+
+The microclimate module influences understory vegetation dynamics by adjusting the annual temperature used in both resource-unit-level establishment feasibility filtering and cell-level cohort growth. The mean annual microclimate buffering offset ($\Delta T_{mean, annual}$, computed as the average of the monthly mean buffering over all 12 months for the Resource Unit) is added to the macroclimate mean annual temperature. Under dense canopies, temperature buffering modifies the thermal environment experienced by ground vegetation, directly altering the temperature response factors of Plant Functional Types (PFTs). For details, see [Understory](understory.qmd).
+
 ---
 
 ## Parameters in the Project File
@@ -65,10 +69,11 @@ The microclimate module and its individual process effects are configured in the
 | `barkbeetle` | boolean | `true` | Enables the microclimate buffering effect for bark beetle development and overwintering success. |
 | `decomposition` | boolean | `true` | Enables the microclimate buffering effect for decomposition of deadwood and soil organic matter. |
 | `establishment` | boolean | `true` | Enables the microclimate buffering effect for tree seedling establishment. |
+| `understory` | boolean | `true` | Enables the microclimate buffering effect for understory module (temperature response for establishment and growth). |
 
 ## Visualization Layers
 
-In the iLand Viewer interface, several layers are available to visualize microclimate variables at the 10m grid cell resolution:
+In the iLand Viewer interface, several layers are available to visualize microclimate variables at the 10m grid cell resolution (or 100m Resource Unit resolution for aggregated buffers):
 
 | **Layer Name** | **Description** |
 | :--- | :--- |
@@ -78,3 +83,6 @@ In the iLand Viewer interface, several layers are available to visualize microcl
 | `Microclimate - Northness` | Cosine of topographic aspect. |
 | `Microclimate - Min.Buffer(June)` / `(Dec)` | Minimum temperature buffering capacity for June and December, respectively. |
 | `Microclimate - Max.Buffer(June)` / `(Dec)` | Maximum temperature buffering capacity for June and December, respectively. |
+| `Microclimate - Mean Annual Buffer` | Mean annual temperature buffering capacity across all months per Resource Unit ($100\text{ m}$ resolution). |
+
+In addition, microclimate grids can be retrieved in Javascript via `Globals.microclimateGrid(variable, month)`, where `variable` can be `"LAI"`, `"ShadeTol"`, `"TPI"`, `"Northness"`, `"MinTBuffer"`, `"MaxTBuffer"`, or `"MeanAnnualBuffer"` (the `month` parameter is ignored for `"MeanAnnualBuffer"`).
