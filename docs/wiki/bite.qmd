@@ -10,7 +10,7 @@ BITE is coupled with iLand and its implementation makes heavy use of the Javascr
 
 
 
-### Full [BITE documentation](bite.qmd)
+### Full [BITE documentation](https://iland-model.org/bite/index.html)
 
 
 
