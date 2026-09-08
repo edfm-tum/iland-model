@@ -680,8 +680,8 @@ output.tree.filter = function|1|Filter|filter expression, tree variables|simple
 
 gui.layout = group|Dead trees|Detailed single dead tree data (standing snags and downed dead wood) https://iland-model.org/outputs#Dead_Tree_Output
 output.deadtree.enabled = boolean|false|Enabled|Output of individual standing and lying dead trees. Use the filter property to reduce amount of data (filter by dead tree variables such as dbh, species, snag, ruindex). The condition property can be used to control output timing (variable 'year'). The output is triggered at the end of the year and after initialization (year 0).|simple
-output.deadtree.filter = function||Filter|Filter expression using dead tree variables (e.g. 'dbh>20 and snag=1')|simple
 output.deadtree.condition = function||Condition|Filter expression using variable 'year' to control output timing (e.g. 'in(year, 10, 20)')|simple
+output.deadtree.filter = function||Filter|Filter expression using dead tree variables (e.g. 'dbh>20 and snag=1')|simple
 
 gui.layout = group|Saplings|Sapling cohorts per resource unit https://iland-model.org/outputs#Sapling_Output
 output.sapling.enabled = boolean|true|Enabled|Output of the establishment/sapling layer per resource unit and species. The output covers trees between a dbh of 1cm (height>1.3m) and the recruitment threshold (i.e. a height of 4m).Cohorts with a dbh < 1cm are counted in 'cohort_count_ha' but not used for average calculations.|simple

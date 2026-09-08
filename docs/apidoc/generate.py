@@ -624,19 +624,20 @@ def generate_bite_docs():
             # apidoc classes links
             # Matches: /apidoc/classes/Name.html, https://iland-model.org/apidoc/classes/Name.html, etc.
             # Handles optional .org and optional trailing fragment
-            apidoc_match = re.match(r'^(?:https?://(?:www\.)?iland-model(?:\.org)?)?/?apidoc/classes/(\w+)\.html(?:#(\w+))?$', target)
+            apidoc_match = re.match(r'^(?:https?://(?:www\.)?iland-model(?:\.org)?)?/?apidoc/classes/(?:(?P<cat>[a-zA-Z0-9_\-]+)/)?(?P<cls>\w+)\.html(?:#(?P<frag>\w+))?$', target)
             if apidoc_match:
-                c_name = apidoc_match.group(1)
-                fragment = apidoc_match.group(2)
+                c_name = apidoc_match.group('cls')
+                fragment = apidoc_match.group('frag')
                 c_key = c_name.lower()
-                target_cat = None
+                target_cat = apidoc_match.group('cat')
                 
                 # Check parsed classes if populated
-                for parsed_c_name, parsed_c_data in classes.items():
-                    if parsed_c_name.lower() == c_key:
-                        target_cat = parsed_c_data['category']
-                        c_name = parsed_c_name
-                        break
+                if not target_cat:
+                    for parsed_c_name, parsed_c_data in classes.items():
+                        if parsed_c_name.lower() == c_key:
+                            target_cat = parsed_c_data['category']
+                            c_name = parsed_c_name
+                            break
                         
                 if target_cat:
                     res_url = f"../apidoc/classes/{target_cat}/{c_name.lower()}.qmd"
@@ -691,17 +692,18 @@ def generate_bite_docs():
         def autolink_repl(match):
             url = match.group(1).strip('\\')
             # Match apidoc classes
-            apidoc_match = re.match(r'^(?:https?://(?:www\.)?iland-model(?:\.org)?)?/?apidoc/classes/(\w+)\.html(?:#(\w+))?$', url)
+            apidoc_match = re.match(r'^(?:https?://(?:www\.)?iland-model(?:\.org)?)?/?apidoc/classes/(?:(?P<cat>[a-zA-Z0-9_\-]+)/)?(?P<cls>\w+)\.html(?:#(?P<frag>\w+))?$', url)
             if apidoc_match:
-                c_name = apidoc_match.group(1)
-                fragment = apidoc_match.group(2)
+                c_name = apidoc_match.group('cls')
+                fragment = apidoc_match.group('frag')
                 c_key = c_name.lower()
-                target_cat = None
-                for parsed_c_name, parsed_c_data in classes.items():
-                    if parsed_c_name.lower() == c_key:
-                        target_cat = parsed_c_data['category']
-                        c_name = parsed_c_name
-                        break
+                target_cat = apidoc_match.group('cat')
+                if not target_cat:
+                    for parsed_c_name, parsed_c_data in classes.items():
+                        if parsed_c_name.lower() == c_key:
+                            target_cat = parsed_c_data['category']
+                            c_name = parsed_c_name
+                            break
                 if target_cat:
                     res_url = f"../apidoc/classes/{target_cat}/{c_name.lower()}.qmd"
                 else:

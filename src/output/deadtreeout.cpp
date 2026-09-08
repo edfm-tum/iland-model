@@ -57,8 +57,6 @@ DeadTreeOut::DeadTreeOut()
 
 void DeadTreeOut::setup()
 {
-    if (!settings().isValid())
-        throw IException("DeadTreeOut::setup(): no parameter section in init file!");
 
     QString filter = settings().value(".filter", "");
     mFilter.setExpression(filter);

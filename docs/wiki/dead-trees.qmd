@@ -57,7 +57,7 @@ An overview of the snag variables is given here: [dead tree variables](dead-tree
 
 
 
-Snags (both standing and downed) can be accessed via JavaScript (<https://iland-model.org/apidoc/classes/DeadTreeList.html>), and used for visualization in the UI and for custom outputs [link: dynamic outputs](dynamic-outputs.qmd)).
+Snags (both standing and downed) can be accessed via JavaScript (<https://iland-model.org/apidoc/classes/abe/deadtreelist.html>), and used for visualization in the UI and for custom outputs [link: dynamic outputs](dynamic-outputs.qmd)).
 
 
 
@@ -126,6 +126,6 @@ This should work in BITE context in all functions that provide the *cell* as par
 
 See also: variables [dead tree variables](dead-tree-variables.qmd)
 
-API-doc of *cell.deadTrees*: <https://iland-model.org/apidoc/classes/DeadTreeList.html>
+API-doc of *cell.deadTrees*: <https://iland-model.org/apidoc/classes/abe/deadtreelist.html>
 
 Note that the integration is for now experimental!

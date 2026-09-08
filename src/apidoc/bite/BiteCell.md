@@ -50,7 +50,7 @@ A cell is the smalled spatial execution unit of an agent. Each agent has a grid 
 
     ### `trees` (TreeList)
 
-    A list of trees (see <https://iland-model.org/apidoc/classes/TreeList.html>) on the cell (trees \>4m). The `trees` can be queried, filtered or modified. The tree list is populated automatically during execution of the agent (but see `reloadTrees()`).
+    A list of trees (see <https://iland-model.org/apidoc/classes/abe/treelist.html>) on the cell (trees \>4m). The `trees` can be queried, filtered or modified. The tree list is populated automatically during execution of the agent (but see `reloadTrees()`).
 
 <!-- -->
 
@@ -61,7 +61,7 @@ A cell is the smalled spatial execution unit of an agent. Each agent has a grid 
 
     ### `saplings` (SaplingList)
 
-    A list of saplings (tree cohorts \<4m) (see <https://iland-model.org/apidoc/classes/SaplingList.html>) on the cell. The `saplings` can be queried, filtered or modified. The sapling list is populated automatically during execution of the agent (but see `reloadSaplings()`).
+    A list of saplings (tree cohorts \<4m) (see <https://iland-model.org/apidoc/classes/abe/saplinglist.html>) on the cell. The `saplings` can be queried, filtered or modified. The sapling list is populated automatically during execution of the agent (but see `reloadSaplings()`).
 
 **Note**: this is under construction - you may have to reload saplings explicitly.
 

@@ -273,9 +273,9 @@ Welcome to the central portal for navigating the **iLand** (individual-based for
         </p>
         <ul class="small ps-3">
           <li><a href="apidoc/index.html"><strong>JavaScript API Reference</strong></a></li>
-          <li><a href="apidoc/classes/globals.html">Globals Class</a> | <a href="apidoc/classes/grid.html">Grid Class</a></li>
-          <li><a href="apidoc/classes/fmengine.html">ABE Forest Management Engine</a></li>
-          <li><a href="apidoc/classes/thinning.html">ABE Thinning Class</a></li>
+          <li><a href="apidoc/classes/iland/globals.html">Globals Class</a> | <a href="apidoc/classes/iland/grid.html">Grid Class</a></li>
+          <li><a href="apidoc/classes/abe/fmengine.html">ABE Forest Management Engine</a></li>
+          <li><a href="apidoc/classes/abe-library/thinning.html">ABE Thinning Class</a></li>
           <li><a href="bite/index.html"><strong>Bite Engine API Reference</strong></a></li>
         </ul>
       </div>

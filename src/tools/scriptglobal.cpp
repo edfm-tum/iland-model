@@ -1387,7 +1387,7 @@ ScriptObjectFactory::ScriptObjectFactory(QObject *parent):
 
 QJSValue ScriptObjectFactory::newCSVFile(QString filename)
 {
-    qInfo() << "object creation in Javascript is deprecated. See https://iland-model.org/apidoc/classes/Factory.html";
+    qInfo() << "object creation in Javascript is deprecated. See https://iland-model.org/apidoc/classes/iland/factory.html";
     CSVFile *csv_file = new CSVFile;
     if (!filename.isEmpty()) {
         qDebug() << "CSVFile: loading file" << filename;
@@ -1401,7 +1401,7 @@ QJSValue ScriptObjectFactory::newCSVFile(QString filename)
 
 QJSValue ScriptObjectFactory::newClimateConverter()
 {
-    qInfo() << "object creation in Javascript is deprecated. See https://iland-model.org/apidoc/classes/Factory.html";
+    qInfo() << "object creation in Javascript is deprecated. See https://iland-model.org/apidoc/classes/iland/factory.html";
     ClimateConverter *cc = new ClimateConverter(nullptr);
     QJSValue obj = GlobalSettings::instance()->scriptEngine()->newQObject(cc);
     mObjCreated++;
@@ -1412,7 +1412,7 @@ QJSValue ScriptObjectFactory::newClimateConverter()
 
 QJSValue ScriptObjectFactory::newMap()
 {
-    qInfo() << "object creation in Javascript is deprecated. See https://iland-model.org/apidoc/classes/Factory.html";
+    qInfo() << "object creation in Javascript is deprecated. See https://iland-model.org/apidoc/classes/iland/factory.html";
     MapGridWrapper *map = new MapGridWrapper(nullptr);
     QJSValue obj = GlobalSettings::instance()->scriptEngine()->newQObject(map);
     mObjCreated++;
@@ -1422,7 +1422,7 @@ QJSValue ScriptObjectFactory::newMap()
 
 QJSValue ScriptObjectFactory::newDBHDistribution()
 {
-    qInfo() << "object creation in Javascript is deprecated. See https://iland-model.org/apidoc/classes/Factory.html";
+    qInfo() << "object creation in Javascript is deprecated. See https://iland-model.org/apidoc/classes/iland/factory.html";
     DBHDistribution *dbh = new DBHDistribution();
     QJSValue obj = GlobalSettings::instance()->scriptEngine()->newQObject(dbh);
     mObjCreated++;
@@ -1431,14 +1431,14 @@ QJSValue ScriptObjectFactory::newDBHDistribution()
 
 QJSValue ScriptObjectFactory::newGrid()
 {
-    qInfo() << "object creation in Javascript is deprecated. See https://iland-model.org/apidoc/classes/Factory.html";
+    qInfo() << "object creation in Javascript is deprecated. See https://iland-model.org/apidoc/classes/iland/factory.html";
     QJSValue result = ScriptGrid::createGrid(nullptr); // create with an empty grid
     return result;
 }
 
 QJSValue ScriptObjectFactory::newSpatialAnalysis()
 {
-    qInfo() << "object creation in Javascript is deprecated. See https://iland-model.org/apidoc/classes/Factory.html";
+    qInfo() << "object creation in Javascript is deprecated. See https://iland-model.org/apidoc/classes/iland/factory.html";
     SpatialAnalysis *spati = new SpatialAnalysis;
     QJSValue v = GlobalSettings::instance()->scriptEngine()->newQObject(spati);
     mObjCreated++;

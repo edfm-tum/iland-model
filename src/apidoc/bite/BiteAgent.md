@@ -102,7 +102,7 @@ The property determines for which trees that are removed in iLand the `onTreeRem
 See also: `onTreeRemoved()`
 
 * ### `drawGrid`: Grid
-returns a Javascript reference to the internal grid of the agent (see https://iland-model.org/apidoc/classes/Grid.html).
+returns a Javascript reference to the internal grid of the agent (see https://iland-model.org/apidoc/classes/iland/grid.html).
 
 
 
@@ -126,7 +126,7 @@ The `onYearEnd` event is triggered after the execution of the agent.
 * ### `onTreeRemoved(cell, tree, reason)` 
 The `onTreeRemoved` event is triggered whenever a tree (>4m) is removed in iLand. The event is only triggered for specific reasons, which are specified with the `onTreeRemovedFilter` property.
 
-`cell` is the `BiteCell` where the tree is located, `tree` the Javascript representation of the affected tree (https://iland-model/apidoc/classes/Tree.html), and `reason` one of the following:
+`cell` is the `BiteCell` where the tree is located, `tree` the Javascript representation of the affected tree (https://iland-model.org/apidoc/classes/iland/tree.html), and `reason` one of the following:
 
 Value | Enumeration | Description
 ------|----------| -----------

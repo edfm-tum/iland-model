@@ -27,7 +27,7 @@ the given criteria, whereas in other cases a sum over the result of an expressio
 (e.g. calculation of agent carrying capacity) is used.
 
 Javascript functions are called with an object as a parameter (which depends on the context). The object is
-either a [tree](/apidoc/classes/Tree.html) Javascript object (with a limited number of properties), or a
+either a [tree](https://iland-model.org/apidoc/classes/iland/tree.html) Javascript object (with a limited number of properties), or a
 [cell object](link!!). Note that the performance of Javascript functions is generally
 lower than that of expressions. *Todo*: performance considerations (parallelization, overhead)
 
