@@ -45,6 +45,7 @@
 #include "devstageout.h"
 #include "ecovizout.h"
 #include "customaggout.h"
+#include "deadtreeout.h"
 
 
 // on creation of the output manager
@@ -56,6 +57,7 @@ OutputManager::OutputManager()
     // add all the outputs
     mOutputs.append(new TreeOut);
     mOutputs.append(new TreeRemovedOut);
+    mOutputs.append(new DeadTreeOut);
     mOutputs.append(new StandOut);
     mOutputs.append(new LandscapeOut);
     mOutputs.append(new LandscapeRemovedOut);

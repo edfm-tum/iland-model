@@ -214,6 +214,7 @@ SOURCES += main.cpp \
     ../tools/expressionwrapper.cpp \
     ../output/output.cpp \
     ../output/treeout.cpp \
+    ../output/deadtreeout.cpp \
     ../output/outputmanager.cpp \
     ../output/standout.cpp \
     ../output/landscapeout.cpp \
@@ -343,6 +344,7 @@ HEADERS += \
     ../tools/expressionwrapper.h \
     ../output/output.h \
     ../output/treeout.h \
+    ../output/deadtreeout.h \
     ../output/outputmanager.h \
     ../output/standout.h \
     ../output/landscapeout.h \

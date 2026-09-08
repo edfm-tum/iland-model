@@ -251,7 +251,8 @@ const static QStringList deadTreeVarList = QStringList()<< baseVarList << "x" <<
                                             "species" << "volume" << // 3,4
                                             "decayClass" << "biomass" << "remaining" << // 5,6,7
                                            "yearsStanding" << "yearsDowned" << "reason" << // 8,9, 10
-                                           "dbh" // 11
+                                           "dbh" << // 11
+                                           "ruindex" // 12
     ;
 const QStringList DeadTreeWrapper::getVariablesList()
 {
@@ -276,7 +277,8 @@ double DeadTreeWrapper::value(const int variableIndex)
         case 9: return mDeadTree->yearsDowned(); // yearsDowned
         case 10: return mDeadTree->reason(); // reason of death
         case 11: return mDeadTree->dbh(); // dbh
+        case 12: return mRU ? static_cast<double>(mRU->index()) : -1.; // ruindex
 
     }
-    return 0;
+    return ExpressionWrapper::value(variableIndex);
 }

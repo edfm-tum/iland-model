@@ -240,6 +240,7 @@ SOURCES += main.cpp \
     tests.cpp \
     ../output/output.cpp \
     ../output/treeout.cpp \
+    ../output/deadtreeout.cpp \
     ../output/outputmanager.cpp \
     ../output/standout.cpp \
     ../core/standstatistics.cpp \
@@ -379,6 +380,7 @@ HEADERS += mainwindow.h \
     tests.h \
     ../output/output.h \
     ../output/treeout.h \
+    ../output/deadtreeout.h \
     ../output/outputmanager.h \
     ../output/standout.h \
     ../core/standstatistics.h \

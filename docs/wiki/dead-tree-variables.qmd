@@ -10,7 +10,12 @@ See also: [tree variables](tree-variables.qmd), [resource unit variables](resour
 
 | variable | description |
 | --- | --- |
-| snag | `true` if the tree is a standing dead tree, `false` if downed (DWD). |
+| year | current simulation year |
+| ruindex | numeric index of the resource unit the tree is located on |
+| x | position of the tree, x-direction (m) |
+| y | position of the tree, y-direction (m) |
+| species | tree species (numeric species index; in expressions species names can be used directly, e.g. `species=piab`) |
+| snag | `true` (1) if the tree is a standing dead tree, `false` (0) if downed (DWD). |
 | volume | tree volume (m3) of the tree when dying (keeps constant, set to 0 for decay class = 5) |
 | decayClass | class 1 to 5 (1 least decayed, 5 most decayed). Classes are set based on the proportion of remaining stem biomass |
 | biomass | (remaining) stem biomass (kg) |
@@ -19,4 +24,5 @@ See also: [tree variables](tree-variables.qmd), [resource unit variables](resour
 | yearsDowned | number of years the stem is on the ground. The total number of years since death is yearsStanding + yearsDowned. |
 | reason | Reason of death: 1: normal mortality, 2: bark beetle, 3: wind, 4: fire, 5: management |
 | dbh | DBH (cm) of the tree at the time of death |
+
 

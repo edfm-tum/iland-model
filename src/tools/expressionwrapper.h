@@ -91,13 +91,15 @@ class DeadTreeWrapper: public ExpressionWrapper
 {
 public:
     DeadTreeWrapper()  {}
-    DeadTreeWrapper(const DeadTree* deadTree) : mDeadTree(deadTree) {}
-    void setDeadTree(const DeadTree* deadTree) { mDeadTree= deadTree; }
+    DeadTreeWrapper(const DeadTree* deadTree, const ResourceUnit *ru=nullptr) : mDeadTree(deadTree), mRU(ru) {}
+    void setDeadTree(const DeadTree* deadTree, const ResourceUnit *ru=nullptr) { mDeadTree= deadTree; mRU = ru; }
+    void setResourceUnit(const ResourceUnit *ru) { mRU = ru; }
     virtual const QStringList getVariablesList();
     virtual double value(const int variableIndex);
 
 private:
     const DeadTree *mDeadTree {nullptr};
+    const ResourceUnit *mRU {nullptr};
 };
 
 #endif // EXPRESSIONWRAPPER_H

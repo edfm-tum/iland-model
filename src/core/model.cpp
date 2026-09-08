@@ -818,6 +818,7 @@ void Model::beforeRun()
     GlobalSettings::instance()->outputManager()->execute("sapling"); // year=0
     GlobalSettings::instance()->outputManager()->execute("saplingdetail"); // year=0
     GlobalSettings::instance()->outputManager()->execute("tree"); // year=0
+    GlobalSettings::instance()->outputManager()->execute("deadtree"); // year=0
     GlobalSettings::instance()->outputManager()->execute("dynamicstand"); // year=0
     GlobalSettings::instance()->outputManager()->execute("carbon"); // year=0
     GlobalSettings::instance()->outputManager()->execute("svdstate"); // year=0
@@ -988,6 +989,7 @@ void Model::runYear()
     OutputManager *om = GlobalSettings::instance()->outputManager();
     om->execute("tree"); // single tree output
     om->execute("treeremoved"); // single removed tree output
+    om->execute("deadtree"); // single dead tree output
     om->execute("stand"); //resource unit level x species
     om->execute("landscape"); //landscape x species
     om->execute("landscape_removed"); //removed trees on landscape x species
