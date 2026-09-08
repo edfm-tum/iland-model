@@ -96,6 +96,49 @@ the column 'treeFlags' is a binary combination of the following values:
 | treeFlags | integer | tree flags (see above) |
 
 
+## Dead Tree Output
+
+**Table Name:** **deadtree**
+
+Output of individual standing and lying dead trees. Use the *filter* property to reduce amount of data (filter by dead tree variables such as dbh, species, snag, ruindex).
+
+The 'condition' property can be used to control output timing (variable 'year').
+
+The output is triggered at the end of the year and after initialization (year 0).
+
+The column 'type' distinguishes standing snags ('S') and downed dead wood ('D').
+
+The classification of 'decayClass' (1 to 5) is based on the fraction of carbon lost (remaining biomass relative to biomass at death), with threshold values defined in 'model.settings.soil.decayClassThresholds' (see https://iland-model.org/dead-trees).
+
+The column 'reason' indicates the cause of death:
+
+| **reason** | **description** |
+| --- | --- |
+| mort | natural mortality / competition |
+| bb | bark beetle |
+| wind | wind disturbance |
+| fire | fire disturbance |
+| mgmt | management / cutdown |
+
+| **caption** | **datatype** | **description** |
+| --- | --- | --- |
+| year | integer | simulation year |
+| ru | integer | index of ressource unit |
+| rid | integer | id of ressource unit (-1: no ids set) |
+| species | string | tree species |
+| x | double | position of the dead tree, x-direction (m) |
+| y | double | position of the dead tree, y-direction (m) |
+| type | string | type of dead wood: 'S' (standing snag), 'D' (downed dead wood) |
+| dbh | double | dbh (cm) of the tree at time of death |
+| volume_m3 | double | volume of stem at time of death (m3) |
+| decayClass | integer | decay class (1..5), based on carbon loss defined in 'model.settings.soil.decayClassThresholds' (see https://iland-model.org/dead-trees) |
+| biomass_kg | double | current biomass of the dead tree (kg) |
+| remaining | double | proportion of remaining biomass relative to biomass at death (0..1) |
+| yearsStanding | integer | years since death standing as snag |
+| yearsDowned | integer | years since downed on the ground |
+| reason | string | reason of death ('mort', 'bb', 'wind', 'fire', 'mgmt') |
+
+
 ## Stand by species/RU
 
 **Table Name:** **stand**

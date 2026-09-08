@@ -230,6 +230,7 @@ This section describes if and how external seeds (i.e., seed input not dynamical
 | :--- | :--- | :--- | :--- |
 | `externalSeedEnabled` | boolean | `false` | **Enable External Seeds**: If "true" external seeds are produced by species listed under externalSeedSpecies. If external seeds are enabled, the buffer-area of the simulation area is considered as a source of seeds. |
 | `externalSeedBackgroundInput` | string | `Psme` | **External Seed Background Input**: Specifies a list of species together with a probability for each species. If a species is in the list, then a global background seed input is assumed (see external seeds). |
+| `seedBackgroundFilter` | string |  | **Seed Background Filter**: An expression (variable 'year') that controls when global background seed input is active (e.g., 'year<=5'). If empty, background seeds are always active if configured. |
 | `dumpSeedMapsEnabled` | boolean | `true` | **Enable Dump Seed Maps**: If "true", seed-kernels are stored per species as .CSV file, and seedmaps are dumped per species and year as a pair of images (one image before actual dispersal, indicating seed availability, and one after seed dispersal) |
 | `dumpSeedMapsPath` | directory selection | `target directory seed maps` | **Path Seed Maps**: target directory for seed maps / seed kernel dumps |
 | `externalSeedSpecies` | string | `Psme,Abmi` | **External Seed Species**: list of species (case sensitive!) with external seed input (e.g., "Psme, Abmi"). |
@@ -579,6 +580,17 @@ Aggregated vegetation per species on landscape level [Outputs](outputs.qmd#Lands
 | :--- | :--- | :--- | :--- |
 | `enabled` | boolean | `false` | **Enabled**: Output of aggregates on the level of landscape x species. Values are always aggregated per hectare. The output is created after the growth of the year, i.e. output with year=2000 means effectively the state of at the end of the year 2000. The initial state (without any growth) is indicated by the year 'startyear-1'. |
 | `condition` | function | `condition landscape` | **Condition**: Controls if the output should be created for the current year(see also dynamic stand output). |
+
+
+## Deadtree (`output.deadtree`)
+
+Detailed single dead tree data (standing snags and downed dead wood) [Outputs](outputs.qmd#Dead_Tree_Output)
+
+| **XML Key** | **Type** | **Default Value** | **Description** |
+| :--- | :--- | :--- | :--- |
+| `enabled` | boolean | `false` | **Enabled**: Output of individual standing and lying dead trees. Use the filter property to reduce amount of data (filter by dead tree variables such as dbh, species, snag, ruindex). The condition property can be used to control output timing (variable 'year'). The output is triggered at the end of the year and after initialization (year 0). |
+| `condition` | function |  | **Condition**: Filter expression using variable 'year' to control output timing (e.g. 'in(year, 10, 20)') |
+| `filter` | function |  | **Filter**: Filter expression using dead tree variables (e.g. 'dbh>20 and snag=1') |
 
 
 ## Carbon (`output.carbon`)
