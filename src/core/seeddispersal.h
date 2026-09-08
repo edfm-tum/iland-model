@@ -21,9 +21,9 @@
 #define SEEDDISPERSAL_H
 #include <QHash>
 #include "grid.h"
+#include "expression.h"
 class Species;
 class Tree;
-class Expression;
 
 class SeedDispersal
 {
@@ -109,7 +109,7 @@ private:
     static QHash<QString, QVector<double> > mExtSeedData; ///< holds definition of species and percentages for external seed input
     static int mExtSeedSizeX, mExtSeedSizeY; ///< size of the sectors used to specify external seed input
     static bool mBackgroundSeedsEnabled; ///< true if background seeds are active for the current year
-    static Expression *mBackgroundFilter; ///< filter expression (variable 'year') controlling background seeds
+    static Expression mBackgroundFilter; ///< filter expression (variable 'year') controlling background seeds
 };
 
 #endif // SEEDDISPERSAL_H

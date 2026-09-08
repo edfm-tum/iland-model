@@ -219,6 +219,9 @@ void Expression::setExpression(const QString& aExpression)
 
     for (int i=0; i<10; i++)
         m_varSpace[i]=0.;
+    m_varList.clear();
+    m_externVarNames.clear();
+    mLinearized.clear();
     m_parsed=false;
     m_catchExceptions = false;
     m_errorMsg = "";
@@ -230,9 +233,12 @@ void Expression::setExpression(const QString& aExpression)
     m_incSumEnabled=false;
     m_empty=aExpression.trimmed().isEmpty();
     // Buffer:
-    m_execListSize = 5; // inital value...
-    if (!m_execList)
-        m_execList = new ExtExecListItem[m_execListSize]; // init
+    if (m_execList) {
+        delete[] m_execList;
+        m_execList = nullptr;
+    }
+    m_execListSize = 5; // initial value...
+    m_execList = new ExtExecListItem[m_execListSize];
 
     mLinearizeMode = 0; // linearization is switched off
 }

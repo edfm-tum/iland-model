@@ -45,7 +45,7 @@ QHash<QString, QVector<double> > SeedDispersal::mExtSeedData;
 int SeedDispersal::mExtSeedSizeX = 0;
 int SeedDispersal::mExtSeedSizeY = 0;
 bool SeedDispersal::mBackgroundSeedsEnabled = true;
-Expression *SeedDispersal::mBackgroundFilter = 0;
+Expression SeedDispersal::mBackgroundFilter;
 
 SeedDispersal::~SeedDispersal()
 {
@@ -178,15 +178,11 @@ void SeedDispersal::setupExternalSeeds()
     mExternalSeedBaseMap = 0;
 
     // background seed filter (e.g. to turn off background seeds after a number of initial years)
-    if (mBackgroundFilter) {
-        delete mBackgroundFilter;
-        mBackgroundFilter = 0;
-    }
     QString filter = GlobalSettings::instance()->settings().value("model.settings.seedDispersal.seedBackgroundFilter");
-    if (!filter.isEmpty()) {
-        mBackgroundFilter = new Expression(filter);
-        mBackgroundFilter->addVar("year");
-        mBackgroundFilter->parse();
+    mBackgroundFilter.setExpression(filter);
+    if (!mBackgroundFilter.isEmpty()) {
+        mBackgroundFilter.addVar("year");
+        mBackgroundFilter.parse();
         qDebug() << "SeedDispersal: setup background seed filter:" << filter;
     }
     mBackgroundSeedsEnabled = true;
@@ -342,15 +338,15 @@ void SeedDispersal::finalizeExternalSeeds()
 
 void SeedDispersal::updateBackgroundFilter()
 {
-    if (!mBackgroundFilter) {
+    if (mBackgroundFilter.isEmpty()) {
         mBackgroundSeedsEnabled = true;
         return;
     }
     int current_year = GlobalSettings::instance()->currentYear();
     bool enabled_before = mBackgroundSeedsEnabled;
-    mBackgroundSeedsEnabled = mBackgroundFilter->calculateBool(current_year);
+    mBackgroundSeedsEnabled = mBackgroundFilter.calculateBool(current_year);
     if (enabled_before != mBackgroundSeedsEnabled) {
-        qDebug() << "SeedDispersal: background seed filter evaluated to" << mBackgroundSeedsEnabled << "in year" << current_year;
+        qInfo() << "SeedDispersal: background seed filter evaluated to" << mBackgroundSeedsEnabled << "in year" << current_year;
     }
 }
 
