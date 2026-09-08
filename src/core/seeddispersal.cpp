@@ -26,6 +26,7 @@
 #include "species.h"
 #include "tree.h"
 #include "resourceunit.h"
+#include "expression.h"
 #ifdef ILAND_GUI
 #include <QtGui/QImage>
 #endif
@@ -43,6 +44,8 @@ Grid<float> *SeedDispersal::mExternalSeedBaseMap = 0;
 QHash<QString, QVector<double> > SeedDispersal::mExtSeedData;
 int SeedDispersal::mExtSeedSizeX = 0;
 int SeedDispersal::mExtSeedSizeY = 0;
+bool SeedDispersal::mBackgroundSeedsEnabled = true;
+Expression *SeedDispersal::mBackgroundFilter = 0;
 
 SeedDispersal::~SeedDispersal()
 {
@@ -173,6 +176,21 @@ void SeedDispersal::setup()
 void SeedDispersal::setupExternalSeeds()
 {
     mExternalSeedBaseMap = 0;
+
+    // background seed filter (e.g. to turn off background seeds after a number of initial years)
+    if (mBackgroundFilter) {
+        delete mBackgroundFilter;
+        mBackgroundFilter = 0;
+    }
+    QString filter = GlobalSettings::instance()->settings().value("model.settings.seedDispersal.seedBackgroundFilter");
+    if (!filter.isEmpty()) {
+        mBackgroundFilter = new Expression(filter);
+        mBackgroundFilter->addVar("year");
+        mBackgroundFilter->parse();
+        qDebug() << "SeedDispersal: setup background seed filter:" << filter;
+    }
+    mBackgroundSeedsEnabled = true;
+
     if (!GlobalSettings::instance()->settings().valueBool("model.settings.seedDispersal.seedBelt.enabled",false))
         return;
 
@@ -320,6 +338,20 @@ void SeedDispersal::finalizeExternalSeeds()
     if (mExternalSeedBaseMap)
         delete mExternalSeedBaseMap;
     mExternalSeedBaseMap = 0;
+}
+
+void SeedDispersal::updateBackgroundFilter()
+{
+    if (!mBackgroundFilter) {
+        mBackgroundSeedsEnabled = true;
+        return;
+    }
+    int current_year = GlobalSettings::instance()->currentYear();
+    bool enabled_before = mBackgroundSeedsEnabled;
+    mBackgroundSeedsEnabled = mBackgroundFilter->calculateBool(current_year);
+    if (enabled_before != mBackgroundSeedsEnabled) {
+        qDebug() << "SeedDispersal: background seed filter evaluated to" << mBackgroundSeedsEnabled << "in year" << current_year;
+    }
 }
 
 static QMutex _lock_create_seed_map;
@@ -678,7 +710,7 @@ void SeedDispersal::execute()
     distributeSeeds();
 
     float background_value = static_cast<float>(mExternalSeedBackgroundInput); // there is potentitally a background probability <>0 for all pixels.
-    if (background_value>0.f) {
+    if (mBackgroundSeedsEnabled && background_value>0.f) {
         // add a constant number of seeds on the map
         addExternalBackgroundSeeds(mSeedMap, background_value);
     }

@@ -23,6 +23,7 @@
 #include "grid.h"
 class Species;
 class Tree;
+class Expression;
 
 class SeedDispersal
 {
@@ -34,6 +35,7 @@ public:
     //
     static void setupExternalSeeds();
     static void finalizeExternalSeeds();
+    static void updateBackgroundFilter();
     // access
     const Grid<float> &seedMap() const { return mSeedMap; } ///< access to the seedMap
     const Species *species() const {return mSpecies; }
@@ -106,6 +108,8 @@ private:
     static Grid<float> *mExternalSeedBaseMap; ///< static intermediate data while setting up external seeds
     static QHash<QString, QVector<double> > mExtSeedData; ///< holds definition of species and percentages for external seed input
     static int mExtSeedSizeX, mExtSeedSizeY; ///< size of the sectors used to specify external seed input
+    static bool mBackgroundSeedsEnabled; ///< true if background seeds are active for the current year
+    static Expression *mBackgroundFilter; ///< filter expression (variable 'year') controlling background seeds
 };
 
 #endif // SEEDDISPERSAL_H

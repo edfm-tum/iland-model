@@ -307,6 +307,7 @@ model.settings.seedDispersal.externalSeedEnabled = boolean|false|Enable External
 
 gui.layout = group|Seeds everywhere|Provide a delimited list of species and probabilities (e.g., piab, 0.0001, fasy, 0.0001). If empty, seeds everywhere turned off.
 model.settings.seedDispersal.externalSeedBackgroundInput = string|Psme|External Seed Background Input|Specifies a list of species together with a probability for each species. If a species is in the list, then a global background seed input is assumed (see external seeds).|simple
+model.settings.seedDispersal.seedBackgroundFilter = string||Seed Background Filter|An expression (variable 'year') that controls when global background seed input is active (e.g., 'year<=5'). If empty, background seeds are always active if configured.|simple
 
 gui.layout = layout|hl
 gui.layout = group|External seeds in buffer|Provide a list of species (<i>externalSeedSpecies</i>). Optionally control cardinal directions (<i>externalSeedSource</i>) and intensity (<i>externalSeedBuffer</i>) of seed input. Buffer turned off, when species list is empty.

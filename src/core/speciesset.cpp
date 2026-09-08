@@ -182,6 +182,9 @@ void SpeciesSet::regeneration()
         return;
     DebugTimer t("seed dispersal (all species)");
 
+    // evaluate background seed filter for current year
+    SeedDispersal::updateBackgroundFilter();
+
     ThreadRunner runner(mActiveSpecies); // initialize a thread runner object with all active species
     runner.run(nc_seed_distribution);
 
