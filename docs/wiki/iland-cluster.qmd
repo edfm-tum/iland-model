@@ -50,7 +50,29 @@ the 'key' settings are set to 'value'. E.g.: ilandc project.xml 100 output.stand
 See also [iLand console](iland-console.qmd)
 ```
  
+ Alternatively, you can try avoiding building iLand yourself by using the executable package for Linux. In this case, start from the AppImage ( [downloaded for Linux](../download.html)), and:
+ 
+ * extract the AppImage
+ ```bash
+ chmod +x iLand-x86_64.AppImage
+./iLand-x86_64.AppImage --appimage-extract
+```
+* rename the standard folder to something meaningful, e.g.
+```bash 
+mv squashfs-root iland-dist
+```
+* run directly `ilandc` from your script:
+```bash
+# Path to the extracted directory
+ILAND_DIR="/shared/home/user/software/iland-dist"
 
+# ....
+
+# Run ilandc
+${ILAND_DIR}/usr/bin/ilandc /path/to/project_file.xml 100
+
+``` 
+Note: if you see errors such as `error while loading shared libraries: libQt6Core.so.6: cannot open shared object file`, you may need to run `patchelf` to fix library paths for the binary.
 
 ## setup of the simulation project
 

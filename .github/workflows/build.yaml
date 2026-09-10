@@ -121,11 +121,16 @@ jobs:
           # Keep only the SQLite driver; delete all others (Mimer, ODBC, PostgreSQL, etc.) to prevent ldd failures
           find $QT_DIR/plugins/sqldrivers/ -type f -not -name 'libqsqlite.so' -delete
           
-          # 7. Run linuxdeployqt (pass wayland platform plugins as extra executables to bundle their dependencies)
+          # 7. Run linuxdeployqt (pass wayland platform plugins and extra executables to bundle dependencies and patch RPATH)
           EXTRA_EXEC=""
           for p in AppDir/usr/plugins/platforms/libqwayland*.so; do
             if [ -f "$p" ]; then
               EXTRA_EXEC="$EXTRA_EXEC -executable=$p"
+            fi
+          done
+          for b in AppDir/usr/bin/ilandc AppDir/usr/bin/fonstudio; do
+            if [ -f "$b" ]; then
+              EXTRA_EXEC="$EXTRA_EXEC -executable=$b"
             fi
           done
 
