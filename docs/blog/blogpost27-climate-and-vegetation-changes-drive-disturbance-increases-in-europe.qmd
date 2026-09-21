@@ -4,7 +4,7 @@ date: "2011-06-01"
 author: "Rupert Seidl"
 ---
 
-So one of the main ideas behind the development of [iLand](../wiki/iland.qmd) is, that to understand and simulate forest ecosystem dynamics with particular consideration of disturbances, an integrated view of climate, disturbance agents, and the vegetation is needed. The idea is that what we observe as forest dynamics is the result of the complex interactions between those three elements.
+So one of the main ideas behind the development of [iLand](../wiki/startpage.qmd) is, that to understand and simulate forest ecosystem dynamics with particular consideration of disturbances, an integrated view of climate, disturbance agents, and the vegetation is needed. The idea is that what we observe as forest dynamics is the result of the complex interactions between those three elements.
 
 <img src='/img/iland_triangle.jpg' border='0' alt='image' />
 

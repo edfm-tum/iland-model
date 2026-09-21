@@ -5,7 +5,7 @@ author: "Werner Rammer"
 ---
 
 
-This weekend is definitely dedicated to really start hacking on the iLand modelling software. After weeks and month of preparations, theoretical considerations, the creation of software pieces to toy around (but also with more tangible results like the pattern creation "[LightRoom](../wiki/lightroom.qmd)" software), now it was finally the time to directly dive into the "real thing", the development of the [iLand](../wiki/iland.qmd) platform.
+This weekend is definitely dedicated to really start hacking on the iLand modelling software. After weeks and month of preparations, theoretical considerations, the creation of software pieces to toy around (but also with more tangible results like the pattern creation "[LightRoom](../wiki/lightroom.qmd)" software), now it was finally the time to directly dive into the "real thing", the development of the [iLand](../wiki/startpage.qmd) platform.
 
 
 ## Achievements so far

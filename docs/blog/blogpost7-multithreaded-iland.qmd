@@ -10,7 +10,7 @@ author: "Werner Rammer"
 ## Why that?
 
 
-Did I already mention, that [Qt](../wiki/qt.qmd) is just great? The issue that made me state this here is [Multithreading](http://en.wikipedia.org/wiki/Multithreading_(computer_hardware). As the number of cores per CPU is very likely to [increase further](http://en.wikipedia.org/wiki/Multi-core), the issue of parallel computation gains importance. Actually, parallelism is one of the more important conceptual goals of the [iLand](../wiki/iland.qmd)-development.
+Did I already mention, that [Qt](../wiki/qt.qmd) is just great? The issue that made me state this here is [Multithreading](http://en.wikipedia.org/wiki/Multithreading_(computer_hardware). As the number of cores per CPU is very likely to [increase further](http://en.wikipedia.org/wiki/Multi-core), the issue of parallel computation gains importance. Actually, parallelism is one of the more important conceptual goals of the [iLand](../wiki/startpage.qmd)-development.
 
 So I started this morning to take a closer look at the [QtConcurrent](http://doc.trolltech.com/4.5/threads.html) documentation. It is very convenient to handle multiple threads, but it is even easier, to use the container based function provided by the framework. If the basic design allows such an approach (and, err,  iLand does!), the threading issue merely boils down to an one-liner. A nice extra: the library chooses the appropriate number of threads according to the number of cores in your machine, so this is supposed to scale nicely with upcoming hardware.
 

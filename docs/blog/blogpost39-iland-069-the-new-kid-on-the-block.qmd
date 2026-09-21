@@ -36,4 +36,4 @@ The HJ Andrews simulations, with its more than 6000 ha and 500 years of simulate
 
 ### Wiki Improvements
 
-And, last but not least, a whole bunch of [wiki pages](../wiki/iland.qmd) are publicly available now - happy reading!
+And, last but not least, a whole bunch of [wiki pages](../wiki/startpage.qmd) are publicly available now - happy reading!

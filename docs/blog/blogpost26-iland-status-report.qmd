@@ -4,7 +4,7 @@ date: "2011-04-09"
 author: "Rupert Seidl"
 ---
 
-Hello world, hard to believe that two years have passed already since we started on this [modeling endeavor](../wiki/project-abstract.qmd). This also means that I (Rupert) am on my way back to Europe after two years in the Pacific Northwest – two truly great years, full of amazing people, forests, and ideas. I thus wanted to take this opportunity to share a bit more information about the current status of [iLand](../wiki/iland.qmd).
+Hello world, hard to believe that two years have passed already since we started on this [modeling endeavor](../wiki/project-abstract.qmd). This also means that I (Rupert) am on my way back to Europe after two years in the Pacific Northwest – two truly great years, full of amazing people, forests, and ideas. I thus wanted to take this opportunity to share a bit more information about the current status of [iLand](../wiki/startpage.qmd).
 
 The model currently
 

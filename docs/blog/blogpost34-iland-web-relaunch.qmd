@@ -18,7 +18,7 @@ author: "Werner Rammer"
 
 
 
-	We also re-designed the [public start page](../wiki/iland.qmd) trying to provide a visually pleasing and informative entry point for our site. Also new is the [download](../download.qmd) page that allows free download of the iLand software and source code. Currently, we have a total number of 110 public wiki pages - something we are quite proud of.
+	We also re-designed the [public start page](../wiki/startpage.qmd) trying to provide a visually pleasing and informative entry point for our site. Also new is the [download](../download.qmd) page that allows free download of the iLand software and source code. Currently, we have a total number of 110 public wiki pages - something we are quite proud of.
 
 
 
