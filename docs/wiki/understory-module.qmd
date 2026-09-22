@@ -2,7 +2,7 @@
 title: "Understory Module"
 ---
 
-The understory module in iLand simulates the dynamics of ground vegetation (moss, herbs, and shrubs) and requires two CSV configuration files: one for defining Plant Functional Types (PFTs) and one for defining the developmental states of these PFTs.
+The understory module in iLand simulates the dynamics of ground vegetation (mosses, graminoids, forbs, ferns, and shrubs) and requires two CSV configuration files: one for defining Plant Functional Types (PFTs) and one for defining the developmental states of these PFTs.
 
 For more information on the concept, ecological processes, and model integration, see the [Understory](understory.qmd) page.
 
@@ -16,19 +16,19 @@ This file defines the Plant Functional Types (PFTs) and their environmental resp
 | `estBaseProb` | Double | Base establishment probability ($\ge0$). |
 | `mortalityBaseProb` | Double | Base mortality probability ($\ge0$). |
 | `optimalGrowth` | Double | Optimal growth rate ($>0$). Relates to the time in years to reach the maximum state. |
-| `pDecline` | Double | Probability of decline (transition to the previous state) ($\ge0$). |
-| `effectiveLAIfactor` | Double | The fraction of the understory Leaf Area Index (LAI) that is effective for intercepting light and contributing to competition (0-1). |
+| `pDecline` | Double | Base probability of decline (transition to the previous state) ($\ge0$). |
+| `effectiveLAIfactor` | Double | The fraction of the understory Leaf Area Index (LAI) that is effective for intercepting light and contributing to shading (0-1). |
 | `psiMin` | Double | Minimum soil water potential for growth and transpiration (MPa). Automatically converted to negative internally. Must be $\ge -10$ MPa. |
 | `turnoverRate` | Double | Annual biomass turnover rate for the understory PFT (0-1). |
 | `belowgroundFrac` | Double | Fraction of biomass allocated to belowground compartments (0-1). |
 | `litterDecompRate` | Double | Annual decomposition rate of understory litter (0-1). |
-| `lightResponse` | Expression | (Optional) Custom function for light response. <br>Default: `min(0.05 + 1.5/(1 + ( (lr - (0.15*LightEIV-0.4)) / (0.8-0.05*LightEIV) )^2),1)` |
+| `lightResponse` | Expression | (Optional) Custom function for light response. <br>Default: `max(0.1, 1/(1 + exp(-10 * (lr - LightEIV/18))))` <!-- KHB updated, default in current code: `min(0.05 + 1.5/(1 + ( (lr - (0.15*LightEIV-0.4)) / (0.8-0.05*LightEIV) )^2),1)` --> |
 | `LightEIV` | Double | Ellenberg Indicator Value for Light (1-9). <br>**Required** if the default `lightResponse` expression is used. |
-| `waterResponse` | Expression | (Optional) Custom function for water response. <br>Default: `min(0.05 + 1.3/(1 + ( (swpgs + 14 + (10-MoistureEIV)*0.5) / 3 )^2),1)` |
-| `MoistureEIV` | Double | Ellenberg Indicator Value for Moisture (1-9). <br>**Required** if the default `waterResponse` expression is used. |
-| `nutrientResponse` | Expression | (Optional) Custom function for nutrient response. <br>Default: `min(0.05 + 1.5/(1 + ( (PlantAvailN - (5*NutrientEIV+40)) / 20 )^2),1)` |
+| `waterResponse` | Expression | (Optional) Custom function for water response. <br>Default: `min(0.2 + 1.3/(1 + ((swpgs + 14 + (10 - MoistureEIV) * 0.5) / 3)^2), 1)` <!-- KHB updated, default in current code: `min(0.05 + 1.3/(1 + ( (swpgs + 14 + (10-MoistureEIV)*0.5) / 3 )^2),1)` --> |
+| `MoistureEIV` | Double | Ellenberg Indicator Value for Moisture (1-10). <br>**Required** if the default `waterResponse` expression is used. |
+| `nutrientResponse` | Expression | (Optional) Custom function for nutrient response. <br>Default: `min(0.05 + 1.5/(1 + ( (PlantAvailN - (5*NutrientEIV+40)) / 20 )^2), 1)` |
 | `NutrientEIV` | Double | Ellenberg Indicator Value for Nutrients (1-9). <br>**Required** if the default `nutrientResponse` expression is used. |
-| `tempResponse` | Expression | (Optional) Custom function for temperature response. <br>Default: `min(0.05 + 1.2/(1 + ( (meanTemp - (TemperatureEIV*1.5)) / 3 )^2),1)`. <br>Note: `meanTemp` is the Resource Unit mean annual temperature and accounts for microclimate buffering if enabled (`model.climate.microclimate.understory = true`). |
+| `tempResponse` | Expression | (Optional) Custom function for temperature response. <br>Default: `min(0.05 + 1.2/(1 + ((meanTemp - (TemperatureEIV * 1.7)) / 3)^2), 1)`. <!-- KHB updated, default in current code: `min(0.05 + 1.2/(1 + ( (meanTemp - (TemperatureEIV*1.5)) / 3 )^2),1)` --> <br>Note: `meanTemp` is the Resource Unit mean annual temperature and accounts for microclimate buffering if enabled (`model.climate.microclimate.understory = true`). |
 | `TemperatureEIV` | Double | Ellenberg Indicator Value for Temperature (1-9). <br>**Required** if the default `tempResponse` expression is used. |
 | `stressFunction` | Expression | (Optional) Custom function for stress response. <br>Default: `0.5*exp(-x/stressSensitivity)` |
 | `stressSensitivity` | Double | Sensitivity to stress (0-1). <br>**Required** if the default `stressFunction` expression is used. |
@@ -58,7 +58,7 @@ This file defines the developmental states (size classes) for each PFT defined i
 The iLand Viewer interface provides dedicated visualization options for understory dynamics.
 
 ### Light on Ground
-You can visualize **Light on Ground** (accessible next to the Leaf Influence Field (LIF) grid) to view the spatial distribution of forest floor light levels after canopy transmission.
+You can visualize **Light on Ground** (accessible next to the Light Influence Field (LIF) grid) to view the spatial distribution of forest floor light levels after canopy transmission.
 
 ### Understory Layers in "Other Grids"
 The viewer supports several visualization layers. A **PFT Filter** dropdown allows you to restrict the view to a single Plant Functional Type (showing values only for that group) or select "(none)" to display total aggregate values for the entire understory community.
