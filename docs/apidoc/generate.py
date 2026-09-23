@@ -5,6 +5,7 @@
 import os
 import re
 import sys
+import textwrap
 
 # Paths relative to the script location
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -156,9 +157,10 @@ def convert_indented_code_blocks(text):
             if in_block:
                 while block_lines and block_lines[-1] == '':
                     block_lines.pop()
-                new_lines.append("```javascript")
-                new_lines.extend(block_lines)
-                new_lines.append("```")
+                if block_lines:
+                    new_lines.append("```javascript")
+                    new_lines.extend(block_lines)
+                    new_lines.append("```")
                 in_block = False
                 block_lines = []
             new_lines.append(line)
@@ -166,103 +168,110 @@ def convert_indented_code_blocks(text):
     if in_block:
         while block_lines and block_lines[-1] == '':
             block_lines.pop()
-        new_lines.append("```javascript")
-        new_lines.extend(block_lines)
-        new_lines.append("```")
+        if block_lines:
+            new_lines.append("```javascript")
+            new_lines.extend(block_lines)
+            new_lines.append("```")
         
     return '\n'.join(new_lines)
 
 
 def parse_comment_block(block):
     """
-    Parses a single comment block and extracts YUI tags.
+    Parses a single comment block and extracts YUI tags cleanly.
     """
     # Clean leading * from the block while preserving internal markdown indentation
     lines = []
     for line in block.split('\n'):
-        line = line.rstrip()
-        match = re.match(r'^(\s*)\*(?: (.*)|(.*))?$', line)
+        line_str = line.rstrip()
+        match = re.match(r'^\s*\*(?: (.*)|(.*))?$', line_str)
         if match:
-            content = match.group(2) if match.group(2) is not None else (match.group(3) or '')
+            content = match.group(1) if match.group(1) is not None else (match.group(2) or '')
             lines.append(content)
         else:
-            if line.strip() == '':
-                lines.append('')
-            else:
-                lines.append(line)
+            lines.append(line_str)
         
-    content = "\n".join(lines).strip()
-    
-    tags = {}
-    
-    # Extract tags
-    class_match = re.search(r'@class\s+(\w+)', content)
-    if class_match:
-        tags['class'] = class_match.group(1)
+    # Separate into sections divided by lines starting with @tag
+    sections = []
+    curr_lines = []
+    for line in lines:
+        if re.match(r'^\s*@\w+', line):
+            if curr_lines:
+                sections.append(curr_lines)
+                curr_lines = []
+        curr_lines.append(line)
+    if curr_lines:
+        sections.append(curr_lines)
+
+    tags = {
+        'params': []
+    }
+    main_desc_lines = []
+
+    for sec in sections:
+        if not sec:
+            continue
+        first_line = sec[0].strip()
+        if first_line.startswith('@'):
+            tag_name_match = re.match(r'^@(\w+)', first_line)
+            if not tag_name_match:
+                continue
+            tag_name = tag_name_match.group(1)
+            sec_text = "\n".join(sec).strip()
+
+            if tag_name == 'class':
+                m = re.search(r'@class\s+(\w+)', sec_text)
+                if m: tags['class'] = m.group(1)
+            elif tag_name == 'method':
+                m = re.search(r'@method\s+(\w+)', sec_text)
+                if m: tags['method'] = m.group(1)
+            elif tag_name == 'property':
+                m = re.search(r'@property\s+(\w+)', sec_text)
+                if m: tags['property'] = m.group(1)
+            elif tag_name == 'type':
+                m = re.search(r'@type\s+(\S+)', sec_text)
+                if m: tags['type'] = m.group(1)
+            elif tag_name.lower() in ('readonly', 'read-only'):
+                tags['readonly'] = True
+            elif tag_name == 'title':
+                m = re.search(r'@title\s+(.*)', sec_text)
+                if m: tags['title'] = m.group(1).strip()
+            elif tag_name == 'module':
+                m = re.search(r'@module\s+(\S+)', sec_text)
+                if m: tags['module'] = m.group(1).strip()
+            elif tag_name == 'param':
+                m = re.search(r'@param\s+(?:\{([^}]+)\}\s+)?(\w+)\s*(.*)', sec_text, re.DOTALL)
+                if m:
+                    ptype = m.group(1) or 'any'
+                    pname = m.group(2)
+                    pdesc = m.group(3).strip()
+                    tags['params'].append({
+                        'type': ptype,
+                        'name': pname,
+                        'desc': pdesc
+                    })
+            elif tag_name in ('return', 'returns'):
+                m = re.search(r'@returns?\s+(?:\{([^}]+)\}\s+)?(.*)', sec_text, re.DOTALL)
+                if m:
+                    rtype = m.group(1) or 'void'
+                    rdesc = m.group(2).strip()
+                    tags['return'] = {
+                        'type': rtype,
+                        'desc': rdesc
+                    }
+            elif tag_name.lower() == 'example':
+                ex_body_lines = sec[1:] if len(sec) > 1 else []
+                tags['example'] = textwrap.dedent("\n".join(ex_body_lines)).strip()
+            elif tag_name == 'description':
+                m = re.search(r'@description\s*(.*)', sec_text, re.DOTALL)
+                if m:
+                    tags['description'] = m.group(1).strip()
+        else:
+            main_desc_lines.extend(sec)
+
+    if 'description' not in tags:
+        tags['description'] = textwrap.dedent("\n".join(main_desc_lines)).strip()
         
-    method_match = re.search(r'@method\s+(\w+)', content)
-    if method_match:
-        tags['method'] = method_match.group(1)
-        
-    prop_match = re.search(r'@property\s+(\w+)', content)
-    if prop_match:
-        tags['property'] = prop_match.group(1)
-        
-    type_match = re.search(r'@type\s+(\w+)', content)
-    if type_match:
-        tags['type'] = type_match.group(1)
-        
-    if '@readOnly' in content or '@readonly' in content:
-        tags['readonly'] = True
-        
-    title_match = re.search(r'@title\s+(.*)', content)
-    if title_match:
-        tags['title'] = title_match.group(1).strip()
-        
-    module_match = re.search(r'@module\s+(\S+)', content)
-    if module_match:
-        tags['module'] = module_match.group(1).strip()
-        
-    # Params tags
-    param_matches = re.finditer(r'@param\s+\{(\w+)\}\s+(\w+)\s+(.*?)(?=\n@|\Z)', content, re.DOTALL)
-    params = []
-    for pm in param_matches:
-        params.append({
-            'type': pm.group(1),
-            'name': pm.group(2),
-            'desc': pm.group(3).strip()
-        })
-    if params:
-        tags['params'] = params
-        
-    # Return tag
-    return_match = re.search(r'@return\s+\{(\w+)\}\s+(.*?)(?=\n@|\Z)', content, re.DOTALL)
-    if return_match:
-        tags['return'] = {
-            'type': return_match.group(1),
-            'desc': return_match.group(2).strip()
-        }
-        
-    # Example tag
-    example_match = re.search(r'@Example\s*(.*?)(?=\n@|\Z)', content, re.DOTALL)
-    if not example_match:
-        example_match = re.search(r'@example\s*(.*?)(?=\n@|\Z)', content, re.DOTALL)
-    if example_match:
-        tags['example'] = example_match.group(1).strip()
-        
-    # Extract description
-    desc_tag_match = re.search(r'@description\s*(.*?)(?=\n@|\Z)', content, re.DOTALL)
-    if desc_tag_match:
-        tags['description'] = desc_tag_match.group(1).strip()
-    else:
-        # Fallback to description before any tag
-        desc_lines = []
-        for line in lines:
-            if line.strip().startswith('@'):
-                break
-            desc_lines.append(line)
-        tags['description'] = "\n".join(desc_lines).strip()
-    
     return tags
 
 def extract_comments_from_file(file_path):
