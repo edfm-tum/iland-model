@@ -2,7 +2,7 @@
 title: "Understory"
 ---
 
-The **Understory** module in iLand simulates the dynamic development of ground vegetation (mosses, herbs, and shrubs) and its interactions with forest structure. The model is designed to represent the understory's growth, decline, and mortality, as well as its competition with tree cohorts.
+The **Understory** module in iLand simulates the dynamic development of ground vegetation (mosses, graminoids, forbs, ferns, and shrubs) and its interactions with forest dynamics. The model is designed to represent the understory's establishment, growth, decline, and mortality, as well as its competition with tree cohorts and effects on forest processes such as the water cycle.
 
 For more information on the technical implementation, configuration files, and XML parameters, see the [Understory Module](understory-module.qmd) page.
 
@@ -12,27 +12,27 @@ The module uses a state-and-transition framework to simulate understory vegetati
 
 ### PFTs and States
 
-A **Plant Functional Type (PFT)** represents a group of ground vegetation species sharing similar ecological traits (e.g., shade-tolerant mosses, light-demanding grasses, dwarf shrubs). Each PFT is modeled using a series of developmental size-class states, typically numbered from 1 to $N$, where state 0 represents an unoccupied or dead slot.
+A **Plant Functional Type (PFT)** represents a group of ground vegetation species sharing similar ecological traits (e.g., shade-tolerant forbs, light-demanding grasses, dwarf shrubs). Each PFT is modeled using a series of developmental size-class states, typically numbered from 1 to $N$, where state 0 represents an unoccupied or dead slot.
 
 A state represents both:
 
 *   The proportion of groundcover (or dominance) within a cell.
-*   The physical dimensions (height, biomass, Leaf Area Index (LAI)). The unit for biomass in the state file is **$kg/ha$** (representing the biomass density if the cell were fully covered by that state).
+*   The physical dimensions (height, biomass, Leaf Area Index (LAI)). The unit for biomass in the state file is **$kg/ha$** (representing the biomass density within a cell for the given state).
 
-For example, a grass PFT might have states ranging from 1 (low cover, small height, minimal biomass) to 5 (high cover, maximum height, high biomass and LAI).
+For example, a grass PFT might have states ranging from 1 (low cover, short height, minimal biomass and LAI) to 5 (high cover, maximum height, high biomass and LAI).
 
 ### State Changes
 
 State changes occur annually and are evaluated at two distinct spatial scales: Resource Unit level ($100\text{ m} \times 100\text{ m}$) processes determine the initial filtering and potential establishment of PFTs, while Cell level ($2\text{ m} \times 2\text{ m}$) processes handle the detailed growth, decline, mortality, slot competition, and actual establishment checks.
 
 *   **Growth**: The probability that a PFT will advance to the next state ($i \to i+1$, up to $N$) under localized environmental responses.
-*   **Decline**: The probability that a PFT will regress to the previous state ($i \to i-1$) due to stress or disturbance. If state 1 declines, it transitions to state 0 (dieoff).
+*   **Decline**: The probability that a PFT will regress to the previous state ($i \to i-1$) due to stress. If state 1 declines, it transitions to state 0 (dieoff).
 *   **Mortality (Dieoff)**: The probability that a PFT will die completely on a cell (transition to state 0).
 *   **Establishment**: The probability that an unoccupied cell (state 0) is successfully colonized by a PFT at state 1, combining regional climate feasibility with local light availability.
 
 ### Spatial Scale and Aggregation
 
-*   **Simulation Scale**: The core understory simulation is executed at a fine **$2\text{ m} \times 2\text{ m}$ spatial resolution** (matching the iLand light grid and sapling cohorts). Each $2\text{ m}$ cell contains a fixed number of slots (e.g., 5 slots) that can be occupied by different PFTs. 
+*   **Simulation Scale**: The core understory simulation is executed at a fine **$2\text{ m} \times 2\text{ m}$ spatial resolution** (matching the iLand light grid and sapling cohorts). Each $2\text{ m}$ cell contains a fixed number of slots (e.g., 10 slots) that can be occupied by different PFTs. 
 *   **Aggregation**: For landscape and resource unit outputs, understory properties (PFT presence, covered area, biomass, and LAI) are aggregated up to the **$100\text{ m} \times 100\text{ m}$ Resource Unit (RU)** level.
 
 ---
@@ -100,26 +100,26 @@ Where:
 
 ### 2. Decline
 
-The probability that a living PFT cohort will regress to the previous state ($p_{\text{decline}}$) is a fixed base probability:
+The probability that a living PFT cohort will regress to the previous state ($p_{\text{decline}}$) is computed combining a base decline probability rate with stress-induced decline:
 
-$$p_{\text{decline}} = p_{\text{base\_decline}}$$
-
-Where $p_{\text{base\_decline}}$ is defined by the PFT parameter `pDecline`. If a PFT at state 1 declines, it transitions to state 0 (complete dieoff).
-
-### 3. Mortality
-
-The probability that a living PFT cohort will die completely ($p_{\text{mortality}}$) is computed combining a base mortality rate with stress-induced mortality:
-
-$$p_{\text{mortality}} = p_{\text{base\_mortality}} + f_{\text{stress}} - (p_{\text{base\_mortality}} \times f_{\text{stress}})$$
+$$p_{\text{decline}} = p_{\text{base\_decline}} + f_{\text{stress}} - (p_{\text{base\_decline}} \times f_{\text{stress}})$$
 
 Where:
 
-*   $p_{\text{base\_mortality}}$ is the PFT parameter `mortalityBaseProb`.
-*   $f_{\text{stress}}$ is the stress-induced mortality factor calculated from the combined environmental response ($\text{response}_{\text{growth}}$) using the user-defined `stressFunction` expression:
+*   $p_{\text{base\_decline}}$ is the PFT parameter `pDecline`.
+*   $f_{\text{stress}}$ is the stress-induced decline factor calculated from the combined environmental response ($\text{response}_{\text{growth}}$) using the user-defined `stressFunction` expression:
     
     $$f_{\text{stress}} = f_{\text{stress\_function}}(\text{response}_{\text{growth}})$$
     
-    Default `stressFunction`: `0.5*exp(-x/stressSensitivity)`. If the response is optimal ($\text{response} = 1$), stress mortality is minimal. If the response is low, stress mortality increases up to a maximum of 0.5.
+    Default `stressFunction`: `0.5*exp(-x/stressSensitivity)`. If the response is optimal ($\text{response} = 1$), stress-related decline is minimal. If the response is low, stress-related decline increases up to a maximum of 0.5. If a PFT at state 1 declines, it transitions to state 0 (complete dieoff).
+
+### 3. Mortality
+
+The probability that a living PFT cohort will die completely ($p_{\text{mortality}}$) is a fixed base probability:
+
+$$p_{\text{mortality}} = p_{\text{base\_mortality}}$$
+
+Where $p_{\text{base\_mortality}}$ is the PFT parameter `mortalityBaseProb`.
 
 ### 4. Establishment
 
@@ -130,7 +130,7 @@ $$p_{\text{adjusted}} = 1 - (1 - \text{response}_{\text{establishment}})^{n_{\te
 Where:
 
 *   $\text{response}_{\text{establishment}}$ is the local establishment environmental response factor ($0 \le \text{response} \le 1$), evaluated using local light.
-*   $n_{\text{represented}}$ is the scale scaling factor (fixed at $5$, representing the inverse of the cell selection probability $1 / 0.2$).
+*   $n_{\text{represented}}$ is the scaling factor (fixed at $5$, representing the inverse of the cell selection probability $1 / 0.2$).
 
 A random draw determines whether colonization at state 1 occurs on the cell.
 
@@ -146,7 +146,7 @@ After growth and establishment changes are evaluated, iLand checks if the total 
 Users can define custom mathematical expressions for environmental response functions in the PFT configuration file. 
 
 *   **Establishment Response (`establishmentResponse`)**: Default: `lightResponse` (since abiotic environmental factors are already accounted for at the RU level).
-*   **Growth Response (`growthResponse`)**: Default: `lightResponse * waterResponse * nutrientResponse * tempResponse`.
+*   **Growth Response (`growthResponse`)**: Default: `lightResponse * minimum(waterResponse, nutrientResponse, tempResponse)`. <!-- KHB default, this differs from current understory module default (Default: `lightResponse * waterResponse * nutrientResponse * tempResponse`. To update this. -->
 
 If a custom expression is defined, the calculation uses the following variable inputs:
 
@@ -168,7 +168,7 @@ The understory module is fully integrated with other core ecosystem processes in
 Understory vegetation and sapling cohorts interact dynamically through light competition:
 
 *   **Sapling Growth**: Saplings grow in height and compete vertically using the [vertical light profile](competition-for-light-under-4m.qmd). A sapling's light availability is calculated based on its height.
-*   **Sapling & PFT Establishment**: The establishment of new tree saplings and understory PFTs uses the **ground light** ($RelGroundLight$). The ground light represents the light level *below* all ground vegetation layers, which is attenuated by both the adult tree canopy and the understory vegetation.
+*   **Sapling & PFT Establishment**: The establishment of new tree saplings and understory PFTs uses the **ground light** ($RelGroundLight$). The ground light represents the light level *below* all ground vegetation layers, which is attenuated by both the adult tree canopy and the understory vegetation. LAI used in understory shading calculations can differ from LAI used in water cycle calculations (e.g., for graminoids, which attenuate light less relative to their LAI due to vertical leaf arrangement) by setting the `effectiveLAIfactor`.
 
 ### 2. Water Cycle & Transpiration
 
@@ -178,7 +178,7 @@ Understory Leaf Area Index (LAI) and water stress traits affect water balance ca
     
     $$\text{LAI}_{\text{stand}} = \text{LAI}_{\text{adult}} + \text{LAI}_{\text{saplings}} + \text{LAI}_{\text{understory}}$$
     
-*   **Understory Water Stress (`psiMin`)**: A new PFT parameter `psiMin` (MPa) defines the minimum soil water potential threshold for transpiration/growth.
+*   **Understory Water Stress (`psiMin`)**: A new PFT parameter `psiMin` (MPa) defines the minimum soil water potential threshold for transpiration/growth. <!-- KHB: how exactly does this affect growth or establishment? -->
 *   **Soil-Atmosphere Response**: 
     *   Adult trees use species-specific LAI, VPD, and soil water potential responses.
     *   The understory layer's response is computed using an aggregate, LAI-weighted average minimum water potential threshold ($\overline{\psi}_{\text{min}}$) of all understory PFTs present on the Resource Unit, the understory LAI on the RU, and a fixed VPD response exponent of $-0.6$.
