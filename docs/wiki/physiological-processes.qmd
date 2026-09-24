@@ -1,0 +1,33 @@
+---
+title: "Physiological Processes"
+---
+
+iLand models the continuous physiological processes that govern energy capture, resource competition, and biogeochemical cycling at individual tree and landscape levels.
+
+### [Resource Availability and Competition](resource-availability-and-competition.qmd)
+
+Spatially explicit competition among individual trees for above- and belowground resources:
+
+* **[Light Competition](competition-for-light.qmd):** 3D canopy light absorption based on Light Influence Patterns ([LIPs](individual-tree-light-availability.qmd)).
+* **[Belowground Competition](competition-for-belowground-resources.qmd):** Competition for soil water and nitrogen mediated by root distribution and soil properties.
+
+### [Primary Production](primary-production.qmd)
+
+Radiation absorption and gross primary production calculated using a hierarchical approach derived from the 3-PG model:
+
+* **[Environmental Modifiers](constraints-to-resource-utilization.qmd):** Response functions modulating productivity based on [temperature](temperature-response.qmd), [vapor pressure deficit](vapor-pressure-deficit-response.qmd), [atmospheric CO₂](co2-response.qmd), [soil water](soil-water-response.qmd), and [soil nitrogen](nitrogen-response.qmd).
+* **[Phenology](phenology.qmd):** Seasonal dynamics of foliage flush, senescence, and growing season length.
+
+### [Carbon Allocation](allocation.qmd) & [Stem Growth](stem-growth.qmd)
+
+Partitioning of net primary production (NPP) into foliage, fine roots, and woody biomass pools based on pipe-model allometry and resource limitations.
+
+### [Water Cycle](water-cycle.qmd)
+
+Canopy interception, evapotranspiration, snowpack accumulation/melt, and soil water percolation:
+
+* **[Landscape Soil Water Dynamics](landscape-scale-soil-water-dynamics.qmd):** Lateral redistribution of soil water across topography on landscape scales.
+
+### [Soil Dynamics](soil-dynamics.qmd) & [Biogeochemical Cycling](soil-c-and-n-cycling.qmd)
+
+Litter decomposition, soil organic matter turnover, and nutrient mineralization based on the Century/ICBM soil models.

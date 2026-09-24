@@ -1,0 +1,27 @@
+---
+title: "Demographic Processes"
+---
+
+Demographic processes in iLand simulate the continuous life-cycle transitions of trees: established trees grow in diameter and height, environmental stress triggers tree mortality, and mature trees produce and disperse seeds to establish forest regeneration.
+
+### [Growth](growth.qmd)
+
+Simulates annual diameter and height increment, crown architecture, and allometric relationships of established trees (>4m height) based on allocated carbon.
+
+### [Regeneration](regeneration.qmd)
+
+Models the establishment and early development of new tree cohorts:
+
+* **[Seed Dispersal](dispersal.qmd):** Spatially explicit dispersal of seeds from mature trees and [external seed sources](external-seeds.qmd) using species-specific [seed kernels](seed-kernel-and-seed-distribution.qmd).
+* **[Establishment](establishment.qmd):** Germination and survival of seeds on suitable seedbeds subject to environmental filters.
+* **[Sapling Growth and Competition](sapling-growth-and-competition.qmd):** Growth of sapling cohorts (<4m height) competing for light and belowground resources.
+* **[Recruitment](recruitment.qmd):** Transition of saplings exceeding 4m height into individual trees in the core model.
+* **[Sprouts](sprouts.qmd):** Vegetative regeneration via coppicing and resprouting after harvesting or disturbance.
+* **[Serotiny](serotiny.qmd):** Canopy seed banking and post-fire seed release.
+
+### [Mortality](mortality.qmd)
+
+Simulates tree mortality:
+
+* **Stress-induced mortality:** Carbon starvation and hydraulic failure resulting from negative annual carbon balance or acute stress.
+* **[Base Mortality](base-mortality.qmd):** Background age- and size-dependent mortality probability.
