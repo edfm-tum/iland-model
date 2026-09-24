@@ -43,8 +43,7 @@ These mode is used, when the key *world.initialization.type* is set to *picus* o
 | y | yes | y-coordinate (metric) within the resource unit / landscape |
 | bhdfrom or dbh | yes | dbh (cm) of the tree. Specify column either as *bhdfrom* or as *dbh*. |
 | treeheight or height | yes | height of tree. Provide in cm if column is named *treeheight* or in meter if column name is *height*. |
-| species | yes | tree species. Use the iLand-species-keys (e.g. piab, fasy, ...), for compatibility reasons also a subset of Picus-Species-Ids can be used (currenty: 0,1,17) |
-| age | no | age of tree in years. If column is omitted or individual values are either blank or zero, the age is estimated using ratio of current height to maximum height of the species. If no initial age is specified, also only the height component of the [#respiration_and_aging |
+| age | no | age of tree in years. If column is omitted or individual values are either blank or zero, the age is estimated using ratio of current height to maximum height of the species. If no initial age is specified, also only the height component of [aging](growth.qmd) is used. |
 
 For compatibility reasons, the datalines may be enclosed by an opening and closing tree tag. Comment lines begin with '#' and can occur everywhere in the input file.
 
@@ -183,9 +182,8 @@ The model provides a mechanism to initialize saplings from an input file. The in
 | height_from | (yes) | for each pixel, the height (in m) is randomly selected between *height_from* and *height_to*. See also "height". |
 | age | no | specifies the age (in years) of the cohort. If not specified, a linear relationship between age and height is used to estimate age (see *age4m*). |
 | age4m | no | specify the age of the cohort at the height of 4m. The actual age is calculated by assuming a linear relationship between age and height (min: 0.05m, max: 4m). If no age is specified, a *age4m* of 10 years is assumed. |
-| min_lif | no | this specifies a minimum value for the LIF (light influence field, see [competition for light](.qmd#snapshots)(competition-for-light.qmd) 0: no light available at the ground, 1: full exposure, no shading). If provided, only pixels with a LIF value above that threshold are used for initializing saplings. (If there are not enough pixels in the stand that meet that criterion, the *count* brightest pixels are used). |
+| min_lif | no | this specifies a minimum value for the LIF (light influence field, see [competition for light](competition-for-light.qmd), 0: no light available at the ground, 1: full exposure, no shading). If provided, only pixels with a LIF value above that threshold are used for initializing saplings. (If there are not enough pixels in the stand that meet that criterion, the *count* brightest pixels are used). |
 
-
-Note, that currently iLand only supports initializing saplings when the [#standgrid mode|standgrid](initialize-trees.qmd) mode is used.
+Note, that currently iLand only supports initializing saplings when the standgrid mode is used.
 The algorithm adds cohorts on random positions of the stand (potentially limited to cells with enough light) and stops when either the number of represented trees is reached, or when the number of misses (failed attempts, e.g. because a cohort of the species is already on the position) reaches the number of target trees.
 

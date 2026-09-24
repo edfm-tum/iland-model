@@ -28,9 +28,9 @@ website:
           - text: "Documentation Hub"
             href: hub.qmd
           - text: "Physiological Processes"
-            href: wiki/resource-availability-and-competition.qmd
+            href: wiki/physiological-processes.qmd
           - text: "Demographic Processes"
-            href: wiki/growth.qmd
+            href: wiki/demographic-processes.qmd
           - text: "Disturbances"
             href: wiki/disturbance-modules.qmd
           - text: "Forest Management"
@@ -94,6 +94,7 @@ website:
                 - wiki/ecological-complexity.qmd
                 - wiki/team.qmd
             - section: "Physiological Processes"
+              file: wiki/physiological-processes.qmd
               contents:
                 - wiki/resource-availability-and-competition.qmd
                 - wiki/competition-for-light.qmd
@@ -114,6 +115,7 @@ website:
                 - wiki/soil-water-response.qmd
                 - wiki/nitrogen-response.qmd
             - section: "Demographic Processes"
+              file: wiki/demographic-processes.qmd
               contents:
                 - wiki/growth.qmd
                 - section: "Regeneration"
@@ -135,6 +137,7 @@ website:
                     - wiki/mortality.qmd
                     - wiki/base-mortality.qmd
             - section: "Disturbances"
+              file: wiki/disturbance-modules.qmd
               contents:
                 - wiki/disturbance-modules.qmd
                 - wiki/wind-module.qmd
@@ -147,6 +150,7 @@ website:
                 - wiki/bark-beetle-disturbance.qmd
                 - wiki/bite.qmd
             - section: "Forest Management"
+              file: wiki/management.qmd
               contents:
                 - wiki/management.qmd
                 - section: "Agent-Based Management (ABE)"
@@ -169,6 +173,7 @@ website:
                     - wiki/abe-library.qmd
                     - wiki/management-example-parallel-management.qmd
             - section: "Submodules"
+              file: wiki/submodules.qmd
               contents:
                 - wiki/submodules.qmd
                 - wiki/permafrost.qmd

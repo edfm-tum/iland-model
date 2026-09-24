@@ -29,8 +29,8 @@ to alter the state of the saplings (tree cohorts < 4m height).
 
 Expressions and tree variables
 ------------------------------
-Many function of the `management` object allow to specify a filter ([Expression](https://iland-model.org/Expression)). In the context of
-management, tree variables can be used within filter expressions: see https://iland-model.org/tree+variables
+Many functions of the `management` object allow specifying a filter ([Expression](https://iland-model.org/Expression)). In the context of
+management, [tree variables](https://iland-model.org/tree+variables) can be used within filter expressions.
 
 Tree species can be included in Expressions by using the short name as is; internally, the species (identity) is
 a integer index of the species, and species short names (such as 'piab', 'fasy', or 'pico') are used as placeholders.

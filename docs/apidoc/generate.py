@@ -121,7 +121,33 @@ def replace_crosslinks(text, curr_cat):
                 label = class_name
                 
         return f"[{label}]({url})"
-    return pattern.sub(repl, text)
+    text = pattern.sub(repl, text)
+
+    # Translate markdown links with https://iland-model.org/<page> into relative links to ../../../wiki/<slug>.qmd
+    def repl_md_iland_url(m):
+        label = m.group(1)
+        page = m.group(2)
+        anchor = m.group(3) or ''
+        slug = page.replace('+', '-').lower()
+        if slug == 'output':
+            slug = 'outputs'
+        return f"[{label}](../../../wiki/{slug}.qmd{anchor})"
+
+    text = re.sub(r'\[([^\]]+)\]\(https?://iland-model\.org/([A-Za-z0-9_\+]+)(#[A-Za-z0-9_-]+)?\)', repl_md_iland_url, text)
+
+    # Translate bare https://iland-model.org/<page> into clickable markdown links
+    def repl_bare_iland_url(m):
+        page = m.group(1)
+        anchor = m.group(2) or ''
+        slug = page.replace('+', '-').lower()
+        if slug == 'output':
+            slug = 'outputs'
+        label = page.replace('+', ' ')
+        return f"[{label}](../../../wiki/{slug}.qmd{anchor})"
+
+    text = re.sub(r'(?<![\(\"\'\/])https?://iland-model\.org/([A-Za-z0-9_\+]+)(#[A-Za-z0-9_-]+)?', repl_bare_iland_url, text)
+
+    return text
 
 def convert_indented_code_blocks(text):
     """

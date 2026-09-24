@@ -33,7 +33,7 @@ Welcome to the central portal for navigating the **iLand** (individual-based for
   <div class="col-md-6 mb-4">
     <div class="card h-100 shadow-sm">
       <div class="card-body">
-        <h3 class="card-title text-primary"><i class="bi bi-activity"></i> Physiological Processes</h3>
+        <h3 class="card-title text-primary"><a href="wiki/physiological-processes.html" class="text-decoration-none text-primary"><i class="bi bi-activity"></i> Physiological Processes</a></h3>
         <p class="card-text">
           Continuous demographic and physiological processes driving resource acquisition, primary production, carbon/nitrogen allocation, water cycles, and decomposition.
         </p>
@@ -68,7 +68,7 @@ Welcome to the central portal for navigating the **iLand** (individual-based for
   <div class="col-md-6 mb-4">
     <div class="card h-100 shadow-sm">
       <div class="card-body">
-        <h3 class="card-title text-primary"><i class="bi bi-people"></i> Demographic Processes</h3>
+        <h3 class="card-title text-primary"><a href="wiki/demographic-processes.html" class="text-decoration-none text-primary"><i class="bi bi-people"></i> Demographic Processes</a></h3>
         <p class="card-text">
           The continuous life-cycle stages of the forest: energy capture leads to individual tree growth, stress triggers tree mortality, and seeds disperse to establish regeneration.
         </p>
