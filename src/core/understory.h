@@ -57,8 +57,10 @@ public:
     /// setup the understory module
     void setup();
 
-    /// run understory spinup (before start of the model)
-    void initialSpinup() { if (mSpinupSteps>0) runMultipleSteps(mSpinupSteps); }
+    /// run understory spinup (before start of the model), return true if spinup was performed
+    bool initialSpinup() { if (mSpinupSteps<=0) return false;
+                           runMultipleSteps(mSpinupSteps);
+                           return true;    }
     void runMultipleSteps(int n_steps);
     void clearUnderstory();
 

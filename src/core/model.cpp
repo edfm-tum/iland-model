@@ -888,6 +888,7 @@ void Model::beforeRun()
     }
 
     setCurrentTask("loading initialization (finalize)");
+    bool did_understory_spinup = false;
     { DebugTimer loadinit("load standstatistics");
     if (logLevelDebug()) qDebug() << "attempting to calculate initial stand statistics (incl. apply and read pattern)..." ;
     Tree::setGrid(mGrid, mHeightGrid);
@@ -902,7 +903,7 @@ void Model::beforeRun()
     if (Model::settings().understoryEnabled && mUnderstory && mUnderstory->isValid()) {
         // spinup of understory after creating stand statistics (which
         // populates LAI values required for water cycle)
-        mUnderstory->initialSpinup();
+        did_understory_spinup = mUnderstory->initialSpinup();
     }
 
     }
@@ -920,6 +921,8 @@ void Model::beforeRun()
     QStringList startup_outputs;
     startup_outputs << "stand" << "landscape" << "sapling" << "saplingdetail" << "tree" << "dynamicstand"
                     << "carbon" << "svdstate" << "devstage" << "ecoviz" << "customagg";
+    if (did_understory_spinup)
+        startup_outputs << "understory";
     GlobalSettings::instance()->outputManager()->executeParallel(startup_outputs);
 
     GlobalSettings::instance()->outputManager()->save(); // commit database changes

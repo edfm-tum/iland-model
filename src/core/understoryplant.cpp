@@ -311,7 +311,6 @@ void UnderstoryRU::yearEnd()
         double belowground_frac = 0.;
         for (auto &pft_stat: mPFTStats) {
             const auto &pft = Understory::instance().PFTs()[i];
-            //double rate = Understory::instance().state(Understory::instance().PFTs()[i]->firstState())->turnoverRate();
             double flux = pft_stat.stats.biomass * pft->turnoverRate();
             turnover_ha += flux;
             mortality_ha += pft_stat.biomass_died;
@@ -437,12 +436,12 @@ void UnderstoryRU::updateStats()
     // factor to calculate from a pixel count the
     // percentage of stockable area.
     float area_factor = n_valid > 0 ? 1. / n_valid : 0;
-    float area_factor_ha = n_valid > 0 ? cPxPerHectare / (float)n_valid : 0;
+    //float area_factor_ha = n_valid > 0 ? cPxPerHectare / (float)n_valid : 0;
 
     // summarize over all PFTs
     mStats.stats.clear();
     for (auto &pft_stat : mPFTStats) {
-        // calculate values per PFT and resource unit
+        // calculate values per PFT and resource unit (percentages)
         pft_stat.died *= area_factor * 100.;
         pft_stat.established *= area_factor * 100.;
         pft_stat.transitionDown *= area_factor * 100.;
@@ -450,7 +449,7 @@ void UnderstoryRU::updateStats()
         pft_stat.biomass_died *= area_factor * 100.;
         // the values now are summed over all cells
         pft_stat.stats.LAI *= area_factor; // m2/m2 on stockable area
-        pft_stat.stats.biomass *= area_factor_ha; // kg / (stockable) ha
+        pft_stat.stats.biomass *= area_factor; // kg / (stockable) ha
         pft_stat.stats.cover *= area_factor * 100; // % cover (relative to stockable area)
         pft_stat.stats.height *= area_factor; // mean height
         pft_stat.stats.cellsOccupied *= area_factor * 100; // % area occupied by PFT

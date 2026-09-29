@@ -260,7 +260,7 @@ void UnderstoryVisualizer::setupVisualization()
                 "Percent of RU area with >0 plants (%)",
                 "Percent of total #slots of RU occupied (%)",
                 "Total LAI on RU (m2/m2)",
-                "Total biomass on RU (kg/ha?)" // TODO: Clarify biomass units
+                "Total biomass on RU (kg/ha)"
     };
 
     const auto &us = Globals->model()->understory();
