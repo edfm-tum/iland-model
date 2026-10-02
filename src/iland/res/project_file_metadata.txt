@@ -700,9 +700,9 @@ output.carbon.conditionRU = function|condition carbon RU|Condition RU|can be use
 
 ; **** Dynamic outputs *********
 gui.layout = tab|tabDynamic|Dynamic outputs|These are customizable outputs of varying complexity that allow fine grained control of collected data
-gui.layout = group|Dynamic
-output.dynamic.enabled = boolean|true|Enabled|Output of dynamic|simple
-output.dynamic.columns = string|enter column names here|Columns|A list of columns to include|simple
+gui.layout = group|Dynamic|This is not a standard database output, but is used to interactively copy statistics to the clipboard (via the GUI) or to write debug outputs. https://iland-model.org/debug-outputs#dynamic-output
+output.dynamic.enabled = boolean|true|Enabled|If enabled, dynamic tree statistics are calculated annually and can be copied to the clipboard via the GUI.|simple
+output.dynamic.columns = string|enter column names here|Columns|A list of tree expression columns (and aggregation functions) to include|simple
 
 gui.layout = group|Dynamic stand|User-defined outputs for aggregated tree variables for each stand or species. https://iland-model.org/outputs#dynamic_stand_output_by_species_RU
 output.dynamicstand.enabled = boolean|false|Enabled|Userdefined outputs for tree aggregates for each stand or species. Technically, each field is calculated 'live', i.e. it is looped over all trees, and eventually the statistics (percentiles) are calculated. The aggregated values are not scaled to any area unit.|simple

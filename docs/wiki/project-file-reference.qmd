@@ -606,12 +606,12 @@ carbon pools on landscape and/or per resource unit level [Outputs](outputs.qmd#C
 
 ## Dynamic (`output.dynamic`)
 
-These are customizable outputs of varying complexity that allow fine grained control of collected data
+This is not a standard database output, but is used to interactively copy statistics to the clipboard (via the GUI) or to write debug outputs. [Debug Outputs](debug-outputs.qmd#dynamic-output)
 
 | **XML Key** | **Type** | **Default Value** | **Description** |
 | :--- | :--- | :--- | :--- |
-| `enabled` | boolean | `true` | **Enabled**: Output of dynamic |
-| `columns` | string | `enter column names here` | **Columns**: A list of columns to include |
+| `enabled` | boolean | `true` | **Enabled**: If enabled, dynamic tree statistics are calculated annually and can be copied to the clipboard via the GUI. |
+| `columns` | string | `enter column names here` | **Columns**: A list of tree expression columns (and aggregation functions) to include |
 
 
 ## Dynamicstand (`output.dynamicstand`)
