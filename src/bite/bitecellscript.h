@@ -38,8 +38,9 @@ class FMDeadTreeList;
 namespace BITE {
 class BiteAgent; // forward
 }
+
 Q_DECLARE_OPAQUE_POINTER(BITE::BiteAgent*)
-Q_DECLARE_METATYPE(BITE::BiteAgent*)
+//Q_DECLARE_METATYPE(BITE::BiteAgent*)
 
 namespace BITE {
 
