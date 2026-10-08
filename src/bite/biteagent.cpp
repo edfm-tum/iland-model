@@ -134,6 +134,7 @@ void BiteAgent::setup(QJSValue obj)
         QString error = QString("An error occured in the setup of Bite agent '%1': %2").arg(mName).arg(e.message());
         qCDebug(biteSetup) << error;
         BiteEngine::instance()->error(error);
+        BiteEngine::instance()->scriptEngine()->throwError(error);
 
     }
     qCDebug(biteSetup) << "*** Setup of a agent complete ***";
@@ -264,9 +265,20 @@ void BiteAgent::run()
 
 void BiteAgent::run(BiteCellScript *cell)
 {
+    if (!cell || !cell->cell()) {
+        QString err = "BiteAgent::run: invalid cell";
+        BiteEngine::instance()->error(err);
+        BiteEngine::instance()->scriptEngine()->throwError(err);
+        return;
+    }
     BiteCell *c = cell->cell();
     qCDebug(bite) << "execute run for cell" << c->info();
-    runCell(*c);
+    try {
+        runCell(*c);
+    } catch (const IException &e) {
+        BiteEngine::instance()->error(e.message());
+        BiteEngine::instance()->scriptEngine()->throwError(e.message());
+    }
 }
 
 BiteItem *BiteAgent::item(QString name)
@@ -291,36 +303,65 @@ QString BiteAgent::info()
 
 double BiteAgent::evaluate(BiteCellScript *cell, QString expr)
 {
-    BiteWrapper bw(&mWrapperCore, cell->cell());
-    Expression expression(expr, &bw);
-    double value = expression.execute();
-    return value;
+    if (!cell || !cell->cell()) {
+        QString err = "BiteAgent::evaluate: invalid cell";
+        BiteEngine::instance()->error(err);
+        BiteEngine::instance()->scriptEngine()->throwError(err);
+        return 0.;
+    }
+    try {
+        BiteWrapper bw(&mWrapperCore, cell->cell());
+        Expression expression(expr, &bw);
+        double value = expression.execute();
+        return value;
+    } catch (const IException &e) {
+        BiteEngine::instance()->error(e.message());
+        BiteEngine::instance()->scriptEngine()->throwError(e.message());
+        return 0.;
+    }
 }
 
 void BiteAgent::addVariable(ScriptGrid *grid, QString var_name)
 {
-    wrapper()->registerGridVar(grid->grid(), var_name);
-    grid->setName(var_name);
-    grid->setOwnership(false); // the grid is now managed by BITE (and freed from the wrapper)
-    qCDebug(biteSetup) << "added a grid (" << grid->name() << ") to the agent" << name();
+    if (!grid || !grid->grid() || grid->grid()->isEmpty()) {
+        QString err = QString("BiteAgent::addVariable received empty or invalid grid for variable: %1").arg(var_name);
+        BiteEngine::instance()->error(err);
+        BiteEngine::instance()->scriptEngine()->throwError(err);
+        return;
+    }
+    try {
+        wrapper()->registerGridVar(grid->grid(), var_name);
+        grid->setName(var_name);
+        grid->setOwnership(false); // the grid is now managed by BITE (and freed from the wrapper)
+        qCDebug(biteSetup) << "added a grid (" << grid->name() << ") to the agent" << name();
+    } catch (const IException &e) {
+        BiteEngine::instance()->error(e.message());
+        BiteEngine::instance()->scriptEngine()->throwError(e.message());
+    }
 }
 
 void BiteAgent::addVariable(QString var_name)
 {
-    Grid<double> *var_grid = new Grid<double>();
-    var_grid->setup(grid().metricRect(), grid().cellsize());
-    var_grid->initialize(0.);
-    wrapper()->registerGridVar(var_grid, var_name);
-    mCreatedVarGrids.push_back(var_grid); // to make sure that the grid is again deleted
-    qCDebug(biteSetup) << "added a grid variable (" << var_name << ") to the agent" << name();
-
+    try {
+        Grid<double> *var_grid = new Grid<double>();
+        var_grid->setup(grid().metricRect(), grid().cellsize());
+        var_grid->initialize(0.);
+        wrapper()->registerGridVar(var_grid, var_name);
+        mCreatedVarGrids.push_back(var_grid); // to make sure that the grid is again deleted
+        qCDebug(biteSetup) << "added a grid variable (" << var_name << ") to the agent" << name();
+    } catch (const IException &e) {
+        BiteEngine::instance()->error(e.message());
+        BiteEngine::instance()->scriptEngine()->throwError(e.message());
+    }
 }
 
 void BiteAgent::updateVariable(QString var_name, double value)
 {
     Grid<double> *grid = wrapper()->grid(var_name);
     if (!grid) {
-        BiteEngine::instance()->error( "invalid variable: " + var_name );
+        QString err = "invalid variable: " + var_name;
+        BiteEngine::instance()->error(err);
+        BiteEngine::instance()->scriptEngine()->throwError(err);
         return;
     }
     grid->initialize(value);
@@ -330,31 +371,43 @@ void BiteAgent::updateVariable(QString var_name, QString expression)
 {
     Grid<double> *grid = wrapper()->grid(var_name);
     if (!grid) {
-        BiteEngine::instance()->error( "invalid variable: " + var_name );
+        QString err = "invalid variable: " + var_name;
+        BiteEngine::instance()->error(err);
+        BiteEngine::instance()->scriptEngine()->throwError(err);
         return;
     }
 
-    BiteWrapper wrap(wrapper());
-    Expression expr(expression, &wrap);
-    BiteCell **cell = mGrid.begin();
-    for (double *p = grid->begin(); p!=grid->end(); ++p, ++cell)
-        if (*cell) {
-            wrap.setCell(*cell);
-            *p = expr.execute();
-        }
-
+    try {
+        BiteWrapper wrap(wrapper());
+        Expression expr(expression, &wrap);
+        BiteCell **cell = mGrid.begin();
+        for (double *p = grid->begin(); p!=grid->end(); ++p, ++cell)
+            if (*cell) {
+                wrap.setCell(*cell);
+                *p = expr.execute();
+            }
+    } catch (const IException &e) {
+        BiteEngine::instance()->error(e.message());
+        BiteEngine::instance()->scriptEngine()->throwError(e.message());
+    }
 }
 
 void BiteAgent::updateVariable(QString var_name, QJSValue func)
 {
     Grid<double> *grid = wrapper()->grid(var_name);
     if (!grid) {
-        BiteEngine::instance()->error( "invalid variable: " + var_name );
+        QString err = "invalid variable: " + var_name;
+        BiteEngine::instance()->error(err);
+        BiteEngine::instance()->scriptEngine()->throwError(err);
         return;
     }
 
-    if (!func.isCallable())
-        BiteEngine::instance()->error("BiteAgent::updateVariable - no function provided!");
+    if (!func.isCallable()) {
+        QString err = "BiteAgent::updateVariable - no function provided!";
+        BiteEngine::instance()->error(err);
+        BiteEngine::instance()->scriptEngine()->throwError(err);
+        return;
+    }
     BiteCellScript bcs;
     QJSValue js_scriptcell = BiteEngine::instance()->scriptEngine()->newQObject(&bcs);
     bcs.setAgent(this);
@@ -364,28 +417,41 @@ void BiteAgent::updateVariable(QString var_name, QJSValue func)
         if (*cell) {
             bcs.setCell(*cell);
             QJSValue result = func.call(QJSValueList() << js_scriptcell);
-            if (!result.isNumber())
-                BiteEngine::instance()->error("BiteAgent::updateVariable: return of Javascript function not numeric! Result:" + result.toString());
+            if (!result.isNumber()) {
+                QString err = "BiteAgent::updateVariable: return of Javascript function not numeric! Result:" + result.toString();
+                BiteEngine::instance()->error(err);
+                BiteEngine::instance()->scriptEngine()->throwError(err);
+                return;
+            }
             *p = result.toNumber();
         }
 }
 
 void BiteAgent::updateDrawGrid(QString expression)
 {
-    BiteWrapper wrap(wrapper());
-    Expression expr(expression, &wrap);
-    BiteCell **cell = mGrid.begin();
-    for (double *p = mBaseDrawGrid.begin(); p!=mBaseDrawGrid.end(); ++p, ++cell)
-        if (*cell) {
-            wrap.setCell(*cell);
-            *p = expr.execute();
-        }
+    try {
+        BiteWrapper wrap(wrapper());
+        Expression expr(expression, &wrap);
+        BiteCell **cell = mGrid.begin();
+        for (double *p = mBaseDrawGrid.begin(); p!=mBaseDrawGrid.end(); ++p, ++cell)
+            if (*cell) {
+                wrap.setCell(*cell);
+                *p = expr.execute();
+            }
+    } catch (const IException &e) {
+        BiteEngine::instance()->error(e.message());
+        BiteEngine::instance()->scriptEngine()->throwError(e.message());
+    }
 }
 
 void BiteAgent::updateDrawGrid(QJSValue func)
 {
-    if (!func.isCallable())
-        BiteEngine::instance()->error("BiteAgent::updateDrawGrid - no function provided!");
+    if (!func.isCallable()) {
+        QString err = "BiteAgent::updateDrawGrid - no function provided!";
+        BiteEngine::instance()->error(err);
+        BiteEngine::instance()->scriptEngine()->throwError(err);
+        return;
+    }
     BiteCellScript bcs;
     QJSValue js_scriptcell = BiteEngine::instance()->scriptEngine()->newQObject(&bcs);
     bcs.setAgent(this);
@@ -395,17 +461,26 @@ void BiteAgent::updateDrawGrid(QJSValue func)
         if (*cell) {
             bcs.setCell(*cell);
             QJSValue result = func.call(QJSValueList() << js_scriptcell);
-            if (!result.isNumber())
-                throw IException("BiteAgent::updateDrawCell: return of Javascript function not numeric! Result:" + result.toString());
+            if (!result.isNumber()) {
+                QString err = "BiteAgent::updateDrawCell: return of Javascript function not numeric! Result:" + result.toString();
+                BiteEngine::instance()->error(err);
+                BiteEngine::instance()->scriptEngine()->throwError(err);
+                return;
+            }
             *p = result.toNumber();
         }
 }
 
 void BiteAgent::saveGrid(QString expression, QString file_name)
 {
-    updateDrawGrid(expression);
-    drawGrid()->save(file_name);
-    qCDebug(bite) << "Saved grid of agent" << name() << ":" << expression << "to" << file_name;
+    try {
+        updateDrawGrid(expression);
+        drawGrid()->save(file_name);
+        qCDebug(bite) << "Saved grid of agent" << name() << ":" << expression << "to" << file_name;
+    } catch (const IException &e) {
+        BiteEngine::instance()->error(e.message());
+        BiteEngine::instance()->scriptEngine()->throwError(e.message());
+    }
 }
 
 void BiteAgent::runCell(BiteCell &cell)
@@ -492,8 +567,12 @@ BACellStat *BiteAgent::cellStat(const BiteCell *cell)
 
 BiteCellScript *BiteAgent::cell(int x, int y)
 {
-    if (!isCellValid(x,y) || mGrid.valueAtIndex(x,y)==nullptr)
-        throw IException(QString("BiteAgent:cell: invalid position %1/%2 (agent %3)").arg(x).arg(y).arg(name()));
+    if (!isCellValid(x,y) || mGrid.valueAtIndex(x,y)==nullptr) {
+        QString err = QString("BiteAgent:cell: invalid position %1/%2 (agent %3)").arg(x).arg(y).arg(name());
+        BiteEngine::instance()->error(err);
+        BiteEngine::instance()->scriptEngine()->throwError(err);
+        return nullptr;
+    }
     BiteCell *c=mGrid.valueAtIndex(x,y);
     BiteCellScript *bcs = new BiteCellScript();
     bcs->setCell(c);

@@ -570,7 +570,8 @@ modules.barkbeetle.referenceClimate = table|seasonalPrecipSum;seasonalTemperatur
 modules.barkbeetle.referenceClimate.seasonalPrecipSum = numeric|1;2;3;4|Precipitation sum|Tool tip seasonal prcip sum|simple
 modules.barkbeetle.referenceClimate.seasonalTemperatureAverage = numeric|12.3;4354.23|Temperature average|Tool tip temperature average|simple
 
-gui.layout = tab|tabbite|bite|bite, the Biotic Disturbance Engine is a general module to simulate biotic disturbance agents in ecosystem models. <br/>See https://iland-model.org/bite and https://iland-model.org/bite for more details.
+; modules.bite
+gui.layout = tab|tabBITE|BITE|BITE, the Biotic Disturbance Engine is a general module to simulate biotic disturbance agents in ecosystem models. <br/>See https://iland-model.org/bite and https://iland-model.org/BITE for more details.
 modules.bite.enabled = boolean|false|Enable|Enable the bite module|simple
 modules.bite.file = file|Source code|bite code|JavaScript file that contains the definition of  bite agents.|simple
 

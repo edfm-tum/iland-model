@@ -38,6 +38,8 @@ BiteWrapperCore::~BiteWrapperCore()
 
 void BiteWrapperCore::registerGridVar(Grid<double> *grid, QString var_name)
 {
+    if (grid->isEmpty())
+        throw IException("BiteAgent::addVariable received empty grid for variable: " + var_name);
     if (mVariables.contains(var_name))
         throw IException(QString("Variable '%1' (for a grid) already in the list of BiteCell variables!").arg(var_name));
 
