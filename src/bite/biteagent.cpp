@@ -136,6 +136,12 @@ void BiteAgent::setup(QJSValue obj)
         BiteEngine::instance()->error(error);
         BiteEngine::instance()->scriptEngine()->throwError(error);
 
+        // cleanup items and grids created so far (triggers ~BiteOutputItem() -> removeOutput)
+        for (auto *p : mItems)
+            delete p;
+        mItems.clear();
+        qDeleteAll(mCreatedVarGrids);
+        mCreatedVarGrids.clear();
     }
     qCDebug(biteSetup) << "*** Setup of a agent complete ***";
 
@@ -481,6 +487,18 @@ void BiteAgent::saveGrid(QString expression, QString file_name)
         BiteEngine::instance()->error(e.message());
         BiteEngine::instance()->scriptEngine()->throwError(e.message());
     }
+}
+
+Grid<double> *BiteAgent::paintGrid(QString what, QStringList &names, QStringList &colors)
+{
+    Q_UNUSED(names)
+    Q_UNUSED(colors)
+    // what has format "Bite:<agentname> - <varname>"
+    QStringList l = what.split(" - ");
+    if (l.size() != 2)
+        return nullptr;
+    updateDrawGrid(l[1]);
+    return baseDrawGrid();
 }
 
 void BiteAgent::runCell(BiteCell &cell)

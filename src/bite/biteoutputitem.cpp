@@ -37,9 +37,9 @@ void BiteOutputItem::setup(BiteAgent *parent_agent)
             mColumns.push_back(it.value().toString());
         }
 
-        //GlobalSettings::instance()->outputManager()->removeOutput(mTableName);
         if (GlobalSettings::instance()->outputManager()->find(mTableName)) {
-            throw IException(QString("The table name of the bite output '%1' must be unique but is already used.").arg(mTableName));
+            qCInfo(biteSetup) << "Bite output table" << mTableName << "already exists in OutputManager. Removing previous instance.";
+            GlobalSettings::instance()->outputManager()->removeOutput(mTableName);
         }
         mOutput = new BiteCellOutput();
         mOutput->setupBite(mColumns, mTableName);
@@ -56,10 +56,14 @@ void BiteOutputItem::setup(BiteAgent *parent_agent)
 
 
     } catch (const IException &e) {
+        if (mOutput) {
+            GlobalSettings::instance()->outputManager()->removeOutput(mTableName);
+            mOutput = nullptr;
+        }
         QString error = QString("An error occured in the setup of agent %3 in BiteOutput item '%1': %2").arg(name()).arg(e.message(), parent_agent->name());
         qCInfo(biteSetup) << error;
         BiteEngine::instance()->error(error);
-
+        BiteEngine::instance()->scriptEngine()->throwError(error);
     }
 }
 

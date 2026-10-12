@@ -162,6 +162,8 @@ public slots:
     void updateDrawGrid(QJSValue func);
     /// evaluate 'expression' for each cell, update the internal drawing grid, and save the content to 'file_name'
     void saveGrid(QString expression, QString file_name);
+    /// function called from iLand visualization
+    Grid<double> *paintGrid(QString what, QStringList &names, QStringList &colors);
 private:
     static void runCell(BiteCell &cell);
     static QHash<QThread*, ABE::FMTreeList* > mTreeLists;
