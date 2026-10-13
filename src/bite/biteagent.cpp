@@ -336,10 +336,41 @@ void BiteAgent::addVariable(ScriptGrid *grid, QString var_name)
         return;
     }
     try {
-        wrapper()->registerGridVar(grid->grid(), var_name);
+        Grid<double> *src = grid->grid();
+        if (!src->metricRect().intersects(this->grid().metricRect())) {
+            QString err = QString("BiteAgent::addVariable: Grid for variable '%1' does not overlap the agent's simulation extent!").arg(var_name);
+            BiteEngine::instance()->error(err);
+            BiteEngine::instance()->scriptEngine()->throwError(err);
+            return;
+        }
+
+        bool needsResampling = (src->metricRect() != this->grid().metricRect()) ||
+                               (src->cellsize() != this->grid().cellsize()) ||
+                               (src->sizeX() != this->grid().sizeX()) ||
+                               (src->sizeY() != this->grid().sizeY());
+
+        Grid<double> *var_grid = nullptr;
+        if (needsResampling) {
+            var_grid = new Grid<double>(this->grid().metricRect(), this->grid().cellsize());
+            for (int i = 0; i < var_grid->count(); ++i) {
+                QPointF p = var_grid->cellCenterPoint(i);
+                if (src->coordValid(p))
+                    (*var_grid)[i] = src->constValueAt(p);
+                else
+                    (*var_grid)[i] = 0.;
+            }
+            mCreatedVarGrids.push_back(var_grid);
+            qCInfo(biteSetup) << "BiteAgent::addVariable: Automatically clipped and resampled grid" << var_name
+                              << "to agent extent and resolution (" << this->grid().cellsize() << "m).";
+        } else {
+            var_grid = src;
+            grid->setOwnership(false); // the grid is now managed by BITE (and freed via mCreatedVarGrids)
+            mCreatedVarGrids.push_back(var_grid);
+        }
+
         grid->setName(var_name);
-        grid->setOwnership(false); // the grid is now managed by BITE (and freed from the wrapper)
-        qCDebug(biteSetup) << "added a grid (" << grid->name() << ") to the agent" << name();
+        wrapper()->registerGridVar(var_grid, var_name);
+        qCDebug(biteSetup) << "added a grid (" << var_name << ") to the agent" << name();
     } catch (const IException &e) {
         BiteEngine::instance()->error(e.message());
         BiteEngine::instance()->scriptEngine()->throwError(e.message());

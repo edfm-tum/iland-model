@@ -101,7 +101,7 @@ function accessCell(cell) {
 User-defined variables - which are essentially grids - can be added programmatically to an agent. The 
 added data can be accessed by expressions or Javascript code within the agent. Examples for user-defined
 data sets could be maps with initial infestation probability for an agent, 
-or maps with pre-calculated climatic suitability.
+or maps with pre-calculated climatic suitability. If the extent or resolution of a loaded grid does not match the agent's grid, it is automatically clipped to the simulation extent and resampled to the agent's cell resolution.
 
 The following example demonstrates the approach:
 
