@@ -35,6 +35,8 @@ int GeoTIFF::loadImage(const QString &fileName)
 {
     qDebug() << "Loading TIF file" << fileName;
     dib = FreeImage_Load(FIF_TIFF, fileName.toStdString().c_str());
+    if (!dib)
+        throw IException(QString("GeoTIFF: could not load '%1' (file not found or invalid format).").arg(fileName));
     if (!mProjectionBitmap) {
 
         mProjectionBitmap = FreeImage_Allocate(10,10,24);
