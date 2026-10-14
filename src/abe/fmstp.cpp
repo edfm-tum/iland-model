@@ -74,7 +74,9 @@ void FMSTP::setup(QJSValue &js_value, const QString &name)
 
     // (2) create all other required meta information (such as ActivityStand)
     // sort activites based on the minimum execution time
-    std::sort(mActivities.begin(), mActivities.end(), activityScheduledEarlier);
+    // stable_sort: activities with equal keys (e.g. all signal-triggered activities) keep their declaration
+    // order on every platform; std::sort leaves their order to the standard library implementation.
+    std::stable_sort(mActivities.begin(), mActivities.end(), activityScheduledEarlier);
 
     mActivityNames.clear();
     mHasRepeatingActivities = false;
