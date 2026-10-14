@@ -284,6 +284,7 @@ void Snag::calculateYear()
         packDeadTreeList();
 
     mRefractoryFlux.C += flux_to_refr.C;
+    mRefractoryFlux.N += flux_to_refr.N;
     mRefrFluxAbovegroundCarbon += flux_to_refr.C;
 
     // process branches and coarse roots: every year one of the five baskets is emptied and transfered to the refractory soil pool
