@@ -208,7 +208,8 @@ void dumpMessages()
 
     bufferedMessages.clear();
     bufferedErrors.clear();
-    qInstallMessageHandler(myMessageOutput);
+    if (MainWindow::logSpace())
+        qInstallMessageHandler(myMessageOutput);
 }
 
 
@@ -447,6 +448,10 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    qInstallMessageHandler(nullptr);
+    dumpMessages();
+    mLogSpace = nullptr;
+
     mRemoteControl.destroy(); // delete model and free resources.
     delete mLinkxqt;
     delete ui;

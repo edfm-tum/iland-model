@@ -1091,16 +1091,11 @@ void ScriptGlobal::loadScript(const QString &fileName)
         return;
     }
 
-    QJSValue result = engine->evaluate(program);
+    QJSValue result = engine->evaluate(program, fileName);
     qDebug() << "javascript file loaded" << fileName;
     if (result.isError()) {
-        int lineno = result.property("lineNumber").toInt();
-        QStringList code_lines = program.replace('\r', "").split('\n'); // remove CR, split by LF
-        QString code_part;
-        for (int i=std::max(0, lineno - 5); i<std::min(static_cast<qsizetype>( lineno+5 ), code_lines.count()); ++i)
-            code_part.append(QString("%1: %2 %3\n\n").arg(i).arg(code_lines[i]).arg(i==lineno?"  <---- [ERROR]":""));
-        qCritical().noquote() << "Javascript Error in file" << fileName << ":" << result.property("lineNumber").toInt() << ":" << result.toString() << ":\n" << code_part;
-
+        QString err = formattedErrorMessage(result, program);
+        qCritical().noquote() << err;
     }
 
 }
@@ -1118,7 +1113,7 @@ QString ScriptGlobal::executeScript(QString cmd)
     if (result.isError()) {
         //int line = mEngine->uncaughtExceptionLineNumber();
         QString msg = QString( "Script Error occured: %1\n").arg( result.toString() );
-        qCritical().noquote() << msg;
+        qCritical() << msg.trimmed();
         mLastErrorMessage += msg + "\n";
 
         mLastErrorMessage += result.property("stack").toString();
@@ -1152,7 +1147,7 @@ QString ScriptGlobal::executeJSFunction(QString function)
         if (result.isError()) {
             QString msg = QString( "Script Error occured: %1\n").arg( result.toString() );
             mLastErrorMessage += msg + "\n";
-            qCritical().noquote() << msg;
+            qCritical() << msg.trimmed();
             // throw only a exception during a simulation
             if (GlobalSettings::instance()->controller()->isRunning())
                 throw IException("A Javascript error occured: " + msg);
@@ -1168,18 +1163,42 @@ QString ScriptGlobal::formattedErrorMessage(const QJSValue &error_value, const Q
 {
     if (error_value.isError()) {
         int lineno = error_value.property("lineNumber").toInt();
+        QString fileName = error_value.property("fileName").toString();
         QString code = sourcecode;
-        QStringList code_lines = code.replace('\r', "").split('\n'); // remove CR, split by LF
-        QString code_part;
-        if (code_lines.count() >= lineno) {
-            for (int i=std::max(0, lineno - 5); i<std::min(static_cast<qsizetype>(lineno+5), code_lines.count()); ++i)
-                code_part.append(QString("%1: %2 %3\n").arg(i).arg(code_lines[i]).arg(i==lineno?"  <---- [ERROR]":""));
+        if (code.isEmpty() && !fileName.isEmpty() && QFile::exists(fileName)) {
+            code = Helper::loadTextFile(fileName);
         }
-        QString error_string = QString("Javascript Error in file '%1:%2':%3\n%4")
-                .arg(error_value.property("fileName").toString())
-                .arg(error_value.property("lineNumber").toInt())
-                .arg(error_value.toString())
-                .arg(code_part);
+
+        QString code_part;
+        if (!code.isEmpty() && lineno > 0) {
+            QStringList code_lines = code.replace('\r', "").split('\n'); // remove CR, split by LF
+            int target_idx = lineno - 1; // 1-based lineNumber to 0-based index
+            if (target_idx < code_lines.count()) {
+                int start_idx = std::max(0, target_idx - 4);
+                int end_idx = std::min(static_cast<int>(code_lines.count()), target_idx + 5);
+                int max_line_num = end_idx;
+                int width = QString::number(max_line_num).length();
+                if (width < 3) width = 3;
+
+                for (int i = start_idx; i < end_idx; ++i) {
+                    bool is_err = (i == target_idx);
+                    QString marker = is_err ? "> " : "  ";
+                    QString line_num_str = QString("%1").arg(i + 1, width);
+                    code_part.append(QString("%1%2 | %3\n").arg(marker, line_num_str, code_lines[i]));
+                }
+            }
+        }
+
+        QString loc;
+        if (!fileName.isEmpty())
+            loc = QString("in file '%1:%2'").arg(fileName).arg(lineno);
+        else if (lineno > 0)
+            loc = QString("at line %1").arg(lineno);
+
+        QString error_string = QString("Javascript Error %1: %2").arg(loc, error_value.toString()).trimmed();
+        if (!code_part.isEmpty())
+            error_string += "\n" + code_part;
+
         return error_string;
     }
     return QString();

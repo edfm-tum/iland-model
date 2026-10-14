@@ -199,7 +199,6 @@ void ModelController::create()
         mLastError = error_msg;
         mHasError = true;
         mIsStartingUp = false;
-        qDebug() << error_msg;
     }
     emit bufferLogs(false);
 

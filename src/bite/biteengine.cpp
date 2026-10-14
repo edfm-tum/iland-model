@@ -28,6 +28,7 @@
 // iLand specific
 #include "globalsettings.h"
 #include "helper.h"
+#include "scriptglobal.h"
 #include "modelcontroller.h"
 #include "debugtimer.h"
 #include "outputmanager.h"
@@ -88,13 +89,9 @@ void BiteEngine::setup()
     QJSValue result = GlobalSettings::instance()->scriptEngine()->evaluate(code, file_name);
     mRunning = false;
     if (result.isError()) {
-        int lineno = result.property("lineNumber").toInt();
-        QStringList code_lines = code.replace('\r', "").split('\n'); // remove CR, split by LF
-        QString code_part;
-        for (int i=std::max(0, lineno - 5); i<std::min(lineno+5, static_cast<int>(code_lines.count())); ++i)
-            code_part.append(QString("%1: %2 %3\n").arg(i).arg(code_lines[i]).arg(i==lineno?"  <---- [ERROR]":""));
-        qCCritical(biteSetup).noquote() << "Javascript Error in file" << result.property("fileName").toString() << ":" << result.property("lineNumber").toInt() << ":" << result.toString() << ":\n" << code_part;
-        throw IException("BITE Error in Javascript (Please check the logfile): " + result.toString() + "\nIn:\n" + code_part) ;
+        QString err = ScriptGlobal::formattedErrorMessage(result, code);
+        qCCritical(biteSetup).noquote() << err;
+        throw IException(QString("BITE Error in Javascript (Please check the logfile): %1\n%2").arg(result.toString(), err));
     }
 
 
@@ -226,7 +223,6 @@ void BiteEngine::error(QString error_msg)
 {
     mErrorStack.push_back(error_msg);
     mHasScriptError = true;
-    qCCritical(bite).noquote() << error_msg;
     if (!mRunning) {
         GlobalSettings::instance()->scriptEngine()->throwError(error_msg);
         //throw IException("Bite Error: " + error_msg);
