@@ -518,7 +518,7 @@ int StandLoader::parseInitFile(const QStringList &content, const QString &fileNa
         item.dbh_to = infile.value(row, idbh_to).toDouble();
         item.hd = infile.value(row, ihd).toDouble();
         if (item.hd==0. || item.dbh_from / 100. * item.hd < cSapHeight)
-            qWarning() << QString("load init file: file '%1' tries to init trees below minimum height. hd=%2, dbh=%3.").arg(fileName).arg(item.hd).arg(item.dbh_from) ;
+            qInfo() << QString("load init file: file '%1' tries to init trees below minimum height. hd=%2, dbh=%3.").arg(fileName).arg(item.hd).arg(item.dbh_from) ;
             //throw IException(QString("load init file: file '%1' tries to init trees below minimum height. hd=%2, dbh=%3.").arg(fileName).arg(item.hd).arg(item.dbh_from) );
         ok = true;
         if (iage>=0)

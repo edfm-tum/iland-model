@@ -1099,7 +1099,7 @@ void ScriptGlobal::loadScript(const QString &fileName)
         QString code_part;
         for (int i=std::max(0, lineno - 5); i<std::min(static_cast<qsizetype>( lineno+5 ), code_lines.count()); ++i)
             code_part.append(QString("%1: %2 %3\n\n").arg(i).arg(code_lines[i]).arg(i==lineno?"  <---- [ERROR]":""));
-        qDebug() << "Javascript Error in file" << fileName << ":" << result.property("lineNumber").toInt() << ":" << result.toString() << ":\n" << code_part;
+        qCritical().noquote() << "Javascript Error in file" << fileName << ":" << result.property("lineNumber").toInt() << ":" << result.toString() << ":\n" << code_part;
 
     }
 
@@ -1118,7 +1118,7 @@ QString ScriptGlobal::executeScript(QString cmd)
     if (result.isError()) {
         //int line = mEngine->uncaughtExceptionLineNumber();
         QString msg = QString( "Script Error occured: %1\n").arg( result.toString() );
-        qDebug() << msg;
+        qCritical().noquote() << msg;
         mLastErrorMessage += msg + "\n";
 
         mLastErrorMessage += result.property("stack").toString();
@@ -1152,7 +1152,7 @@ QString ScriptGlobal::executeJSFunction(QString function)
         if (result.isError()) {
             QString msg = QString( "Script Error occured: %1\n").arg( result.toString() );
             mLastErrorMessage += msg + "\n";
-            qDebug() << msg;
+            qCritical().noquote() << msg;
             // throw only a exception during a simulation
             if (GlobalSettings::instance()->controller()->isRunning())
                 throw IException("A Javascript error occured: " + msg);

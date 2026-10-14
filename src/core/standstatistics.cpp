@@ -275,25 +275,25 @@ void SystemStatistics::printPerformanceStats()
     double tWriteOutput;
     double tTotalYear;*/
     double total_growth = (tApplyPattern + tReadPattern + tTreeGrowth + tCarbonCycle) ;
-    qWarning() << "*** Runtime stats ***";
-    qWarning() << "(values in seconds, values for est./sapling growth. are sums over threads; BITE in dist.modules; Climate includes new year stuff; stats for last year only)";
-    qWarning() << "Climate + prep:      " << tClimate /1000.;
-    qWarning() << "Seed dispersal:      " << tSeedDistribution /1000.;
-    qWarning() << "Total regeneration:  " << tTotalRegeneration /1000.;
-    qWarning() << " - establishment:    " << tEstablishment /1000.;
-    qWarning() << " - sapling growth:   " << tSapling /1000.;
-    //qWarning() << " - understory:       " << tUnderstoryEstablishment /1000.;
-    //qWarning() << " - understory:       " << tUnderstoryGrowth /1000.;
-    qWarning() << "Growth:              " << total_growth /1000.;
-    qWarning() << " - Apply LIP:        " << tApplyPattern /1000.;
-    qWarning() << " - Read LIP:         " << tReadPattern /1000.;
-    qWarning() << " - tree growth:      " << tTreeGrowth /1000.;
-    qWarning() << " - carbon cycle:     " << tCarbonCycle /1000.;
-    qWarning() << "Disturbance modules: " << tDisturbanceModules /1000.;
-    qWarning() << "Management (+ ABE):  " << tManagement / 1000.;
-    qWarning() << "Outputs:             " << tWriteOutput/ 1000.;
-    qWarning() << "======================================";
-    qWarning() << "TOTAL:               " << tTotalYear / 1000.;
-    qWarning() << "======================================";
+    qInfo() << "*** Runtime stats ***";
+    qInfo() << "(values in seconds, values for est./sapling growth. are sums over threads; BITE in dist.modules; Climate includes new year stuff; stats for last year only)";
+    qInfo() << "Climate + prep:      " << tClimate /1000.;
+    qInfo() << "Seed dispersal:      " << tSeedDistribution /1000.;
+    qInfo() << "Total regeneration:  " << tTotalRegeneration /1000.;
+    qInfo() << " - establishment:    " << tEstablishment /1000.;
+    qInfo() << " - sapling growth:   " << tSapling /1000.;
+    //qInfo() << " - understory:       " << tUnderstoryEstablishment /1000.;
+    //qInfo() << " - understory:       " << tUnderstoryGrowth /1000.;
+    qInfo() << "Growth:              " << total_growth /1000.;
+    qInfo() << " - Apply LIP:        " << tApplyPattern /1000.;
+    qInfo() << " - Read LIP:         " << tReadPattern /1000.;
+    qInfo() << " - tree growth:      " << tTreeGrowth /1000.;
+    qInfo() << " - carbon cycle:     " << tCarbonCycle /1000.;
+    qInfo() << "Disturbance modules: " << tDisturbanceModules /1000.;
+    qInfo() << "Management (+ ABE):  " << tManagement / 1000.;
+    qInfo() << "Outputs:             " << tWriteOutput/ 1000.;
+    qInfo() << "======================================";
+    qInfo() << "TOTAL:               " << tTotalYear / 1000.;
+    qInfo() << "======================================";
 
 }

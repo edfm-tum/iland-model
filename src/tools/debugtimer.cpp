@@ -114,11 +114,11 @@ void DebugTimer::clearAllTimers()
 void DebugTimer::printAllTimers()
 {
     QHash<QString, double>::iterator i = mTimingList.begin();
-    qWarning() << "Total timers\n================";
+    qInfo() << "Total timers\n================";
     double total=0.;
     while (i != mTimingList.end()) {
         if (i.value()>0)
-            qWarning() << i.key() << ":" << timeStr(i.value());
+            qInfo() << i.key() << ":" << timeStr(i.value());
         total+=i.value();
         ++i;
     }

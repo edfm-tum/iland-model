@@ -92,8 +92,10 @@ double nrandom(const float& p1, const float& p2)
 
 static bool showDebugMessages=true;
 static QStringList bufferedMessages;
+static QStringList bufferedErrors;
 static bool doBufferMessages = false;
 static bool doLogToWindow = false;
+static bool in_message_handler = false;
 void logToWindow(bool mode)
 {
     doLogToWindow = mode;
@@ -113,6 +115,10 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
 
     Q_UNUSED(context);
     QMutexLocker m(&qdebug_mutex);
+    if (in_message_handler)
+        return;
+    in_message_handler = true;
+
     //QByteArray localMsg = msg.toLocal8Bit();
     switch (type) {
     case QtDebugMsg:
@@ -124,29 +130,41 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
         }
 
         break;
-    case QtWarningMsg:
     case QtInfoMsg: {
         QByteArray localMsg = msg.toLocal8Bit();
         fprintf(stderr, "Info: %s\n", localMsg.constData());
         bufferedMessages.append(msg);
         break; }
+    case QtWarningMsg: {
+        QByteArray localMsg = msg.toLocal8Bit();
+        fprintf(stderr, "Warning: %s\n", localMsg.constData());
+        QString formatted = QString("%1 [WARNING]: %2").arg(QTime::currentTime().toString("hh:mm:ss:zzz"), msg);
+        bufferedMessages.append(formatted);
+        bufferedErrors.append(formatted);
+        break; }
     case QtCriticalMsg: {
         QByteArray localMsg = msg.toLocal8Bit();
         fprintf(stderr, "Critical: %s\n", localMsg.constData());
-        bufferedMessages.append(msg);
+        QString formatted = QString("%1 [ERROR]: %2").arg(QTime::currentTime().toString("hh:mm:ss:zzz"), msg);
+        bufferedMessages.append(formatted);
+        bufferedErrors.append(formatted);
         break; }
     case QtFatalMsg: {
         QByteArray localMsg = msg.toLocal8Bit();
         fprintf(stderr, "Fatal: %s\n", localMsg.constData());
-        bufferedMessages.append(msg);
+        QString formatted = QString("%1 [FATAL]: %2").arg(QTime::currentTime().toString("hh:mm:ss:zzz"), msg);
+        bufferedMessages.append(formatted);
+        bufferedErrors.append(formatted);
 
         QString file_name = GlobalSettings::instance()->path("fatallog.txt","log");
         Helper::msg(QString("Fatal message encountered:\n%1\nFatal-Log-File: %2").arg(msg, file_name));
         dumpMessages();
         Helper::saveToTextFile(file_name, MainWindow::logSpace()->toPlainText() + bufferedMessages.join("\n"));
+        break;
     }
     }
-    if (!doBufferMessages || bufferedMessages.count()>5000)
+    in_message_handler = false;
+    if (!doBufferMessages || !bufferedErrors.isEmpty() || bufferedMessages.count()>5000)
         dumpMessages();
 }
 
@@ -164,19 +182,32 @@ void dumpMessages()
             *MainWindow::logStream() << s << Qt::endl;
         MainWindow::logStream()->flush();
 
-    } else {
-        foreach(const QString &s, bufferedMessages)
-            MainWindow::logSpace()->appendPlainText(s);
+        if (MainWindow::logSpace() && !bufferedErrors.isEmpty()) {
+            foreach(const QString &s, bufferedErrors)
+                MainWindow::logSpace()->appendPlainText(s);
 
-        // it does *not* work to just MainWindow::logSpace()->textCursor().movePosition()!
-        // you have to "setTextCursor()".
-        QTextCursor cursor = MainWindow::logSpace()->textCursor();
-        cursor.movePosition(QTextCursor::End);
-        MainWindow::logSpace()->setTextCursor(cursor);
-        MainWindow::logSpace()->ensureCursorVisible();
+            QTextCursor cursor = MainWindow::logSpace()->textCursor();
+            cursor.movePosition(QTextCursor::End);
+            MainWindow::logSpace()->setTextCursor(cursor);
+            MainWindow::logSpace()->ensureCursorVisible();
+        }
+
+    } else {
+        if (MainWindow::logSpace()) {
+            foreach(const QString &s, bufferedMessages)
+                MainWindow::logSpace()->appendPlainText(s);
+
+            // it does *not* work to just MainWindow::logSpace()->textCursor().movePosition()!
+            // you have to "setTextCursor()".
+            QTextCursor cursor = MainWindow::logSpace()->textCursor();
+            cursor.movePosition(QTextCursor::End);
+            MainWindow::logSpace()->setTextCursor(cursor);
+            MainWindow::logSpace()->ensureCursorVisible();
+        }
     }
 
     bufferedMessages.clear();
+    bufferedErrors.clear();
     qInstallMessageHandler(myMessageOutput);
 }
 

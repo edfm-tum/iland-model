@@ -226,6 +226,7 @@ void BiteEngine::error(QString error_msg)
 {
     mErrorStack.push_back(error_msg);
     mHasScriptError = true;
+    qCCritical(bite).noquote() << error_msg;
     if (!mRunning) {
         GlobalSettings::instance()->scriptEngine()->throwError(error_msg);
         //throw IException("Bite Error: " + error_msg);
