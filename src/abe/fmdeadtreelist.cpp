@@ -99,7 +99,7 @@ int ABE::FMDeadTreeList::filter(QString filter)
     for (auto &dt : mDeadTrees) {
         dw.setDeadTree(dt);
         if (!expression.execute())
-            dw = nullptr; // mark for removal
+            dt = nullptr; // mark for removal
     }
     int n_rem = mDeadTrees.removeAll(nullptr);
     if (logLevelDebug())
