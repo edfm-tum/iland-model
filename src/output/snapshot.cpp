@@ -108,7 +108,7 @@ public:
     {
         dataStream << x << y << species << dt_IsStanding << dt_DeathReason;
         dataStream << dt_YearsStandingDead << dt_YearsDowned << dt_CrownRadius;
-        dataStream << dt_InititalBiomass << dt_Biomass << dt_Volume;
+        dataStream << dt_InititalBiomass << dt_Biomass << dt_Volume << dt_DBH;
     }
     void extractDeadTreeFromDataStream(  QDataStream& dataStream )
     {
@@ -178,7 +178,7 @@ bool Snapshot::openDatabase(const QString &file_name, const bool read)
         // dead trees / DWD pieces
         q.exec("drop table deadtrees");
         q.exec("create table deadtrees (RUindex integer, posx integer, posy integer, species text, isStanding integer, deathReason integer,"  \
-               "yearsStandingDead integer, yearsDowned integer, volume float, initBiomass float, biomass float, crownRadius float)");
+               "yearsStandingDead integer, yearsDowned integer, volume float, initBiomass float, biomass float, crownRadius float, dbh float)");
         qDebug() << "Snapshot - tables created. Database" << file_name;
 
     }
@@ -1316,8 +1316,14 @@ void Snapshot::loadDeadTrees()
     QSqlDatabase db=QSqlDatabase::database("snapshot");
     QSqlQuery q(db);
     q.setForwardOnly(true); // avoid huge memory usage in query component
-    if (!q.exec("select RUindex, posx, posy, species, isStanding, deathReason, "  \
-                "yearsStandingDead, yearsDowned, volume, initBiomass, biomass, crownRadius, dbh from deadtrees")) {
+    // snapshots written before dbh was stored have no 'dbh' column: load them without it
+    const bool has_dbh = db.record("deadtrees").indexOf("dbh") >= 0;
+    QString dt_select = "select RUindex, posx, posy, species, isStanding, deathReason, "
+                        "yearsStandingDead, yearsDowned, volume, initBiomass, biomass, crownRadius";
+    if (has_dbh)
+        dt_select += ", dbh";
+    dt_select += " from deadtrees";
+    if (!q.exec(dt_select)) {
         qDebug() << "Error when loading from deadtrees table...." << q.lastError().text();
         return;
     }
@@ -1348,7 +1354,8 @@ void Snapshot::loadDeadTrees()
         dt.mInititalBiomass = q.value(ci++).toDouble();
         dt.mBiomass = q.value(ci++).toDouble();
         dt.mCrownRadius = q.value(ci++).toDouble();
-        dt.mDBH = q.value(ci++).toDouble();
+        if (has_dbh)
+            dt.mDBH = q.value(ci++).toDouble();
         dt.updateDecayClass();
 
         ++n;
