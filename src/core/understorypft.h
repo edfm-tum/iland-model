@@ -56,6 +56,9 @@ public:
     /// decomposition rate of litter originating from PFT biomass
     double litterDecompRate() const { return mLitterDecompRate; }
 
+    /// C:N ratio of PFT biomass
+    double CNRatio() const { return mCNRatio; }
+
     /// determine if the state updates
     /// based on environmental conditions
     UStateId stateTransition(const UnderstoryPlant &plant,
@@ -90,6 +93,7 @@ private:
     double mTurnoverRate { 0.5 }; ///< annual carbon turnover rate
     double mBelowgroundFrac { 0.5 }; ///< fraction of PFT biomass that is belowground
     double mLitterDecompRate { 0.25 }; ///< decay rate of litter coming from PFT
+    double mCNRatio { 30 }; ///< C:N ratio of PFT biomass
 
     // response functions for the PFT
     Expression mExprLight; ///< light response (param: corrected lif_value on the ground)

@@ -12,9 +12,6 @@ The **POLE-FM** (Permafrost Organic Layer Ecosystem Forest Model) submodule simu
 ### [Ungulate Browsing](browsing.qmd)
 The **Ungulate Browsing** submodule simulates the spatially explicit impact of browsing by large herbivores on regeneration. It calculates height-growth reduction and browsing probability of saplings based on browse availability and animal densities.
 
-### [Understory & Grass (Ground Vegetation)](ground-vegetation.qmd)
-The **Ground Vegetation** submodule models the forest floor vegetation layer (understory herbs, mosses, and grasses) and its competition with young tree cohorts for light and belowground resources.
-
 ### [Understory](understory.qmd)
 The **Understory** submodule simulates the detailed dynamics of forest floor vegetation (moss, herbs, and shrubs) based on Plant Functional Types (PFTs) and developmental size-class states. For file configuration and parameter settings, see the [Understory Module Configuration](understory-module.qmd) page.
 
@@ -23,3 +20,6 @@ The **Microclimate** submodule simulates dynamic temperature buffering beneath t
 
 ### [Scaling Vegetation Dynamics (SVD)](svd.qmd)
 The **SVD** submodule provides a deep-learning based framework for upscaling vegetation transitions. iLand is used to classify vegetation into structural/functional states and export training data for neural networks at the resource unit scale.
+
+### [Understory & Grass (Ground Vegetation)](ground-vegetation.qmd)
+The **Grass** submodule models a simplified forest floor vegetation layer and its competition with young tree cohorts for light and belowground resources. The module is deprecated.

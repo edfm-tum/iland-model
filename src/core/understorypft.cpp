@@ -92,6 +92,8 @@ void UnderstoryPFT::setup(UnderstorySetting s, int index)
         if (!ok || mBelowgroundFrac<0. || mBelowgroundFrac>1.) throw IException("invalid value for 'belowgroundFrac' (0..1)");
         mLitterDecompRate = s.value("litterDecompRate").toDouble(&ok);
         if (!ok || mLitterDecompRate<0. || mLitterDecompRate>1.) throw IException("invalid value for 'litterDecompRate' (0..1)");
+        mCNRatio = s.value("CNRatio").toDouble(&ok);
+        if (!ok || mCNRatio<1. || mLitterDecompRate>100.) throw IException("invalid value for 'CNRatio' (1..100)");
 
         // response functions
         resp = "lightResponse";

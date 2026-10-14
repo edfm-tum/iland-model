@@ -116,6 +116,8 @@ $$
 
 with *T/E* the rate between daily transpiration and evaporation rates (Eq. 7). This stepwise calculation allows the vegetation to go from wet to dry within one timestep. If the canopy remains completely wet (i.e. *I*&gt;*E*) or completely dry (i.e. *I*=0), the method is equivalent to the Penman Monteith equations in Eq. 7.
 
+Note that tree [phenology](phenology.qmd) is not accounted for in the water cycle: both crown water storage capacity and evapotranspiration are calculated using static, year-round leaf area (i.e., deciduous trees do not shed leaves for water balance calculations). However, the practical relevance of this simplification for evapotranspiration outside of the growing season is very limited, as winter ET is strongly energy-limited due to low solar radiation, short photoperiods, and cold temperatures.
+
 
 
 ## evapotranspiration from ground vegetation and saplings

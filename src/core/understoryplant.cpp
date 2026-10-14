@@ -309,6 +309,7 @@ void UnderstoryRU::yearEnd()
         double mortality_ha = 0.;
         double decomp_rate = 0.;
         double belowground_frac = 0.;
+        double flux_CN = 0.;
         for (auto &pft_stat: mPFTStats) {
             const auto &pft = Understory::instance().PFTs()[i];
             double flux = pft_stat.stats.biomass * pft->turnoverRate();
@@ -318,6 +319,7 @@ void UnderstoryRU::yearEnd()
 
             decomp_rate +=  flux * pft->litterDecompRate();
             belowground_frac += flux * pft->belowgroundFrac();
+            flux_CN += flux * pft->CNRatio(); // weigh CN ratios by flux
             ++i;
         }
         //
@@ -325,7 +327,8 @@ void UnderstoryRU::yearEnd()
         if (total_c_flux > 0.) {
             const double understory_r_decomp = decomp_rate / total_c_flux;
             belowground_frac =  belowground_frac / total_c_flux;
-            const double understory_CNratio = 30; // same value as for moss
+            // weighed CN of flux
+            double understory_CNratio = flux_CN / total_c_flux;
 
 
             CNPool litter_input( total_c_flux * biomassCFraction,
