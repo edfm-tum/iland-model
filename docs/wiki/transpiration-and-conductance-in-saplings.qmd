@@ -1,29 +1,54 @@
 ---
-title: "transpiration and conductance in saplings"
+title: "Transpiration and conductance in saplings and ground vegetation"
 ---
 
-The iLand [water cycle](water-cycle.qmd) calculations explicitly consider transpiration of foliage, feedbacks from atmospheric and soil drought as well as age-related decline of soil-plant-atmosphere conductivity on [#transpiration and canopy conductance|canopy conductance](water-cycle.qmd). This detailed calculations, however, require information about leaf area dynamics, which is not fully available for the [sapling layer](sapling-growth-and-competition.qmd), modeled in a spatially stratified mean tree approach in iLand. Furthermore, also on resource units that are not stocked with adult trees, regenerating species will have to compete for water with ground vegetation (which is not explicitly simulated in iLand currently).
+The iLand [water cycle](water-cycle.qmd) calculations explicitly consider transpiration of foliage, feedbacks from atmospheric and soil drought, as well as age-related decline of soil-plant-atmosphere conductivity on [canopy conductance](water-cycle.qmd#transpiration-and-canopy-conductance). These detailed calculations require information about leaf area dynamics per species, which is derived differently across vegetation layers: adult trees ($>4\text{ m}$), the [sapling layer](sapling-growth-and-competition.qmd) ($1.3\text{--}4\text{ m}$), small tree regeneration ($\le 1.3\text{ m}$), and ground vegetation. Furthermore, ground vegetation can either be represented via baseline assumptions or dynamically simulated using the [Understory module](understory.qmd).
 
-In order to include the vegetation layer &lt;4m height in the calculation of [soil water dynamics](water-cycle.qmd) we assume that
+In order to include all vegetation layers in the calculation of [soil water dynamics](water-cycle.qmd), iLand divides vegetation into an overstory canopy layer and a ground layer.
 
-* a RU has a minimum *LAI* , i.e. ground vegetation is occupying the area not stocked by trees. In conjunction with Eq. 5 [#transpiration and canopy conductance|here](water-cycle.qmd) this means that the maximum conductance from the vegetation layer does not approach zero, even if no adult trees are present on a RU. The minimum LAI has a default value of 1 and can be modified with the *groundVegetationLAI*parameter in the *model.settings*section of the [project file](project-file.qmd) .
-* the vegetation layer of ground vegetation and saplings &lt;1.3m height consumes water up to a *Ψ<sub>min</sub>* of -1.5MP (default) and responds to [atmospheric drought](vapor-pressure-deficit-response.qmd) with an exponent of -0.6 (see [Oren et al. 1999](http://dx.doi.org/10.1046/j.1365-3040.1999.00513.x)). We assume that there is a trade-off between tree regeneration and other ground vegetation with regard to water use (i.e. if a tree species would have a lower *Ψ<sub>min</sub>*, the difference to the PWP is consumed by competing ground vegetation. It also assumes that while adult individuals can reach *Ψ<sub>min</sub>* below the PWP, their progeny are not (yet) able to do so (e.g. due to a less developed root system). The $\Psi_{min}$ of the ground vegetation and cohorts &lt;1.3m is an editable parameter (*groundVegetationPsiMin*) in the model *model.settings* section of the [project file](project-file.qmd).
-* conductance from the vegetation layer &lt;4m is not subject to age-related limitations.
-* saplings with a height &gt;1.3m are included in the [water cycle](water-cycle.qmd)  calculations. The leaf area of saplings &gt;1.3m is derived by the following equation:
 
+### Saplings $>1.3\text{ m}$ Height (Overstory Canopy Layer)
+
+Saplings with a height $>1.3\text{ m}$ (and up to the recruitment threshold of $4\text{ m}$) are explicitly tracked by species on each resource unit and included directly in the canopy layer. Their leaf area is calculated from cohort statistics per species and resource unit using the allometric equation:
 
 $$
-LA_{sap}=N_{repr}\cdot kW_3 dbh_{m} ^ {kW_4} \cdot SLA
+LA_{sap}=N_{repr}\cdot kW_3 \cdot dbh_{m}^{kW_4} \cdot SLA
 $$
 
-with $N_{repr}$ the number of represented trees of the species as calculated by the Reineke approach (cohorts &gt; 1.3m), $dbh_m$ the arithmetic mean dbh of all cohorts &gt;1.3m, $kW_3$, $kW_4$ the species specific parameters for the leaf mass allometric function, and $SLA$ the specific leaf area of the species. The leaf area of saplings is included in all processes of the water cycle (e.g., interception, calculation of canopy conductance).
+where $N_{repr}$ is the number of represented trees ($>1.3\text{ m}$) of the species calculated using the Reineke self-thinning approach, $dbh_m$ is the mean DBH derived from the arithmetic average cohort height and the sapling height-to-diameter ratio (`hdSapling`), $kW_3$ and $kW_4$ are the species-specific allometric parameters for leaf mass, and $SLA$ is the specific leaf area of the species.
 
-In a situation where the sum of leaf area of individual adult trees and saplings (&gt;1.3m) is below the threhold (i.e. LAI&lt; *groundVegetationLAI*), then ground vegetation is assumed to fill the gap, i.e. the effective LAI is fixed to *groundVegetationLAI* and the canopy conductance is calculated as a leaf area weighted mean of ground vegetation and other vegetation. The total "effective" LAI (i.e., including adult trees, saplings and ground vegetation) is reported in the [Water output](outputs.qmd) and the water cycle [debug output](debug-outputs.qmd). Note also that this simplifying approach of generalizing ground vegetation and regeneration water demand might be limited in very arid and generally open ecosystems.
+Because saplings $>1.3\text{ m}$ are tracked per species, their leaf area is added directly to the species' canopy leaf area ($LAI_{needle}$ or $LAI_{broadleaved}$). They participate in crown interception based on species-specific crown storage capacity, transpire with species-specific maximum conductance ($g_{\max}$), and respond to atmospheric vapor pressure deficit (VPD), solar radiation, and soil drought using the species' $\Psi_{\min}$. Unlike mature trees, sapling conductance is not subject to age-related decline.
 
 
+### Small Saplings ($\le 1.3\text{ m}$) and Static Ground Vegetation Floor
+
+Small tree regeneration ($\le 1.3\text{ m}$) and baseline ground vegetation are treated as part of the ground layer. They consume water up to a minimum soil water potential $\Psi_{min}$ of $-1.5\text{ MPa}$ (default) and respond to [atmospheric drought](vapor-pressure-deficit-response.qmd) with an exponent of $-0.6$ (see [Oren et al. 1999](http://dx.doi.org/10.1046/j.1365-3040.1999.00513.x)). The $\Psi_{\min}$ parameter is editable via `groundVegetationPsiMin` in the `model.settings` section of the [project file](project-file.qmd). Conductance is parameterized using a fixed ground vegetation value of $g_c = 0.02\text{ m/s}$. Neither small saplings nor ground vegetation contribute to crown water storage, so they do not cause interception losses.
+
+For cohorts $\le 1.3\text{ m}$, leaf area is aggregated directly from the $2\text{ m} \times 2\text{ m}$ pixel grid ($LAI_{sap} = LAI_{4m} \cdot h / 4\text{ m}$ scaled by species). This ensures that even when the Understory module is active (which replaces the bulk `groundVegetationLAI`), small tree seedlings are explicitly accounted for in transpiration.
+
+On resource units with sparse or absent tree cover, ground vegetation is assumed to occupy the unoccupied area. If the sum of leaf area from adult trees, saplings ($>1.3\text{ m}$), small saplings ($\le 1.3\text{ m}$), and understory vegetation is below `groundVegetationLAI` (default $1.0$), a ground vegetation floor fills the gap up to this threshold. The added floor is recorded as `lai_ground_veg`.
+
+
+### Dynamic Understory Vegetation (Optional Module)
+
+When the [Understory module](understory.qmd) is enabled, understory Plant Functional Types (PFTs: grasses, herbs, dwarf shrubs) dynamically grow and develop across $2\text{ m} \times 2\text{ m}$ cells. The aggregated understory leaf area (`lai_understory`) is passed to the water cycle and adds to the transpiring leaf area. Transpiration uses the ground vegetation conductance ($g_c = 0.02\text{ m/s}$) and PFT-specific $\Psi_{\min}$ thresholds. Like small saplings, understory vegetation does not contribute to canopy rainfall interception.
+
+
+### Annual Timing and Output Reporting
+
+In iLand, the annual water cycle operates under the assumption that the transpiring and intercepting vegetation structure is constant throughout the year, defined by the stand state at the start of the simulation year (the state resulting from the end of the previous year's growth and regeneration). 
+
+In the [Water output](outputs.qmd), the total effective leaf area is reported alongside all five start-of-year components:
+
+$$\text{effective\_lai} = \text{lai\_trees} + \text{lai\_saplings} + \text{lai\_saplings\_small} + \text{lai\_understory} + \text{lai\_ground\_veg}$$
+
+* `lai_trees`: Adult trees ($>4\text{ m}$) at the start of the year.
+* `lai_saplings`: Saplings ($>1.3\text{ m}$) at the start of the year (Eq. above).
+* `lai_saplings_small`: Small saplings ($\le 1.3\text{ m}$) at the start of the year (aggregated from the 2m pixel grid).
+* `lai_understory`: Dynamic understory layer at the start of the year (if enabled, otherwise 0).
+* `lai_ground_veg`: Static ground vegetation floor added to reach `groundVegetationLAI` when total LAI was below the threshold.
 
 
 ::: {.callout-note title="citation"}
 [Seidl, R., Spies, T.A., Rammer, W., Steel, E.A., Pabst, R.J., Olsen, K. 2012](http://dx.doi.org/10.1007/s10021-012-9587-2). Multi-scale drivers of spatial variation in old-growth forest carbon density disentangled with Lidar and an individual-based landscape model. Ecosystems, DOI: 10.1007/s10021-012-9587-2.
 :::
-

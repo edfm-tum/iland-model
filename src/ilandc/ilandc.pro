@@ -319,7 +319,6 @@ SOURCES += main.cpp \
     ../core/understorypft.cpp \
     ../core/understoryplant.cpp \
     ../output/understoryout.cpp \
-    ../abe/fmdeadtreelist.cpp \
     ../core/deadtree.cpp
 
 
@@ -458,7 +457,6 @@ HEADERS += \
     ../core/understorypft.h \
     ../core/understoryplant.h \
     ../output/understoryout.h \
-    ../abe/fmdeadtreelist.h \
     ../core/deadtree.h
 
 

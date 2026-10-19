@@ -747,11 +747,6 @@ static void nc_full_regeneration_phase(ResourceUnit *unit)
     try {
         // determine light profiles for resource unit
         s->calculateLightProfile(unit, us_ru, profile);
-        // store in water-cycle
-        auto &lais = const_cast<WaterCycle*>(unit->waterCycle())->lai_details();
-        lais.lai_saplings = profile.LAI_saplings;
-        lais.lai_understory = profile.LAI_understory;
-        lais.psi_min_understory = profile.PsiMin_understory;
 
         // 1. Run establishment
         s->establishment(unit, profile);
@@ -771,6 +766,9 @@ static void nc_full_regeneration_phase(ResourceUnit *unit)
             us_ru->yearEnd(); // collect stats
             elapsed.us_establishment = t.elapsed() - elapsed.us_growth;
         }
+
+        // update water-cycle with current year's end-of-year state (for next year's water cycle)
+        GlobalSettings::instance()->model()->updateWaterCycleLAIs(unit);
 
         // copy back to system stats to track runtime
         stats->tEstablishment += elapsed.establishment;
@@ -904,6 +902,15 @@ void Model::beforeRun()
         // spinup of understory after creating stand statistics (which
         // populates LAI values required for water cycle)
         did_understory_spinup = mUnderstory->initialSpinup();
+    }
+
+    // populate initial LAI details (small saplings, understory) in WaterCycle for Year 1
+    updateWaterCycleLAIs();
+    for (ResourceUnit *ru : mRU) {
+        if (did_understory_spinup)
+            const_cast<WaterCycle*>(ru->waterCycle())->resetAfterStartup();
+        else
+            const_cast<WaterCycle*>(ru->waterCycle())->resetLastYear();
     }
 
     }
@@ -1279,7 +1286,32 @@ void Model::readPattern()
     DebugTimer t("readPattern()");
     threadRunner.run(nc_readPattern);
     GlobalSettings::instance()->systemStatistics()->tReadPattern+=t.elapsed();
+}
 
+void Model::updateWaterCycleLAIs(ResourceUnit *ru)
+{
+    auto &lais = const_cast<WaterCycle*>(ru->waterCycle())->lai_details();
+    lais.lai_saplings_small = mSaplings ? mSaplings->calculateSmallSaplingLAI(ru) : 0.;
+    if (mUnderstory && settings().understoryEnabled) {
+        UnderstoryRU *us_ru = mUnderstory->understoryRU(ru->index());
+        if (us_ru) {
+            lais.lai_understory = us_ru->stats().stats.LAI;
+            lais.psi_min_understory = us_ru->psiMin();
+        } else {
+            lais.lai_understory = 0.;
+            lais.psi_min_understory = 0.;
+        }
+    } else {
+        lais.lai_understory = 0.;
+        lais.psi_min_understory = 0.;
+    }
+}
+
+void Model::updateWaterCycleLAIs()
+{
+    for (ResourceUnit *ru : mRU) {
+        updateWaterCycleLAIs(ru);
+    }
 }
 
 /** Main function for the growth of stands and trees.

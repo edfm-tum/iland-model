@@ -298,9 +298,10 @@ void Saplings::calculateLightProfile(const ResourceUnit *ru, const UnderstoryRU 
 
     int cell_index = 0;
 
-    float total_lai_saplings = 0.0;
-    float total_lai_understory = 0.0;
-    float total_lai_psi_min_understory = 0.0;
+    double total_lai_saplings = 0.0;
+    double total_lai_saplings_small = 0.0;
+    double total_lai_understory = 0.0;
+    double total_lai_psi_min_understory = 0.0;
     // pass 1: collect LAI for saplings and understory
 
     for (int iy=0; iy<cPxPerRU; ++iy) {
@@ -325,6 +326,8 @@ void Saplings::calculateLightProfile(const ResourceUnit *ru, const UnderstoryRU 
                         // scale linearly between 0 and 4m
                         double LAI_sap = LAI4m * s->saplings[i].height / cSapHeight;
                         total_lai_saplings+=LAI_sap;
+                        if (s->saplings[i].height <= 1.3f)
+                            total_lai_saplings_small += LAI_sap;
                         profile.lai[cell_index][profile.getBinIndex(s->saplings[i].height)] += LAI_sap;
                     }
                 }
@@ -356,6 +359,7 @@ void Saplings::calculateLightProfile(const ResourceUnit *ru, const UnderstoryRU 
 
     // to calculate mean LAI: sum(cell LAIs (m/m)) / 2500
     profile.LAI_saplings = ru->stockableArea()>0. ? total_lai_saplings / cPxPerHectare * cRUArea / ru->stockableArea() : 0.;
+    profile.LAI_saplings_small = ru->stockableArea()>0. ? total_lai_saplings_small / cPxPerHectare * cRUArea / ru->stockableArea() : 0.;
     profile.LAI_understory = ru->stockableArea()>0. ? total_lai_understory / cPxPerHectare * cRUArea / ru->stockableArea() : 0.;
     profile.PsiMin_understory = total_lai_understory > 0 ? total_lai_psi_min_understory / total_lai_understory : 0.;
 
@@ -384,6 +388,26 @@ void Saplings::calculateLightProfile(const ResourceUnit *ru, const UnderstoryRU 
         profile.ground_light[cell_index] = current_light;
     }
 
+}
+
+double Saplings::calculateSmallSaplingLAI(const ResourceUnit *ru) const
+{
+    SaplingCell *sap_cells = ru->saplingCellArray();
+    double total_lai_saplings_small = 0.0;
+    for (int iy=0; iy<cPxPerRU; ++iy) {
+        SaplingCell *s = &sap_cells[iy*cPxPerRU];
+        for (int ix=0; ix<cPxPerRU; ++ix, ++s) {
+            if (s->state() != SaplingCell::ECellState::CellInvalid) {
+                for (int i=0; i<SaplingCell::NSapCells; ++i) {
+                    if (s->saplings[i].is_occupied() && s->saplings[i].height <= 1.3f) {
+                        double LAI4m = s->saplings[i].species()->saplingGrowthParameters().LAI4m;
+                        total_lai_saplings_small += LAI4m * s->saplings[i].height / cSapHeight;
+                    }
+                }
+            }
+        }
+    }
+    return ru->stockableArea() > 0. ? total_lai_saplings_small / cPxPerHectare * cRUArea / ru->stockableArea() : 0.;
 }
 
 

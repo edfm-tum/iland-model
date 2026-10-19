@@ -120,10 +120,21 @@ Note that tree [phenology](phenology.qmd) is not accounted for in the water cycl
 
 
 
-## evapotranspiration from ground vegetation and saplings
+## Water cycle for different vegetation components
 
+The total leaf area that drives water cycle calculations on a resource unit—reported as `effective_lai` in the [Water output](outputs.qmd)—combines several vegetation components spanning the overstory canopy and the ground layer: adult trees ($>4\text{ m}$), saplings ($>1.3\text{ m}$), small tree regeneration ($\le 1.3\text{ m}$), dynamic understory vegetation (when the [Understory module](understory.qmd) is enabled), and a static ground vegetation floor (`groundVegetationLAI`) that fills any remaining gap if total leaf area falls below the threshold.
 
-iLand explictly models the leaf area from mature trees (&gt;4m height) but also considers the effect of saplings (cohorts of trees) and - in the absence of trees - a ground vegetation layer. More details on saplings and ground vegetation is linked to the water cylce is given on the [transpiration and conductance in saplings](transpiration-and-conductance-in-saplings.qmd) page.
+These vegetation components are treated differently with regard to crown interception storage, canopy conductance ($g_c$), and drought response ($\Psi_{\min}$):
+
+| Vegetation Component | Layer | Leaf Area Derivation | Crown Interception | Canopy Conductance ($g_c$) | $\Psi_{\min}$ / Drought Response |
+|---|---|---|---|---|---|
+| Adult trees ($>4\text{ m}$) | Canopy | Aggregated from individual trees per RU & species | Yes (species-specific storage capacity) | Species-specific $g_{\max}$, modified by age, VPD, and radiation | Species-specific $\Psi_{\min}$ and soil drought response |
+| Saplings / regeneration ($>1.3\text{ m}$) | Canopy | Mean DBH and Reineke represented stem count ($N_{\text{repr}}$) per RU & species | Yes (treated like adult trees of that species) | Species-specific $g_{\max}$ (no age-related decline), VPD, and radiation | Species-specific $\Psi_{\min}$ and soil drought response |
+| Small saplings ($\le 1.3\text{ m}$) | Ground / Understory | Aggregated from 2m pixel grid ($h \le 1.3\text{ m}$) | No | Fixed ground vegetation conductance ($0.02\text{ m/s}$) | Ground vegetation $\Psi_{\min}$ (`groundVegetationPsiMin`, default $-1.5\text{ MPa}$) |
+| Understory vegetation (PFTs) | Ground / Understory | Dynamic understory module (herbs, shrubs, grasses) | No | Ground vegetation conductance ($0.02\text{ m/s}$) | PFT-specific $\Psi_{\min}$ (from understory PFT parameter) |
+| Ground vegetation floor | Ground / Understory | Added when total $\text{LAI} < \text{groundVegetationLAI}$ | No | Fixed ground vegetation conductance ($0.02\text{ m/s}$) | Ground vegetation $\Psi_{\min}$ (`groundVegetationPsiMin`, default $-1.5\text{ MPa}$) |
+
+All leaf area components used in the annual water cycle are evaluated at the start of the simulation year (representing the stand structure at the onset of the growing season). More details on the inclusion of saplings and the ground layer are provided on the [transpiration and conductance in saplings](transpiration-and-conductance-in-saplings.qmd) page.
 
 
 

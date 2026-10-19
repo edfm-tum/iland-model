@@ -378,6 +378,7 @@ bool Snapshot::loadSnapshot(const QString &file_name)
     foreach (ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
          ru->recreateStandStatistics(true); // true: recalculate statistics
      }
+    GlobalSettings::instance()->model()->updateWaterCycleLAIs();
 
     qDebug() << "created stand statistics...";
     qDebug() << "loading of snapshot completed.";

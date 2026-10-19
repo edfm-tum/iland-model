@@ -202,6 +202,8 @@ public:
     UnderstoryStats stats(const UnderstoryPFT *pft) const;
     /// vector of states for all PFTs
     const QVector<UnderstoryStats> pftStats() const { return mPFTStats; }
+    /// LAI-weighted psi_min across all PFTs
+    double psiMin() const;
 
     void clear();
     void recollectStats();

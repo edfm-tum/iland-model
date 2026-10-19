@@ -149,6 +149,9 @@ public:
     void createStandStatistics();
     /// clean the tree data structures (remove harvested trees) - call after management operations.
     void cleanTreeLists(bool recalculate_stats);
+    /// update small saplings and understory LAI / psi_min in WaterCycle (for a single RU or all RUs)
+    void updateWaterCycleLAIs(ResourceUnit *ru);
+    void updateWaterCycleLAIs();
     /// execute a function for each resource unit using multiple threads. "funcptr" is a ptr to a simple function
     void executePerResourceUnit(void (*funcptr)(ResourceUnit*), const bool forceSingleThreaded=false) { threadRunner.run(funcptr, forceSingleThreaded);}
     template <class Obj>

@@ -143,6 +143,23 @@ static void nc_run_understory(ResourceUnit *unit)
 
 }
 
+void Understory::updateWaterCycle()
+{
+    Globals->model()->updateWaterCycleLAIs();
+}
+
+bool Understory::initialSpinup()
+{
+    bool did_spinup = false;
+    if (mSpinupSteps > 0) {
+        runMultipleSteps(mSpinupSteps);
+        did_spinup = true;
+    } else {
+        Globals->model()->threadExec().run(&UnderstoryRU::recollectStats, mUnderstoryRU, false);
+    }
+    updateWaterCycle();
+    return did_spinup;
+}
 
 void Understory::runMultipleSteps(int n_steps)
 {

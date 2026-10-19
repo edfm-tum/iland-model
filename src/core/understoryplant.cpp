@@ -513,4 +513,13 @@ void UnderstoryRU::recollectStats()
     updateStats();
 }
 
+double UnderstoryRU::psiMin() const
+{
+    double total_psi_min = 0.;
+    for (int i=0; i<mPFTStats.size(); ++i) {
+        total_psi_min += mPFTStats[i].stats.LAI * Understory::instance().PFTs()[i]->psiMin();
+    }
+    return mStats.stats.LAI > 0. ? total_psi_min / mStats.stats.LAI : 0.;
+}
+
 

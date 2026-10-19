@@ -174,15 +174,17 @@ void WaterCycle::getStandValues(RUSpeciesShares &species_shares)
     const double ground_vegetationCC = 0.02;
     double lai;
     double total_sapling_lai = 0.;
+    double total_tree_lai = 0.;
     QList<ResourceUnitSpecies*>::const_iterator rus;
     int i=0;
     for (rus=mRU->ruSpecies().constBegin();rus!=mRU->ruSpecies().constEnd();++rus, ++i) {
-        lai = (*rus)->leafAreaIndex();
+        double lai_tree = (*rus)->leafAreaIndex();
         double lai_sap = (*rus)->leafAreaIndexSaplings();
+        total_tree_lai += lai_tree;
         total_sapling_lai += lai_sap;
-        // add leaf area from saplings
-        lai += lai_sap;
-        species_shares.lai_share[i] = lai; // store LAI for now
+        // add leaf area from saplings (>1.3m) to overstory canopy
+        lai = lai_tree + lai_sap;
+        species_shares.lai_share[i] = lai; // store LAI for now (adult + saps)
         if (lai>0.) {
             if ((*rus)->species()->isConiferous())
                 mLAINeedle+=lai;
@@ -192,19 +194,26 @@ void WaterCycle::getStandValues(RUSpeciesShares &species_shares)
         }
     }
     double total_lai = mLAIBroadleaved+mLAINeedle;
-    mLAIs.lai_saplings_rus = total_sapling_lai;
-    // ok, this is messy: the LAIs on species level are only accounted for saplings >1.3m (and calculated slightly different).
-    // the more correct LAI is aggregated during light profile calculations for *all* saplings.
-    // note: saplings <1.3m do not contribute to crown water storage
-    total_lai = total_lai
-                - mLAIs.lai_saplings_rus // remove again
-                + mLAIs.lai_saplings // add "real" sapling LAI
-                + mLAIs.lai_understory; // add understory
 
+    // saplings <= 1.3m (ground layer, from light profile)
+    if (mLAIs.lai_saplings_small > 0.) {
+        total_lai += mLAIs.lai_saplings_small;
+        mCanopyConductance += mLAIs.lai_saplings_small * ground_vegetationCC;
+    }
+
+    // understory
     if (mLAIs.lai_understory > 0.) {
+        total_lai += mLAIs.lai_understory;
         // for now canopy conductance of understory is set to 0.02 (could be made PFT specific in the future, similar to psi_min)
         mCanopyConductance += mLAIs.lai_understory * ground_vegetationCC;
     }
+
+    // store start-of-year components
+    mLAIComponents.lai_trees = total_tree_lai;
+    mLAIComponents.lai_saplings = total_sapling_lai;
+    mLAIComponents.lai_saplings_small = mLAIs.lai_saplings_small;
+    mLAIComponents.lai_understory = mLAIs.lai_understory;
+    mLAIComponents.lai_ground_veg = 0.;
 
     // handle cases with LAI < 1 (use generic "ground cover characteristics" instead)
     /* The LAI used here is derived from the "stockable" area (and not the stocked area).
@@ -213,8 +222,9 @@ void WaterCycle::getStandValues(RUSpeciesShares &species_shares)
        If the "thinned out" LAI is below one, the rest (i.e. the gaps) are thought to be covered by ground vegetation.
     */
     if (total_lai<mGroundVegetationLAI) {
-        mCanopyConductance+=(ground_vegetationCC)*(mGroundVegetationLAI - total_lai);
-        species_shares.ground_vegetation_share = (mGroundVegetationLAI - total_lai)/mGroundVegetationLAI;
+        double diff = mGroundVegetationLAI - total_lai;
+        mCanopyConductance+=(ground_vegetationCC)*diff;
+        mLAIComponents.lai_ground_veg = diff;
         total_lai = mGroundVegetationLAI;
     }
 
@@ -223,6 +233,7 @@ void WaterCycle::getStandValues(RUSpeciesShares &species_shares)
     if (total_lai>0.) {
         mCanopyConductance /= total_lai;
         species_shares.adult_trees_share = mRU->leafAreaIndex() / total_lai; // trees >4m
+        species_shares.ground_vegetation_share = (mLAIComponents.lai_ground_veg + mLAIs.lai_saplings_small) / total_lai;
         for (int i=0;i<species_shares.lai_share.count();++i)
             species_shares.lai_share[i] /= total_lai;
     }
@@ -257,7 +268,7 @@ inline double WaterCycle::calculateSoilAtmosphereResponse(RUSpeciesShares &speci
 {
     // the species_share struct has pre-calculated proportions for species (and ground-veg/understory) on the total LAI
     // that effectively evapotranspirates water.
-    // sum( species_share.lai_share ) + species_share.ground_vegetation_share = 1
+    // sum( species_share.lai_share ) + species_share.ground_vegetation_share + prop_understory = 1
 
     double total_response = 0.;
     double species_response;
@@ -271,9 +282,9 @@ inline double WaterCycle::calculateSoilAtmosphereResponse(RUSpeciesShares &speci
         }
     }
 
-    // add ground vegetation (only effective if the total LAI is below a threshold)
+    // add ground vegetation and small saplings (<=1.3m)
     if (species_share.ground_vegetation_share>0.) {
-        // the LAI is below the threshold (default=1): the rest is considered as "ground vegetation": VPD-exponent is a constant
+        // ground vegetation floor (if total LAI < threshold) and small saplings use default ground vegetation response: VPD-exponent is a constant
         double ground_response = calculateBaseSoilAtmosphereResponse(psi_kpa, vpd_kpa, mGroundVegetationPsiMin, -0.6 );
         total_response += ground_response * species_share.ground_vegetation_share;
     }

@@ -31,14 +31,15 @@ SaplingOut::SaplingOut()
     setDescription("Output of the establishment/sapling layer per resource unit and species.\n" \
                    "The output covers trees between a dbh of 1cm (height>1.3m) and the recruitment threshold (i.e. a height of 4m)." \
                    "Cohorts with a dbh < 1cm are counted in 'cohort_count_ha' but not used for average calculations.\n\n" \
-                   "You can specify a 'condition' to limit execution for specific time/ area with the variables 'ru' (resource unit id) and 'year' (the current year)");
+                   "You can specify a 'condition' to limit execution for specific time/ area with the variables 'ru' (resource unit id) and 'year' (the current year)\n" \
+                   "Note on LAI calculation: https://iland-model.org/wiki/transpiration-and-conductance-in-saplings.html");
     columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::id() << OutputColumn::species()
             << OutputColumn("count_ha", "number of represented individuals per ha (tree height >1.3m).", OutInteger)
                << OutputColumn("count_small_ha", "number of represented individuals per ha (with height <=1.3m).", OutInteger)
             << OutputColumn("cohort_count_ha", "number of cohorts per ha.", OutInteger)
             << OutputColumn("height_avg_m", "arithmetic average height of the cohorts (m) ", OutDouble)
             << OutputColumn("age_avg", "arithmetic average age of the sapling cohorts (years)", OutDouble)
-            << OutputColumn("LAI", "leaf area index of the regeneration layer (m2/m2)", OutDouble);
+            << OutputColumn("LAI", "leaf area index of the regeneration layer (m2/m2, saplings >1.3m, calculated from mean DBH)", OutDouble);
  }
 
 void SaplingOut::setup()

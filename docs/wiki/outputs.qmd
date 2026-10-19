@@ -300,6 +300,8 @@ The output covers trees between a dbh of 1cm (height>1.3m) and the recruitment t
 
 You can specify a 'condition' to limit execution for specific time/ area with the variables 'ru' (resource unit id) and 'year' (the current year)
 
+Note on LAI calculation: https://iland-model.org/wiki/transpiration-and-conductance-in-saplings.html
+
 | **caption** | **datatype** | **description** |
 | --- | --- | --- |
 | year | integer | simulation year |
@@ -311,7 +313,7 @@ You can specify a 'condition' to limit execution for specific time/ area with th
 | cohort_count_ha | integer | number of cohorts per ha. |
 | height_avg_m | double | arithmetic average height of the cohorts (m)  |
 | age_avg | double | arithmetic average age of the sapling cohorts (years) |
-| LAI | double | leaf area index of the regeneration layer (m2/m2) |
+| LAI | double | leaf area index of the regeneration layer (m2/m2, saplings >1.3m, calculated from mean DBH) |
 
 
 ## Sapling Details Output
@@ -456,10 +458,12 @@ You can specify a 'condition' to limit output execution to specific years (varia
 | snowcover_days | integer | days with snowcover >0mm |
 | total_radiation | double | total incoming radiation over the year (MJ/m2), sum of data in climate input) |
 | radiation_snowcover | integer | sum of radiation input (MJ/m2) for days with snow cover |
-| effective_lai | double | effective LAI (m2/m2) including LAI of adult trees, saplings, and ground cover |
-| lai_saplings | double | LAI (m2/m2) of saplings, calc. from pixels |
-| lai_saplings_rus | double | LAI (m2/m2) of saplings, calc. from RUS average |
-| lai_understory | double | LAI (m2/m2) of understory layer |
+| effective_lai | double | effective LAI (m2/m2) during the year, including LAI of adult trees, saplings, understory, and ground cover |
+| lai_trees | double | LAI (m2/m2) of adult trees (>4m) at start of year |
+| lai_saplings | double | LAI (m2/m2) of saplings (>1.3m) at start of year |
+| lai_saplings_small | double | LAI (m2/m2) of saplings (<=1.3m) at start of year |
+| lai_understory | double | LAI (m2/m2) of understory layer at start of year |
+| lai_ground_veg | double | LAI (m2/m2) of ground vegetation floor (added when total LAI < threshold) |
 | mean_swc_mm | double | mean soil water content of the year (mm) |
 | mean_swc_gs_mm | double | mean soil water content in the growing season (fixed: April - September) (mm) |
 | maxDepthFrozen | double | Permafrost: maximum depth of freezing (m). The value is 2m when soil is fully frozen in a year. |

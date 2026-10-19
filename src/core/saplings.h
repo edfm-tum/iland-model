@@ -234,18 +234,24 @@ struct LightProfile
 
     // resource unit averages
     /// mean LAI of saplings over all cells (m2/m2, for stockable area)
-    double LAI_saplings;
+    double LAI_saplings {0.};
+    /// mean LAI of saplings <= 1.3m over all cells (m2/m2, for stockable area)
+    double LAI_saplings_small {0.};
     /// mean LAI of understory over all cells (m2/m2, for stockable area)
     /// note: full LAI (not effective LAI for grasses)
-    double LAI_understory;
+    double LAI_understory {0.};
 
     /// mean psi min (weighed with understory LAI)
-    double PsiMin_understory;
+    double PsiMin_understory {0.};
 
     // Fast reset: Only clear what we accumulate (LAI).
     void reset_lai() {
         // std::memset is safe for std::array of POD (floats)
         std::memset(lai.data(), 0, sizeof(lai));
+        LAI_saplings = 0.;
+        LAI_saplings_small = 0.;
+        LAI_understory = 0.;
+        PsiMin_understory = 0.;
     }
 
     /// map height to internal bin
@@ -297,6 +303,8 @@ public:
 
     /// calculate temporary very detailed light profile for a resource unit
     void calculateLightProfile(const ResourceUnit *ru, const UnderstoryRU* understory, LightProfile &profile);
+    /// calculate small sapling (<=1.3m) LAI for water cycle
+    double calculateSmallSaplingLAI(const ResourceUnit *ru) const;
 
     // access
     /// return the SaplingCell (i.e. container for the ind. saplings) for the given 2x2m coordinates

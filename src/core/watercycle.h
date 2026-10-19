@@ -111,6 +111,8 @@ public:
     void setContent(double content, double snow_mm) { mContent = content; mSnowPack.setSnow(snow_mm); }
     // actions
     void run(); ///< run the current year
+    void resetLastYear() { mLastYear = -1; }
+    void resetAfterStartup() { mContent = mFieldCapacity; mLastYear = -1; }
     static void resetPsiMin(); ///< reset/clear the psi-min values for establishment
     // properties
     double fieldCapacity() const { return mFieldCapacity; } ///< field capacity (mm)
@@ -131,17 +133,28 @@ public:
     double estPsiMin(int phenologyGroup) const;
     // elements
     const Water::Permafrost *permafrost() const { return mPermafrost; }
-    struct SLAIs {
-        float lai_saplings {0.};
-        float lai_saplings_rus {0.};
-        float lai_understory {0.};
-        float psi_min_understory { 0. };
-        SLAIs & operator+=(const SLAIs &s) {
-            lai_saplings+=s.lai_saplings; lai_saplings_rus+=s.lai_saplings_rus; lai_understory+=s.lai_understory;
+    struct SLAIComponents {
+        double lai_trees {0.};       ///< adult trees > 4m
+        double lai_saplings {0.};    ///< saplings > 1.3m (canopy layer)
+        double lai_saplings_small {0.}; ///< saplings <= 1.3m (ground layer)
+        double lai_understory {0.};  ///< understory LAI used in water cycle
+        double lai_ground_veg {0.};  ///< ground vegetation floor (if total < threshold)
+        SLAIComponents & operator+=(const SLAIComponents &s) {
+            lai_trees += s.lai_trees; lai_saplings += s.lai_saplings;
+            lai_saplings_small += s.lai_saplings_small;
+            lai_understory += s.lai_understory; lai_ground_veg += s.lai_ground_veg;
             return *this;
         }
     };
+    const SLAIComponents &laiComponents() const { return mLAIComponents; }
+
+    struct SLAIs {
+        double lai_saplings_small {0.};
+        double lai_understory {0.};
+        double psi_min_understory { 0. };
+    };
     SLAIs &lai_details() { return mLAIs; }
+    const SLAIs &lai_details() const { return mLAIs; }
 
 private:
     struct RUSpeciesShares {
@@ -179,7 +192,8 @@ private:
     double mLAIBroadleaved;
     double mCanopyConductance; ///< m/s
     double mEffectiveLAI; ///< effective LAI for transpiration: includes ground vegetation, saplings and adult trees
-    SLAIs mLAIs; ///< for book-keeping of leaf area index on the resource unit
+    SLAIs mLAIs; ///< for book-keeping of understory leaf area index and psi_min on the resource unit
+    SLAIComponents mLAIComponents; ///< frozen start-of-year LAI components that drove this year's water cycle
 
     // ground vegetation
     double mGroundVegetationLAI; ///< LAI of the ground vegetation (parameter)

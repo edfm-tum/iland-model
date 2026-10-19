@@ -58,10 +58,9 @@ public:
     void setup();
 
     /// run understory spinup (before start of the model), return true if spinup was performed
-    bool initialSpinup() { if (mSpinupSteps<=0) return false;
-                           runMultipleSteps(mSpinupSteps);
-                           return true;    }
+    bool initialSpinup();
     void runMultipleSteps(int n_steps);
+    void updateWaterCycle();
     void clearUnderstory();
 
     bool isValid() const { return !mUnderstoryRU.isEmpty();}
