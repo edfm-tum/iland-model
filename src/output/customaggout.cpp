@@ -328,12 +328,14 @@ void CustomAggOutLevel::runSnags()
         // loop over all trees in the landsacpe
         for (const auto &ru : Globals->model()->ruList()) {
             for (const auto &dt : ru->snag()->deadTrees()) {
+                if (!dt.species())
+                    continue;
                 if (do_filter) {
-                    tw.setDeadTree(&dt);
+                    tw.setDeadTree(&dt, ru);
                     if (!mEntityFilter.calculateBool(tw))
                         continue;
                 }
-                processSnag(&dt, data);
+                processSnag(&dt, ru, data);
             }
         }
 
@@ -354,12 +356,14 @@ void CustomAggOutLevel::runSnags()
 
             // loop over all snags
             for (const auto &dt : ru->snag()->deadTrees()) {
+                if (!dt.species())
+                    continue;
                 if (do_filter) {
-                    tw.setDeadTree(&dt);
+                    tw.setDeadTree(&dt, ru);
                     if (!mEntityFilter.calculateBool(tw))
                         continue; // skip
                 }
-                processSnag(&dt, data);
+                processSnag(&dt, ru, data);
             }
 
             writeResults(data, ru, 0);
@@ -387,12 +391,14 @@ void CustomAggOutLevel::runSnags()
             // loop over all trees of each stand
             mStandGrid->loadDeadTrees(ids[i], dead_trees);
             for (const auto &dt : dead_trees) {
+                if (!dt->species())
+                    continue;
                 if (do_filter) {
                     tw.setDeadTree(dt);
                     if (!mEntityFilter.calculateBool(tw))
                         continue; // skip
                 }
-                processSnag(dt, data);
+                processSnag(dt, nullptr, data);
             }
 
             writeResults(data, nullptr, ids[i]);
@@ -568,10 +574,10 @@ void CustomAggOutLevel::processRU(const ResourceUnit *ru)
     }
 }
 
-void CustomAggOutLevel::processSnag(const DeadTree *dt, QMap<QString, QVector<QVector<double> > > &data)
+void CustomAggOutLevel::processSnag(const DeadTree *dt, const ResourceUnit *ru, QMap<QString, QVector<QVector<double> > > &data)
 {
     DeadTreeWrapper tw;
-    tw.setDeadTree(dt);
+    tw.setDeadTree(dt, ru);
     if (!dt->species())
         return; // already removed
 

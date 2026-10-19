@@ -50,7 +50,7 @@ public:
     /// reason of death: 1: "normal" mortality, 2: bb, 3: wind, 4: fire, 5: mgmt
     int reason() const { return mDeathReason; }
 private:
-    bool calculateSnag(double climate_factor_re, CNPair &rFlux_to_atmosphere, CNPair &rFlux_to_refr); // process standing snag
+    void calculateSnag(double climate_factor_re, CNPair &rFlux_to_atmosphere, CNPair &rFlux_to_refr); // process standing snag
     bool calculateDWD(double climate_factor_re, CNPair &rFlux_to_atmosphere, CNPair &rFlux_to_refr); // process lying deadwood
     /// set decay class (I to V) based on the
     /// proportion of remaining biomass

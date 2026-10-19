@@ -103,6 +103,8 @@ Expression::Expression()
     m_expr = 0;
     m_execList = 0;
     m_empty = true;
+    m_parsed = false;
+    m_strict = true;
 }
 
 
@@ -219,7 +221,8 @@ void Expression::setExpression(const QString& aExpression)
 
     for (int i=0; i<10; i++)
         m_varSpace[i]=0.;
-    m_varList.clear();
+    if (m_parsed)
+        m_varList.clear();
     m_externVarNames.clear();
     mLinearized.clear();
     m_parsed=false;
@@ -679,14 +682,18 @@ double Expression::execute(double *varlist, ExpressionWrapper *object) const
 
 double * Expression::addVar(const QString& VarName)
 {
+    if (m_parsed) {
+        m_varList.clear();
+        m_parsed = false;
+    }
     // add var
     int idx=m_varList.indexOf(VarName);
     if (idx==-1) {
+        if (m_varList.size() >= EXPRNLOCALVARS)
+            throw IException("The expression uses too many (local) variables!");
         m_varList+=VarName;
         idx=m_varList.size()-1;
     }
-    if (m_varList.size() >= EXPRNLOCALVARS)
-        throw IException("The expression uses too many (local) variables!");
     return &m_varSpace[getVarIndex(VarName)];
 }
 

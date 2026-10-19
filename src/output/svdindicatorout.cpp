@@ -213,6 +213,9 @@ double SVDIndicatorOut::calcIBP(const ResourceUnit *ru)
     if (!ru->soil() || !ru->snag())
         throw IException("SVDIndicator: IBP: requires carbon cycling.");
 
+    const double area_factor = ru->stockableArea() / cRUArea; // fraction of stockable area (ha)
+    if (area_factor <= 0.)
+        return 0.;
 
     int IBP = 0;
 
@@ -257,9 +260,9 @@ double SVDIndicatorOut::calcIBP(const ResourceUnit *ru)
         if (t.dbh() > 67.5) ++n_verylargetree;
         if (t.dbh() > 47.5) ++n_largetree;
     }
-    if (n_low > 100) ++n_layers;
-    if (n_mid > 50) ++n_layers;
-    if (n_high > 20) ++ n_layers;
+    if (n_low / area_factor > 100.) ++n_layers;
+    if (n_mid / area_factor > 50.) ++n_layers;
+    if (n_high / area_factor > 20.) ++n_layers;
 
     int f_layers = 0;
     if (n_layers == 5) f_layers +=5;
@@ -281,6 +284,8 @@ double SVDIndicatorOut::calcIBP(const ResourceUnit *ru)
         int swd_large = 0, swd_medium = 0;
         int dwd_large = 0, dwd_medium = 0;
         for (auto &dead_tree : ru->snag()->deadTrees()) {
+            if (!dead_tree.species())
+                continue;
             if (dead_tree.isStanding()) {
                 if (dead_tree.dbh() > 37.5)
                     ++swd_large;
@@ -294,17 +299,17 @@ double SVDIndicatorOut::calcIBP(const ResourceUnit *ru)
             }
 
         }
-        // evaluation logic for SWD
-        if (swd_large >= 3) f_swd = 5;
-        else if (swd_large >= 1) f_swd = 2;
-        else if (swd_large < 1 && swd_medium >= 1) f_swd = 1;
+        // evaluation logic for SWD (scaled to stems/ha)
+        if (swd_large / area_factor >= 3.) f_swd = 5;
+        else if (swd_large / area_factor >= 1.) f_swd = 2;
+        else if (swd_medium / area_factor >= 1.) f_swd = 1;
 
         IBP += f_swd;
 
-        // same logic for DWD
-        if (dwd_large>= 3) f_dwd = 5;
-        else if(dwd_large >= 1) f_dwd = 2;
-        else if(dwd_large < 1 && dwd_medium >= 1.) f_dwd = 1;
+        // same logic for DWD (scaled to stems/ha)
+        if (dwd_large / area_factor >= 3.) f_dwd = 5;
+        else if (dwd_large / area_factor >= 1.) f_dwd = 2;
+        else if (dwd_medium / area_factor >= 1.) f_dwd = 1;
 
         IBP += f_dwd;
 
@@ -319,9 +324,9 @@ double SVDIndicatorOut::calcIBP(const ResourceUnit *ru)
 
         auto *sn = ru->snag()->numberOfSnags();
         int f_swd = 0;
-        if (sn[2]>= 3.) f_swd = 5;
-        else if(sn[2] >= 1.) f_swd = 2;
-        else if(sn[2] < 1. && sn[1] > 1.) f_swd = 1;
+        if (sn[2] / area_factor >= 3.) f_swd = 5;
+        else if (sn[2] / area_factor >= 1.) f_swd = 2;
+        else if (sn[1] / area_factor > 1.) f_swd = 1;
 
         IBP += f_swd;
 
@@ -347,9 +352,9 @@ double SVDIndicatorOut::calcIBP(const ResourceUnit *ru)
 
     // factor E: number of very large trees (>67.5cm DBH) and large trees (>47.5cm DBH)
     int f_largetrees = 0;
-    if (n_verylargetree >= 5) f_largetrees = 5;
-    else if (n_verylargetree >=1) f_largetrees = 2;
-    else if (n_largetree >=1) f_largetrees = 1;
+    if (n_verylargetree / area_factor >= 5.) f_largetrees = 5;
+    else if (n_verylargetree / area_factor >= 1.) f_largetrees = 2;
+    else if (n_largetree / area_factor >= 1.) f_largetrees = 1;
 
     IBP += f_largetrees;
 

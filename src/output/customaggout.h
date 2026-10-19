@@ -92,7 +92,7 @@ private:
     void processSapling(const SaplingTree *t, const ResourceUnit *ru, const QString &speciesId, QMap<QString, QVector<QVector<double> > > &data);
     void processSaplingCell(const SaplingCell *sc, const ResourceUnit *ru, QMap<QString, QVector<QVector<double> > > &data);
     void processRU(const ResourceUnit *ru);
-    void processSnag(const DeadTree *dt, QMap<QString, QVector<QVector<double> > > &data);
+    void processSnag(const DeadTree *dt, const ResourceUnit *ru, QMap<QString, QVector<QVector<double> > > &data);
 
     // aggregation & write outputs functions
     void writeResults(QMap<QString, QVector<QVector<double> > >  &data, ResourceUnit *ru, int stand_id);

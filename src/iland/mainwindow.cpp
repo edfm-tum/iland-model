@@ -1445,6 +1445,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         tree_value.setCatchExceptions(); // silent catching...
 
         QString filter_expr = ui->expressionFilter->text();
+        bool do_filter = ui->cbDrawFiltered->isChecked();
         if (filter_expr.isEmpty())
             filter_expr = "1"; // a constant, always true
 
@@ -1459,25 +1460,42 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
             max_val = mRulerColors->maxValue(); min_val = mRulerColors->minValue();
         }
         if (auto_scale_color) {
+            min_val = 9999999999999;
+            max_val = -999999999999999;
             // find min / max
             for (const auto &ru : model->ruList()) {
                 for (const auto &dt : ru->snag()->deadTrees()) {
-                    tw.setDeadTree(&dt);
+                    if (!dt.species())
+                        continue;
+                    tw.setDeadTree(&dt, ru);
                     double v = tree_value.execute();
                     min_val = std::min(min_val, v);
                     max_val = std::max(max_val, v);
                 }
             }
-            if (min_val == max_val)
+            if (min_val > max_val) {
+                min_val = 0.;
+                max_val = 1.;
+            } else if (min_val == max_val) {
                 max_val = min_val + 1;
+            }
         }
         for (const auto &ru : model->ruList()) {
             if (!vp.isVisible(ru->boundingBox()))
                 continue;
             for (const auto &dt : ru->snag()->deadTrees()) {
+                if (!dt.species())
+                    continue;
                 if (!species.isEmpty())
                     if (dt.species()->id() != species)
                         continue;
+
+                // filter (user defined)
+                if (do_filter) {
+                    tw.setDeadTree(&dt, ru);
+                    if (tree_filter.execute() == 0.)
+                        continue;
+                }
 
                 QPointF pos(dt.x(), dt.y());
                 QPoint p = vp.toScreen(pos);
@@ -1486,7 +1504,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                     fill_color = dt.species()->displayColor();
                 } else {
                     // calculate expression
-                    tw.setDeadTree(&dt);
+                    tw.setDeadTree(&dt, ru);
                     value = static_cast<float>(tree_value.execute());
                     fill_color = Colors::colorFromValue(value, static_cast<float>(min_val), static_cast<float>(max_val), false);
                 }
@@ -1942,6 +1960,8 @@ void MainWindow::showSnagsDetails(const ResourceUnit *ru, const QPointF &coord)
     double min_dist = 10000000000000;
 
     for (const auto &dt : dead_trees) {
+        if (!dt.species())
+            continue;
         double current_dist = distance(QPointF(dt.x(), dt.y()),coord);
         if (current_dist < min_dist) {
             min_dist = current_dist;
@@ -1955,7 +1975,7 @@ void MainWindow::showSnagsDetails(const ResourceUnit *ru, const QPointF &coord)
     // closest snag identified, populate items using the wrapper class
     QList<QTreeWidgetItem *> items;
     DeadTreeWrapper dtw;
-    dtw.setDeadTree(closest);
+    dtw.setDeadTree(closest, ru);
     const QStringList &names = dtw.getVariablesList();
 
     QString value;

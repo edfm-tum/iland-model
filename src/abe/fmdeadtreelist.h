@@ -25,6 +25,7 @@ public:
     Q_INVOKABLE explicit FMDeadTreeList(QObject *parent = nullptr);
     QVector<DeadTree* > &deadTrees() { return mDeadTrees; }
     int length() { return mDeadTrees.length(); }
+    void clear() { mDeadTrees.clear(); }
 
     static void addToScriptEngine(QJSEngine *engine);
 

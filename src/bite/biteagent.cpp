@@ -234,6 +234,7 @@ void BiteAgent::run()
     // (note: cells take care of that for cell level functions)
     threadTreeList()->clear();
     threadSaplingList()->clear();
+    threadDeadTreeList()->clear();
 
     // main function
     QJSValueList eparam = QJSValueList() << mThis;
@@ -464,7 +465,7 @@ void BiteAgent::updateVariable(QString var_name, QJSValue func)
         }
 }
 
-void BiteAgent::updateDrawGrid(QString expression)
+bool BiteAgent::updateDrawGrid(QString expression)
 {
     try {
         BiteWrapper wrap(wrapper());
@@ -475,9 +476,11 @@ void BiteAgent::updateDrawGrid(QString expression)
                 wrap.setCell(*cell);
                 *p = expr.execute();
             }
+        return true;
     } catch (const IException &e) {
         BiteEngine::instance()->error(e.message());
         BiteEngine::instance()->scriptEngine()->throwError(e.message());
+        return false;
     }
 }
 
@@ -511,7 +514,8 @@ void BiteAgent::updateDrawGrid(QJSValue func)
 void BiteAgent::saveGrid(QString expression, QString file_name)
 {
     try {
-        updateDrawGrid(expression);
+        if (!updateDrawGrid(expression))
+            return;
         drawGrid()->save(file_name);
         qCDebug(bite) << "Saved grid of agent" << name() << ":" << expression << "to" << file_name;
     } catch (const IException &e) {
@@ -546,6 +550,7 @@ void BiteAgent::runCell(BiteCell &cell)
     // reset the loaded flags
     cell.setTreesLoaded(false);
     cell.setSaplingsLoaded(false);
+    cell.setDeadTreesLoaded(false);
     for (const auto &p : cell.agent()->mItems)
         if (p->runCells()) {
             p->runCell(&cell, tree_list, sap_list);
@@ -587,6 +592,7 @@ ABE::FMSaplingList *BiteAgent::threadSaplingList()
         return mSaplingLists[QThread::currentThread()];
     QMutexLocker lock(&_thread_treelist);
     mSaplingLists[QThread::currentThread()] = new ABE::FMSaplingList;
+    BiteAgent::setCPPOwnership(mSaplingLists[QThread::currentThread()]);
     return mSaplingLists[QThread::currentThread()];
 
 }
@@ -597,6 +603,7 @@ ABE::FMDeadTreeList *BiteAgent::threadDeadTreeList()
         return mDeadTreeLists[QThread::currentThread()];
     QMutexLocker lock(&_thread_treelist);
     mDeadTreeLists[QThread::currentThread()] = new ABE::FMDeadTreeList;
+    BiteAgent::setCPPOwnership(mDeadTreeLists[QThread::currentThread()]);
     return mDeadTreeLists[QThread::currentThread()];
 
 }

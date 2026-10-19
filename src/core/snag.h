@@ -154,6 +154,8 @@ public:
     QList<QVariant> debugList(); ///< return a debug output
     /// clean up list of dead trees
     void packDeadTreeList();
+    /// recalculate mTotalSWD, mTotalOther, and mTotalSnagCarbon (including single standing dead trees)
+    void updateTotals();
 
 
     static double* decayClassThresholds() {return mDecayClassThresholds; }

@@ -158,7 +158,7 @@ public slots:
     /// set the value of var_name to the result of the javascript function func (evaluated with cell context)
     void updateVariable(QString var_name, QJSValue func);
     /// evaluate 'expression' for each cell and update the internal drawing grid
-    void updateDrawGrid(QString expression);
+    bool updateDrawGrid(QString expression);
     void updateDrawGrid(QJSValue func);
     /// evaluate 'expression' for each cell, update the internal drawing grid, and save the content to 'file_name'
     void saveGrid(QString expression, QString file_name);

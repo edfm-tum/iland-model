@@ -332,9 +332,11 @@ int MapGrid::loadDeadTrees(const int id,
     while (i != mRUIndex.cend() && i.key() == id) {
         auto &dt_list = i.value().first->snag()->deadTrees();
         for (auto &dt : dt_list) {
+            if (!dt.species())
+                continue;
             if (mGrid.constValueAt(dt.x(), dt.y()) == id) {
 
-                tw.setDeadTree(&dt);
+                tw.setDeadTree(&dt, i.value().first);
                 if (!expression.isEmpty()) {
                     bool keep = expression.executeBool();
                     if (!keep)

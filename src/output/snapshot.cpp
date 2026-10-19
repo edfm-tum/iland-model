@@ -591,6 +591,7 @@ bool Snapshot::loadStandSnapshot(const int stand_id, const MapGrid *stand_grid, 
             st >> magic;
             if (magic!=0xFFEEEEDD)
                 throw IException(QString("loadStandSnapshot: invalid data for deadtrees of stand").arg(stand_id));
+            QSet<ResourceUnit*> updated_rus;
             SnapshotItem item;
             while (!st.atEnd()) {
                 item.extractDeadTreeFromDataStream(st);
@@ -620,7 +621,12 @@ bool Snapshot::loadStandSnapshot(const int stand_id, const MapGrid *stand_grid, 
                 dt.mCrownRadius = item.dt_CrownRadius;
                 dt.mDBH = item.dt_DBH;
                 dt.updateDecayClass();
+                updated_rus.insert(ru);
                 ++dt_n;
+            }
+            for (ResourceUnit *ru : updated_rus) {
+                if (ru && ru->snag())
+                    ru->snag()->updateTotals();
             }
         }
     }
@@ -1122,7 +1128,7 @@ void Snapshot::loadSnags(QSqlDatabase db)
 
         // these values are not stored in DB but updated here
         s->mTotalOther = s->mOtherWood[0] + s->mOtherWood[1] + s->mOtherWood[2] + s->mOtherWood[3] + s->mOtherWood[4];
-        s->mTotalSnagCarbon = s->mSWD[0].C + s->mSWD[1].C + s->mSWD[2].C + s->mTotalOther.C;
+        s->mTotalSnagCarbon = s->mTotalSWD.C + s->mTotalOther.C;
 
 
         if (++n % 1000 == 0) {
@@ -1207,6 +1213,8 @@ void Snapshot::saveDeadTrees()
 
     for (const auto &ru : GlobalSettings::instance()->model()->ruList()) {
         for (const auto &dt : ru->snag()->deadTrees()) {
+            if (!dt.species())
+                continue;
             q.addBindValue(ru->index());
             q.addBindValue(dt.x());
             q.addBindValue(dt.y());
@@ -1366,6 +1374,10 @@ void Snapshot::loadDeadTrees()
                 qDebug() << n << "dead trees loaded...";
                 QCoreApplication::processEvents();
             }
+    }
+    for (ResourceUnit *r : mRUHash) {
+        if (r && r->snag())
+            r->snag()->updateTotals();
     }
     qDebug() << "Snapshot: finished loading dead trees. N=" << n ;
 

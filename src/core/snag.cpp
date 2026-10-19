@@ -380,28 +380,32 @@ void Snag::calculateYear()
 
     }
     // total carbon in the snag-container on the RU *after* processing is the content of the
-    // standing woody debris pools + the branches
-    mTotalSnagCarbon = mSWD[0].C + mSWD[1].C + mSWD[2].C +
-                       mOtherWood[0].C + mOtherWood[1].C + mOtherWood[2].C + mOtherWood[3].C + mOtherWood[4].C;
+    // standing woody debris pools (including individually tracked standing dead trees) + the branches
+    updateTotals();
+
     if (mTotalSnagCarbon < 0.) {
         qDebug() << "SnagCarbon < 0: " << debugList();
     }
     if (isnan(mRefractoryFlux.C))
         qDebug() << "Snag:calculateYear: refr.flux is NAN";
 
-    mTotalSWD = mSWD[0] + mSWD[1] + mSWD[2] + totalSingleSWD();
-    mTotalOther = mOtherWood[0] + mOtherWood[1] + mOtherWood[2] + mOtherWood[3] + mOtherWood[4];
-
     if (mTotalOther.N < 0.)
         qDebug() << "Snag-Other N < 0 on RU (index):" << mRU->index();
 
+}
+
+void Snag::updateTotals()
+{
+    mTotalSWD = mSWD[0] + mSWD[1] + mSWD[2] + totalSingleSWD();
+    mTotalOther = mOtherWood[0] + mOtherWood[1] + mOtherWood[2] + mOtherWood[3] + mOtherWood[4];
+    mTotalSnagCarbon = mTotalSWD.C + mTotalOther.C;
 }
 
 const CNPair Snag::totalSingleSWD() const
 {
     CNPair result;
     for (const auto &dt : mDeadTrees)
-        if (dt.isStanding()) {
+        if (dt.isStanding() && dt.species()) {
             // Assumption: N does not change while snag carbon decays
             result.C += dt.biomass() * biomassCFraction; // based on *remaining* biomass
             result.N += dt.initialBiomass() * biomassCFraction / dt.species()->cnWood(); // based on *initial* biomass

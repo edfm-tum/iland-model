@@ -87,6 +87,8 @@ void DeadTreeOut::exec()
             continue;
 
         for (const auto &dt : ru->snag()->deadTrees()) {
+            if (!dt.species())
+                continue;
             if (!mFilter.isEmpty()) {
                 dw.setDeadTree(&dt, ru);
                 if (!mFilter.executeBool())

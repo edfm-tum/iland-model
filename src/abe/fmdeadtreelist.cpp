@@ -20,6 +20,8 @@ int ABE::FMDeadTreeList::loadFromRU(ResourceUnit *ru, DeadTreeType loadWhat, boo
         mDeadTrees.clear();
 
     for (auto &dt : dt_list) {
+        if (!dt.species())
+            continue;
         if ( (dt.isStanding() && loadWhat != DeadTreeType::DWD) ||
             (!dt.isStanding() && loadWhat != DeadTreeType::Snags) )
             mDeadTrees.push_back(&dt);
@@ -55,6 +57,8 @@ int ABE::FMDeadTreeList::loadFromRect(ResourceUnit *ru, const QRectF &rect)
     mDeadTrees.clear();
 
     for (auto &dt : dt_list) {
+        if (!dt.species())
+            continue;
         if ( rect.contains( QPointF(dt.x(), dt.y()) ) )
             mDeadTrees.push_back(&dt);
     }
@@ -81,8 +85,10 @@ int ABE::FMDeadTreeList::remove()
         }
 
     }
-    for (auto ru : to_pack)
+    for (auto ru : to_pack) {
         ru->snag()->packDeadTreeList();
+        ru->snag()->updateTotals();
+    }
 
     return removed;
 }

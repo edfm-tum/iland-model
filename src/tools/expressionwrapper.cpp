@@ -268,7 +268,7 @@ double DeadTreeWrapper::value(const int variableIndex)
         case 0: return mDeadTree->x(); // x
         case 1: return mDeadTree->y(); // y
         case 2: return mDeadTree->isStanding(); // snag
-        case 3: return mDeadTree->species()->index(); // species
+        case 3: return mDeadTree->species() ? mDeadTree->species()->index() : -1; // species
         case 4: return mDeadTree->volume(); // volume
         case 5: return mDeadTree->decayClass(); // decayClass
         case 6: return mDeadTree->biomass(); // biomass
