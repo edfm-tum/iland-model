@@ -248,9 +248,9 @@ int FMTreeList::spatialFilter(QJSValue grid, QString filter)
        return -1;
     }
     Expression expr;
+    expr.setExpression(filter); // setExpression() clears the variable list, so add the variables afterwards
     double *var = expr.addVar( sg->name() );
     try {
-        expr.setExpression(filter);
         expr.parse();
     } catch(const IException &e) {
         qDebug() << "JS - treelist::spatialFilter(): expression ERROR: " << e.message();

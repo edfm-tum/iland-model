@@ -172,9 +172,9 @@ void FireModule::setup()
     mCrownKillDbh = xml.valueDouble(".crownKillDbh", 40.);
 
     QString formula = xml.value(".mortalityFormula", "1/(1 + exp(-1.466 + 1.91*bt - 0.1775*bt*bt - 5.41*ck*ck))");
+    mMortalityFormula.setExpression(formula); // setExpression() clears the variable list, so add the variables afterwards
     mFormula_bt = mMortalityFormula.addVar("bt");
     mFormula_ck = mMortalityFormula.addVar("ck");
-    mMortalityFormula.setExpression(formula);
 
     mBurnSoilBiomass = xml.valueDouble(".burnSOMFraction", 0.);
     mBurnStemFraction = xml.valueDouble(".burnStemFraction", 0.1);

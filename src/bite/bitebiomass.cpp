@@ -41,11 +41,11 @@ void BiteBiomass::setup(BiteAgent *parent_agent)
 
         QJSValue grfun = BiteEngine::valueFromJs(mObj, "growthFunction");
         if (!grfun.isUndefined()) {
+            mGrowthFunction.setExpression(grfun.toString()); // setExpression() clears the variable list, so add the variables afterwards
             mGrowthFunction.addVar("M");
             mGrowthFunction.addVar("K");
             mGrowthFunction.addVar("r");
             mGrowthFunction.addVar("t");
-            mGrowthFunction.setExpression(grfun.toString());
             QJSValue growth_rate = BiteEngine::valueFromJs(mObj, "growthRateFunction", "", "'growthRateFunction' is mandatory if 'growthFunction' is used!");
             mGrowthRateFunction.setup(growth_rate, DynamicExpression::CellWrap, parent_agent);
             //mGrowthRateFunction.setExpression(BiteEngine::valueFromJs(mObj, "growthRateFunction", "", "'growthRateFunction' is mandatory if 'growthFunction' is used!").toString());
