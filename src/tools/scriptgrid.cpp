@@ -227,8 +227,8 @@ void ScriptGrid::apply(QString expression)
 
     try {
         Expression expr;
+        expr.setExpression(expression); // setExpression() clears the variable list, so add the variables afterwards
         double *varptr = expr.addVar(mVariableName);
-        expr.setExpression(expression);
         expr.parse();
 
         // now apply function on grid
@@ -276,9 +276,9 @@ void ScriptGrid::combine(QString expression, QJSValue grid_object)
         // now add names
         Expression expr;
         QVector<double *> vars;
+        expr.setExpression(expression); // setExpression() clears the variable list, so add the variables afterwards
         for (int i=0;i<names.count();++i)
             vars.push_back( expr.addVar(names[i]) );
-        expr.setExpression(expression);
         expr.parse();
 
         // now apply function on grid
@@ -390,8 +390,8 @@ double ScriptGrid::sum(QString expression)
 
     try {
         Expression expr;
+        expr.setExpression(expression); // setExpression() clears the variable list, so add the variables afterwards
         double *varptr = expr.addVar(mVariableName);
-        expr.setExpression(expression);
         expr.parse();
 
         // now apply function on grid
