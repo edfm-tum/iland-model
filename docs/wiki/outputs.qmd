@@ -1,0 +1,632 @@
+---
+title: "Outputs"
+---
+
+More general information concerning storage locations and filename conventions is described in [organizing outputs](organizing-outputs.qmd). See also [Debug Outputs](debug-outputs.qmd) for available high-resolution outputs (usually for debugging). Outputs related to the agent based forest management engine are described at the [ABE outputs](abe-outputs.qmd) page. See also [dynamic outputs](dynamic-outputs.qmd) for a highly customizable output, and the [development stages](development-stages.qmd) output for mapping structural forest stages.
+
+
+<!-- GENERATED-CODE-START -->
+## Tree Output
+
+**Table Name:** **tree**
+
+Output of indivdual trees. Use the *filter* property to reduce amount of data (filter by resource-unit, year, species, ...).
+
+The output is triggered after the growth of the current season. Initial values (without any growth) are output as 'startyear-1'.
+
+The 'treeFlags' is a binary combination of individual flags; see the documentation of the treeremoved output for details.
+
+| **caption** | **datatype** | **description** |
+| --- | --- | --- |
+| year | integer | simulation year |
+| ru | integer | index of ressource unit |
+| rid | integer | id of ressource unit (-1: no ids set) |
+| species | string | tree species |
+| id | integer | id of the tree |
+| x | double | position of the tree, x-direction (m) |
+| y | double | position of the tree, y-direction (m) |
+| dbh | double | dbh (cm) of the tree |
+| height | double | height (m) of the tree |
+| basalArea | double | basal area of tree in m2 |
+| volume_m3 | double | volume of tree (m3) |
+| age | integer | tree age (years) |
+| leafArea_m2 | double | current leaf area of the tree (m2) |
+| foliageMass | double | current mass of foliage (kg) |
+| stemMass | double | kg Biomass in woody department (tree stem, without reserve pool) |
+| branchMass | double | kg Biomass in branches |
+| fineRootMass | double | kg Biomass in fine-root department |
+| coarseRootMass | double | kg Biomass in coarse-root department |
+| lri | double | LightResourceIndex of the tree (raw light index from iLand, without applying resource-unit modifications) |
+| lightResponse | double | light response value (including species specific response to the light level) |
+| stressIndex | double | scalar (0..1) indicating the stress level (see [Mortality]). |
+| reserve_kg | double | NPP currently available in the reserve pool (kg Biomass). The reserve is cenceptually part of the stem and included in the stem compartment for stand level outputs. |
+| treeFlags | integer | tree flags (see above) |
+
+
+## Tree Removed Output
+
+**Table Name:** **treeremoved**
+
+Output of removed indivdual trees. Use the *filter* property to reduce amount of data (filter by resource-unit, year, species, ...).
+
+The output is triggered immediately when a tree is removed due to mortality or management.
+
+the column 'treeFlags' is a binary combination of the following values:
+
+| **Flag** | **description** |
+| --- | --- |
+| TreeDead | 1 |
+| TreeDebugging | 2 |
+| TreeDeadBarkBeetle | 16 |
+| TreeDeadWind | 32 |
+| TreeDeadFire | 64 |
+| TreeDeadKillAndDrop | 128 |
+| TreeHarvested | 256 |
+| MarkForCut | 512 |
+| MarkForHarvest | 1024 |
+| MarkCropTree | 2048 |
+| MarkCropCompetitor | 4096 |
+| TreeAffectedBite | 8192 |
+
+| **caption** | **datatype** | **description** |
+| --- | --- | --- |
+| year | integer | simulation year |
+| ru | integer | index of ressource unit |
+| rid | integer | id of ressource unit (-1: no ids set) |
+| species | string | tree species |
+| id | integer | id of the tree |
+| reason | integer | reason of removal: 0: mortality, 1: management, 2: disturbance  |
+| x | double | position of the tree, x-direction (m) |
+| y | double | position of the tree, y-direction (m) |
+| dbh | double | dbh (cm) of the tree |
+| height | double | height (m) of the tree |
+| basalArea | double | basal area of tree in m2 |
+| volume_m3 | double | volume of tree (m3) |
+| age | integer | tree age (yrs) |
+| leafArea_m2 | double | current leaf area of the tree (m2) |
+| foliageMass | double | current mass of foliage (kg) |
+| stemMass | double | kg Biomass in the stem |
+| branchMass | double | kg Biomass in branches |
+| fineRootMass | double | kg Biomass in fine-root department |
+| coarseRootMass | double | kg Biomass in coarse-root department |
+| lri | double | LightResourceIndex of the tree (raw light index from iLand, without applying resource-unit modifications) |
+| lightResponse | double | light response value (including species specific response to the light level) |
+| stressIndex | double | scalar (0..1) indicating the stress level (see [Mortality]). |
+| reserve_kg | double | NPP currently available in the reserve pool (kg Biomass) |
+| treeFlags | integer | tree flags (see above) |
+
+
+## Stand by species/RU
+
+**Table Name:** **stand**
+
+Output of aggregates on the level of RU x species. Values are always aggregated per hectare (of stockable area). Use the 'area' column to scale to the actual values on the resource unit.
+
+The output is created after the growth of the year, i.e. output with year=2000 means effectively the state of at the end of the year 2000. The initial state (without any growth) is indicated by the year 'startyear-1'. You can use the 'condition' to control if the output should be created for the current year (see dynamic stand output),, and you can use the 'rufilter' to limit the output to resource units that satisfy the given condition (e.g. 'id=3', or 'leafAreaIndex<2', see ((resource unit variables))).
+
+| **caption** | **datatype** | **description** |
+| --- | --- | --- |
+| year | integer | simulation year |
+| ru | integer | index of ressource unit |
+| rid | integer | id of ressource unit (-1: no ids set) |
+| species | string | tree species |
+| area_ha | double | stockable forest area on the resource unit (in ha). |
+| count_ha | integer | tree count (living, >4m height) per ha |
+| dbh_avg_cm | double | average dbh (cm) |
+| height_avg_m | double | average tree height (m) |
+| volume_m3 | double | volume (geomery, taper factor) in m3 |
+| total_carbon_kg | double | total carbon in living biomass (aboveground compartments and roots) of all living trees (including regeneration layer) (kg/ha) |
+| gwl_m3 | double | 'gesamtwuchsleistung' (total growth including removed/dead trees) volume (geomery, taper factor) in m3 |
+| basal_area_m2 | double | total basal area at breast height (m2) |
+| NPP_kg | double | sum of NPP (aboveground + belowground) kg Biomass/ha |
+| NPPabove_kg | double | sum of NPP (abovegroundground) kg Biomass/ha |
+| LAI | double | Leaf Area Index (m2/m2) (trees >4m) |
+| cohort_count_ha | integer | number of cohorts in the regeneration layer (<4m) /ha |
+| cohort_basal_area | double | basal area (m2) of saplings (>1.3m and <4m) |
+
+
+## Landscape aggregates per species
+
+**Table Name:** **landscape**
+
+Output of aggregates on the level of landscape x species. Values are always aggregated per hectare. The output is created after the growth of the year, i.e. output with year=2000 means effectively the state of at the end of the year 2000. The initial state (without any growth) is indicated by the year 'startyear-1'.You can use the 'condition' to control if the output should be created for the current year(see also dynamic stand output)
+
+| **caption** | **datatype** | **description** |
+| --- | --- | --- |
+| year | integer | simulation year |
+| area | double | total stockable area of the simulated landscape with the grain of 10m cells (ha) |
+| area_100m | double | total area of all simulated resource units (with the grain 100m). This area is larger then 'area', when (some) RUs are only partially stockable. |
+| species | string | tree species |
+| count_ha | integer | tree count (living, >4m height) per ha |
+| dbh_avg_cm | double | average dbh (cm) |
+| height_avg_m | double | average tree height (m) |
+| volume_m3 | double | volume (geomery, taper factor) in m3 |
+| total_carbon_kg | double | total carbon in living biomass (aboveground compartments and roots) of all living trees (including regeneration layer) (kg/ha) |
+| gwl_m3 | double | 'gesamtwuchsleistung' (total growth including removed/dead trees) volume (geomery, taper factor) in m3 |
+| basal_area_m2 | double | total basal area at breast height (m2) |
+| NPP_kg | double | sum of NPP (aboveground + belowground) kg Biomass/ha |
+| NPPabove_kg | double | sum of NPP (abovegroundground) kg Biomass/ha |
+| LAI | double | Leafareaindex (m2/m2) |
+| cohort_count_ha | integer | number of cohorts in the regeneration layer (<4m) /ha |
+
+
+## Aggregates of removed trees due to death, harvest, and disturbances per species
+
+**Table Name:** **landscape_removed**
+
+Aggregates of all removed trees due to 'natural' death, harvest, or disturbance per species and reason. All values are totals for the whole landscape.The user can select with options whether to include 'natural' death and harvested trees (which may slow down the processing). Set the setting in the XML project file 'includeNatural' to 'true' to include trees that died due to natural mortality, the setting 'includeHarvest' controls whether to include ('true') or exclude ('false') harvested trees.
+
+To enable output per dbh class, set the 'dbhClasses' setting to a comma delimeted list of dbh thresholds (e.g., '10,20,30,40,50'). The value in the output column 'dbh_class' refers to the class (e.g.: 0: 0-10, 1: 10-20, 2: 20-30, 3: 30-40, 4: 40-50, 5: >=50).
+
+| **caption** | **datatype** | **description** |
+| --- | --- | --- |
+| year | integer | simulation year |
+| species | string | tree species |
+| dbh_class | integer | dbh class (see above). 0 if dbh classes are off. |
+| reason | string | Resaon for tree death: 'N': Natural mortality, 'H': Harvest (removed from the forest), 'D': Disturbance (not salvage-harvested), 'S': Salvage harvesting (i.e. disturbed trees which are harvested), 'C': killed/cut down by management |
+| count | integer | number of died trees (living, >4m height)  |
+| volume_m3 | double | sum of volume (geomery, taper factor) in m3 |
+| basal_area_m2 | double | total basal area at breast height (m2) |
+| total_carbon | double | total carbon (sum of stem, branch, foliage, coarse and fine roots) (kg C) |
+| stem_c | double | carbon in stems (kg C) |
+| branch_c | double | carbon on branch compartment (kg C) |
+| foliage_c | double | carbon in foliage (kg C) |
+
+
+## dynamic stand output by species/RU
+
+**Table Name:** **dynamicstand**
+
+Userdefined outputs for tree aggregates for each stand or species.
+
+Technically, each field is calculated 'live', i.e. it is looped over all trees, and eventually the statistics (percentiles) are calculated. The aggregated values are not scaled to any area unit.
+
+### Specifying the aggregation
+
+The *by_species* and *by_ru* option allow to define the aggregation level. When *by_species* is set to *true*, a row for each species will be created, otherwise all trees of all species are aggregated to one row. Similarly, *by_ru*=*true* means outputs for each resource unit, while a value of *false* aggregates over the full project area.
+
+Even if *by_ru* is false, the calculation of RU level outputs can be triggered by the *conditionRU* switch (variable='year'). Note   that in this case landscape level outputs are generated always, RU-level outputs only for certain years.
+
+### Specifying filters
+
+You can use the 'rufilter' and 'treefilter' XML settings to reduce the limit the output to a subset of resource units / trees. Both filters are valid expressions (for resource unit level and tree level, respectively). For example, a *treefilter* of 'speciesindex=0' reduces the output to just one species.
+
+The *condition* filter is (when present) evaluated and the output is only executed when *condition* is true (variable='year') This can be used to constrain the output to specific years (e.g. 'in(year,100,200,300)' produces output only for the given year.
+
+### Specifying data columns
+
+Each field is defined as: *field.aggregation* (separated by a dot). A *field* is a valid [Expression]. *Aggregation* is one of the following:  mean, sum, min, max, p25, p50, p75, p5, 10, p80, p85, p90, p95 (pXX=XXth percentile), sd (std.dev.).
+
+Complex expression are allowed, e.g: if(dbh>50,1,0).sum (-> counts trees with dbh>50)
+
+Note that the column names in the output table may be slightly different, as dots (and other special characsters) are not allowed in column names und substituted.
+
+Note also, that `customagg` is another highly customizable output (https://iland-model.org/dynamic+outputs).
+
+| **caption** | **datatype** | **description** |
+| --- | --- | --- |
+| year | integer | simulation year |
+| ru | integer | index of ressource unit |
+| rid | integer | id of ressource unit (-1: no ids set) |
+| species | string | tree species |
+
+
+## custom aggregation of saplings, trees, RUs on user defined intervals
+
+**Table Name:** **customagg**
+
+See https://iland-model.org/dynamic+outputs for details.
+
+| **caption** | **datatype** | **description** |
+| --- | --- | --- |
+| year | integer | simulation year |
+| ru | integer | index of ressource unit |
+| rid | integer | id of ressource unit (-1: no ids set) |
+| species | string | tree species |
+
+
+## Production per month, species and resource unit
+
+**Table Name:** **production_month**
+
+Details about the 3PG production submodule on monthly basis and for each species and resource unit.
+
+| **caption** | **datatype** | **description** |
+| --- | --- | --- |
+| year | integer | simulation year |
+| ru | integer | index of ressource unit |
+| rid | integer | id of ressource unit (-1: no ids set) |
+| species | string | tree species |
+| month | integer | month of year |
+| CO2_beta | double | monthly value for effective beta (CO2 fertilization). beta = beta_0 * fN * (2-fSW) |
+| phenology | double | proportion of the month (0..1) that is within the vegetation period (and thus it is assumed that leaves are out) |
+| tempResponse | double | monthly average of daily respose value temperature |
+| waterResponse | double | monthly average of daily respose value soil water |
+| vpdResponse | double | monthly vapour pressure deficit respose. |
+| co2Response | double | monthly response value for ambient co2. |
+| nitrogenResponse | double | yearly respose value nitrogen |
+| radiation_m2 | double | global radiation PAR in MJ per m2 and month |
+| utilizableRadiation_m2 | double | utilizable PAR in MJ per m2 and month (sum of daily rad*min(respVpd,respWater,respTemp)) |
+| GPP_kg_m2 | double | GPP (without Aging) in kg Biomass/m2 |
+
+
+## Dead trees by species/RU
+
+**Table Name:** **standdead**
+
+Died trees in current year on the level of RU x species. The output is created after the growth of the year, i.e. the growth of year trees are dying in is included! NPP and NPP_kg are not recorded for trees that are removed during management.
+
+| **caption** | **datatype** | **description** |
+| --- | --- | --- |
+| year | integer | simulation year |
+| ru | integer | index of ressource unit |
+| rid | integer | id of ressource unit (-1: no ids set) |
+| species | string | tree species |
+| count_ha | integer | tree count (that died this year) |
+| dbh_avg_cm | double | average dbh (cm) |
+| height_avg_m | double | average tree height (m) |
+| volume_m3 | double | volume (geomery, taper factor) in m3 |
+| basal_area_m2 | double | total basal area at breast height (m2) |
+| NPP_kg | double | sum of NPP (aboveground + belowground) kg Biomass/ha |
+| NPPabove_kg | double | sum of NPP (abovegroundground) kg Biomass/ha |
+
+
+## Removed trees by species/RU
+
+**Table Name:** **management**
+
+Aggregates for trees that are removed (harvested or cut down) in current year on the level of RU x species. All values are scaled to one hectare.The output is created after the growth of the year, i.e. the growth of the year in which trees are removed, is included!
+
+| **caption** | **datatype** | **description** |
+| --- | --- | --- |
+| year | integer | simulation year |
+| ru | integer | index of ressource unit |
+| rid | integer | id of ressource unit (-1: no ids set) |
+| species | string | tree species |
+| count_ha | integer | tree count (living) |
+| dbh_avg_cm | double | average dbh (cm) |
+| height_avg_m | double | average tree height (m) |
+| volume_m3 | double | volume (geomery, taper factor) in m3 |
+| basal_area_m2 | double | total basal area at breast height (m2) |
+
+
+## Sapling Output
+
+**Table Name:** **sapling**
+
+Output of the establishment/sapling layer per resource unit and species.
+
+The output covers trees between a dbh of 1cm (height>1.3m) and the recruitment threshold (i.e. a height of 4m).Cohorts with a dbh < 1cm are counted in 'cohort_count_ha' but not used for average calculations.
+
+You can specify a 'condition' to limit execution for specific time/ area with the variables 'ru' (resource unit id) and 'year' (the current year)
+
+| **caption** | **datatype** | **description** |
+| --- | --- | --- |
+| year | integer | simulation year |
+| ru | integer | index of ressource unit |
+| rid | integer | id of ressource unit (-1: no ids set) |
+| species | string | tree species |
+| count_ha | integer | number of represented individuals per ha (tree height >1.3m). |
+| count_small_ha | integer | number of represented individuals per ha (with height <=1.3m). |
+| cohort_count_ha | integer | number of cohorts per ha. |
+| height_avg_m | double | arithmetic average height of the cohorts (m)  |
+| age_avg | double | arithmetic average age of the sapling cohorts (years) |
+| LAI | double | leaf area index of the regeneration layer (m2/m2) |
+
+
+## Sapling Details Output
+
+**Table Name:** **saplingdetail**
+
+Detailed output on indidvidual sapling cohorts.
+
+For each occupied and living 2x2m pixel, a row is generated, unlessthe tree diameter is below the 'minDbh' threshold (cm).
+
+You can further specify a 'condition' to limit execution for specific time/ area with the variables 'ru' (resource unit id) and 'year' (the current year). and you can use the `filter` property to filter using sapling variables (such as species or x/y)
+
+| **caption** | **datatype** | **description** |
+| --- | --- | --- |
+| year | integer | simulation year |
+| ru | integer | index of ressource unit |
+| rid | integer | id of ressource unit (-1: no ids set) |
+| species | string | tree species |
+| position | integer | location of the cell within the resource unit; a number between 0 (lower left corner) and 2499 (upper right corner) (x=index %% 50; y=floor(index / 50) ). |
+| n_represented | double | number of trees that are represented by the cohort (Reineke function). |
+| dbh | double | diameter of the cohort (cm). |
+| height | double | height of the cohort (m). |
+| age | integer | age of the cohort (years)  |
+
+
+## Carbon and nitrogen pools above and belowground per RU/yr
+
+**Table Name:** **carbon**
+
+Carbon and nitrogen pools (C and N) per resource unit / year and/or by landsacpe/year. On resource unit level, the outputs contain aggregated above ground pools (kg/ha) and below ground pools (kg/ha).
+
+For landscape level outputs, all variables are scaled to kg/ha stockable area. The area column contains the stockable area (per resource unit / landscape) and can be used to scale to values to the actual value on the ground.
+
+You can use the 'condition' to control if the output should be created for the current year(see also dynamic stand output).
+
+The 'conditionRU' can be used to suppress resource-unit-level details; eg. specifying 'in(year,100,200,300)' limits output on reosurce unit level to the years 100,200,300 (leaving 'conditionRU' blank enables details per default).
+
+| **caption** | **datatype** | **description** |
+| --- | --- | --- |
+| year | integer | simulation year |
+| ru | integer | index of ressource unit |
+| rid | integer | id of ressource unit (-1: no ids set) |
+| area_ha | double | total stockable area of the resource unit (ha) |
+| stem_c | double | Stem carbon kg/ha |
+| stem_n | double | Stem nitrogen kg/ha |
+| branch_c | double | branches carbon kg/ha |
+| branch_n | double | branches nitrogen kg/ha |
+| foliage_c | double | Foliage carbon kg/ha |
+| foliage_n | double | Foliage nitrogen kg/ha |
+| coarseRoot_c | double | coarse root carbon kg/ha |
+| coarseRoot_n | double | coarse root nitrogen kg/ha |
+| fineRoot_c | double | fine root carbon kg/ha |
+| fineRoot_n | double | fine root nitrogen kg/ha |
+| regeneration_c | double | total carbon in regeneration layer (h<4m) kg/ha |
+| regeneration_n | double | total nitrogen in regeneration layer (h<4m) kg/ha |
+| snags_c | double | standing dead wood carbon kg/ha |
+| snags_n | double | standing dead wood nitrogen kg/ha |
+| snagsOther_c | double | branches and coarse roots of standing dead trees, carbon kg/ha |
+| snagsOther_n | double | branches and coarse roots of standing dead trees, nitrogen kg/ha |
+| snagsOther_c_ag | double | branches of standing dead trees (also included in snagsOther_c), carbon kg/ha |
+| downedWood_c | double | downed woody debris (yR, branches, stems, coarse roots), carbon kg/ha |
+| downedWood_n | double | downed woody debris (yR), nitrogen kg/ha |
+| downedWood_c_ag | double | downed woody debris aboveground (yR, stems, branches, also included in downedWood_c), kg/ha |
+| litter_c | double | soil litter (yl, foliage and fine roots) carbon kg/ha |
+| litter_n | double | soil litter (yl), nitrogen kg/ha |
+| litter_c_ag | double | soil litter aboveground (yl, foliage, part of litter_c) carbon kg/ha |
+| soil_c | double | soil organic matter (som), carbon kg/ha |
+| soil_n | double | soil organic matter (som), nitrogen kg/ha |
+| understorey_c | double | living understorey vegetation (e.g. moss) kg C/ha |
+
+
+## Carbon fluxes per RU or landscape/yr
+
+**Table Name:** **carbonflow**
+
+Carbon fluxes per resource unit and year and/or aggregated for the full landscape. All values are reported on a per hectare basis (use the area provided in carbon or stand outputs to scale to realized values on the respective resource unit). For results limited to the project area, the data values need to be scaled to the stockable area.
+
+For landsacpe level outputs, data is always given per ha of (stockable) project area (i.e. scaling with stockable area is already included).
+
+Furthermore, the following sign convention is used in iLand: fluxes from the atmosphere to the ecosystem are positive, while C leaving the ecosystem is reported as negative C flux.
+
+You can specify a 'condition' to limit output execution to specific years (variable 'year'). The 'conditionRU' can be used to suppress resource-unit-level details; eg. specifying 'in(year,100,200,300)' limits output on reosurce unit level to the years 100,200,300 (leaving 'conditionRU' blank enables details per default).
+
+| **caption** | **datatype** | **description** |
+| --- | --- | --- |
+| year | integer | simulation year |
+| ru | integer | index of ressource unit |
+| rid | integer | id of ressource unit (-1: no ids set) |
+| area_ha | double | total stockable area of the resource unit (or landscape) (ha) |
+| GPP | double | actually realized gross primary production, kg C; ((primary production|GPP)) including the effect of decreasing productivity with age; note that a rough estimate of ((sapling growth and competition|#sapling C and N dynamics|sapling GPP)) is added to the GPP of adult trees here. |
+| NPP | double | net primary production, kg C; calculated as NPP=GPP-Ra; Ra, the autotrophic respiration (kg C/ha) is calculated as a fixed fraction of GPP in iLand (see ((primary production|here)) for details).  |
+| Rh | double | heterotrophic respiration, kg C; sum of C released to the atmosphere from detrital pools, i.e. ((snag dynamics|#Snag decomposition|snags)), ((soil C and N cycling|downed deadwood, litter, and mineral soil)). |
+| dist_loss | double | disturbance losses, kg C; C that leaves the ecosystem as a result of disturbances, e.g. fire consumption |
+| mgmt_loss | double | management losses, kg C; C that leaves the ecosystem as a result of management interventions, e.g. harvesting |
+| NEP | double | net ecosytem productivity kg C, NEP=NPP - Rh - disturbance losses - management losses. Note that NEP is also equal to the total net changes over all ecosystem C pools, as reported in the carbon output (cf. [http://www.jstor.org/stable/3061028|Randerson et al. 2002]) |
+| cumNPP | double | cumulative NPP, kg C. This is a running sum of NPP (including tree NPP and sapling carbon gain). |
+| cumRh | double | cumulative flux to atmosphere (heterotrophic respiration), kg C. This is a running sum of Rh. |
+| cumNEP | double | cumulative NEP (net ecosystem productivity), kg C. This is a running sum of NEP (positive values: carbon gain, negative values: carbon loss). |
+
+
+## Carbon input to the soil per RU/yr
+
+**Table Name:** **soilinput**
+
+The output contains all carbon inputs to the soil layer (per RU) and the climate modifier re. The data of the output can be used for estimating soil carbon parameters.
+
+| **caption** | **datatype** | **description** |
+| --- | --- | --- |
+| year | integer | simulation year |
+| ru | integer | index of ressource unit |
+| rid | integer | id of ressource unit (-1: no ids set) |
+| input_lab | double | input for labile carbon (i.e. fine debris, foliage and fine roots, moss) in tC/ha (scaled to full ha) |
+| input_lab_ag | double | fraction (0..1) of 'input_lab' that is aboveground C (foliage, moss turnover) |
+| input_ref | double | input for refractory carbon (i.e. coarse woody debris, branches, stems, coarse roots) in tC/ha (scaled to full ha) |
+| input_ref_ag | double | fraction (0..1) of 'input_ref' that is aboveground C (branches, stems) |
+| re | double | climate factor 're' for snag/carbon decay |
+
+
+## Water output
+
+**Table Name:** **water**
+
+Annual water cycle output on resource unit/landscape unit.
+
+The output includes annual averages of precipitation, evapotranspiration, water excess, snow cover, and radiation input. The difference of precip - (evapotranspiration + excess) is the evaporation from intercepted precipitation.  The spatial resolution is landscape averages and/or resource unit level (i.e. 100m pixels). Landscape level averages are indicated by -1 for the 'ru' and 'index' columns.
+
+Columns related to permafrost are 0 when permafrost module is disabled. The given values for depth are independent from the soil depth of iLand (e.g., soil depth can be 0.5m, but maxDepthFrozen can be 1.5m).
+
+You can specify a 'condition' to limit output execution to specific years (variable 'year'). The 'conditionRU' can be used to suppress resource-unit-level details; eg. specifying 'in(year,100,200,300)' limits output on reosurce unit level to the years 100,200,300 (leaving 'conditionRU' blank enables details per default).
+
+| **caption** | **datatype** | **description** |
+| --- | --- | --- |
+| year | integer | simulation year |
+| ru | integer | index of ressource unit |
+| rid | integer | id of ressource unit (-1: no ids set) |
+| stocked_area | double | area (ha/ha) which is stocked (covered by crowns, absorbing radiation) |
+| stockable_area | double | area (ha/ha) which is stockable (and within the project area) |
+| precipitation_mm | double | Annual precipitation sum (mm) |
+| mean_annual_temp | double | Mean annual temperature (°C) |
+| et_mm | double | Evapotranspiration (mm) |
+| excess_mm | double | annual sum of water loss due to lateral outflow/groundwater flow (mm) |
+| snowcover_days | integer | days with snowcover >0mm |
+| total_radiation | double | total incoming radiation over the year (MJ/m2), sum of data in climate input) |
+| radiation_snowcover | integer | sum of radiation input (MJ/m2) for days with snow cover |
+| effective_lai | double | effective LAI (m2/m2) including LAI of adult trees, saplings, and ground cover |
+| mean_swc_mm | double | mean soil water content of the year (mm) |
+| mean_swc_gs_mm | double | mean soil water content in the growing season (fixed: April - September) (mm) |
+| maxDepthFrozen | double | Permafrost: maximum depth of freezing (m). The value is 2m when soil is fully frozen in a year. |
+| maxDepthThawed | double | Permafrost: maximum depth of thawing (m). The value is 2m if soil is fully thawed in a year. |
+| maxSnowCover | double | Permafrost: maximum snow height (m) in a year. |
+| SOLLayer | double | Permafrost: total depth of soil organic layer (excl. life moss) (m). |
+| mossLayer | double | depth of the life moss layer (m). |
+
+
+## Compact GPP potential per RU
+
+**Table Name:** **svdgpp**
+
+GPP potential (as conditioned by climate/site) per species and m2.
+
+| **caption** | **datatype** | **description** |
+| --- | --- | --- |
+| year | integer | simulation year |
+| ru | integer | index of ressource unit |
+| rid | integer | id of ressource unit (-1: no ids set) |
+| climate_year | integer | year of the climate table |
+| gpp_s1 | double | gpp of species 1 |
+| gpp_s2 | double | gpp of species 2 |
+| gpp_s3 | double | gpp of species 3 |
+| gpp_s4 | double | gpp of species 4 |
+| gpp_s5 | double | gpp of species 5 |
+| gpp_s6 | double | gpp of species 6 |
+| gpp_s7 | double | gpp of species 7 |
+| gpp_s8 | double | gpp of species 8 |
+| gpp_s9 | double | gpp of species 9 |
+| gpp_s10 | double | gpp of species 10 |
+
+
+## Forest state transitions
+
+**Table Name:** **svdstate**
+
+Forest state (for SVD). The output contains fixed columns (see below) and adds two extra columns for every active tree species. Those species columns hold the species share [0..1] for the local and the mid-range-neighborhood. Former have 'l_' and latter 'm_' as prefix (e.g. 'l_piab', 'm_piab'). Note that the sum of all shares is <=1, but can be lower than 1. See also the 'svduniquestate' output.
+
+| **caption** | **datatype** | **description** |
+| --- | --- | --- |
+| year | integer | simulation year |
+| ru | integer | index of ressource unit |
+| rid | integer | id of ressource unit (-1: no ids set) |
+| stateId | integer | unique state Id within one iLand simulation |
+| previousStateId | integer | unique state Id that the RU was before the current state |
+| previousTime | integer | number of years that the resource unit was in the previous state |
+
+
+## SVD forest indicator data
+
+**Table Name:** **svdindicator**
+
+Indicator data per resource unit as used by SVD.
+
+The selection of indicators is triggered by keys in the project file (sub section 'indicators').
+
+### Indicators
+
+The following columns are supported:
+
+| **key** | **description** |
+| --- | --- |
+| shannonIndex | shannon index (exponential) on the RU (based on basal area of trees >4m) |
+| abovegroundCarbon | living aboveground carbon (tC/ha) on the RU (trees + regen) |
+| totalCarbon | all C on the RU (tC/ha), including soil, lying and standing deadwood |
+| volume | tree volume (trees>4m) m3/ha |
+| crownCover | fraction of crown cover (0..1) (see saveCrownCoverGrid() in SpatialAnalysis) |
+| LAI | leaf area index (trees>4m) m2/m2 |
+| basalArea | basal area (trees>4m) m2/ha |
+| stemDensity | trees per ha (trees>4m) ha-1 |
+| saplingDensity | density of saplings (represented trees>1.3m) ha-1 |
+| IBP | Index of Biodiversity Potential (adapted, Emberger et al 2023) |
+
+### species proportions
+
+A special case is the setting 'speciesProportions': this is a list of species (Ids) separated with a comma or white space. When present, the output will  include for each species the relative proportion calculated based on basal area (for trees >4m).
+
+### disturbance history
+
+The setting 'disturbanceHistory' indicates if (value > 0) and how many (value>0, maximum=3) disturbance events should be recorded and added to the output. Each **event** is defined by three columns. 'tsd_x' is number of years since disturbance (0 if the disturbance happended in the current year), 'type_x' encodes the disturbance agent (see below), and 'addinfo_x' is agent-specific additional information (see below), with 'x' the number of event (1,2,3).
+
+| **value** | **type** | **additional info** |
+| --- | --- | --- |
+| 0 | fire | proportion of area burned per ha (0..1) |
+| 1 | (spruce) bark beetle | NA |
+| 2 | wind | NA |
+| 3 | BITE | NA |
+| 4 | ABE | NA |
+| 5 | base management | NA |
+
+### example
+
+An example for the project file node:
+
+```xml
+<indicators>
+<shannonIndex>true</shannonIndex>
+<abovegroundCarbon>false</abovegroundCarbon>
+ ... 
+<speciesProportions>Pico,Abal</speciesProportions>
+<disturbanceHistory>2 </disturbanceHistory>
+</indicators>
+```
+
+
+| **caption** | **datatype** | **description** |
+| --- | --- | --- |
+| year | integer | simulation year |
+| ru | integer | index of ressource unit |
+| rid | integer | id of ressource unit (-1: no ids set) |
+| stateId | integer | current state of the resource unit (see 'svdstate' output) |
+| time | integer | number of years the resource unit is already in the state 'stateId' (see 'svdstate' output) |
+
+
+## Unique forest states
+
+**Table Name:** **svduniquestate**
+
+List of forest states for the current simulation (for SVD). Each state is defined by a unique numerical Id ('stateId') which is used as a key in the 'svdstate' output.
+
+| **caption** | **datatype** | **description** |
+| --- | --- | --- |
+| stateId | integer | unique state Id within one iLand simulation |
+| composition | string | species composition state |
+| structure | integer | dominant height class (class index)  |
+| functioning | integer | leaf area index (class index) |
+| description | string | Verbose description of the state |
+
+
+## Stand Development Stage
+
+**Table Name:** **devstage**
+
+iLand includes a special output for assessing the development stage of forested cells on the landscape. The rule set to derive specific development stages is flexible (using a Javascript interface) in order to accomodate different ecosystems.
+
+see [development+stages] for the full documentation.
+
+todo.
+
+
+| **caption** | **datatype** | **description** |
+| --- | --- | --- |
+| year | integer | simulation year |
+| stage | string | stand development stage (name, not numeric ID) |
+| ncells | integer | Number of cells on the landscape within this stage |
+| percent_area | double | percent of the landscape covered with this stage (0..100). Not fully stockable cells are accounted for correctly. |
+
+
+## tree output for visualization software
+
+**Table Name:** **ecoviz**
+
+This is a special output for linking with the visualization tool 'Ecoviz'.
+
+The output is a small standard iLand outpunt and a special textfile ('PDB') which contains *all* trees and *all* saplings of a year (i.e. it tends to get big!). Provide a file pattern in 'fileName', a \$-sign is replaced with the current year. For example output/ecoviz_\$.pdb is saved as output/ecoviz_0.pdb (initial state), output/ecoviz_1.pdb (after 1 year of simulation), ....).
+
+You can use the 'condition' to control if the output should be created for the current year(see also dynamic stand output)
+
+| **caption** | **datatype** | **description** |
+| --- | --- | --- |
+| year | integer | simulation year |
+| count_trees | integer | total number of trees count saved to file |
+| count_saplings | integer | total number saplings saved to file |
+| filename | string | filename of the created output PDB file |
+
+
+
+<!-- GENERATED-CODE-END -->
+
+
+
+ 

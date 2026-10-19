@@ -1,0 +1,76 @@
+---
+title: "Multithreaded iLand"
+date: "2009-09-01"
+author: "Werner Rammer"
+---
+
+
+
+
+## Why that?
+
+
+Did I already mention, that [Qt](../wiki/qt.qmd) is just great? The issue that made me state this here is [Multithreading](http://en.wikipedia.org/wiki/Multithreading_(computer_hardware). As the number of cores per CPU is very likely to [increase further](http://en.wikipedia.org/wiki/Multi-core), the issue of parallel computation gains importance. Actually, parallelism is one of the more important conceptual goals of the [iLand](../wiki/iland.qmd)-development.
+
+So I started this morning to take a closer look at the [QtConcurrent](http://doc.trolltech.com/4.5/threads.html) documentation. It is very convenient to handle multiple threads, but it is even easier, to use the container based function provided by the framework. If the basic design allows such an approach (and, err,  iLand does!), the threading issue merely boils down to an one-liner. A nice extra: the library chooses the appropriate number of threads according to the number of cores in your machine, so this is supposed to scale nicely with upcoming hardware.
+
+
+
+## How it works
+
+
+
+::: {.callout-note}
+
+```cpp
+// worker-function:
+// execute something for each tree of the ressource unit
+RessourceUnit *nc_readPattern(RessourceUnit *unit)
+{
+    QVector<Tree>::iterator tit;
+    QVector<Tree>::iterator  tend = unit->trees().end();
+
+    for (tit=unit->trees().begin(); tit!=tend; ++tit) {
+        (*tit).readStampMul(); // multipliactive approach
+    }
+    return unit;
+}
+
+
+void Model::readPattern()
+{
+    DebugTimer t("readPattern()"); // some timing measurement
+    // execute "nc_readPattern" for each Ressourceunit of the "mRU"-Container.
+    // do all the thread-magic in the background, and return, when
+    // everything is finished.
+    QtConcurrent::blockingMap(mRU, nc_readPattern);
+}
+```
+
+:::
+
+
+
+
+## Results
+
+
+The whole thing worked almost immediately, and here are the usual performance measurements (yes, I definitely like performance measurements ;)). With Multi-threading iLand runs now on my dual-core laptop at 100% CPU-Load and roughly twice as fast:
+
+| Process | With Multithreading | Without Multithreading |
+| --- | --- | --- |
+| apply LIP | 7.25s | 13.2s |
+| read LIF | 0.4s | 0.73s |
+| grow | 0.88s | 1.76s |
+
+
+The test case is a 8x6km covered with 2.8 Mio. trees (Note, that the growth of trees is mostly incomplete).
+
+
+
+### Conclusions
+
+
+
+* For the time being the multi-threading approach shown above works just fine - future will tell if on some point a more fine-grained approach will be necessary.
+* And - of course - Qt rocks!

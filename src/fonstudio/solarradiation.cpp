@@ -11,7 +11,7 @@
 
 //--------------------- SolarRad -------------
 // ------ Mini-Modul zur Berechnung der Globalstrahlung
-// eigentlich ähnlich wie Strahlungsmodell Picus 1.x,
+// eigentlich Ã¤hnlich wie Strahlungsmodell Picus 1.x,
 // jedoch gleich selber machen ist einfacher....
 void SolarRadiation::Setup(double BreiteGrad)
 {
@@ -38,11 +38,11 @@ double GetOpticalMass(const double elevation_rad)
    if (elevation_rad < 25*M_PI/180.)
       return 2.9;
 
-   // if >= 25°:
-   // cos(zenith) == cos(90° - elevation)....
+   // if >= 25Â°:
+   // cos(zenith) == cos(90Â° - elevation)....
    // here i am not completely sure: but sec(x)=1/cos(x)
-   // seems to be right. sec(25°)=2.3, sec(20)=2.9 (see above!), sec(0)=1
-   // the concrete steps above (5,15,25°) can be observed in cumulated outputs
+   // seems to be right. sec(25Â°)=2.3, sec(20)=2.9 (see above!), sec(0)=1
+   // the concrete steps above (5,15,25Â°) can be observed in cumulated outputs
    // e.g. global radiation over elevation - maybe a smoother variant should be used.
 
    return 1./cos(M_PI/2. - elevation_rad);
@@ -96,7 +96,7 @@ void SolarRadiation::calculateRadMatrix(const float Step_deg, HemiGrid &Grid)
           sun_hour=(hour-diff_hour)*15./180*M_PI; // s in rad
           // sin elevation: =sin(lat)*sin(decl) + cos(lat)*cos(sunhour)*cos(decl)
           sin_elevation=sin(latidude)*sin_declination + cos(latidude)*cos(sun_hour)*cos(declination);
-          elevation =asin(sin_elevation); // Sonnenhöhe [rad]
+          elevation =asin(sin_elevation); // SonnenhÃ¶he [rad]
           // check for state of the sun
           if (!sun_rise && elevation>min_elevation_angle)
              sun_rise=true;
@@ -165,7 +165,7 @@ void SolarRadiation::calcDay(int day)
       // Unterschied wahre Sonnenstunde - Stunde
       double Diff=12+0.12357*sin(SunDay)-0.004289*cos(SunDay)+0.153809*sin(2.*SunDay)+0.060783*cos(2.*SunDay);
 
-      // Integration über den Tag
+      // Integration Ã¼ber den Tag
       double Sum=0., Length=0., Rad;
       // Sonnenstunde
       double Hour, SunHour, sinH, Altitude;
@@ -173,7 +173,7 @@ void SolarRadiation::calcDay(int day)
       bool   SunDown=false;
       Hour=0.;
       const double Step=1/60.; // Minutentakt
-      // berechnung der tageslänge methode 2:
+      // berechnung der tageslÃ¤nge methode 2:
       // tag: wenn strahlung > threshold
       double RadThreshold = -1; // not used: Picus specific: =GModell->Settings["BBDayLengthMode"].AsDouble();
       const double transmissionskoeff[12]={
@@ -182,16 +182,16 @@ void SolarRadiation::calcDay(int day)
       while (!SunDown)
       {
           SunHour=(Hour-Diff)*15./180*M_PI; // s in rad
-          // sin Sonnenhöhe: =sin(Breite)*sin(Dekl) + cos(Breite)*cos(Sonnenstunde)*cos(Deklination)
+          // sin SonnenhÃ¶he: =sin(Breite)*sin(Dekl) + cos(Breite)*cos(Sonnenstunde)*cos(Deklination)
           sinH=sin(Latitude)*sinDekl + cos(Latitude)*cos(SunHour)*cos(Dekl);
-          Altitude=asin(sinH); // Sonnenhöhe [rad]
+          Altitude=asin(sinH); // SonnenhÃ¶he [rad]
           // calculate azimuth-angle
           if (!SunRise && Altitude>0)
              SunRise=true;
           if (SunRise && Altitude<0)
              SunDown=true;
           if (Altitude>0) {
-              // Length: Tageslänge [Stunden]
+              // Length: TageslÃ¤nge [Stunden]
               if (RadThreshold==-1)
                  Length+=Step;   // default
               else if (SolarConstant*sinH*transmissionskoeff[(day/30)%12] > RadThreshold) {

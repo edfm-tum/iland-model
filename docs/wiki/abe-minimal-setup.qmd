@@ -1,0 +1,84 @@
+---
+title: "ABE minimal setup"
+---
+
+Due to the rather complex nature of most interesting study landscapes, setting up ABE appropriately can be quite demanding. It is considerably less hard, if a “running” ABE is required for testing or getting-started purposes only. However, even the setup of a “minimal ABE” requires a couple of steps, that are covered in this page.
+
+The absolute minimum setup for ABE is quite simple:
+
+* A stand grid containing numeric Ids for “polygons” (such a grid is likely already used, e.g. for stand initialization, see [landscape setup](landscape-setup.qmd).
+* A file stating the “ownership” structure of the landscape, i.e. it links each polygon of the stand grid to a management program (or management unit and a managing agent) (see [ABE spatial setup](abe-spatial-setup.qmd))
+* A Javascsript file that contains the code of ABE. This file needs to include at least a basic definition of a stand treatment program.
+* Set up ABE in the project file
+
+ 
+
+The following R code shows how a minimal ["abeDataFile"](abe-spatial-setup.qmd) can be created from a GIS raster. This basically is a list of all stands and a associated stand treatment program (with the name 'stp' - see below).
+
+
+```r
+n <- raster("path/to/standgrid.txt")
+ids <- unique(n) ##
+abedata <- data.frame(id=ids[ids>0], stp="stp")
+write.table(abedata, file="path/to/abedata.csv", row.names=F)
+```
+
+
+
+The minimal Javascript for ABE without defining an agent (and using the default agent of iLand:
+
+
+```javascript
+// minimal  stand treatment program
+// define a program and register it in the model under the name 'stp'
+fmengine.addManagement({ U: 100, // rotation age
+            options: {}, // no options
+            activity: { type: 'custom',  …. }
+, 'stp');
+```
+
+
+
+
+If you want to have more control and create your own agent, the code becomes a bit longer:
+
+
+```javascript
+// minimal  stand treatment program
+var stp = { U: 100, // hshort/normal/long rotation age
+            options: {}, // no options
+activity: { type: 'custom',  …. }
+};
+
+// register the stand treatment program stp with the name 'stp'
+fmengine.addManagement(stp , 'stp');
+
+// minimal agent type
+var base_agent = {
+scheduler: { enabled: false },
+
+stp: {  'stp': 'stp', 'default': 'stp'},
+onSelect: function() { return 'stp'; },
+run: function() { console.log('base-agent run called'); }
+};
+
+// register the agent program and provide a name
+fmengine.addAgent(base_agent, 'agent');
+```
+
+
+In the project file, ABE must be enabled:
+
+
+```xml
+true   abe/abe.js   abe/abedata.csv
+```
+
+ 
+
+
+::: {.callout-note title="citation"}
+[Rammer, W., Seidl, R., 2015](http://dx.doi.org/10.1016/j.gloenvcha.2015.10.003). Coupling human and natural systems: Simulating adaptive management agents in dynamically changing forest landscapes. Global Environmental Change, 35, 475-485.
+:::
+
+ 

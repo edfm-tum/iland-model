@@ -1,0 +1,82 @@
+---
+title: "sapling growth and competition"
+---
+
+A mean tree approach combined with a height growth potential function are used to model the sapling stage in iLand.
+
+
+
+
+
+# height growth
+
+
+After succesful [establishment](establishment.qmd), stand initiation stage vegetation development on a 2 x 2m *LIF* cell is modeled using a mean tree approach, i.e. a homogeneous structure in which every species present at the cell is represented by a mean tree is assumed (see for instance also the approach of [Rammig et al. 2006](http://dx.doi.org/10.1016/j.foreco.2005.10.042), operating at a comparable resolution). The main tree attribute modeled dynamically at this stage is height growth and development, using a two-parameter Bertalanffy function with state dependent height increment (Eqs.1 and 2)
+
+$$
+H_{t+1}=H_{max}\cdot (1-(1-(\frac{H_{t}}{H_{max}})^{\frac{1}{3}})e^{-g})^3
+$$
+
+and
+
+$$
+i_{Hpot}=H_{t+1}-H_{t}
+$$
+
+with *H* being tree height, *t* the index for time step, *H<sub>max</sub>* the maximum tree height and *g* the shape parameter.
+[Rammig et al. (2007)](http://dx.doi.org/10.1007/s10342-005-0088-0) recently showed that this formulation, generally based on physiological principles ([von Bertalanffy 1957](http://dx.doi.org/10.1086/401873)), is a good middle ground between accuracy and parsimony. For mountain forests in Switzerland they showed that this height growth equation was not only suitable to model seedling and sapling growth, but also that parameter estimates where consistent over a wide range of tree heights, underlining the generality of the function ([Rammig et al. 2007](http://dx.doi.org/10.1007/s10342-005-0088-0)). To parameterize this sapling height growth function for iLand, this generality is harnessed in approximating *g* for yield table growth curves of maximum site index.
+
+Seedlings are established with 5cm height and their height growth potential is derived from Eq. 1. To arrive at actual height growth rates, this potential is reduced by an aggregated environmental modifier derived from the physiology-based [growth](growth.qmd) model employed in iLand. This modifier, *f<sub>env,yr</sub>*, integrates the physiological limitations to growth for a species (as described [here](growth.qmd)) over a year while taking into account the distinct pattern of incoming radiation, and relates it to the physiological growth potential (Eq.3)
+
+$$
+f_{env,yr}=min(\frac{uAPAR\cdot \varepsilon _{eff}}{APAR\cdot \varepsilon _{0}\cdot f_{ref}}\: ;\: 1)
+$$
+
+with *f<sub>ref</sub>* the *f<sub>env</sub>* of simulation corresponding to the data/ conditions used to parameterize *g* (i.e. a reference site with optimum growing conditions; *f<sub>ref</sub>* can be determined using the *utilizableRadiation_m2* and *radiation_m2* columns of the [#Production_per_month_species_and_resource_unit|production output](outputs.qmd) of iLand). Furthermore, light availability is accounted for via *f<sub>light</sub>*, to arrive at the realized height growth *i<sub>H</sub>* (Eq. 4)
+
+$$
+i_{H}=i_{Hpot}\cdot f_{env,yr}\cdot f_{light}
+$$
+
+
+The intricacies of how to account for regeneration in the water balance calculations are described in more detail [here](transpiration-and-conductance-in-saplings.qmd). Note that *f<sub>ref</sub>* essentially grants consistency between the empirically parameterized *g* and the physiological framework of *f<sub>env</sub>*. It furthermore has to be noted that although this growth routine uses a growth potential concept, it is not limited by the empirically observed growth curve and can exceed this (past) potential if (future) conditions (as represented by the physiological modifiers *f<sub>env</sub>* / *f<sub>ref</sub>*) become more favorable than previously observed.
+Note that iLand includes support for [resprouting](sprouts.qmd). Resprouted cohorts show an accelerated height growth in the sapling phase.
+
+        *
+
+
+
+# structure and competition
+
+
+In the aboved described approach individual tree resource competition within a 2 x 2m LIF cell is not accounted for explicitly, i.e. competitive pressure is only exerted by surrounding overstory trees via *f<sub>light</sub>*. Furthermore, a 2 x 2m cell is simulates as structurally homogeneous (with the exception of distinguishing separate cohorts for different species), and a fixed height-diameter ratio for saplings is assumed [species-specific parameter](species-parameter.qmd)).
+
+Although of no immediate functional relevance, stem numbers for every cell can be computed by implying an allometric self-thinning relationship in analogy to [Reinekes rule](http://en.wikipedia.org/wiki/Stand_Density_Index) (Eq. 5), e.g. in order to compute more detailed output related to regeneration structure, or to close biomass and C budgets.
+
+$$
+N=R\cdot (\frac{dbh}{dbh_{ref}})^{-1.605}
+$$
+
+with R a species-specific scaling parameter and *dbh<sub>ref</sub>* the reference diameter for R (i.e. 25cm).
+
+If more than one species [establishes](establishment.qmd) per 2 x 2m cell, mean trees for every species are simulated as described above. Inter-specific competition in the sapling stage is an emerging property resulting from different height growth potentials (early vs. late seral species), different radiation utilization potential (*f<sub>light</sub>*) and environmental response (*f<sub>env,yr</sub>*). If a mean tree of a species fails to realize a specific minimum percentage of its height growth potential for a subsequent number of years (cf. the [species parameter](species-parameter.qmd) for stress threshold and duration), mortality removes the species from the respective cell.
+If trees exceed a height threshold of 4m, they are [recruited](recruitment.qmd) into the individual-based model structure of iLand.
+
+        *
+
+
+
+# sapling C and N dynamics
+
+
+
+The C and N budget of the regeneration layer is calculated by means of allometric equations. To that end a mean tree per species and [resource unit](resource-units.qmd) is calculated as arithmetic mean over all mean trees on regeneration pixels. C compartments of this mean tree are subsequently derived by means of allometric equations and scaled to the RU by the stem number calculated from Eq. 5 for the given mean tree dimensions and the number of regeneration cells occupied by the species. This mean tree approach at RU level is slighlty inexact compared to calculating a C budget for every 2 x 2m regeneration cell (due to Jensens inequality in the context of the involved nonlinear functions), but is orders of mangnitude more computationally efficient than a 2 x 2m C budget for a large forest landscape, and errors are likely to be negligable compared to other C fluxes in the ecosystem at the scale of operation relevant for iLand. The NPP of the regeneration layer is thus the C gain in all mean tree compartments that a certain height increment translates to. Sapling GPP is not calculated explicitly, but a rough estimate can be derived assuming the same [autotrophic respiration rate](primary-production.qmd) as for adult stands.
+
+Turnover of foliage and fine roots of saplings, and their corresponding fluxes into the litter pool, are calculated similar to [adult individuals](allocation.qmd). Mortality fluxes from self-thinning (as an effect of dbh growth, Eq. 5) are routed to the respective litter and downed deadwood pools (i.e. trees <4m do not create [snags](snag-dynamics.qmd) in iLand). To that end the slope of Eq. 5 at a given mean tree dbh is calculated and the number of trees dying as a result of a given dbh increment (via Eq. 4 and a h/d ratio) is derived. Detritus fluxes are subsequently modeled as the (previous years) mean tree C compartments times the number of self-thinned individuals, and routed to the respective [detritus pools](soil-c-and-n-cycling.qmd).
+
+
+
+
+::: {.callout-note title="citation"}
+[Seidl, R., Spies, T.A., Rammer, W., Steel, E.A., Pabst, R.J., Olsen, K. 2012](http://dx.doi.org/10.1007/s10021-012-9587-2). Multi-scale drivers of spatial variation in old-growth forest carbon density disentangled with Lidar and an individual-based landscape model. Ecosystems, DOI: 10.1007/s10021-012-9587-2.
+:::

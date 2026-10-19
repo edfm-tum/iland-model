@@ -1,0 +1,8 @@
+---
+title: "soil dynamics"
+---
+
+* [snag dynamics](snag-dynamics.qmd)
+* [soil C and N cycling](soil-c-and-n-cycling.qmd)
+* [water cycle](water-cycle.qmd)
+* [landscape scale soil water dynamics](landscape-scale-soil-water-dynamics.qmd)

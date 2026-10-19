@@ -1,0 +1,11 @@
+---
+title: "mortality"
+---
+
+* [base mortality](base-mortality.qmd)
+
+* [fire disturbance](wildfire.qmd)
+* [wind disturbance](wind-disturbance.qmd)
+* [bark beetle disturbance](bark-beetle-disturbance.qmd)
+
+* [snag dynamics](snag-dynamics.qmd)

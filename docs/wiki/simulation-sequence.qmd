@@ -1,0 +1,22 @@
+---
+title: "simulation sequence"
+---
+
+
+
+## Main actions performed in a simulation year
+
+
+Many processes in iLand run with a yearly time step. As the results of one step may affect another step, the sequence of these operations has some influence on the model behavior. The following list describes this sequence:
+
+1. execute [time events](time-events.qmd)
+1. Load the climate of the new year
+1. Reset statistics for resource unit as well as for dead/managed trees (i.e., set counters of transferred biomass to 0)
+1. Invoke Management.
+1. **after** that, calculate Light patterns
+1. [production](primary-production.qmd)at stand level, tree growth. Clear stand-statistcs before they are filled by single-tree-growth. calculate water cycle (with LAIs before management)
+1. execute Regeneration
+1. calculate the carbon cycle; this involves [Snag dynamics](snag-dynamics.qmd), [Soil dynamics](soil-dynamics.qmd) and the calculation of available nitrogen.
+1. invoke external [disturbance modules](disturbance-modules.qmd)
+1. calculate statistics for the year
+1. write database outputs

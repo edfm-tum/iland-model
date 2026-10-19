@@ -85,16 +85,43 @@ PRE_TARGETDEPS += $$join(parts_to_join_barkbeetle)
 LIBS += -L$$PLUGIN_PATH -liland_fire$$PLUGIN_SUFFIX -liland_wind$$PLUGIN_SUFFIX -liland_barkbeetle$$PLUGIN_SUFFIX
 
 message("PRE_TARGETDEPS:" $$PRE_TARGETDEPS)
+
+
+# ===============================================================
+# FreeImage linking setup (for GeoTIFF image support)
+# ===============================================================
+# The "FreeImage" library is required for GeoTIFF support.
+# On different platforms, it is linked and installed differently:
+#
+# Linux:
+#   Install via package manager:
+#     sudo apt-get install libfreeimage3 libfreeimage-dev   [Debian/Ubuntu]
+#     sudo dnf install freeimage freeimage-devel  [RHEL/Fedora]
+#
+# macOS:
+#   Install via Homebrew:
+#     brew install freeimage
+#   Homebrew usually installs to: /opt/homebrew/opt/freeimage
+#   This block ensures correct linking of headers and library files.
+#
+# Windows:
+#   Precompiled binaries are expected under the 3rd-party path
+#   (THIRDPARTY_PATH/FreeImage).
+# ===============================================================
+
 linux-g++ {
 # The "FreeImage" library is used for processing GeoTIFF data files.
 # FreeImage on Linux: see https://codeyarns.com/2014/02/11/how-to-install-and-use-freeimage/
 # basically sudo apt-get install libfreeimage3 libfreeimage-dev
 
 LIBS += -lfreeimage
+} else:macx {
+LIBS += -L/opt/homebrew/Cellar/freeimage/3.18.0/lib -lfreeimage
 } else {
-# external freeimage library (geotiff)
-LIBS += -L$$THIRDPARTY_PATH/FreeImage -lFreeImage
+# external freeimage library (geotiff) (Windows)
+LIBS += -L$$THIRDPARTY_PATH\FreeImage -lFreeImage
 }
+
 
 
 # special settings
@@ -107,22 +134,40 @@ QMAKE_CXXFLAGS += -O3
 
 DEFINES += NO_DEBUG_MSGS
 
-# querying git repo
+# --- Version & Build Info Generation ---
+
+# Ensure we run git in the source directory
+GIT_DIR = $$_PRO_FILE_PWD_
+
+# Helper function to safely escape strings for C++ preprocessor
+# Converts value into: -DVAR_NAME="value"
+defineReplace(addStringDefine) {
+    VAR_NAME = $$1
+    VAR_VAL  = $$2
+    # Double escaping needed: one for qmake/shell, one for the C++ string literal
+    return($$join(VAR_NAME, "", "", "=\\\"$$VAR_VAL\\\""))
+}
+
 win32 {
- !defined(GIT_HASH) {
-GIT_HASH="\\\"$$quote($$system(git rev-parse --short HEAD))\\\""
-GIT_BRANCH="\\\"$$quote($$system(git rev-parse --abbrev-ref HEAD))\\\""
-BUILD_TIMESTAMP="\\\"$$quote($$system(date /t))\\\""
-DEFINES += GIT_HASH=$$GIT_HASH GIT_BRANCH=$$GIT_BRANCH BUILD_TIMESTAMP=$$BUILD_TIMESTAMP
-}
+    # Windows: Use PowerShell to get a locale-independent ISO format.
+    BUILD_TIMESTAMP = $$system(powershell -noprofile -command "Get-Date -Format 'yyyy-MM-dd_HH-mm-ss'")
+
+    # Git commands for Windows
+    GIT_HASH = $$system(git -C "$$GIT_DIR" rev-parse --short HEAD)
+    GIT_BRANCH = $$system(git -C "$$GIT_DIR" rev-parse --abbrev-ref HEAD)
 } else {
-!defined(GIT_HASH) {
-GIT_HASH="\\\"$$system(git -C \""$$_PRO_FILE_PWD_"\" rev-parse --short HEAD)\\\""
-GIT_BRANCH="\\\"$$system(git -C \""$$_PRO_FILE_PWD_"\" rev-parse --abbrev-ref HEAD)\\\""
-BUILD_TIMESTAMP="\\\"$$system(date -u +\""%Y-%m-%dT%H:%M:%SUTC\"")\\\""
-DEFINES += GIT_HASH=$$GIT_HASH GIT_BRANCH=$$GIT_BRANCH BUILD_TIMESTAMP=$$BUILD_TIMESTAMP
+    # Unix/macOS: Use standard date command
+    BUILD_TIMESTAMP = $$system(date -u "+%Y-%m-%dT%H:%M:%SUTC")
+
+    # Git commands for Unix
+    GIT_HASH = $$system(git -C "$$GIT_DIR" rev-parse --short HEAD)
+    GIT_BRANCH = $$system(git -C "$$GIT_DIR" rev-parse --abbrev-ref HEAD)
 }
-}
+
+# Apply to DEFINES
+DEFINES += $$addStringDefine(GIT_HASH, $$GIT_HASH)
+DEFINES += $$addStringDefine(GIT_BRANCH, $$GIT_BRANCH)
+DEFINES += $$addStringDefine(BUILD_TIMESTAMP, $$BUILD_TIMESTAMP)
 
 
 #CONFIG += precompile_header

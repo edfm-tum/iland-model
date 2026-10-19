@@ -1,0 +1,72 @@
+/*-- scss:defaults --*/
+
+// Brand colors
+$primary: #5fa375;      // Green accent for dark contrast (matching #42825a brand color)
+$primary-hover: #72b989;
+$secondary: #2e2e38;
+$success: #2bc080;
+$info: #3ca0f5;
+$warning: #f5b041;
+$danger: #f85b6c;
+
+// Body & backgrounds
+$body-bg: #121216;       // Modern deep slate-black (almost charcoal)
+$body-color: #e4e4eb;    // Bright gray-white for high legibility
+$link-color: #5fa375;
+$link-hover-color: #72b989;
+
+// Typography
+$headings-color: #ffffff;
+$text-muted: #8d8d9b;
+
+// Tables
+$table-color: #e4e4eb;
+$table-bg: transparent;
+$table-border-color: #262630;
+$table-striped-color: #e4e4eb;
+$table-striped-bg: rgba(255, 255, 255, 0.02);
+$table-hover-color: #ffffff;
+$table-hover-bg: rgba(255, 255, 255, 0.04);
+$table-group-separator-color: #262630;
+
+// Components
+$card-bg: #1a1a22;
+$card-border-color: #262630;
+$border-color: #262630;
+$list-group-bg: #1a1a22;
+$list-group-border-color: #262630;
+
+// Navbar & Sidebar styling
+$navbar-bg: #1d1d22;     // Discernible dark grey for top bar
+$navbar-dark-color: #e4e4eb;
+$navbar-dark-active-color: #ffffff;
+$navbar-dark-hover-color: #5fa375;
+
+/*-- scss:rules --*/
+
+// Add custom overrides for dark mode elements if needed
+html.dark, body.quarto-dark {
+  // Fix sidebar backgrounds
+  #quarto-sidebar {
+    background-color: #121216;
+    border-right: 1px solid #262630;
+  }
+
+  // Code block backgrounds in dark mode
+  pre, code {
+    background-color: #1a1a22 !important;
+    border-color: #262630 !important;
+  }
+
+  // Math display block dark mode styling
+  .math.display {
+    background-color: #1a1a22 !important;
+    border-left-color: #5fa375 !important;
+  }
+
+  // Table header background adjustment
+  .table th {
+    background-color: #1a1a22 !important;
+    color: #ffffff !important;
+  }
+}

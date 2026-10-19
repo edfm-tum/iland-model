@@ -1,0 +1,384 @@
+---
+title: "fire module"
+---
+
+
+
+## fire module
+
+
+The fire module is a sub module of iLand. See [disturbance modules](disturbance-modules.qmd) for a list of available modules.
+For details on the modeling side of things, check the documentation for [wildfire](wildfire.qmd).
+
+
+
+
+
+## parameters
+
+
+These fire-module specific parameters can be set in the [project file](project-file.qmd) below the *modules.fire* section. Some parameters of the fire module are global (i.e. valid for the whole landscape), others are stored on resource unit level (i.e., with a resolution of 1ha - see [simulation extent](simulation-extent.qmd) for details how to prepare the data).
+
+
+
+**fire ignition**
+
+| **key** | **datatype** | **description** | **grain** |
+| --- | --- | --- | --- |
+| KBDIref | numeric | reference value for the site specific KBDI (Keetch Byram Drought Index). See [wildfire#fire_ignition](wildfire.qmd). | RU |
+| meanAnnualPrecipitation | numeric | mean annual precipitation (mm). | RU |
+| rFireSuppression | numeric | A scalar for fire suppression (*r<sub>mgmt</sub>*), see [wildfire#fire_ignition](wildfire.qmd). Default value: 1. | RU |
+| fireReturnInterval | numeric | average number of years between two fires affecting a single pixel. A value of e.g. 100 means, that, on average, a pixel burns every 100 years. | RU |
+
+**fire spread**
+
+| **key** | **datatype** | **description** | **grain** |
+| --- | --- | --- | --- |
+| averageFireSize | numeric | average fire size in m2. | RU |
+| minFireSize | numeric | minimum fire size (m2). If *minFireSize* is set to a very high value, the fire size distribution has effectively no limiting effect on the simulated fire sizes. | RU |
+| maxFireSize | numeric | maximum fire size (m2). | RU |
+| rLand | numeric | multiplier for the fire spread probability for the resource unit (0..1). If below the (default) value of 1, fire spreads with a reduced probability (e.g. for riparian areas). See [wildfire](wildfire.qmd). | RU |
+| fireExtinctionProbability | numeric | probability that a the fire on a burning pixel extincts without a chance to spread further. default: 0. | RU |
+| minimumFuel | numeric | the minimum amount of fuel for a fire to burn on a cell (combustible fuel, yR (leafs and twigs) and yL (downed woody debris) in kg biomass/m2; default: 0.05 | global |
+
+**fuel**
+
+| **key** | **datatype** | **description** | **grain** |
+| --- | --- | --- | --- |
+| fuelKFC1 | numeric | parameter *kfC1* for calculation of fuel amount using compartment specific moisture relations (default: 0.8) | global |
+| fuelKFC2 | numeric | parameter *kfC2* for calculation of fuel amount using compartment specific moisture relations (default: 0.2) | global |
+| fuelKFC3 | numeric | parameter *kfC3* for calculation of fuel amount using compartment specific moisture relations (default: 0.4) | global |
+
+**wind**
+
+| **key** | **datatype** | **description** | **grain** |
+| --- | --- | --- | --- |
+| wind.speedMin | numeric | minimum wind speed (m/s) | global |
+| wind.speedMax | numeric | maximum wind speed (m/s). The wind speed is randomly selected between *speedMin* and *speedMax* for each fire event. | global |
+| wind.direction | numeric | the main wind direction (in degrees). North=0, East=90, South=180, West=270. For each fire event the wind direction is calculated as *direction* +- 45°. | global |
+
+**mortality**
+
+| **key** | **datatype** | **description** | **grain** |
+| --- | --- | --- | --- |
+| onlySimulation | boolean | only if value is *false* real effects of fire (on trees, snags, soil pools) are simulated (default: false). A value of *true* can be useful for testing purposes. | global |
+| crownKill1 | numeric | parameter *kCK1* to calculate fraction of crown kill. (default: 0.21111) | global |
+| crownKill2 | numeric | parameter *kCK2* to calculate fraction of crown kill. (default: -0.00445) | global |
+| crownKillDbh | numeric | Dbh-threshold (cm) *dbh_thres* used in crown kill calculations. (default: 40). |  |
+| mortalityFormula | string | Formula to calculate the provability of death for a single tree during a fire event. Variables are: *bt*: bark thickness (cm), *ck*: fraction of crown kill (0..1). (default: 1/(1 + exp(-1.466 + 1.91*bt - 0.1775*bt*bt - 5.41*ck*ck) ) ). | global |
+| burnSOMFraction | numeric | fraction (0..1) of SOM biomass that is assumed to be lost by a fire. 0=no biomass lost. (default: 0) | global |
+| burnStemFraction | numeric | fraction of stem biomass (0..1) of died trees that is combusted (default: 0.1) | global |
+| burnBranchFraction | numeric | fraction of branch biomass (0..1) of died trees that is combusted (default: 0.5) | global |
+| burnFoliageFraction | numeric | fraction of foliage biomass (0..1) of died trees that is combusted (default: 1.0) | global |
+
+**general**
+
+| **key** | **datatype** | **description** | **grain** |
+| --- | --- | --- | --- |
+| on<x>afterFire | string | If provided, the Javascript expression is called immediately after a fire event. The id of the fire can be accessed via the *id* propery of the *Fire* javascript object (see below). Default: "" | global |
+| allowBurnIn | boolean | a value of 'true' is required for burn-ins (if true, iLand builds a map of edge pixels) |  |
+
+ 
+
+
+
+## Fire specific visualization
+
+
+The iLand GUI provides some means to visually inspect various fire-related variables during a iLand simulation. The visualization is based on resource units and (usually) cumulative, i.e. each fire event simply paints over the affected area.
+
+* fireID: numeric ID of each fire event
+* crownKill: crownKill-fraction (see [wildfire](wildfire.qmd) ).
+* diedStemsFrac: fraction of killed trees on burning areas
+* diedBasalArea: basal area (sum over resource units) of burnt trees.
+* KBDI: Keetch Byram Drought Index (see [wildfire](wildfire.qmd) ).
+* KBDIref: the reference KDBI used for calculations
+* baseIgnition: base probability of an annual fire ignition event for a cell on RU level (depending on fire-return-interval and average fire size)
+* fire spread: The spread of the last fire (this view is cleared for each new fire event)
+* fuel: burned fuel (forest floor + dwd) kg/ha
+* combustibleFuel: "available combustible fuel (current KBDI, forest floor + dwd) kg/ha
+* nFire: cumulative count of fire events on a resource unit
+* lastFireYear: simulation year of the last fire event on a RU
+ 
+
+
+
+## Fire specific JavaScript
+
+
+The fire module sports a JavaScript binding allowing extended control on fire processes. When the fire module is active, the JavaScript engine contains a global variable ***Fire*** supporting the following functions and properties:
+
+
+
+### Properties
+
+
+**id**
+The numeric Id of the last fire event (integer, read-only). Each fire events has assigned an unique identifier that is also used in database outputs.
+
+**x**
+The (metric) x-coordinate of the ignition point of the last fire.
+
+**y**
+The (metric) y-coordinate of the ignition point of the last fire.
+
+**onIgnitionRU**
+If set to a valid Javascript function, then the function is called during the ignition phase for each resource unit. The function has the following signature:
+mgmt_factor = Fire.onIgnitionRU(kbdi, mgmt_factor)
+*kbdi* is the kbdi value on the resource unit, *mgmt_factor* the default factor for the RU. If a value is returned, it is used as the suppression factor (rMgmt) for the current RU, otherwise *mgmt_factor* is used.
+
+
+```javascript
+// function is called for every RU
+Fire.onIgnitionRU = function(kbdi, rmgmt) {
+// parameters: kbdi: the kbdi of the RU,
+// rmgmt: the supression scalar (set in iLand)
+console.log("kbdi: " + kbdi + ", rmgmt: " + rmgmt);
+// calculate a new suppression factor based on the kbdi: (just a test)
+var r = rmgmt + 10*kbdi;
+// use this value for the current year on the RU:
+return r;
+}
+```
+
+
+**onCalculateFireSize**
+If set to a valid JavaScript function, then the function is called when the actual fire size is calcuated for a fire event. The function has the signature:
+fire_size_m2 = onCalculateFireSize(rclim, fire_size)
+with *rclim* the climate factor ($KBDI/KBDI_{ref}$), *fire_size* the value drawn from default distribution in iLand. The return value will be used as the fire size for the current event.
+
+
+```javascript
+// helper function to get a random number between 'min' and 'max'
+function runiform(min, max) {
+  return Math.random() * (max - min) + min;
+}
+
+// calculate fire size; rclim=KBDI/KBDIRef, old_size=fire size drawn from standard distribution (iLand)
+Fire.onCalculateFireSize = function(rclim, old_size) {
+if (rclim < 0.75) {
+return runiform(10000,200000);
+}
+if (rclim > 1.75)
+return runiform(2000000000, 450000000);
+
+// drawn from distribution, applied min/max range
+return old_size;
+}
+```
+
+
+**onIgnition**
+The handler is called immediately before the standard ignition routine is run and can be used to start prescribes fires.
+
+
+
+### Functions
+
+
+**Fire.ignite(x_meter, y_meter, firesize, windspeed, winddirection)**
+Ignite a fire event with pre-defined properties, i.e. at a given location (parameters *x_meter*, *y_meter*) with given conditions (i.e. wind direction and speed and fire size). if both *x* and *y* are set to -1, the ignition is performed stochastically, i.e. as used in dynamic simulation mode.
+The return value is -1 if no fire was ignited, or the total burnt area (m2) otherwise.
+x_meter, y_meter: metric coordinates of the ignition point in the landscape
+firesize: provide a fire size (m2). The fire size will be drawn from the fire size distribution if firesize=-1 or omitted.
+windspeed: wind speed (m/s), drawn randomly if omitted or -1.
+winddirection: wind direction (0°=N..180°=S..270=W°), drawn randomly if omitted or set to -1.
+
+
+```javascript
+// start a fire at 100/100
+  Fire.ignite(100, 100);
+  // start a fire with pre-defined fire size (1 ha)
+  Fire.ignite(100, 100, 10000);
+```
+
+
+**Fire.igniteBurnIn(x_meter, y_meter, perimeter_length, firesize_m2, simulate=false)**
+The function starts a fire not from a point, but from a line along the iLand landscape perimeter. The incoming fire front is defined by a center point along the perimeter (*x_meter* / *y_meter* in the iLand reference system, the model looks for the closest 20m edge pixel within 100m; if no pixel is found an error is thrown) and the *perimeter_length*. iLand ignites the edge of the landscape left/right from the center point at a total length of *perimeter_length* (m). From this ignited cell the fire spreads using the usual spread algorithm; the maximum fire size is constrained to *firesize_m2*. If *simulate* is true no actual fire is simulated, but only the edge detection is executed. The return value is the realized fire size (when simulate is false), or the number of edge cells ignited (when simulate is true). See also the code example at the bottom of the page.
+
+**Fire.gridToFile(gridtype, filename)**
+This function saves a fire specific grid (specified by *gridtype*) in ESRI raster textfile format to *filename*. Possible values for *gridtype* are:
+
+* *basalarea*: share of died trees (basal area) on burning pixels (0..1) (RU-Level)
+* *kbdi*: current values for the kbdi drought index (0..1) (RU-Level)
+* *spread*: shape of the last burning fire (20m pixels). Non-null numbers indicate the generation counter of the cellular automaton.
+* "border": if *allowBurnIn* is true, iLand detects edge pixels (20m resolution) and this grid can be retrieved (1=edge, 0=no edge)
+* *dbh*: average dbh (cm) of burning pixels, limited with the threshold dbh. RU-Level
+* *crownkill* average crownkill fraction of all burning pixels on RU. (0..1) (see [wildfire](wildfire.qmd) for details)
+* *baseIgnition* base probability of an annual fire ignition event for a cell on RU level (depending on fire-return-interval and average fire size)
+ 
+
+
+```javascript
+// save the shape of the fire in ESRI raster format
+  Fire.gridToFile('spread', 'e:/spread.txt');
+```
+
+
+**Fire.grid(gridtype)**
+Returns a grid of given *gridtype* (string) as a Javascript Object. See [Grid Javascript API](../apidoc/classes/iland/grid.qmd) for details. All grids (with the exception of the actual spread on the 20m pixels) from the "fire specific visualization" are available.
+
+
+```javascript
+// retrieve and save the shape of the fire in ESRI raster format
+  var spread_grid = Fire.grid('spread');
+  spread_grid.save(Globals.path('temp/grid1.asc'));
+```
+
+ 
+
+
+
+### Event handler
+
+
+**onAfterFire()**
+The *on<x>afterFire* event handler is called immediately after a fire event. The event handler is set with the *fire.onAfterEvent* setting in the project file.
+Example:
+
+
+```javascript
+// event handler. Set the fire.onAfterFire to "afterFireProcessing()"
+function afterFireProcessing() {
+   var praefix = Fire.id;
+   // save the form of the fire in ESRI raster format
+   // save a file for each fire
+   Fire.gridToFile('spread', 'output/fire/spread' + praefix + '.txt');
+}
+```
+
+
+**onIgnitionRU**
+see above.
+
+**onCalculateFireSize**
+see above.
+
+
+
+## Fire specific outputs
+
+
+ 
+
+
+
+## Fire RU/yr
+
+
+Table Name: fire
+Fire event aggregates per fire event. The output contains a row for each (ignited) fire event.
+
+
+| **caption** | **datatype** | **description** |
+| --- | --- | --- |
+| year | integer | simulation year |
+| fireId | integer | unique ID of the fire event (1..N) on the whole project area. |
+| area_plan_m2 | integer | Area of the planned fire m2 |
+| area_m2 | integer | Realized area of burnt cells m2 |
+| iterations | integer | Number of iterations of the cellular automaton |
+| coord_x | double | Coordinates (x) of the starting point (m) |
+| coord_y | double | Coordinates (y) of the starting point (m) |
+| n_trees | integer | total number of trees on all burning cells |
+| n_trees_died | double | total number of trees that were killed by the fire |
+| basalArea_total | double | sum of basal area of trees >4m height (m2) located on pixels that burn during an event |
+| basalArea_died | double | sum of basal area of died trees (>4m, m2) |
+| psme_died | double | fraction of doug fir that died (based on basal area of psme trees on burning pixels) |
+| avgFuel_kg_ha | double | average total fuel (forest floor + dwd) of burning cells (kg biomass/ha) |
+| windSpeed | double | current wind speed during the event (m/s) |
+| windDirection | double | current wind direction during the event (°) |
+
+
+ 
+
+
+
+### Javascript example
+
+
+The example demonstrates how a table of prescribed fires can be loaded and used in a dynamic simulation.
+
+
+```javascript
+/* */
+var firelist = []; // global variable holding the fires
+
+// load a list of fires from a text file using the CSVFile helper
+function loadFires() {
+var csv = Factory.newCSVFile( Globals.path('scripts/fires.txt') );
+for (var i=0;i<csv.rowCount;++i) {
+firelist.push( {
+ year: csv.jsValue(i, 'year'),
+ x: csv.jsValue(i, 'x'),
+ y: csv.jsValue(i, 'y'),
+ area: csv.jsValue(i, 'area'),
+ peri_length: csv.jsValue(i, 'length')
+        });
+}
+console.log('Loaded ' + firelist.length + ' fires');
+}
+
+// this function is called by the iLand fire module (see the onIgnition handler)
+function ignitions() {
+console.log("year " +Globals.year + ": prescribed ignitions");
+// get a subset of all fires
+var current_fires = firelist.filter( function (item) { return item.year == Globals.year} );
+for (var i=0;i<current_fires.length; ++i) {
+fire = current_fires[i];
+if (fire.peri_length == 0) {
+// this is a fire that starts within the project area
+console.log('** run prescribed fire **');
+Fire.ignite( fire.x, fire.y, fire.area*10000 );
+
+} else {
+// this is a burn in!
+console.log('** run burn in fire **');
+Fire.igniteBurnIn(fire.x, // x-coord (iLand ref)
+fire.y,  // y coord
+fire.peri_length, // length of perimeter (m)
+fire.area*10000); // max fire size (in m2)
+
+}
+}
+}
+
+// set the event handler (onAfterCreate is called automatically from iLand)
+function onAfterCreate() {
+// iLand global handler - at this point the fire module is properly set up (and the "Fire" object is available)
+console.log('setting up fire link');
+loadFires();
+    Fire.onIgnition = ignitions;
+}
+```
+
+
+The data table used in the example above:
+
+
+| year | x | y | area | length |
+| --- | --- | --- | --- | --- |
+| 5 | 13000 | 15943 | 500 | 1000 |
+| 7 | 4728 | 6143 | 300 | 0 |
+
+
+**Notes**: "area" is given in ha, and 'x'/'y' in iLand coordiantes. To use GIS coordinates, the value of 'model.world.location.x' and 'model.world.location.y' need to be substracted.
+
+This example shows how the burn-in locations can be "simulated":
+
+
+```javascript
+Fire.gridToFile('border', 'temp/border.asc'); // save a grid with edge pixels
+
+Fire.igniteBurnIn(12913, 10992, 14000, 1000, true); // start a burn in, with simulate=true
+Fire.gridToFile('border', 'temp/border_with_fire.asc'); // save a grid with edge pixels
+// now a value of 2 indicates ignited edges (1 normal edges)
+```
+
+ 
+
+
+::: {.callout-note title="citation"}
+[Seidl, R., Rammer, W., Spies, T.A. 2014](http://dx.doi.org/10.1890/14-0255.1). Disturbance legacies increase the resilience of forest ecosystem structure, composition, and functioning. Ecol. Appl., in press. http://dx.doi.org/10.1890/14-0255.1
+:::
+
+ 

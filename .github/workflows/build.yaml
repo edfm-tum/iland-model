@@ -1,5 +1,8 @@
 name: Qt qmake Cross-Platform Build
 
+permissions:
+  contents: write
+
 on:
   release:
     types: [published]
@@ -29,34 +32,35 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v3
         with:
-          version: '6.8.0'
-          # qtcharts necessary to be installed extra
+          # Use 6.8.3 for Windows and Linux, and 6.11.1 for macOS (required for Xcode/Clang compatibility)
+          version: ${{ matrix.os == 'macos-latest' && '6.11.1' || '6.8.3' }}
           modules: 'qtcharts'
-          # specific toolchain for windows
           arch: ${{ matrix.os == 'windows-latest' && 'win64_msvc2022_64' || '' }}
 
       # --- dependencies ---
-      - name: Install FreeImage (Linux)
+      - name: Install Dependencies (Linux)
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y libfreeimage-dev
+        run: sudo apt-get update && sudo apt-get install -y libfreeimage-dev libxcb-cursor0 libwayland-dev libxkbcommon-dev
 
       - name: Install FreeImage (macOS)
         if: runner.os == 'macOS'
         run: brew install freeimage
 
       # --- Build Phase ---
+      - name: Setup MSVC (Windows)
+        if: matrix.os == 'windows-latest'
+        uses: ilammy/msvc-dev-cmd@v1
+        
       - name: Build Project (Windows)
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
-          # runs windows build script and creates a log file
           ./build_iland.ps1 2>&1 | Tee-Object -FilePath build_log.txt
 
       - name: Build Project (Linux/macOS)
         if: matrix.os != 'windows-latest'
         shell: bash
         run: |
-          # chmod to make sure it is executable
           chmod +x ./build_iland.sh
           ./build_iland.sh 2>&1 | tee build_log.txt
 
@@ -73,17 +77,73 @@ jobs:
           copy src/fonstudio/build/release/release/fonstudio.exe deploy-win/
           copy libs/win/FreeImage.dll deploy-win/
           windeployqt --release --no-translations --compiler-runtime --qmldir src/iland/qml deploy-win/iland.exe
-          # copy log
           move build_log.txt deploy-win/
+          Compress-Archive -Path deploy-win/* -DestinationPath iLand-Windows.zip
 
       # 2. Linux
       - name: Linux Deployment
         if: matrix.os == 'ubuntu-latest'
         run: |
           mkdir deploy-linux
-          cp src/iland/build/release/iland deploy-linux/
-          cp src/ilandc/build/release/ilandc deploy-linux/
-          copy src/fonstudio/build/release/fonstudio.exe deploy-linux/
+          
+          # 1. Locate the Qt installation path provided by the jurplel action
+          QT_DIR=$(qmake -query QT_INSTALL_PREFIX)
+          
+          # 2. Set up the AppDir structure
+          mkdir -p AppDir/usr/bin
+          mkdir -p AppDir/usr/lib
+          mkdir -p AppDir/usr/plugins/platforms
+          mkdir -p AppDir/usr/plugins/platformthemes
+          
+          # 3. Copy built executables
+          cp src/iland/build/release/iland AppDir/usr/bin/
+          cp src/ilandc/build/release/ilandc AppDir/usr/bin/
+          cp src/fonstudio/build/release/fonstudio AppDir/usr/bin/
+          
+          # 4. Copy Qt Wayland shared libraries into AppDir/usr/lib/
+          cp -d $QT_DIR/lib/libQt6Wayland*.so* AppDir/usr/lib/ 2>/dev/null || true
+          cp -d $QT_DIR/lib/libQt6WlShellIntegration*.so* AppDir/usr/lib/ 2>/dev/null || true
+          
+          # 5. Inject Wayland, Portal, GTK3, and Input plugins
+          cp -d $QT_DIR/plugins/platforms/libqwayland*.so AppDir/usr/plugins/platforms/
+          cp -rd $QT_DIR/plugins/wayland-shell-integration AppDir/usr/plugins/
+          cp -rd $QT_DIR/plugins/wayland-graphics-integration-client AppDir/usr/plugins/
+          cp -rd $QT_DIR/plugins/wayland-decoration-client AppDir/usr/plugins/ 2>/dev/null || true
+          cp -d $QT_DIR/plugins/platformthemes/libqgtk3.so AppDir/usr/plugins/platformthemes/
+          cp -d $QT_DIR/plugins/platformthemes/libqxdgdesktopportal.so AppDir/usr/plugins/platformthemes/ 2>/dev/null || true
+          cp -rd $QT_DIR/plugins/platforminputcontexts AppDir/usr/plugins/ 2>/dev/null || true
+          cp -rd $QT_DIR/plugins/xcbglintegrations AppDir/usr/plugins/ 2>/dev/null || true
+          
+          # 6. Setup .desktop file and icon (required by linuxdeployqt for AppImage creation)
+          echo -e "[Desktop Entry]\nName=iLand\nExec=iland\nIcon=iland\nType=Application\nCategories=Science;" > AppDir/iland.desktop
+          touch AppDir/iland.png
+
+          # Keep only the SQLite driver; delete all others (Mimer, ODBC, PostgreSQL, etc.) to prevent ldd failures
+          find $QT_DIR/plugins/sqldrivers/ -type f -not -name 'libqsqlite.so' -delete
+          
+          # 7. Run linuxdeployqt (pass wayland platform plugins as extra executables to bundle their dependencies)
+          EXTRA_EXEC=""
+          for p in AppDir/usr/plugins/platforms/libqwayland*.so; do
+            if [ -f "$p" ]; then
+              EXTRA_EXEC="$EXTRA_EXEC -executable=$p"
+            fi
+          done
+
+          wget -c "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
+          chmod a+x linuxdeployqt-continuous-x86_64.AppImage
+          ./linuxdeployqt-continuous-x86_64.AppImage AppDir/usr/bin/iland $EXTRA_EXEC -appimage -unsupported-allow-new-glibc -qmldir=src/iland/qml
+          
+          # 8. Create Console AppDir and AppImage for ilandc
+          mkdir -p AppDirConsole/usr/bin
+          cp src/ilandc/build/release/ilandc AppDirConsole/usr/bin/
+          echo -e "[Desktop Entry]\nName=ilandc\nExec=ilandc\nIcon=iland\nType=Application\nCategories=Science;\nTerminal=true" > AppDirConsole/ilandc.desktop
+          touch AppDirConsole/iland.png
+
+          ./linuxdeployqt-continuous-x86_64.AppImage AppDirConsole/usr/bin/ilandc -appimage -unsupported-allow-new-glibc
+
+          # 9. Move final Linux artifacts with clean predictable filenames
+          mv iLand*.AppImage deploy-linux/iLand-x86_64.AppImage 2>/dev/null || true
+          mv ilandc*.AppImage deploy-linux/ilandc-x86_64.AppImage 2>/dev/null || true
           cp build_log.txt deploy-linux/
 
       # 3. macOS
@@ -92,12 +152,12 @@ jobs:
         run: |
           mkdir deploy-mac
           cp -r src/iland/build/release/iland.app deploy-mac/
-          cp -r src/ilandc/build/release/ilandc.app deploy-mac/
-          # bundle everything into an app
-          macdeployqt deploy-mac/iland.app -qmldir=src/iland/qml
+          cp src/ilandc/build/release/ilandc deploy-mac/ilandc-macOS
+          macdeployqt deploy-mac/iland.app -qmldir=src/iland/qml -dmg
+          mv deploy-mac/iland.dmg deploy-mac/iLand-macOS.dmg 2>/dev/null || true
           cp build_log.txt deploy-mac/
 
-      # --- Artifact Upload ---
+      # --- Artifact Upload (For Actions tab history) ---
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -106,3 +166,19 @@ jobs:
             deploy-win/
             deploy-linux/
             deploy-mac/
+
+      # --- Release Asset Upload (For GitHub Releases / Development Build Latest) ---
+      - name: Publish to GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
+        with:
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || (github.event_name == 'release' && github.event.release.tag_name || 'dev-latest') }}
+          name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || (github.event_name == 'release' && github.event.release.name || 'Development build (latest)') }}
+          prerelease: ${{ !startsWith(github.ref, 'refs/tags/') && github.event_name != 'release' }}
+          files: |
+            iLand-Windows.zip
+            deploy-linux/*.AppImage
+            deploy-mac/iLand-macOS.dmg
+            deploy-mac/ilandc-macOS
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

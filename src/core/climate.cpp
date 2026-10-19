@@ -39,11 +39,15 @@ QMap<QString, QVector<double> > Climate::fixedCO2concentrations;
 
 void Sun::setup(double latitude_rad)
 {
+
     mLatitude = latitude_rad;
-    if (mLatitude>0)
-        mDayWithMaxLength = 182-10; // 21st of June
-    else
-        mDayWithMaxLength = 365-10; //southern hemisphere
+    // Note: on southern hemisphere we shift the climate data,
+    // so we need to use the standard / "northern" logic for daylength calculations etc.
+    // When shifted (on southern hemisphere), the first day is July 1st, which is 10 days after winter solistice there.
+    latitude_rad = fabs(latitude_rad);
+
+    mDayWithMaxLength = 182-10; // 21st of June
+
     // calculate length of day using  the approximation formulae of: http://herbert.gandraxa.com/length_of_day.aspx
     const double j = M_PI / 182.625;
     const double ecliptic = RAD(23.439);
@@ -183,6 +187,14 @@ void Climate::setup(bool do_log)
         }
     }
     // setup query
+    mSouthernHemisphere = Model::settings().latitude < 0.;
+    if (do_log && mSouthernHemisphere) {
+        qDebug() << "*** Southern hemisphere mode ***";
+        qDebug() << "iLand uses a pseudo-phenological calendar: the simulation year starts at July 1st of a year.";
+        qDebug() << "Climate data is shifted by six month during loading, the first half of the first year of climate data is discarded (so is the last half of the last year of the climate data series).";
+        qDebug() << "*** See more: https://iland-model.org/climatedata";
+    }
+
     // load first chunk...
     load();
     setupPhenology(); // load phenology
@@ -207,6 +219,25 @@ void Climate::load()
     ClimateDay lastDay = *day(11,30); // 31.december
     mMinYear = mMaxYear;
     ClimateDay *store=mStore.data();
+
+    if (mSouthernHemisphere && !mIsSetup) {
+        // during first loading (mIsSetup = false) on southern hemisphere skip half a year
+        int day_skipped = 0;
+        do {
+            mClimateQuery.next();
+            int year = mClimateQuery.value(0).toInt();
+            int month = mClimateQuery.value(1).toInt();
+            int dayOfMonth = mClimateQuery.value(2).toInt();
+            if (month == 6 && dayOfMonth == 30) {
+                qDebug() << "Southern hemisphere: Loading climate: skipped" << day_skipped << "days of year" << year << "from table" << mName;
+                break;
+            }
+            ++day_skipped;
+            if (day_skipped > 365) {
+                throw IException("Loading climate on southern hemisphere: skipping first half of the year, but 30th of June not found.");
+            }
+        } while (1==1);
+    }
 
     mDayIndices.clear();
     ClimateDay *cday = store;
@@ -239,11 +270,12 @@ void Climate::load()
                     throw IException(QString("Climate: not enough years in climate database - tried to load %1 years (random sampling of climate is enabled).\n%2").arg(mLoadYears).arg(mClimateQuery.lastQuery()) );
 
                 // rewind to the start of the time series
+                if (mSouthernHemisphere)
+                    throw IException("Automatic rewinding of climate data not available for southern hemisphere. Sorry guys.");
                 qDebug() << "restart of climate table";
                 lastyear=-1;
                 if (!mClimateQuery.first())
                     throw IException("Error rewinding climate file!");
-
             }
             yeardays++;
             if (yeardays>366)
@@ -255,6 +287,12 @@ void Climate::load()
             cday->year = mClimateQuery.value(0).toInt();
             cday->month = mClimateQuery.value(1).toInt();
             cday->dayOfMonth = mClimateQuery.value(2).toInt();
+            if (mSouthernHemisphere) {
+                // do the climate shifting
+                cday->month = cday->month > 6 ? cday->month - 6 : cday->month + 6;
+                if (cday->month > 6)
+                    cday->year--; // make sure the year stays the same within one "year"
+            }
             if (mTMaxAvailable) {
                 //References for calculation the temperature of the day:
                 //Floyd, R. B., Braddock, R. D. 1984. A simple method for fitting average diurnal temperature curves.  Agricultural and Forest Meteorology 32: 107-119.
@@ -286,15 +324,25 @@ void Climate::load()
                 // new month...
                 lastmon = cday->month;
                 // save relative position of the beginning of the new month
+                //qDebug() << "day-index: #"  << mDayIndices.size()  << cday->month << cday->year;
                 mDayIndices.push_back( cday - mStore.data() );
             }
-            if (yeardays==1) {
-                // check on first day of the year
+
+            if (yeardays==1 && !mSouthernHemisphere) {
                 if (lastyear!=-1 && cday->year!=lastyear+1)
                     throw IException(QString("Error in reading climate file: invalid year break at y-m-d: %1-%2-%3!").arg(cday->year).arg(cday->month).arg(cday->dayOfMonth));
             }
-            if (cday->month==12 && cday->dayOfMonth==31)
-                break;
+
+            if (!mSouthernHemisphere) {
+                if (cday->month==12 && cday->dayOfMonth==31)
+                    break;
+            } else {
+                // last day of the year: 30th of June
+                if (cday->month==12 && cday->dayOfMonth==30)
+                    break;
+            }
+
+
 
             if (cday >= mStore.data() + mStore.size() )
                 throw IException("Error in reading climate file: read across the end!");
@@ -308,7 +356,7 @@ void Climate::load()
     mMaxYear = mMinYear+mLoadYears;
     mCurrentYear = 0;
     mBegin = mStore.data() + mDayIndices[mCurrentYear*12];
-    mEnd = mStore.data() + mDayIndices[(mCurrentYear+1)*12];; // point to the 1.1. of the next year
+    mEnd = mStore.data() + mDayIndices[(mCurrentYear+1)*12]; // point to the 1.1. of the next year
 
     climateCalculations(lastDay); // perform additional calculations based on the climate data loaded from the database
 
@@ -353,7 +401,7 @@ void Climate::nextYear()
     updateCO2concentration();
 
     mBegin = mStore.data() + mDayIndices[mCurrentYear*12];
-    mEnd = mStore.data() + mDayIndices[(mCurrentYear+1)*12];; // point to the 1.1. of the next year
+    mEnd = mStore.data() + mDayIndices[(mCurrentYear+1)*12]; // point to the 1.1. of the next year
 
     // some aggregates:
     // calculate radiation sum of the year and monthly precipitation
@@ -435,8 +483,10 @@ void Climate::updateCO2concentration()
 
     } else {
         ClimateDay::co2 = GlobalSettings::instance()->settings().valueDouble("model.climate.co2concentration", 380.);
-
     }
+
+    if (ClimateDay::co2 < 200 || ClimateDay::co2 > 2000)
+        throw IException(QString("Invalid CO2 concentration! Value: %1 (allowed: 200-2000ppm)").arg(ClimateDay::co2));
 
     if (logLevelDebug())
         qDebug() << "CO2 concentration" << ClimateDay::co2 << "ppm.";

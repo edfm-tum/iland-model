@@ -1,0 +1,25 @@
+---
+title: "time events"
+---
+
+'Time events' implement various actions that are triggered at a specific time during a running simulation. The event schedule is defined in a simple tabular format (text file) and allows changing [settings](project-file.qmd) as well as executing javascript [functions](scripting.qmd).
+
+
+
+## setting parameter values during runtime
+
+
+Via the *[environment file](simulation-extent.qmd)* values for several parameters (i.e. project file settings) can be defined spatially explicit. A similar approach exists for setting parameter values in *time*. This feature is controlled with the *timeEventsEnabled* and *timeEventsFile* keys in the *model.world*-section of the [project file](project-file.qmd).
+It works as follows:
+The file *timeEventsFile* is loaded and interpreted as a CSV text file. The column *year* is mandatory. Every other column name is interpreted as key in the project file, or as special key. In the year given in the *year* column the values from the other columns of a row are processed, i.e. set.
+If the column name is:
+
+* *'script*' or *'javascript*': the value is interpreted as javascript expression and evaluated in the management context.
+* every other value is interpreted as a key in the XML file (see above for examples). The respective value is set.
+
+Some remarks:
+
+* the "TimeEvents" are executed in the beginning of a year (see [here](simulation-sequence.qmd)).
+* only a limited set of XML settings react directly to changed values during a model run. The "CO2-concentration" is an example for a sensitive setting.
+* iLand expects the *timeEventsFile* in the "[script path](filenames-and-paths.qmd)".
+* the first year of the simulation is the year 1.

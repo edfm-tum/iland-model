@@ -3,16 +3,11 @@
         <file>ABE-library.js</file>
         <file>example-use.js</file>
         <file>lib_helper.js</file>
-    </qresource>
-    <qresource prefix="/abe-lib">
         <file>harvest/femel.js</file>
         <file>harvest/harvest.js</file>
-    </qresource>
-    <qresource prefix="/abe-lib">
         <file>planting/planting.js</file>
-    </qresource>
-    <qresource prefix="/abe-lib">
         <file>thinning/selective.js</file>
         <file>thinning/thinning.js</file>
+        <file>harvest/salvage.js</file>
     </qresource>
 </RCC>

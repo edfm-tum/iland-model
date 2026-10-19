@@ -16,7 +16,7 @@ public:
         /** calculate radiation matrix.
           calculates for each sector of the "Grid" the yearly radiation intensites.
           Intensities are influenced by latitude, vegetation period and the fraction of diffuse radiation.
-          @param Step_deg size of one cell in degree (e.g. 5 -> each pixel has a size of 5°x5°)
+          @param Step_deg size of one cell in degree (e.g. 5 -> each pixel has a size of 5Â°x5Â°)
           @param Grid results are stored in that HemiGrid (no setup required)    */
         void calculateRadMatrix(const float Step_deg, HemiGrid &Grid);
         /// set fraction of diffuse radiation (1: only diffuse rad, 0: only direct rad)

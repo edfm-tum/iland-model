@@ -1,0 +1,75 @@
+---
+title: "Release iLand 2.2"
+date: "2026-07-28"
+author: "Werner Rammer"
+---
+
+# iLand 2.2 – Release Notes
+
+We are pleased to announce the release of **iLand 2.2**! Continuing our annual summer release cadence, version 2.2 combines major documentation infrastructure improvements, automated multi-platform builds, southern hemisphere simulation support, and a round of important bug fixes and refinements.
+
+Below is an overview of the key additions and changes in this release.
+
+---
+
+## New Webpage and Documentation Framework
+
+We have always been dedicated to providing comprehensive documentation for iLand. Over the years, we built an extensive Wiki to document model processes, parameters, outputs, and scripting interfaces.
+
+To bring documentation and source code closer together, we have migrated the entire documentation to a **Quarto Markdown (`.qmd`)** framework located directly in the Git repository under `docs/`.
+
+### Key Benefits:
+* **Code & Docs in Lockstep**: Documentation now lives alongside the code in Git, allowing updates to be made in the same pull requests and commits as code changes.
+* **Unified Structure**: Combines wiki pages, technical guides, API documentation, and blog posts into a single, cohesive static site.
+* **Automated API Docs**: Generated JavaScript and C++ API documentation scripts keep method signatures and variables up to date.
+
+---
+
+## Automated CI/CD iLand Builds for Windows, Linux & macOS
+
+To improve cross-platform support and streamline testing, we established an automated CI/CD pipeline using **GitHub Actions**.
+
+### Build Pipeline Highlights:
+* **Multi-Platform Support**: Automatically builds iLand, `ilandc` (console shell), and `fonstudio` for **Windows**, **Linux**, and **macOS**.
+* **Pre-packaged Release Binaries**:
+  * **Windows**: Zip archives containing compiled executables and required Qt / FreeImage DLLs.
+  * **Linux**: Standalone AppImages bundling Wayland plugins and SQLite drivers.
+  * **macOS**: Native `.app` bundles packaged into `.dmg` disk images for drag-and-drop installation.
+* **Qt 6 Compatibility**: Modernized build scripts to support Qt 6 across all target operating systems.
+
+---
+
+## iLand on the Southern Hemisphere
+
+Version 2.2 introduces integrated support for modeling forest landscapes in the **Southern Hemisphere**.
+
+### Key Adjustments:
+* **Seasonality & Solar Geometry**: Solar zenith/azimuth angles and radiation calculations adapt dynamically to southern latitudes.
+* **Monthly Climate Cycles**: Temperature, precipitation, and day-length patterns shift seamlessly to reflect Southern Hemisphere seasonal calendars.
+
+---
+
+## Bug Fixes & Refinements
+
+This release also includes several bug fixes and stability enhancements:
+
+* **Index of Biodiversity Potential (IBP) & Deadwood**:
+  * Integrated single-tree tracking for standing deadwood (Component C) and lying deadwood (Component D) in `SVDIndicatorOut`.
+  * Added a `forceDeadWoodPools` parameter to allow fallback to pool-based calculations when needed.
+  * Fixed maximum score threshold calculation (32 points max).
+  * Enhanced `MainWindow` GUI with interactive detailed inspection for individual snags.
+* **ABE-Library Resource Path Handling**:
+  * Improved path resolution in `GlobalSettings.path()` for Qt resource files (`qrc://`).
+  * Added `lib.path` property to reference the root folder of ABE libraries.
+* **CO2 Concentration Validation**:
+  * Added a sanity check throwing explicit errors on invalid or out-of-bounds CO2 values in climate input files.
+* **Custom Aggregation Output (`customaggout`)**:
+  * Fixed a missing `break` in a `switch` statement that caused landscape-level aggregation to incorrectly emit resource-unit level rows.
+* **Linux CLI Decimal Parsing Bug**:
+  * Resolved an issue where Linux systems with mixed locale settings (e.g. `LANG=en_US.UTF-8` with `LC_NUMERIC=de_DE.UTF-8`) failed to parse decimal numbers silently in XML files. Fixed by explicitly setting `std::setlocale(LC_NUMERIC, "C")` in `ilandc`.
+
+---
+
+## Download & Getting Started
+
+You can download iLand 2.2 for Windows, macOS, and Linux from our updated [Download Page](../download.qmd) or directly from the [GitHub Release Page](https://github.com/edfm-tum/iland-model/releases/tag/v2.2).

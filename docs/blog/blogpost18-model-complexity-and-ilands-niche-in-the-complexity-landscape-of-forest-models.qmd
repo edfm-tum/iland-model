@@ -1,0 +1,12 @@
+---
+title: "Model complexity and iLands niche in the complexity landscape of forest models"
+date: "2010-05-31"
+author: "Rupert Seidl"
+---
+
+To follow up on the complexity considerations in the last blog entry, the two main hypothesis driving the development of iLand with regard to **ecological complexity** are:
+
+* To study the effects and interactions between climate (change), forest ecosystem dynamics and management, a [reductionist approach](http://en.wikipedia.org/wiki/Reductionism) is not applicable. I.e. since we’re increasingly aware that relevant traits in the context of ecosystem dynamics and sustainability, such as [resilience](http://tinyurl.com/25wfut7) and [ecological complexity](http://tinyurl.com/29b7gzp), result from the **interplay of processes across scales**, an isolated focus on individual dimensions of complexity (e.g. on either structural, functional, spatial traits of ecosystems) is likely to fall short of capturing these key traits.
+* While we need to consider different aspects and dimensions of complexity, and the respective process interactions, to simulate ecosystem dynamics as emerging property, it is not necessary to render all these processes in the highest available level of detail. This theory of the **intermediate level of complexity** has been formulated for the [research process](http://en.wikipedia.org/wiki/Medawar_zone) in general, and has also found to be of particular relevance for [individual-based modeling](http://www.sciencemag.org/cgi/content/abstract/310/5750/987).
+
+As initial step to model development in iLand we conducted an in-depth analysis of the existing ‘landscape’ of forest ecosystem models, and subsequently selected and developed approaches the satisfied both of the above hypotheses. In other words, iLand model design aims for a **balanced representation of structural, functional and spatial aspects of ecological complexity** and their interactions, while implementing processes at an intermediate level of complexity. The analysis of iLands ‘niche’ in the complexity landscape of forest ecosystem models can be found [here as a wiki-paper](../wiki/iland-model-complexity-and-its-niche-in-the-landscape-of-models.qmd) (use the toc on the top of the page to navigate its sections).

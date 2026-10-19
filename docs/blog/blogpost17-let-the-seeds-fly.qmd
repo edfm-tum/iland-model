@@ -1,0 +1,30 @@
+---
+title: "let the seeds fly"
+date: "2010-04-30"
+author: "Werner Rammer"
+---
+
+During the last weeks we spent some time discussing the whole topic of regeneration. We are quite excited about that, because this will be the first real 'landscape'-process and we are curious to find out how nice this plays with the concepts on which iLand is built upon... Besides that, Rupert did a very thorough testing and parameterization of PNW tree species. To that end we applied some modifications in the water cycle (as it seams, it is not easy to model the severity of the growth limitation due to drought). Anyway, so far the results look quite good.
+But this post is about the seeds. The seed dispersion algorithm was the first part of the regeneration chain that made the jump from mere theory (e.g. [regeneration], or [dispersal]) into silicio. Implementation details may be found [here](../wiki/regeneration.qmd).
+
+Here is an image showing the dispersal:
+<img src='/img/seed_illu.gif' border='0' alt='image' width='100%'/>
+
+The test landscape is essentially empty (see the small screenshot in the lower right corner) and so the effect of the dispersal process is quite obvious.
+
+The production of such nice looking debug images is very straightforward and can be done by one line of code:
+
+::: {.callout-note}
+
+```cpp
+// save a image in black/white mode (2nd parameter)
+// store as png
+gridToImage(seedMap(), true, 0.,1.).save("targetfile.png");
+```
+
+:::
+
+
+The (iLand)-Grid class offers a 'gridToImage()' function; and saving as a compressed .png is done - thanks to [Qt] -  just by a call to 'save()'.
+
+The next challenging topic will be to find way to model the establishment phase in a way that is both scientifically sound and computationally cheap... The answer (of course) is blowing in the wind...

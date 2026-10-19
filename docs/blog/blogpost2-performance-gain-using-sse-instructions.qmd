@@ -1,0 +1,175 @@
+---
+title: "Performance gain using SSE instructions"
+date: "2009-01-20"
+author: "Werner Rammer"
+---
+
+## SSE
+
+SSE (e.g. <http://en.wikipedia.org/wiki/SSE2>) is the multimedia extension of modern x86 Intel and AMD CPUs. Basically, using 128 bit wide registers, 4 floats (or 2 doubles) can be processed within one cycle.
+
+## The Problem
+
+One idea how to do efficient light competition calculation is:
+
+* Use a large grid that stores the influence values (e.g. 10x10m, that would end up with something like, say 2000x2000 values)
+* each tree has a small vector (e.g. 5x5 or 7x7) expressing the influence of the tree on its neighborhood
+* each tree "stamps" its influence matrix on the large grid by simple addition
+
+## SSE solution
+
+Using SSE instructions the code might look like:
+
+```cpp
+// MS Visual Studio decl-spec to force (necessary) alignment in memory
+#define CACHE_LINE  64
+#define CACHE_ALIGN __declspec(align(CACHE_LINE))
+#define CNT 1000000
+
+float CACHE_ALIGN fData[CNT*4];
+
+int test4()
+{
+  __m128 empty = _mm_setzero_ps();
+  __m128 stamp[8];
+  for (int i=0;i<8;++i)
+    stamp[i]=empty;
+  stamp[3] = _mm_set1_ps( 3.343f); // any value
+  __m128 *p1, *p2, *p3, *p4, *s;
+  TTickTack t;
+  float *f1=fData;
+  __m128 val;
+  const int lineoffset=100;
+  for (int i=0;i<10000;i++)
+    for (int j=0;j<10000;j++) {
+      //apply(stamp, j);
+      s = stamp;
+      f1 = fData + 16*j; // force different starting positions
+      val = _mm_load_ps(f1); // load 128bit (4x float)
+      val = _mm_add_ps(val, *s++); // add 4 float values (of the stamp)
+      _mm_store_ps(f1, val); // store the result back to memory
+      f1+=4; // advance grid-pointer
+      val = _mm_load_ps(f1);
+      val = _mm_add_ps(val, *s++);
+      _mm_store_ps(f1, val);
+      f1+=lineoffset; // go to next line
+      val = _mm_load_ps(f1);
+      val = _mm_add_ps(val, *s++);
+      _mm_store_ps(f1, val);
+      f1+=4;
+      val = _mm_load_ps(f1);
+      val = _mm_add_ps(val, *s++);
+      _mm_store_ps(f1, val);
+      f1+=lineoffset;
+      val = _mm_load_ps(f1);
+      val = _mm_add_ps(val, *s++);
+      _mm_store_ps(f1, val);
+      f1+=4;
+      val = _mm_load_ps(f1);
+      val = _mm_add_ps(val, *s++);
+      _mm_store_ps(f1, val);
+      f1+=lineoffset;
+      val = _mm_load_ps(f1);
+      val = _mm_add_ps(val, *s++);
+      _mm_store_ps(f1, val);
+      f1+=4;
+      val = _mm_load_ps(f1);
+      val = _mm_add_ps(val, *s++);
+      _mm_store_ps(f1, val);
+      f1+=lineoffset;
+    }
+
+    std::cout << "applied stamp (SSE): "  << t.elapsedStr() << "\n";   t.reset();
+    float sum=0.f;
+    for (int j=0;j<10000;j++)
+      sum+=fData[j];
+
+    std::cout << "sum: " << sum << "\n";
+    return 0;
+}
+```
+
+Important to note: The used data structures must be aligned in memory (at least for 16 bytes, but it seems to be preferable to use 64-byte alignment because of faster cache-access). The `_mm_xxx()` functions are replaced by single assembler instructions, as the disassembly shows:
+
+```assembly
+      __m128 val = _mm_load_ps(f1);
+00401735  movaps      xmm1,xmmword ptr [eax-4E0h]
+      val = _mm_add_ps(val, *s++);
+0040173C  addps       xmm1,xmm0
+      _mm_store_ps(f1, val);
+0040173F  movaps      xmmword ptr [eax-4E0h],xmm1
+```
+
+## Without using SSE
+
+An algorithm that uses no special instructions could be as follows:
+
+```cpp
+int test5()
+{
+  float stamp[64];
+  for (int i=0;i<64;++i)
+     stamp[i]=0.f;
+  stamp[20]=3.343; // some value
+  TTickTack t;
+  float *f1, *s;
+  int ii;
+  const int lineoffset=100;
+  for (int i=0;i<10000;i++)
+     for (int j=0;j<10000;j++) {
+        //apply(stamp, j);
+        s = stamp;
+        f1 = fData + 16*j; // force different starting positions
+        for (ii=0;ii<8;++ii) {
+          *f1++ += *s++;
+          *f1++ += *s++;
+          *f1++ += *s++;
+          *f1++ += *s++;
+          *f1++ += *s++;
+          *f1++ += *s++;
+          *f1++ += *s++;
+          *f1++ += *s++;
+          f1+=lineoffset;
+        }
+    }
+    std::cout << "applied stamp (no SSE): "  << t.elapsedStr() << "\n";
+    t.reset();
+}
+```
+
+As it is, this code applies a 8x8 stamp (64 float values) 10000x10000 times (i.e. 100,000,000). It is somewhat optimized (faster pointer arithmetic, manual rolling out of the innermost loop and such).
+
+## Results
+
+The code is executed on a T2300 Intel Core Duo processor. The results are:
+
+| Without SSE | With SSE |
+| --- | --- |
+| 8.6s | 1.6s (=ca.18%) |
+
+This is quite impressive and considering the 100,000,000 repetitions both versions are extremely fast. In reality, however, this example would be too artificial: one point is that the "stamp" here keeps the same for all calculations (and would therefore keep sitting in the cache), another point is that there is no bound checking (when stamping along the borders of the big grid).
+I also tried a kind of standard-implementation with a bunch of nested loops, having the innermost loop looking like this:
+
+```cpp
+  f1 = fData + 16*j; // start somewhere
+  for (x=0;x<8;x++) {
+    for (y=0;y<8;y++) {
+       f1[y*gridwidth+x] += stamp[y*stampwidth+x];
+    }
+  }
+```
+
+This version surprisingly performs very similar to the above version (without SSE). At least the Microsoft-compiler seems to do a very good job in optimizing the code.
+To confirm this, I also did a run in debug-mode of the compiler. The results are then:
+
+| no SSE, nested loops | SSE pointer optimized | SSE |
+| --- | --- | --- |
+| 77s | 53s | 16s |
+| 100% | 68% | 21% |
+
+Generally, using SSE instructions and careful memory alignment/cache-aware programming has a huge potential of performance improvements.
+
+## Some links
+
+* <http://lwn.net/Articles/250967/> an article series about many aspects of memory, caches including some hints for optimized programming
+* <http://www.cortstratton.org/articles/HugiCode.html> a sample of the huge potential of SSE instructions and careful optimizations

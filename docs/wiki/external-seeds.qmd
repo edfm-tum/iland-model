@@ -1,0 +1,65 @@
+---
+title: "external seeds"
+---
+
+Normally, trees within the simulated forest produce [seeds](regeneration.qmd) which are spatially [distributed](dispersal.qmd) and subsequently lead to [establishment](establishment.qmd) and [recruitment](recruitment.qmd). However, it is also possible to specify an external seed input, i.e. a continuous input of seeds from areas outside of the project area. This allows to specify the neighbor forest next to the project area even if not dynamically simulated.
+
+Generally, all settings related to external seed input are provided in the [project file](project-file.qmd) in the section *model.settings.seedDispersal*.
+
+Please note, that the "buffer" (see [landscape setup](landscape-setup.qmd)) needs to be a integer multiple of the seed pixel size (currently 20m), e.g. 40,60,80.
+
+
+
+
+
+## Using the buffer
+
+
+Around the actual project area is a buffer area (see [simulation extent](simulation-extent.qmd)); this buffer area can be used to act as a seed source. A description of the keys related to external seeds is given in the [project file](project-file.qmd).
+
+
+
+## Using seed belts
+
+
+An advanced option is facilitating a "seed belt": a seed belt is a belt shaped area surrounding the project area. This belt acts as a seed source and seeds reach the project area from the belt facilitating the iLand seed dispersal algorithm. The total area is split into a number of *sectors*, whereas each *sector* is characterized by an user-defined species composition. The seed belt is limited to those areas outside of the project area that are flagged as "forested" (see [landscape setup](landscape-setup.qmd)).
+
+<img src="/img/external_seed_sectors.png" alt="Image" class="img-fluid" />
+Figure 1. Sketch of a project area divided in 3x2 sectors.
+
+The following snipped is an example for defining the seed belt in the [project file](project-file.qmd):
+
+
+```'xml'
+<seedBelt>
+    <enabled>true</enabled>
+	<width>9</width>
+	<sizeX>3</sizeX>
+	<sizeY>2</sizeY>
+	<species_0_0>Abam 0.7 Psme 0.1</species_0_0>
+	<species_0_1>Psme 0.1</species_0_1>
+	<species_1_1>Psme 0.1</species_1_1>
+	<species_2_1>Psme 0.1</species_2_1>
+</seedBelt>
+```
+
+
+To enable the seed belt feature, both *enabled* keys in the *SeedDispersal* section (*model.settings.seedDispersal.externalSeedEnabled* and *model.settings.seedDispersal.seedBelt.enabled*) must be *true*. If the latter (*seedBelt.enabled*) is *false*, the (older) buffer based external seed input used.
+
+The *width* defines the width of the belt (here 180m), *sizeX* and *sizeY* the number of sectors (see Fig. 1). The four *species_x_y* elements define the species composition for the respective sectors. The species composition is given as a list of (space delimited) pairs of species code (the shortName in the [species parameter](species-parameter.qmd) table) and a seed source probability. The probability is the chance that a pixel in the belt acts as a seed source. If so, it is assumed that the pixel (20x20m) is covered by (seed producing) trees with a leaf area index of 3.
+Figure 2 shows the resulting external seed sources.
+
+<img src="/img/seed_belt.png" alt="Image" class="img-fluid" />
+Figure 2. a seed belt in action (image composed of "debug" images produced by iLand) (highlighted pixels indicates seed sources). Around the actual project area (black) is the seed belt (light red). In one sector (0/0) is a high density of Abam, while in the upper three sectors a low density of Psme is assumed.
+
+
+
+## Using external seed input on the whole area
+
+
+In some cases (usually for more generic experiments), it could be useful to have external seed input on the full area, i.e. on all pixels regardless there location. This can be achieved by using the *externalSeedBackgroundInput* key. Here a list of species and their seed availability probability can be specified, for example:
+
+piab, 0.01, fasy, 0.02, bepe, 0.03
+
+this sets the seed probability of Norway spruce(*piab*, the species shortName in the [species parameter](species-parameter.qmd) table) to 0.01, of beech to 0.02 and of Betulus pendula to 0.03. The probability is interpreted as the chance of having no seed limitation on each 2x2m cell (e.g., a value of 0.01 would mean that - in the absence of other limitations (environment, light, cell already occupied by saplings of the species) - cohorts would establish every year on roughly 1% of the 2x2m cells).
+Note that this setting can be used independently of having external seed input from the buffer. To enable **only** the external seeds on the whole area, set *externalSeedEnabled* to *true*, but omit the species from the list of *externalSeedSpecies*. Contrary, by excluding from the *externalSeedBackgroundInput* list, seeds can be modeled to enter the simulation area exclusively from the buffer. Note, however, that this feature cannot be combined with the seed-belt feature (if *seedBelt.enabled* is *true* then **only** the seed belt is active, if this setting is *false* then *externalSeedBackgroundInput* and/or *externalSeedSpecies* are active; in both cases *externalSeedEnabled* has to be *true*).

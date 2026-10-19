@@ -1,0 +1,89 @@
+---
+title: "iLand Javascript API Reference"
+sidebar: apidoc
+editor: 
+  markdown: 
+    wrap: 72
+---
+
+iLand includes an embedded Javascript scripting engine that allows you
+to automate tasks, script custom disturbances, evaluate stand state, and
+configure the Agent-Based Management Engine (ABE).
+
+This reference documentation is automatically parsed from the source
+code, organizing the scripting API into three main sections:
+
+### API Modules
+
+:::::::::::: grid
+::::: {.g-col-12 .g-col-md-4}
+:::: {.card .h-100 .shadow-sm}
+::: card-body
+#### [iLand Core API](classes/iland/iland.qmd)
+
+Classes for automating model execution and accessing spatial
+grid/tree-level states.
+
+\* [Globals](classes/iland/globals.qmd) — Helper utilities and core
+model control
+
+\* [Grid](classes/iland/grid.qmd) — 2D spatial grid operations
+
+\* [Tree](classes/iland/tree.qmd) — Individual tree-level inspection
+:::
+::::
+:::::
+
+::::: {.g-col-12 .g-col-md-4}
+:::: {.card .h-100 .shadow-sm}
+::: card-body
+#### [Agent-Based Management (ABE)](classes/abe/abe.qmd)
+
+Core classes to script customized agents, activities, and stand
+treatment programs.
+
+\* [FMEngine](classes/abe/fmengine.qmd) — Main entry point for ABE
+scripting
+
+\* [Stand](classes/abe/stand.qmd) — Properties of forest stands
+
+\* [TreeList](classes/abe/treelist.qmd),
+[SaplingList](classes/abe/saplinglist.qmd),
+[DeadTreeList](classes/abe/deadtreelist.qmd) — Act on ecosystem
+components
+:::
+::::
+:::::
+
+::::: {.g-col-12 .g-col-md-4}
+:::: {.card .h-100 .shadow-sm}
+::: card-body
+#### [ABE Library](classes/abe-library/abe-lib.qmd)
+
+A set of pre-defined building blocks for thinning, planting, and
+harvesting.
+
+\* [helper](classes/abe-library/helper.qmd) — Utilities to construct and
+inspect STPs
+
+\* [thinning](classes/abe-library/thinning.qmd) — Thinning block
+operations
+
+\* [harvest](classes/abe-library/harvest.qmd) — Harvesting block
+operations
+:::
+::::
+:::::
+::::::::::::
+
+### Scripting Overview
+
+For a broader introduction on how to use JavaScript within iLand,
+including running scripts, time events, and expressions, please refer to
+the general scripting guides:
+
+-   [**Scripting Overview**](../wiki/scripting.qmd): Introduction to
+    scripting concepts in iLand.
+-   [**General Scripting in iLand**](../wiki/iland-scripting.qmd):
+    Details about integrating scripts, file paths, and interactive
+    executions.

@@ -1,0 +1,15 @@
+---
+title: "iLand is burning!"
+date: "2012-12-05"
+author: "Rupert Seidl"
+---
+
+Well, the headline might not sound as exhilarating as, for instance, [Paris is burning](http://www.youtube.com/watch?v=vqWzfH71Bww) would, but it has Werner and me quite excited in any case. After months of preparing the data, testing and evaluating the model, and discussing about the simulation design we've just started a new iLand [simulation experiment](http://dx.doi.org/10.1016/j.tree.2004.07.019).
+
+In a nutshell: We'll be testing in silico what the (long-term) effects of disturbance legacies are on forest structure, composition, and functioning. Once more using the [HJ Andrews Experimental Forest](http://andrewsforest.oregonstate.edu/) as our study system, we are conducting simulations with different levels of green-tree legacies after high severity disturbance, in order to gain insights into the magnitude and temporal persistence of legacy effects. In addition, we ask how subsequent disturbance is altering the legacy effect, i.e. if wildfire frequency were to increase in the future, would legacy effects be dampened?
+
+These questions are motivated by a growing focus on [retention and legacies in ecosystem management](http://dx.doi.org/10.1525/bio.2012.62.7.6), as well as by the observation that disturbance legacies can [influence successional trajectories](http://dx.doi.org/10.1111/j.1365-2486.2009.02051.x) profoundly and might even induce path dependence in forest dynamics.
+
+Oh, and by the way, in order to ask these questions and conduct this study we have implemented and tested a dynamic wildfire module in iLand (see an older blog post about some ideas [here](blogpost32-the-fire-season-is-still-on.qmd)), which is able to simulate fire regimes as an emerging property of vegetation, weather/ climate, and topography.
+
+We're curious as to what our findings will be, and will be back with an update in due time. For now we enjoy having the warmest office of the institute, with all the CPUs running at 100%, which - on a cold and grey December day like this - is a nice co-benefit of being a simulation modeler!

@@ -49,7 +49,7 @@ void LightRoom::setup(const double dimx, const double dimy, const double dimz,
     solar.calculateRadMatrix(hemigridsize, m_solarGrid);
     t2.showElapsed();
     m_shadowGrid.setup(hemigridsize); // setup size
-    m_solarrad_factor = 1. / m_solarGrid.sum(RAD(45)); // sum of rad. > 45°
+    m_solarrad_factor = 1. / m_solarGrid.sum(RAD(45)); // sum of rad. > 45Â°
     m_centervalue = 0.;
 }
 
@@ -66,7 +66,7 @@ double LightRoom::calculateGridAtPoint(const double p_x, const double p_y, const
     if (fillShadowGrid)
         m_shadowGrid.clear(0.);
 
-    // start with 45°
+    // start with 45Â°
     int ie = m_shadowGrid.indexElevation(RAD(45));
     int ia = 0;
     int max_a = m_shadowGrid.matrixCountAzimuth();
@@ -97,7 +97,7 @@ double LightRoom::calculateGridAtPoint(const double p_x, const double p_y, const
             }
         }
     }
-    // solar-rad-factor = 1/(sum rad > 45°)
+    // solar-rad-factor = 1/(sum rad > 45Â°)
     return solar_sum * m_solarrad_factor;
     //double ratio = c_hit / double(c_test);
     //qDebug() << "tested"<< c_test<<"hit count:" << c_hit<<"ratio"<<c_hit/double(c_test)<<"total sum"<<m_shadowGrid.getSum();
@@ -128,8 +128,8 @@ void LightRoom::calculateFullGrid()
         double hor_distance = sqrt(coord.x()*coord.x() + coord.y()*coord.y());
 
         for (z=0;z<m_countZ && z*m_cellsize <= maxh;z++) {
-            // only calculate values up to the 45° line
-            // tan(45°)=1 -> so this is the case when the distance p->tree > height of the tree
+            // only calculate values up to the 45Â° line
+            // tan(45Â°)=1 -> so this is the case when the distance p->tree > height of the tree
             if (hor_distance > maxh-z*m_cellsize)
                 break;
             hit_ratio = calculateGridAtPoint(coord.x(), coord.y(), // coords x,y
@@ -142,7 +142,7 @@ void LightRoom::calculateFullGrid()
         // calculate average
         sum = 0;
         // 20090708: do not average, but keep the sum
-        // aggregate mean for all cells with angles>45° to the tree-top!
+        // aggregate mean for all cells with angles>45Â° to the tree-top!
         // 20090711: again average it, but now include the tree top.
         // 20090713: go back to sum...
         // 20090812: remove the weighting for the 10m cells again.
@@ -150,7 +150,7 @@ void LightRoom::calculateFullGrid()
         for(int i=0;i<z;i++)
             sum+=values[i];
         if (m_aggregationMode==0) {
-            // average shadow / meter height (within the 45° cone)
+            // average shadow / meter height (within the 45Â° cone)
             if (z)
                 sum/=float(z);
         } else {
@@ -206,9 +206,9 @@ void LightRoomObject::setuptree(const double height, const double crownheight, c
 
 
 // Angle-function. return the  difference between
-// two angles as a radian value between -pi..pi [-180..180°]
+// two angles as a radian value between -pi..pi [-180..180Â°]
 // >0: directionB is "left" (ccw) of directionA, <0: "right", clockwise
-// e.g.: result=-10: 10° cw, result=10°: 10° ccw
+// e.g.: result=-10: 10Â° cw, result=10Â°: 10Â° ccw
 // result:-180/+180: antiparallel.
 double DiffOfAngles(double DirectionA, double DirectionB)
 {
@@ -233,8 +233,8 @@ double DiffOfAngles(double DirectionA, double DirectionB)
 
 
 // Angle-function. return the absolute difference between
-// two angles as a radian value between 0..pi [0..180°]
-// e.g. 10° = +10° or -10°; maximum value is 180°
+// two angles as a radian value between 0..pi [0..180Â°]
+// e.g. 10Â° = +10Â° or -10Â°; maximum value is 180Â°
 double AbsDiffOfAngles(double AngleA, double AngleB)
 {
      return fabs(DiffOfAngles(AngleA, AngleB));
@@ -273,7 +273,7 @@ int LightRoomObject::hittest(const double p_x, const double p_y, const double p_
     // Test 2: test if the crown-"plate" at the bottom of the crown is hit.
     if (elevation_rad>0. && p_z<m_crownheight) {
         // calc. base distance between p and the point where the height of the ray reaches the bottom of the crown:
-        double r_hitbottom = dist2d; // for 90°
+        double r_hitbottom = dist2d; // for 90Â°
         if (elevation_rad < M_PI_2) {
             double d_hitbottom = (m_crownheight - p_z) / tan(elevation_rad);
             // calc. position (projected) of that hit point
@@ -337,8 +337,8 @@ bool LightRoomObject::noHitGuaranteed(const double p_x, const double p_y, const 
     // 1. simple: compare height...
     if (p_z > m_height)
         return true;
-    // 2. 45° test:
-    if (p_z > m_height - sqrt(p_x*p_x + p_y*p_y)) // 45°: height = distance from tree center
+    // 2. 45Â° test:
+    if (p_z > m_height - sqrt(p_x*p_x + p_y*p_y)) // 45Â°: height = distance from tree center
         return true;
 
     return false;

@@ -1,0 +1,115 @@
+---
+title: "sourcecode"
+---
+
+
+## Doxygen
+
+[Doxygen](http://www.doxygen.org) is used for documenting the source code. Access this documentation (including the full source code) at:
+
+http://iland-model.org/doxy/index.html
+
+Note: this area is password protected:
+
+User: source
+
+Password: code
+
+Useful link for setting up user authorization for an Apache webserver: [http://www.thesitewizard.com/apache/index.shtml](http://www.thesitewizard.com/apache/index.shtml)
+
+### Generating doxygen documentation
+
+Use the "doxywizard" (part of the doxygen installation). Load the iLand documentation project ('doc/iland_doxyfile.doxy'), run doxygen.
+
+Copy the generatied documentation (doc/html) to the web server (folder 'doxy').
+
+### API documentation
+
+We use the Javascript API framework YUIDoc 
+
+```
+http://yui.github.io/yuidoc/
+```
+
+Javascript API documentation framework http:yui.github.io/yuidoc/
+
+create with "yuidoc ." in /apidoc directory (/build/apidocs must be available!) or with "yuidoc --server ." for interactive mode.
+
+see also the yuidoc.json for more options. On the local machine, you can see a online preview:
+
+http:127.0.0.1:3000/
+
+Installation of YUIDOC: http:yui.github.io/yuidoc/
+
+you need node.js -> download and install
+
+including a nice search box:
+
+https:github.com/jiannicello/yuidocsite
+
+run in 'apidocs' folder (the generated YUI docs are pushed to the 'docs' folder):
+
+yuidocsite port 3000 --search_desc
+
+bootstrap theme: https:www.npmjs.com/package/yuidoc-bootstrap-theme
+
+npm install yuidoc-bootstrap-theme
+
+## Subversion
+
+We use the websvn ( [http://websvn.tigris.org/](http://websvn.tigris.org/)) for providing an web based access to the SVN repositories. 
+
+We provide a publicly accessible version at (named "Public iLand"):
+
+[http://iland-model.org/publicsvn](http://iland-model.org/publicsvn)
+
+Currently, this links to the 0.6.9 tag within the repository and contains only an older  state of the project (see [releases](iland-releases.qmd)). This link can easily be changed by editing the config.php file in the *publicsvn/include* directory (look for addRepositorySubpath()).
+
+The private subversion repository is accessible online now at
+[http://iland-model.org/websvn](http://iland-model.org/websvn)
+
+This area is password protected: User/Password: source/code
+
+The repository itself (i.e. to check out) is located at:
+
+http://iland-model.org/svn/iland
+
+username/password: werner/***
+
+The latest and greatest iland-executable (windows) can be found in /executables.
+
+useful info wrt setup of subversion on the server: [https://help.ubuntu.com/community/Subversion](https://help.ubuntu.com/community/Subversion)
+
+Adding of new users to subversion:
+
+* connect to the iland-server and open shell (PuTTY)
+
+* for the first use: sudo /usr/bin/htpasswd -c /etc/subversion/passwd USERNAME
+
+* for all other users: sudo /usr/bin/htpasswd /etc/subversion/passwd USERNAME
+
+## downloading content and statistics
+
+The PHP script [http://iland-model.org/get_iland/iland_download.php](http://iland-model.org/get_iland/iland_download.php) handles logging and downloading content. The stats are written to:
+
+http://iland-model.org/get_iland/content/log.txt
+
+This is also the directory containing the downloadable file. The directory is protected with a password:
+
+user: getiland
+
+pwd: 1land
+
+ 
+
+## Deploying iLand on Windows
+
+Use the windeployqt tool to generate a package:
+
+# qt for windows deployment, (1) qt environment vars
+
+c:\Qt\5.12\5.12.2\msvc2015_64\bin\qtenv2.bat
+
+# run tool, update qml and target directory
+
+windeployqt e:\dev\iland\build\iland\release\iland.exe --qmldir=e:\dev\iland\src\iland\qml dir=e:\dev\iland\build\deploy

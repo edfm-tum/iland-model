@@ -1,0 +1,17 @@
+---
+title: "wind module sensitivity analysis"
+---
+
+As a first generic analysis of [wind module](wind-disturbance.qmd) behavior a sensitivity analysis over a plausible range of stand and tree conditions was conducted. These are not dynamic simulations with iLand but rather present the sensitivities of the above described set of equations. Default parameters for Norway spruce were used in all sensitivity calculations. Figure 1 gives the sensitivity of critical mean hourly wind speed (*cws*) ten meters above zero plane displacement height. The critical wind speeds for both uprooting and stem breakage were found to increase with dbh and to decrease with tree height, all other things being equal. As expected, the critical wind speed also decrease with the height to diameter ratio of trees. Moreover, upwind gap size decreases critical wind speed in the model. Generally, critical wind speeds for uprooting were somewhat lower than those for stem breakage under otherwise identical conditions. Overall, model behavior is found well in line with expectations and is also generally congruent with the sensitivity analysis presented by [Byrne (2011)](http://hdl.handle.net/2429/33800).
+
+<img src="/img/Fig3_wind_model__sensitivity.jpg" alt="Image" width="800" class="img-fluid" />
+***Figure 1:*** Sensitivity of critical mean hourly wind speed (*cws*) ten meters above zero plane displacement height to (a) diameter at breast height, (b) tree height, (c) height to diameter ratio, and (d) upwind gap size. Solid lines are for trees at the edge of dense stands (LRI= 0.05), dashed lines for individuals without shelter and support from neighbors (LRI= 1.0). ur= cws for uprooting, br= cws for stem breakage. Displayed sensitivities in panels (a) through (c) assume an upwind gap size of 150 m. Species parameters are for Norway spruce.
+
+
+
+
+
+::: {.callout-note title="citation"}
+[Seidl, R., Rammer, W., Blennow, K. 2014](http://dx.doi.org/10.1016/j.envsoft.2013.09.018). Simulating wind disturbance impacts on forest landscapes: Tree-level heterogeneity matters. Environ. Model. Software 51, 1-11.
+:::
+

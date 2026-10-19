@@ -21,6 +21,8 @@
 #include <QApplication>
 #include "mainwindow.h"
 
+#include <locale.h>
+
 int main(int argc, char *argv[])
 {
 // Can be used for additional debugging

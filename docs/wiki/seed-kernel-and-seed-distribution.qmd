@@ -1,0 +1,149 @@
+---
+title: "seed kernel and seed distribution"
+---
+
+This page describes - on a more technical level - the seed distribution process.
+
+The modeling of the seed dispersal process consists of three steps:
+
+**Seed production**. Mature trees of a species produce seeds. More specifically, the species’ crown area produces potential seedlings with fecundity *R* (seedlings per m² crown area, a [species parameter](species-parameter.qmd)). Seed production is simulated at the basic cell size of (currently) 20m.
+
+**Seed distribution**. Potential seedlings are spatially distributed. The distribution routine facilitates species-specific seed distribution kernels and a special algorithm for long distance dispersal.
+
+**Establishment probability**. Each 20m cell collects potential seedlings from several seed source cells. From the total number of available seedlings on a cell, an establishment probability is derived. Together with other biotic and abiotic factors, this probability determines stochastically the establishment success on a 2x2m pixel.
+
+
+
+
+
+## Seed production capacity of a source cell
+
+
+Conceptually, the fecundity parameter is the number of potential seedlings that can establish from seeds originating from one square meter of crown area (of mature trees). Since a seed source cell (20x20m) is not necessarily fully covered by mature trees of a species, we calculate the fraction of the productive area $f_{cell}$ as a function of the leaf area of mature trees on the cell. The leaf area index (LAI) for a given species on the source cell is calculated (by summing up the leaf area of all mature trees of the species on the cell, Eq. 1)
+
+
+$$
+LAI_{cell}= \frac{\sum LA_{species}}{20\cdot20}
+$$
+
+ 
+If the $LAI_{cell}$>3, the full seed production potential is assumed, otherwise the potential is linearly scaled between 0 and 1 (Eq. 2).
+
+
+$$
+f_{cell} = min(\frac{LAI_{cell}}{3},1)
+$$
+
+
+
+
+## Seed distribution
+
+
+In iLand, a so-called kernel function describes the spatial distribution of seeds from a seed source (see below for details). To do so, the kernel function is discretized to a grid with $n \times n$ cells, where the maximum dispersal distance is given by the radius ($n/2$). While increasing the maximum dispersal distance (for long distance dispersal, LDD) would be desirable, such kernels would become very large and increasingly computationally expensive. Therefore, iLand applies a solution that allows both long distance dispersal and reasonable performance: The model uses the full kernels only up to a certain distance, and a specific “long-distance-dispersal”-algorithm beyond that distance. Both approaches are described below.
+
+
+
+### Seed kernel
+
+
+iLand utilizes the formulation of seed kernels given by [Lischke et al. (2006)](http://dx.doi.org/10.1016/j.ecolmodel.2005.11.046). The seed kernel is specified using three parameters, and gives a density for a given distance *d*. The integral over the function from 0 to $\infty$ is 1. Eq. 3 replicates the equation:
+
+
+$$
+K_d= \frac{(1-kK_3)}{kK_1} e^{-\frac{d}{kK_1}} + \frac{kK_3}{kK_2} e^{-\frac{d}{kK_2}}
+$$
+
+
+This seed kernel $K_d$ value is, however, not the amount of seeds that is deposited on a given area, but rather the fraction of seeds that is deposited on a 'ring' at distance $d$. To calculate the value of the kernel $K_d$ at unit area (in distance $d$), the kernel function has to be extended (Eq. 4):
+
+
+$$
+K_p=\frac{K_d}{2d\pi}
+$$
+
+
+The seed distribution in iLand operates on discrete cells with a default cell size of 20m. To derive a discretized kernel from the analytical kernel function (Eq. 3 and 4), the following calculations are applied:
+For the center cell, the kernel function is numerically integrated up to a radius of $r_c$=11.3m (i.e., a circle with an area of 20x20=400m²). For all other cells, the value $K_c$ is calculated as:
+
+
+$$
+K_c=\frac{K_p(d+r_c)+K_p(d-r_c)}{2}\cdot400
+$$
+
+
+with $d$ the distance from the center of the focus cell to the center of the kernel. Since the seed source is not a single point but a cell with 400m², the kernel value is calculated for the distance to the closer, and for the farther edge of the center cell, and then averaged. This reduces numerical errors in discretizing the continuous kernel function. The remaining small numerical errors are cleaned by scaling the sum of the kernel to 1 – $f_{LDD}$ (i.e., the part of the kernel function that is treated by LDD – see below).
+Using this approach, 10% of, e.g., spruce seeds are deposited on the source cell, and 50% within the inner 5x5 cells (i.e., 1 ha).
+
+
+
+### Seed distribution
+
+
+The number of potential seedlings that originate from a cell ($N_s$) is calculated as the product of the fecundity per m² ($R$) and the productive area $f_{cell}$ (Eq. 6):
+
+
+$$
+N_s=Rf_{cell}\cdot400
+$$
+
+
+In non-seed-years (see [dispersal](dispersal.qmd)), $N_s$ is reduced with the [species parameter](species-parameter.qmd) $n_{nsy}$, which effectively reduces the number of distributed seedling without altering the spatial pattern.
+The model distributes most of the $N_s$ seedlings by applying the distribution kernel, and a small part of the seedlings via long distance dispersal (controlled by user-defined cutoff values explained below).
+The distribution algorithm works as follows: for each source cell each the dispersal kernel is applied, adding for each cell that is covered by the kernel area an amount of $K_c \cdot N_s$ seedlings. Thus, for each source cell $N_s \cdot (1-f_{LDD})$ seedlings are distributed according to the shape of the kernel. This is repeated for each source cell; therefore each cell receives potentially input from multiple source cells. After this step, each cell has received a number of $N$ potential seedlings.
+
+
+
+### Long distance dispersal
+
+
+The area for which the long distance dispersal algorithm applies, is split into $N_r$ concentric rings. For each ring the total number of potential seedlings - as defined by the kernel function - are calculated, and then distributed randomly in $N_p$ discrete packages with an individual load of $p$ seedlings (Eq. 7).
+
+
+$$
+N_p=\frac{K_{r}\cdot R}{p}\\K_r=K_{avg}\cdot A_r
+$$
+
+
+With $A_r$ the total area of the ring, and $K_{avg}$ the average kernel value within the ring. The algorithm now needs to distribute $N_p$ packages, each carrying $p$ potential seedlings per m² ($R$ is the species specific fecundity in seedlings/m² crown area, see below). For each distance class (ring) and for each of the $N_p$ packages, a random cell is selected within the ring and $p$ seedlings are added for mast years (accordingly reduced for non-seed-years). If for a given ring $N_p$ is below 1, a random number chooses whether one or zero packages should be distributed. The algorithm is applied for each seed source cell. Seedlings distributed by LDD effectively add seedlings to those which are distributed via kernels (see above).
+
+
+
+### Parameters of the seed distribution
+
+
+The seed distribution process is controlled by parameters in the [project file](project-file.qmd), and by species specific parameters. The project file parameters are located under *model.settings.seedDispersal.longDistanceDispersal*.
+
+
+| **Setting** | **Description** | **Example** |
+| --- | --- | --- |
+| thresholdArea | The threshold defines the density of potential seedlings per m² up to which a full kernel is used. | 0.0001 |
+| thresholdLDD | The threshold (again, seedlings per m²) defines the maximum distance of long-distance-dispersal. | 0.0000001 |
+| LDDSeedlings | For LDD, the parameter defines $p$, the number of seedlings that is dispersed per discrete LDD-package. | 0.5 |
+| rings | ‘rings’ defines the number of rings for which LDD dispersal is calculated. | 5 |
+
+
+Note that both thresholds are provided as potential seedling density per m² (opposed to density in a given distance from the seed source). It also has to be noted, that the species-specific fecundity has a big influence on the resulting distribution kernels: given the same kernel function, higher fecundity results in both larger distribution kernels **and** LDD-area, as the thresholds are defined as seedlings/m².
+
+
+
+### Performance considerations
+
+
+The compuational cost of the seed distribution process is affected by both the effective size of the seed kernels, and the number of LDD packages. The size of the kernel depends on the *thresholdArea* parameter, and the runtime increases with the square of the kernel radius. For long distance dispersal, the computational effort scales with the number of packages, which can effectively be controlled with the *LDDSeedlings*  setting. The iLand log output provides log messages for both seed kernel size and LDD characteristics.
+
+
+
+## Probability of establishment
+
+
+The [establishment](establishment.qmd) of cohorts of saplings is a stochastic process on a finer 2x2m grid in iLand and incorporates seed and light availability as well as other abiotic constraints (such as water and temperature limitations). In this process, the probability $p_{seed}$ expresses the chance of seed limitation, which itself is modeled as a function of $N$, the number of potential seedlings on a cell: a higher number of seedlings correspond to a higher probability of successfully establishing a cohort.
+
+
+$$
+p_{seed}=min \left( \frac{N}{400 \cdot N_u},1  \right)
+$$
+
+
+$N_u$ is the number of seedlings per m² that are required for unlimited establishment (i.e., $p_{seed}=1$). If the number of seedlings is lower than $N_u$, then the probability of establishment is reduced (linearly). $N_u$ is currently set to a value of 100.
+

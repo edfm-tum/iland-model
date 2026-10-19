@@ -1,0 +1,38 @@
+---
+title: "iLand 1.0 released!"
+date: "2016-11-16"
+author: "Werner Rammer"
+---
+
+ After 7.5 years of working on iLand, we’re very happy to announce the release of iLand 1.0.
+
+
+
+## Why 1.0 now?
+
+
+Well, when we set out to thinking about an entirely new model, and all the functionalities it should have, and all the processes it should contain, it was basically the current version of iLand that we had in our minds: A model to simulate fully dynamic and spatially explicit forest landscape dynamics at high spatial resolution, including process-based and interacting disturbance modules for wind, bark beetles, and wildfire, and capturing the complex and dynamic interactions between managers and emerging forest development. Voilà – here we are!
+So what is new compared to the previous version?
+
+
+
+## Agent-based model of forest management
+
+
+Over the last months (and years) we’ve developed a highly detailed and dynamic model of forest management and incorporate it into iLand. The Agent-Based forest management Engine (ABE) simulates managers as agents that dynamically adapt their actions to changes in the environment. The management agents are able to consider management unit-level goals and constraints (e.g., maximum sustainable harvest levels) and combine them with detailed silvicultural knowledge applied at the stand level in the form of stand treatment programs. Given stimuli like changes in the environment agents can adapt their behavior reactively (i.e., after the manifestation of change) or proactively (i.e., in anticipation of change). Furthermore, they are dynamically able to revise plans and spatial structure (such as stand boundaries) after a major reorganizing event such a disturbance has taken place. And all this is not restricted to one agent on the landscape – iLand is now well able to simulate multi-owner landscapes managed by a large number of different agents, with different objectives, preferences, and management systems. The basic approach and a few implications in dynamic simulations are described in more detail in [this paper](http://dx.doi.org/10.1016/j.gloenvcha.2015.10.003).
+<img src="/img/abe_gec.png" alt="Image" class="img-fluid" />
+**The concept of the agent based forest management engine. Agents interact via a (technical) interface with the ecosystem.**
+
+
+
+## Bark beetle disturbance module
+
+
+In addition to management we’ve been working on completing our initial triplet of disturbance modules by developing a module of bark beetle disturbance. The [three quantitatively most important disturbance agents in Europe’s forests](http://dx.doi.org/) can thus now be simulated in iLand. The newly introduced bark beetle module dynamically simulates the interactions between climate, bark beetle disturbance, and forest development. It explicitly considers bark beetle phenology and development, spatially explicit dispersal of the beetles, colonization and tree defense reaction, as well as temperature-related overwintering success and predation by antagonists. Furthermore, the design of the models follows [recent findings](http://dx.doi.org/10.1111/1365-2664.12540) on multi-scale drivers of bark beetle outbreaks, considering drivers at the tree (defense, susceptibility), stand (thermal requirements and beetle phenology), landscape (host distribution, beetle dispersal) and regional (climate variation and extremes as triggers of outbreaks) scale. iLand is thus now able to explicitly simulate the amplifying feedbacks between wind and bark beetle disturbances. In fact we’ve used the model recently to quantify the contribution of interaction effects to recently observed disturbance events, and could show that wind – beetle interactions strongly amplify the  [climate sensitivity of the disturbance regime in Central Europe](http://dx.doi.org/).
+
+<img src="/img/disturbance_amplification.png" alt="Image" class="img-fluid" />
+**Simulated cumulative disturbances for wind and bark beetle under observed climate conditions (a) and assuming an increase in temperature of +4° (b). (Kalkalpen National Park, Austria)**
+
+As always, an extensive documentation of the new model features can be found in the iLand Wiki. Also, the new modules are included in the code and executable that can be obtained through the iLand download page.
+
+We hope that you find these additions useful, and look forward to many applications of iLand 1.0 in the coming months and years. And now: onwards to 2.0!

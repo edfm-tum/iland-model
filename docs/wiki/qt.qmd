@@ -1,0 +1,13 @@
+---
+title: "Qt"
+---
+
+Early in the development of iLand (around 2008/2009) we were looking for a technical platform that we'd build upon. Based on previous experiences, we decided on C++ as the primary development language very early, which limited the our options quite a bit.
+We selected [Qt](http://qt-project.org) as our main toolkit for the following reasons:
+
+* it is an open source framework much used in the open source world
+* allows cross-platform development
+* comes with a broad range of built-in functionalities (from accessing files to multi-threading)
+* is big enough so we could expect a long life of the project
+
+In hindsight (as in 2016), selecting Qt prooved to be a good choice. Qt is still being actively developed and new versions come out regularly.

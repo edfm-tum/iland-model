@@ -157,6 +157,7 @@ public:
 
 
     static double* decayClassThresholds() {return mDecayClassThresholds; }
+    static double singleTreeThreshold() { return mDBHSingle; }
 private:
     /// storage for snags that are stored individually
     QVector<DeadTree> mDeadTrees;

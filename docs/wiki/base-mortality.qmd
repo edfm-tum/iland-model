@@ -1,0 +1,78 @@
+---
+title: "base mortality"
+---
+
+Basic tree mortality, i.e. mortality caused by stress and chance events (as opposed to mortality by disturbances or management) is simulated combining the probabilistic approach of gap models with a more process-oriented carbon balance approach.
+
+
+
+
+
+
+# intrinsic mortality
+
+
+The basic probability of a tree to die (*μ*) is a composite of intrinsic mortality *μ<sub>i</sub>* (see [Keane et al. 2001](http://dx.doi.org/10.1023/A:1012539409854)) and stress-related mortality *μ<sub>s</sub>* (Eq. 1).
+
+$$
+\mu =min(\mu _{i}+\mu _{s}\: ;\: 1)
+$$
+
+Intrinsic mortality is calculated from maximum tree age (*age<sub>max</sub>*), assuming that a certain share of trees (*p<sub>lucky</sub>*) “get lucky” and reach this maximum age (cf. [Botkin et al. 1972](http://tinyurl.com/yd8u2fv), [Wunder et al. 2006](http://dx.doi.org/10.1016/j.ecolmodel.2006.02.037)) (Eq. 2).
+
+$$
+\mu _{i} = 1-{p_{lucky}}^{\frac{1}{{age_{max}}}}
+$$
+
+
+        *
+
+
+
+# stress-related mortality
+
+
+In the context of *μ<sub>s</sub>* we use the carbon balance of a tree as physiological proxy for stress (see [Hawkes 2000](http://dx.doi.org/10.1016/S0304-3800(00)). We calculate the stress index of every tree (*SI*) as (Eq. 3),
+
+$$
+SI=max(1-\frac{NPP+w_{res}}{\gamma _{f}W_{f}+\gamma _{fr}W_{fr}+W_{res}}\: ;\: 0)
+$$
+
+with *NPP *the annual net primary production, *w<sub>res</sub>* the biomass stored in the reserves pool, and the denominator summing up the turnover demands for [#allocation to foliage biomass|foliage](allocation.qmd), [#belowground NPP|fine roots](allocation.qmd) and the [#reserve and allocation to stem growth|reserves pool](allocation.qmd). Consequently, the onset of stress is simulated for the level of available carbohydrates where the turnover demands can no longer be met (i.e., the increment of the woody biomass pool falls to zero) and it increases linearly with decreasing carbohydrate availability (compare the asphyxiation index of [Güneralp and Gertner 2007](http://treephys.oxfordjournals.org/cgi/reprint/27/2/269)). The stress-related mortality probability *μ<sub>s</sub>* increases with *SI* (Eq. 4) with the parameter *b<sub>s</sub>* determining the slope of the relationship.
+
+$$
+\mu _{s}=1-e^{b_{s}\cdot SI}
+$$
+
+The parameter *b<sub>s</sub>* can be estimated by Eq. 5 assuming a certain survival probability (or years, cf. [Botkin et al. 1972](http://tinyurl.com/yd8u2fv), [Wunder et al. 2006](http://dx.doi.org/10.1016/j.ecolmodel.2006.02.037)) for a specific stress level, e.g. for a survival probability of 0.1% at SI=1 *b<sub>s</sub>* equals -6.9.
+
+$$
+b_{s}=\frac{ln(1-\mu_{s} )}{SI}
+$$
+
+A tree dies in iLand if a unified random number of the interval {0,1} is smaller than *μ* or if a trees leaf area *LA* is zero.
+
+        *
+
+
+
+
+# discussion
+
+
+The mortality formulation takes up the three recommendations for mortality modeling by [Hawkes (2000)](http://dx.doi.org/10.1016/S0304-3800(00):
+
+* Using a carbon balanc-related predictor for mortality it utilizes process information rather than auxiliary variables (e.g., site characteristics, density measures…) to predict mortality. By means of the stress index *SI *increased mortality is simulated when the minimum requirements to support a trees’ structural compartments and functional balance exceed the available C from production and reserves, which is in line with general ecological process understanding ([Waring 1987](http://www.jstor.org/stable/1310667)).
+* Moreover, the models predictor is derived by means of basic physiological principles, representing the major processes of plant growth. The simplified approach to derive the C balance (see [Landsberg and Waring 1997](http://dx.doi.org/10.1016/S0378-1127(97), [Duursma et al. 2007](http://dx.doi.org/10.1016/j.ecolmodel.2006.11.032)) gives ample confidence in the robustness of using an emerging parameter to estimate mortality (see the discussion in [Hawkes 2000](http://dx.doi.org/10.1016/S0304-3800(00)).
+* In the absence of better understanding and in line with the general approach of iLand we propose a simple algorithm that needs only few parameters as input. Parameters are commonly available and have been widely used in modeling mortality ([Keane et al. 2001](http://dx.doi.org/10.1023/A:1012539409854), [Wunder et al. 2006](http://dx.doi.org/10.1016/j.ecolmodel.2006.02.037)). Furthermore, following the experiences with individual-based process models simulating mortality based on C balances (e.g., [Bugmann et al. 1997](http://tinyurl.com/yjf5cam), [Friend et al. 1997](http://dx.doi.org/10.1016/S0304-3800(96)), we used a probabilistic design to account for the remaining uncertainties in predicting the processes leading to tree death (cf. [Hawkes 2000](http://dx.doi.org/10.1016/S0304-3800(00)).
+
+The model is generally able to reproduce [Manions (1981)](http://tinyurl.com/ygz72rd) gradual decline hypothesis (see also [Pedersen 1998](http://dx.doi.org/10.1016/S0304-3800(97)), accounting for predisposing factors (i.e. a longer-term memory of stress factors, via reduced leaf area and a reduced reserves pool) as well as for inciting factors (factors radically affecting physiological processes adversely, e.g. drought). Feedbacks via leaf area and a declining absorbed radiation should also lead to compliance with Bossels sudden death hypothesis ([Bossel 1986](http://dx.doi.org/10.1016/0304-3800(86)). [Güneralp and Gertner (2007)](http://treephys.oxfordjournals.org/cgi/reprint/27/2/269) recently demonstrated the compatibility of the two hypotheses in a process-based mortality model, and iLands *SI *is structurally congruent with their asphyxiation index. Using size- and species-specific information on in production modeling the approach also addresses [Loehle and LeBlancs (1996)](http://dx.doi.org/10.1016/0304-3800(96) criticism of the generality of early gap models in this regard. It furthermore improves these early stress threshold approaches as slow growth over longer time periods, i.e. under harsh environment or at the timber line, does not inevitably lead to mortality (see [Loehle and LeBlanc 1996](http://dx.doi.org/10.1016/0304-3800(96), [Bigler and Bugmann 2003](http://dx.doi.org/10.1139/x02-180)).
+
+
+
+
+
+::: {.callout-note title="citation"}
+[Seidl, R., Rammer, W., Scheller, R.M., Spies, T.A. 2012](http://dx.doi.org/10.1016/j.ecolmodel.2012.02.015). An individual-based process model to simulate landscape-scale forest ecosystem dynamics. Ecol. Model. 231, 87-100.
+:::
+

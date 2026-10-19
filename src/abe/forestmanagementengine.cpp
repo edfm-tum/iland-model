@@ -123,7 +123,8 @@ void ForestManagementEngine::setupScripting()
     if (code.isEmpty())
         throw IException("Loading of ABE script file '"  + file_name + "'failed; file missing or empty.");
     qCDebug(abeSetup) << "Loading script file" << file_name;
-    QJSValue result = GlobalSettings::instance()->scriptEngine()->evaluate(code,file_name);
+
+    QJSValue result = GlobalSettings::instance()->scriptEngine()->evaluate(code, file_name);
     if (result.isError()) {
         int lineno = result.property("lineNumber").toInt();
         QStringList code_lines = code.replace('\r', "").split('\n'); // remove CR, split by LF

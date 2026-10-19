@@ -1,0 +1,223 @@
+/* Custom Stylesheet for iLand Documentation */
+
+/* Ensure smooth transitions on hover */
+a {
+  transition: color 0.2s ease-in-out;
+}
+
+/* Style LaTeX Math Blocks */
+.math.display {
+  background-color: rgba(0, 0, 0, 0.02);
+  padding: 1rem;
+  border-radius: 6px;
+  border-left: 4px solid var(--bs-primary);
+  margin: 1.5rem 0;
+  overflow-x: auto;
+}
+
+html.dark .math.display, body.quarto-dark .math.display {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Style settings tables */
+.wikitable, .table {
+  width: 100%;
+  margin-bottom: 1.5rem;
+  vertical-align: top;
+  border-color: var(--bs-border-color);
+}
+
+.table th {
+  background-color: var(--bs-light);
+  color: var(--bs-body-color);
+  font-weight: 600;
+}
+
+html.dark .table th, body.quarto-dark .table th {
+  background-color: rgba(255, 255, 255, 0.07);
+}
+
+/* Style YUI Doc tag sections */
+.api-tag {
+  font-size: 0.85rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+  display: inline-block;
+  margin-right: 0.5rem;
+}
+
+.tag-readonly {
+  background-color: #ffeebe;
+  color: #856404;
+}
+
+html.dark .tag-readonly, body.quarto-dark .tag-readonly {
+  background-color: #856404;
+  color: #ffeebe;
+}
+
+.tag-type {
+  background-color: #e2f0d9;
+  color: #385723;
+}
+
+html.dark .tag-type, body.quarto-dark .tag-type {
+  background-color: #385723;
+  color: #e2f0d9;
+}
+
+/* Homepage Custom Styles */
+.homepage-title {
+  font-weight: 700;
+  font-size: 1.6rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  color: var(--bs-heading-color, #2c3e50);
+}
+
+.quick-links-row {
+  margin-top: 15px;
+  margin-bottom: 25px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.quick-links-label {
+  font-weight: 500;
+  font-size: 1.05rem;
+  color: var(--bs-body-color);
+  margin-right: 5px;
+}
+
+.quick-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #42825a;
+  color: #ffffff !important;
+  text-decoration: none !important;
+  padding: 6px 14px;
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: background-color 0.15s ease-in-out, transform 0.1s ease-in-out;
+  border: none;
+}
+
+.quick-link-btn:hover {
+  background-color: #366d4a;
+  color: #ffffff !important;
+}
+
+.quick-link-btn:active {
+  transform: scale(0.98);
+}
+
+.quick-link-btn i {
+  font-size: 0.9rem;
+}
+
+.homepage-divider {
+  border: 0;
+  border-top: 1px solid var(--bs-border-color, rgba(0, 0, 0, 0.1));
+  margin: 1.5rem 0;
+}
+
+/* Homepage Box Layout styles */
+#hpboxcontainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.hp_box {
+  background-color: var(--bs-card-bg, #ffffff);
+  border: 1px solid var(--bs-border-color, rgba(0, 0, 0, 0.08));
+  border-radius: 8px;
+  padding: 1.25rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+html.dark .hp_box, body.quarto-dark .hp_box {
+  background-color: #1a1a22;
+  border-color: #262630;
+}
+
+.hp_box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.08);
+}
+
+.hp_box img {
+  max-width: 140px;
+  height: auto;
+  border-radius: 6px;
+  margin: 0;
+  display: inline-block;
+}
+
+.hp_box img[align="left"] {
+  float: left;
+  margin-right: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.hp_box img[align="right"] {
+  float: right;
+  margin-left: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.hpcaption {
+  display: block;
+  font-weight: 700;
+  font-style: italic;
+  font-size: 1.15rem;
+  margin-bottom: 0.5rem;
+  color: var(--bs-primary);
+}
+
+.hptext {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+@media (max-width: 576px) {
+  .hp_box img {
+    display: block;
+  }
+  .hp_box img[align="left"],
+  .hp_box img[align="right"] {
+    float: none;
+    margin: 0 auto 1rem auto;
+    max-width: 100%;
+  }
+  .hpcaption {
+    text-align: center;
+  }
+}
+
+/* Team and collaborator list styling */
+.team-list li {
+  display: flow-root;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+}
+
+/* Navbar logo size styling */
+.navbar-logo {
+  max-height: 40px;
+  width: auto;
+  margin-right: 8px; /* Spacing between logo and "iLand" title */
+  filter: brightness(0) invert(1); /* Render logo in solid white for modern, high-contrast look */
+  opacity: 0.95; /* Soften the pure white slightly for better blending */
+}
+
+

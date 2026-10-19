@@ -1,0 +1,57 @@
+---
+title: "filenames and paths"
+---
+
+One rather annoying and often recurring task in the life of a modeller is the need to handle a large amount of files and to maintain paths and file locations of different init- and input-files. Here, iLand tries to reduce the pain a little by providing a way to specify default locations and, generally, by operating with relative paths.
+
+
+
+## Default locations
+
+
+Default paths for different types of files are defined in the section *system.path* in the [project file](project-file.qmd).
+Generally, all paths might be given either as absolute or as relative. If relative paths are provided, then they are considered to be relative to the *home* directory of the project. If the *home* project setting is empty, the location of the project.xml itself will be used as the the home-directory.
+The following table describes the various file types:
+
+
+| **key** | **description** |
+| --- | --- |
+| home | the project's home directory. If empty, the directory containing the project file is the home folder |
+| database | database directory. Default: "database" |
+| lip | directory containing the binary LIP files. Default: "lip" |
+| output | default path for the output database(s). Default: "output" |
+
+
+For compatibilty reasons, also settings for default paths for "temp", "log", "script", and "init" are possible. It is, however, recommended to use relative paths for all other files.
+
+
+
+## Rules
+
+
+Whenever a file is specified, following rules apply:
+
+* if the filename is *absolute* (i.e. starts with a drive letter), nothing happens. Thus one can always override default locations.
+* if a relative filename is specified (that starts with a directory or filename), then, depending on the context, the filename is expanded to the respective default directory.
+
+Some examples (using Windows file notations):
+If given the following values for default directories:
+
+| **home** | "e:\projects\projectA" |
+| --- | --- |
+| **database** | "db" |
+| **output** | "c:\temp" |
+
+The following filenames would be produced:
+
+| (in the context of input database) |
+| --- |
+| "species_param.sqlite" |
+| "take_two/sp.sqlite" |
+
+(in the context of outputs)
+
+| (in the context of input database) |
+| --- |
+| "outputdb.sqlite" |
+

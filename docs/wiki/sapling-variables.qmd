@@ -1,0 +1,27 @@
+---
+title: "sapling variables"
+---
+
+A list of variables provided by the sapling cohorts.
+These variable names are used when binding a sapling to an [expression].
+See also: [tree variables](tree-variables.qmd) and [resource unit variables](resource-unit-variables.qmd).
+
+
+
+## General variables
+
+
+
+| **Name** | **Description** |
+| --- | --- |
+| year | current simulation year. |
+| species | cohort species. The species is a numeric constant (you can use species codes such as 'fasy') |
+| height | height of the cohort (m) |
+| age | age of the cohort cell (yrs) |
+| dbh | dbh (cm) of the cohort (calculated via HD ratio) |
+| nrep | number of trees represented by the cohort (calculated via the Reineke equation) |
+| foliagemass | foliage mass (kg) of each tree of the cohort (i.e. to calculate total foliage mass: foliagemass*nrep) |
+| x | x-coordinate of the sapling (meters, iLand reference system) |
+| y | y-coordinate of the sapling (meters, iLand reference system) |
+
+ 

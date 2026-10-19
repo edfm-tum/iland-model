@@ -1,0 +1,78 @@
+---
+title: "individual tree light availability"
+---
+
+To derive individual tree light availability the light resources available to an individual (*[LRI](competition-for-light.qmd)*), corrected for the overall light absoprtion at RU level, and the species-specific ability to utilize radiation are integrated to a measure of light utilization (*f<sub>light</sub>*). *f<sub>light</sub>* subsequently serves as weighting factor to calculate [weighted leaf area](primary-production.qmd) (*WLA*), which in turn determines the individuals contribution to (or share on) *[APAR](primary-production.qmd)* at *RU *level.
+
+
+
+
+
+
+# scaling *LRI *to resource unit level
+
+
+*[LRI](competition-for-light.qmd)* is aggregated bottom up based on individual tree light influence patterns. Its strength lies in an efficient approximation of an individuals' relative competitive status, while absolute levels of absorbed radiation are likely to be biased as an effect of the simplified computation.
+Actual radiation absorption is calculated at the *RU *level in iLand using Beers law. Although this is a somewhat erroneous approximation particularly for strongly structured stands, it is a robust and frequently applied method and alleviates the complexity of radiation interception modeling for individual tree crowns (cf. [Brunner 1998](http://dx.doi.org/10.1016/S0378-1127(97), [Lieffers et al. 1999](http://dx.doi.org/10.1139/cjfr-29-6-796), [Duursma and Mäkelä 2007](http://treephys.oxfordjournals.org/cgi/reprint/27/6/859)).
+Consequently, the bottom-up calculated *LRI* needs to be adjusted to achieve congruence with the *RU *level absorbed radiation (Eq. 1-3). This step constitutes a constraint on bottom-up *LRI* from a hierarchically higher level, in line with the [hierarchical multiprocess scaling approach](scaling.qmd) adopted in iLand. We follow [Brunner and Nigh (2000)](http://treephys.oxfordjournals.org/cgi/reprint/20/5-6/323.pdf) in defining an individual trees’ success to intercept radiation as a multiplier of *PAR* (Eq. 1), with *WLA<sub>j</sub>* (m<sup>2</sup>) the weighted leaf area of individual *j*, a measure integrating both its leaf area and canopy status.
+
+$$
+APAR=PAR\cdot SA\cdot pPAR=PAR\cdot \sum_{j}^{}WLA_{j}
+$$
+
+
+[Brunner and Nigh (2000)](http://treephys.oxfordjournals.org/cgi/reprint/20/5-6/323.pdf) derive *WLA<sub>j</sub>* as the integral over relative light availability and absorption for the crown volume of an individual (calculated by means of detailed ray tracing algorithms). In iLand, weight and contribution of every individuals' leaf area to *RU **APAR *are approximated by a trees *LRI<sub>j</sub>* (Eq.2).
+
+$$
+WLA_{j}=LA_{j}\cdot LRI_{j}
+$$
+
+
+Equating Eq. 1 and 2 a *LRI* correction factor is derived (Eq. 3), granting correspondence between *RU *level light absorption and individual tree *LRI*s:
+
+$$
+LRI_{j}=LRI_{j}\cdot \frac{SA\cdot pPAR}{\sum_{j=1}^{n}LA_{j}\cdot LRI_{j}}
+$$
+
+
+        *
+
+
+
+
+# species-specific light utilization potential
+
+
+Empirical results show that light utilization is not linearly related to absorption over species and light levels ([Brunner and Nigh (2000)](http://treephys.oxfordjournals.org/cgi/reprint/20/5-6/323.pdf)). Two light response curves- for shade-tolerant (*S5*) and shade-intolerant (*S1*) species- are used to confine the envelope of light utilization, following an approach frequently employed by gap models (e.g., [Botkin 1993](http://tinyurl.com/yd8u2fv), [Bugmann 1996](http://www.jstor.org/stable/2265700), [Seidl et al. 2005](http://treephys.oxfordjournals.org/cgi/reprint/25/7/939)). Using *LRI *as input to these functions, the return value is interpolated applying the homogenized species shade tolerance ratings (*s<sub>tol</sub>*) of [Niinemets and Valladares (2006)](http://dx.doi.org/10.1890/0012-9615(2006)076[0521:TTSDAW]2.0.CO;2), Eq.4,
+
+$$
+f_{light}=S1 + (S5-S1)\cdot\frac{s_{tol} - 1}{4}
+$$
+
+<img src="/img/light_response.png" alt="Image" width="300" class="img-fluid" />
+**Figure 1: Light response functions accounting for species-specific light utilization (*S5*= shade tolerant, *S1*= light-demanding)**
+
+        *
+
+
+
+
+# individual tree radiation
+
+
+The radiation available for primary production of individual *j *is derived as a share of total *[APAR](primary-production.qmd)* using its *LA<sub>j</sub> *and *f<sub>light,j</sub>* as combined weighting factor (Eq.5)
+
+$$
+APAR_{j}=APAR \cdot \frac{LA_{j}\cdot f_{light,j}}{\sum_{j}(LA_{j}\cdot f_{light,j})}
+$$
+
+Due to the linear scaling of the applied [radiation use efficiency approach](primary-production.qmd) the individual-tree weighting factor in Eq. 5, indicating relative competitive success of an individual in the resource unit, is identical for *APAR *and *GPP*.
+
+
+
+
+
+::: {.callout-note title="citation"}
+[Seidl, R., Rammer, W., Scheller, R.M., Spies, T.A. 2012](http://dx.doi.org/10.1016/j.ecolmodel.2012.02.015). An individual-based process model to simulate landscape-scale forest ecosystem dynamics. Ecol. Model. 231, 87-100.
+:::
+

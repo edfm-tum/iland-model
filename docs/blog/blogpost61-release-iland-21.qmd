@@ -1,0 +1,179 @@
+---
+title: "Release iLand 2.1"
+date: "2025-07-23"
+author: "Werner Rammer"
+---
+
+
+
+# iLand Release 2.1: Forest Management, Deadwood, and More
+
+
+
+We are excited to release iLand 2.1! Our last big release was 2.0, roughly one year ago. We will tryp to keep this cadence of releases, and release each summer a new version that includes all additions and changes that went into the model over a year. So expect 2.2 in summer 2026!
+
+This post summarizes the major changes and new features introduced in iLand version 2.1 since version 2.0 (July 2024). This release focuses on three key areas: a powerful new forest management library, enhanced deadwood dynamics, and various other improvements.
+
+
+
+## New Forest Management Library (*abe-lib*)
+
+
+
+([c30858ae](https://github.com/edfm-tum/iland-model/commit/c30858ae2820b4282fcdaa7378ca9b8390b3290a)). See [abe-library](../wiki/abe-library.qmd) for more details!
+
+A major addition in this release is the *abe-lib* JavaScript library, which provides a flexible and powerful way to define and execute complex forest management activities. This library is designed to be used within the ABE (Agent-Based Extension) module and allows for the creation of sophisticated silvicultural treatment programs (STPs).
+
+
+
+### Key Features
+
+
+
+* **Modular Design:** The library is organized into modules for different types of activities, including *harvest*, *thinning*, and *planting*.
+* **Customizable Activities:** Users can create custom activities by combining and parameterizing the provided functions.
+* **Signal-Based Scheduling:** Activities can be scheduled based on time, specific events, or signals emitted by other activities, allowing for dynamic and adaptive management plans.
+* **Patch-Based Operations:** ABE supports now powerful tools for selecting and managing patches of forest based on various criteria (think selecting sub-areas of a stand based on criteria, and then apply management specifically on these areas).
+
+
+
+### Getting Started
+
+
+
+To use the new library, you can include it in your ABE scripts. Here are some examples of how to use *abe-lib* to create STPs:
+
+**Example: Clearcut and Plant**
+```javascript
+// Define a clearcut harvest activity
+const ClearcutHarvest = lib.harvest.clearcut();
+
+// Define a planting activity
+const ClearCutPlanting = lib.planting.general({species: 'piab'});
+
+// Create an STP that combines the two activities
+lib.createSTP('Clearcut', ClearcutHarvest, ClearCutPlanting);
+```
+
+**Example: Structured Thinning and Target DBH Harvest**
+```javascript
+// Define a selective thinning activity
+const StructureThinning = lib.thinning.selectiveThinning({mode: 'dynamic'});
+
+// Define a target DBH harvest activity
+const StructureHarvest = lib.harvest.targetDBH({
+  dbhList: {
+    "fasy": 65, "frex": 60, "piab": 45, "quro": 75, "pisy": 45,
+    "lade": 65, "qupe": 75, "psme": 65, "abal": 45, "acps": 60, "pini": 45
+  }
+});
+
+// Create the STP
+lib.createSTP('Structure', StructureThinning, StructureHarvest);
+```
+
+
+
+### Available Modules
+
+
+
+* ***lib.harvest*:** Provides functions for various harvesting methods, including clearcut, femel, and target DBH harvest.
+* ***lib.thinning*:** Includes functions for selective thinning, such as negative selection and dynamic thinning.
+* ***lib.planting*:** Offers tools for planting specific species in selected areas.
+* ***lib.selectOptimalPatches*:** A powerful tool for selecting patches based on user-defined criteria, such as *max_light*.
+
+For more detailed examples, please refer to the *abe-lib/example-use.js* file.
+
+
+
+## Deadwood Dynamics
+
+
+
+([4a7d19a5](https://github.com/edfm-tum/iland-model/commit/4a7d19a50004c25313ab3ff4c0ac4163d0d22684)) See [dead trees](../wiki/dead-trees.qmd) for more details!
+
+This release introduces significant enhancements to the modeling of deadwood, allowing for individual tracking of dead trees in addition to the existing cohort/pool-based approach. This provides more detailed insights into the quantity, quality (decay class), dimension, and species of snags and downed stems, which is particularly useful for habitat quality assessments.
+
+Trees enter the individual tracking system when their DBH at the time of death exceeds *model.settings.soil.swdDBHSingle* (cm). When such trees die, their biomass is separated into SWD pools (branches, foliage, fine- and coarse roots), while the stem biomass is tracked as a standing snag. If the cause of death is wind or management (e.g., cutting), the stem is immediately considered downed.
+
+
+
+### *DeadTreeList* Object
+
+
+
+The *DeadTreeList* class in the ABE JavaScript API provides a powerful way to access, query, and analyze individual deadwood elements.
+
+**Example: Working with Deadwood**
+```javascript
+// Create a new DeadTreeList object
+var deadwood = new DeadTreeList();
+
+// Load snags from resource unit 5
+var numLoaded = deadwood.loadFromRU(5, DeadTreeList.Snags);
+
+// Load downed woody debris (DWD) from resource unit 10
+deadwood.loadFromRU(10, DeadTreeList.DWD, true);
+
+// Get the total count of deadwood items
+console.log("Total deadwood count: " + deadwood.count);
+
+// Filter for snags with a volume greater than 0.5
+var remaining = deadwood.filter("snag=true and volume > 0.5");
+
+// Calculate the mean DBH of DWD
+var meanDbhDWD = deadwood.mean("dbh", "snag=false");
+
+// Calculate the total carbon in snags
+var totalCarbonSnags = deadwood.sum("carbon", "snag=true");
+```
+
+
+
+### Snag Variables
+
+
+
+
+
+
+## GeoTIFF Support
+
+
+
+([9afc3b57](https://github.com/edfm-tum/iland-model/commit/9afc3b575bd6b6de32e3ed0181dba1d4f2239de9))
+
+iLand now seamlessly integrates with GeoTIFF files for reading and writing most GIS data, which is more memory-efficient and faster than using ASCII based formats. This also enhances interoperability with other geospatial tools and workflows.
+iLand reads projection information from the *first* GeoTIFF it encounters and uses this information for files written. It is thus very important to have consistent projection in all GIS files loaded in a project!
+
+Note also that data type support is limited, currently iLand can work with: INT16, INT32, FLOAT, DOUBLE.
+
+
+
+## macOS Support
+
+
+
+([909c1658](https://github.com/edfm-tum/iland-model/commit/909c1658b348e6210f32b4f7cd7c5c684f5c6a7f))
+
+iLand now supports macOS, including ARM-based M1/M2 processors, alongside Windows and Linux. This expands iLand's accessibility to a wider range of users and computing environments. Support is a bit experimental - if you encounter problems please get in touch on Discord!
+
+
+
+
+## Other Changes
+
+
+
+* **Bark Beetle Module:** The bark beetle module has been updated to consider the proximity of attractive deadwood when calculating infestation risk.
+* **Fire Module:** The fire module now includes a more detailed calculation of combustible fuel, including contributions from the forest floor and deadwood. The new *calcCombustibleFuel* function calculates the total combustible fuel (kg/ha), and sets the reference variables for forest floor and deadwood. This allows for a more realistic fire behavior simulation. ([e2caeb6a](https://github.com/edfm-tum/iland-model/commit/e2caeb6afdfdb8e9d653f0f14546ac8438cf2fa6))
+* **User Interface:** The user interface now includes an option to visualize standing and lying deadwood on the map.
+
+
+
+## Minor Changes and Bug Fixes
+
+
+
+Many smaller changes and bug fixes went into iLand over the last year. Please check out the GitHub repository for more details!

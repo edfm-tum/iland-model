@@ -1,0 +1,105 @@
+---
+title: "FONStudio performance"
+date: "2009-08-15"
+author: "Werner Rammer"
+---
+
+The implementation of the light competition cycle is still uncomplete (August, 14th, 2009), but it is in a shape that allows some conclusions with regard to the performance. Recently, I tinkered around with some timing issues (the Qt built in QTime is quite limited) and finally I came up with a much more precise stopwatch. From that point I couldn't resist to do some measurements...
+
+
+
+## Current state of the competition cycle
+
+
+Currently, Light Influence Patterns (LIP) have a horizontal resolution of 2x2m, while the "dominance height grid" uses a 10x10m grid. The maximum width/height of a LIP of an individual tree is the tree height (e.g. a tree with 40m has a maximum pattern of 80x80m or 40x40=1600 cells), but usually the realized sizes are smaller (the 40m tree may have a grid of 30x30m).
+For the "reading out" of the influence value only those pixels within the crown-radius are considered, thus only a fraction of pixels have to be considered.
+
+The cylce consists of the following steps
+
+* clear the grids (initialize)
+* calculate the dominance height grid (height)
+* apply the LIP of each tree (apply)
+* for each tree read the influence values (read)
+
+
+
+## Some results
+
+
+
+
+### Goals
+
+
+
+* how is the general performance, i.e. how many milliseconds are needed to calculate 1ha? This provides a rough estimate how the approach works at the landscape scale.
+* how is the effect of tree count vs. tree size?
+
+
+
+### Method
+
+
+Test stands with different tree count / tree sizes were applied on a grid of 1ha. Each phase was repeated separately several times to achieve a little robustness in results. The FONstudio was compiled in release mode with GCC shipped with Qt 4.5. The current revision in SVN is 71.
+
+
+
+### Results
+
+
+The used stands are summarized in the following table:
+
+| Name | No. of trees | avg.dbh(cm) | avg.height(m) |
+| --- | --- | --- | --- |
+| crowded_small | 3000 | 10 | 10 |
+| crowded_medium | 640 | 30 | 27 |
+| crowded_tall | 250 | 60 | 40 |
+| uneven_gap1 | 622 |  |  |
+
+
+The next table provides some results of performance measurements (times are in milliseconds):
+
+
+| stand | cycle total | avg. apply | avg. read |
+| --- | --- | --- | --- |
+| crowded_small | 24 | 13.4 | 9.4 |
+| crowded_medium | 29 | 26.8 | 0.7 |
+| crowded_tall | 24 | 22.2 | 0.7 |
+| uneven_gap1 | 29 | 26 | 0.7 |
+
+
+The other phases (intialize, height) together took a time of <1ms per cycle for all stands.
+Interestingly, the total times for the apply/read cylce are roughly the same for all stands, but the share of writing/reading differs remarkably. The application of the LIP is more time consuming for larger trees featuring patterns with more pixels. Here, the medium stand with a large number of relatively big trees consumed the most time. On the other hand, the "read"-time scale much more with the number of trees to process, making the stand with the smallest tree the clear winner (or - depending on the point of view - the looser).
+One interesting feature is the big difference of read-time between the small and the medium stand; tree-count is only 5 times higher, but calculation is more than 10 times slower?
+
+
+
+## Conclusions
+
+
+Although the structure of the current code was developed with performance as one of the core goals, there is very likely a big potential of improvements in the current implementation (without even talking about using SSE, or changing the grid sizes). So one has to be careful with conclusions; but it seems to be clear, that *some* improvements will be necessary if we are really aiming at the application on a landscape level.
+A (not very surprising) general point that can be made: more important for performance is not so much the mere number of trees, but the number of items with the smallest resolution - in our case the number and resolution of the concurrency-map (now 2x2m, with large trees having >1000pixels in the pattern).
+
+
+
+
+## Update 20090817
+
+
+
+The results above were not very satisfying and so I finally set down and looked again at the code that actually does the pattern-related work. Again, I couldn't resist and so I started to play around with some optimizations. The current revision (svn version 78) features an improved (and more complicated) method of calculating the height grid, and optimizations for calculation performance for both the pattern application and the tree read-routine.
+The updated values are presented below (the old values are in parentheses):
+
+
+| stand | cycle total | avg. apply | avg. read |
+| --- | --- | --- | --- |
+| crowded_small | 14.8 (24) | 10.1 (13.4) | 2.9 (9.4) |
+| crowded_medium | 17.5 (29) | 15.8 (26.8) | 0.2 (0.7) |
+| crowded_tall | 11.8 (24) | 10.5 (22.2) | 0.2 (0.7) |
+| uneven_gap1 | 17.1 (29) | 15.2(26) | 0.2 (0.7) |
+
+
+The current version performs the apply/read cycle almost twice as fast; this is especially true for stands with larger trees. The improvement of the reading routine (which is 3 times faster now) is only notable for stands with many small trees.
+
+The current work cycle changed the state from "not optimized at all" to "exploited the most obvious issues", and, considerung the law of diminishing returns, without fundamental changes in design future improvements will likely be more tedious to achieve.
+One note: when applying more repetitions, each cylce seems to be more time consuming (like +25% for 1000 cycles compared to 100); I do have no explanation for that behaviour, but it should be considered in futere...

@@ -1,0 +1,33 @@
+---
+title: "Vegetation snapshots and Javascript"
+date: "2011-11-29"
+author: "Werner Rammer"
+---
+
+During the last couple of weeks our efforts are concentrated on the evaluation of the currently developed fire module (see also the last [blog post](blogpost28-summer-time-is-fire-time.qmd)). Besides, we - and especially Rupert - are working  hard on getting manuscripts ready for publication.
+But back to the fire module: a part of this exercise is to compare simulated with historic fire sizes. This requires, of course, simulated "historic" vegetation states, something we are working on [anyways](blogpost26-iland-status-report.qmd). However, the hard thing would be to run iLand for hours just to reach a point in time after, say, 400 years of simulation.
+To make things more tractable, we invented the so-dubbed *vegetation snapshots*. Essentially, a snapshot is a SQLite database containing the full dynamic content of the vegetation, i.e. **all** non-dynamic variables of **all** trees, of **all** trees in the regeneration layer, of **all** standing dead trees, and of **all** soilpools.
+Thanks to the very small list of such variables, this endeavor turned out to be pleasantly straightforward. The full C++ code to create the database, save and restore the data is not more than 350 lines of code.
+
+The second ingredient to an efficient fire-evaluation environment, is making both fire events and the control of vegetation snapshots scriptable, and thus automatable. Not a big deal, thanks to [Qt](http://qt-project.org) and Javascript. This allows the modeler to explicitly (and reproducible!) load a "historic" vegetation snapshot, then to ignite repeated wildfires with certain properties at a certain location, and last  but not least, to save fire dispersal patterns as grids. A "fire simulation" mode was also introduced to allow fires spread without actually modifying the vegetation state.
+Adding some automation magic on the [R](http://www.r-project.org) side allowed to set up and run a quite sophisticated simulation experiment almost in auto-pilot.
+
+And what if one wants to reuse the analysis scripts when doing a fully dynamic simulation (including dynamic fire) - well, than adding a javascript "event handler" that executes user-defined javascript code after each fire is just a couple of lines away...
+And just to show how such a javascript function could look like, a small example:
+
+
+```javascript
+// event handler. Set the fire.onAfterFire to "afterFireProcessing()"
+function afterFireProcessing() {
+   var praefix = Fire.id;
+   // save the form of the fire in ESRI raster format
+   // save a file for each fire
+   Fire.gridToFile('spread', 'output/fire/spread' + praefix + '.txt');
+}
+```
+
+So what have we learned?
+
+* if the simulated entities are simple with regard to state variables, manipulating them is also simple
+* if (service-) functionality is exposed to be scriptable, somebody may some day  starts to combine those pieces to create something new - well, that is exactly the point of scripting...
+* the underlying technical components of the iLand project, i.e. [Qt](http://qt-project.org/) with Javascript bindings, and the [SQLite](http://www.sqlite.org) database, are great tools, besides being real open source (yes, [Qt also!](http://labs.qt.nokia.com/2011/10/21/the-qt-project-is-live))

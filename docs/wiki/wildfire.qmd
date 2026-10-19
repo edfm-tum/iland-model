@@ -1,0 +1,211 @@
+---
+title: "wildfire"
+---
+
+iLand includes a dynamic, spatially explicit fire module. The main design objectives were (i) to model fire regimes as an emerging property of vegetation and climate, (ii) to include processes of individual-tree fire resistance in order to simulate complex and heterogeneous fire impacts, (iii) to take into account landscape heterogeneity on fire processes, and (iv) to be sensitive to climate and thus applicable under climate change conditions.
+The [fire module](fire-module.qmd) page presents details of the technical implementation, while [details on parameterisation and evaluation can be found here](fire-module-evaluation.qmd).
+
+
+
+
+
+# spatial scales and processes
+
+
+Fire is simulated at the level of 20m grid cells in iLand (see also [Schumacher et al. 2006](http://dx.doi.org/10.1007/s10980-005-2165-7), [Keane et al. 2011](http://www.treesearch.fs.fed.us/pubs/37464)). Weather conditions influencing fire are calculated at the level of [resource units](resource-units.qmd) (currently implemented as a 100m grid). Further fire-related parameters are specified at the level of sites (i.e. multiple RUs), which represent an area of relatively homogeneous fire regime. Fire effects on vegetation are modeled at the level of individual trees, i.e. utilizing the high level of detail provided by the iLand model structure to simulate heterogeneity in disturbance impacts.
+In iLand the processes fire ignition, fire spread, and fire severity are modeled largely independent, adopting approaches from established landscape fire simulation models. The current implementation of the iLand fire simulation, while including main fire processes explicitly, utilizes relatively simple modules (see also the model complexity considerations [here](iland-model-complexity-and-its-niche-in-the-landscape-of-models.qmd)). The modularity of the approach, however, gives flexibility to update certain parts in the future if new approaches become available or the performance of certain aspects is found to need improvement.
+
+        *
+
+
+
+# fire ignition
+
+
+Fire ignition modeling in iLand is largely based on the approach of FireBGC v2 ([Keane et al. 2011](http://www.treesearch.fs.fed.us/pubs/37464)). Fuel availability, fire weather, fire suppression, and historical fire probability influence fire ignition. A minimum fuel threshold of 0.05 kg BM m<sup>-2</sup> is required in order for a fire to ignite (see the description of fuel modeling in iLand below). The base fire ignition probability *P<sub>base ignition</sub>* is derived as the inverse of the site-specific fire return interval (i.e. the number of years between fires for all land area within a site, [Keane et al. 2011](http://www.treesearch.fs.fed.us/pubs/37464)). This base probability is modified to account for area and fire size according to Eq.1.
+
+$$
+r_{fire}=\frac{area_{j}}{size_{i}}
+$$
+
+
+$$
+P_{base\: ignition}=P_{base\: ignition}\cdot r_{fire}
+$$
+
+
+with *area<sub>j</sub>* the area of the fire cell *j* and *size<sub>i</sub>* the average fire size for site *i* ([Keane et al. 2011](http://www.treesearch.fs.fed.us/pubs/37464)). Furthermore, fire weather and fire management modify the base fire probability. Fire weather is characterized by the Keetch Byram Drought Index (*KBDI*) ([Keetch and Byram 1968](http://www.treesearch.fs.fed.us/pubs/40), [Keane et al. 2011](http://www.treesearch.fs.fed.us/pubs/37464)). The *KBDI *calculates a water balance for the fuel layers assuming a maximum storage of 8 inches (203 mm). The *KBDI *ranges from 0 (no drought) to 800 (severe drought) and represents the moisture deficit (in 1/100 inch) of the fuel layer. *KBDI *is updated daily by subtracting the rainfall reaching the forest floor (i.e. after [interception](water-cycle.qmd) losses have been accounted for), and by adding a drought factor computed from maximum daily temperature and mean annual precipitation (Eq. 2 and 3).
+
+$$
+KBDI_{t}=KBDI_{t-1}+dQ-dP/25.4\cdot 100
+$$
+
+with the daily drought factor *dQ* computed as
+
+$$
+dQ=10^{-3}\cdot (800-(KBDI_{t-1}-dP/25.4\cdot 100))\cdot \frac{0.9676\cdot e^{0.0486\cdot (T_{max}\cdot 9/5+32)}-8.299}{1+10.88\cdot e^{-0.0441*MAP/25.4}}
+$$
+
+, *dP* the net daily precipitation (mm) after interception losses, *MAP *the reference mean annual precipitation of a site (mm), and *T<sub>max</sub>* the daily maximum temperature (°C). If snow covers the ground or if *T<sub>max</sub>* is below 10 °C, *dQ* is set to zero. We calculate an annual fire weather index as cumulative sum over the daily *KBDI *values, and relate this cumulative sum to its theoretical maximum value (Eq. 4). This procedure has the advantage to make the index sensitive to changes in both fire season length and severity in fire weather, while remaining easily interpretable due to its scalar nature.
+
+$$
+rcKDBI=\frac{\sum_{t=1}^{365}KDBI_{t}}{800\cdot 365}
+$$
+
+with *rcKBDI* the relative cummulative annual *KBDI*. This dynamically simulated indicator of drought severity and fire season length is evaluated against a reference *rcKBDI<sub>ref</sub>* to modify ignition probability (Eq. 5). *rcKBDI<sub>ref</sub>* is defined as the average *rcKBDI *for the period for which *P<sub>base</sub>* is specified by the user.
+
+$$
+r_{climate}=\frac{rcKBDI}{rcKBDI_{ref}}
+$$
+
+Wildfire suppression is accounted for in a similar manner. A scalar for fire suppression, *r<sub>mgmt</sub>*, is defined relative to the suppression activities of the reference period, for which *P<sub>base ignition</sub>* was defined. If *r<sub>mgmt</sub>* is >1 fire suppression is intensified and ignition probability decreased, whereas the opposite is the case if *r<sub>mgmt</sub>* <1. The final ignition probability *P<sub>act</sub>* is calculated according to Eq. 6 ([Wimberly and Kennedy 2008](http://dx.doi.org/10.1016/j.foreco.2007.06.044)) and evaluated against a uniform random number to decide whether a fire is ignited for a given cell.
+
+$$
+odds_{base\: ignition}=\frac{P_{base\: ignition}}{1-P_{base\: ignition}}
+$$
+
+
+$$
+odds_{ignition}=odds_{base\: ignition}\cdot r_{climate}\cdot (1/r_{mgmt})
+$$
+
+
+$$
+P_{ignition}=\frac{odds_{ignition}}{1+odds_{ignition}}
+$$
+
+
+This modification of the base fire ignition probability slightly deviates from the approach of [Keane et al. (2011)](http://www.treesearch.fs.fed.us/pubs/37464):
+
+* The fire ignition routine uses the cumulative *KBDI *over a year as an annual aggregate rather than a arithmetic mean value over a fixed fire season. The rationale behind this modification is that climate change will likely modify current fire season length, thus rendering a fixed definition of fire season to be of only limited use in models developed explicitly for climate change applications.
+* Also, rather than using the maximum *KBDI *of the climate file as reference we explicitly define a reference *KBDI *corresponding to the empirically derived ignition probability distribution. In this way the probabilities are dynamically modified with the respective climate in simulations of climate change scenarios. Accordingly, also the way the modification is applied is adapted (cf. Eq. 5 above), following the approach by [Wimberly and Kennedy (2008)](http://dx.doi.org/10.1016/j.foreco.2007.06.044).
+* handling of *KBDI* mean annual precipitation *MAP*: *MAP* is used in KBDI as a coarse proxy for vegetation water use, assuming that if the average precipitation level is higher, also the supported vegetation and leaf area will be higher. Thus KBDI is somewhat unintuitively sensitive to *MAP*, i.e. at constant precipitation for a given year KBDI decreases (sic!) if *MAP* is reduced (assuming that a site with lower *MAP* will support less vegetation and thus will have lower evapotranspiration). FireBGC v2 uses a mean *MAP* over the climate file as a reference. In iLand, however, we chose to specify *MAP* as an external input parameter, as averaging over the input file could have the effect that *MAP* and thus *KDBI* change simply from using climate files with different lengths etc. A potential change of *MAP* over time could be implemented in iLand via a time series event, using long-term running means of *MAP*.
+
+Note that modeled ignitions in iLand do not represent the total number of ignitions in the landscape but are the ignitions that develop into (detected and measured) wildfires. In reality there are a larger number of small ignitions that go undetected and are thus not accounted for in the parameterization of *P<sub>base ignition</sub>* (see [Malamud et al. 2005](http://dx.doi.org/10.1073/pnas.0500880102)).
+
+        *
+
+
+
+# fire spread
+
+
+Once a fire is ignited at a cell, its spread through the landscape is modeled by means of a cellular automaton approach (cf. [He and Mladenoff 1999b](http://www.jstor.org/stable/176981), [Wimberly 2002](http://dx.doi.org/10.1139/X02-054)). Transition probabilities are modified for the effects of wind, slope, fuel, and land type. Slope is calculated from a [digital elevation model](simulation-extent.qmd#digital-elevation-model), and wind speed and direction being a site-specific input in iLand. Both factors thus remain static throughout the simulation, but wind direction is randomly varied within ±45° for every fire, and wind speed is randomly modified within a user-specified range, in order to mimic the variability in local conditions ([Keane et al. 2011](http://www.treesearch.fs.fed.us/pubs/37464)). The fire spreads to pixels in eight possible directions (N, NE, E, SE, S, SW, W, NW), as calculated from Eq. 7 ([Rothermel 1991](http://www.treesearch.fs.fed.us/pubs/26696), [Keane et al. 2011](http://www.treesearch.fs.fed.us/pubs/37464)):
+
+$$
+spix=r_{wind}+r_{slope}
+$$
+
+with *spix *the number of cells to spread in a given direction, and *r<sub>wind</sub>* and *r<sub>slope</sub>* the wind and slope factors, respectively (Eq. 8 to 10).
+
+$$
+r_{wind}=(1+0.125\cdot \omega )\cdot (cos(\mid\Theta _{s}-\Theta _{w} \mid ))^{\omega ^{0.6}}
+$$
+
+with $\omega$ the wind speed ($ms^{-1}$), $\Theta_s$ the spread direction (degrees azimuth), and $\Theta_w$ the wind direction (degrees azimuth). The slope factor for upward spread (positive slope) is (Eq. 9):
+
+$$
+r_{slope}= \frac{4}{1+3.5\cdot e^{-10\cdot s/100}}
+$$
+
+with *s* the slope (in percent). For downward spread Eq. 9 is applied:
+
+$$
+r_{slope}=max(1-20\cdot (s/100)^2)\: ;\: 0)
+$$
+
+
+Subsequently, *spix* is used to calcualte transition probabilities for the next cell by applying Eq. 11. Since the above described equations are for 30m pixel size, we also have to correct for the iLand pixel size of 20m in Eq. 10. Furthermore, for the four diagonal neighbor cells, the distance needs to be corrected according to Eq. 12.
+
+$$
+ppix=1-0.5^{spix\cdot 30/20}
+$$
+
+
+$$
+ppix=1-0.5^{spix\cdot 30/20\cdot 1.414}
+$$
+
+
+This transition probability is further modified for land type and fuel effects. Land types (*r<sub>land</sub>*) are static inputs into iLand, and allow, for instance, to account for lower spread rates in riparian areas (cf. [Wimberly and Kennedy 2008](http://dx.doi.org/10.1016/j.foreco.2007.06.044)). The fuel modfier (*r<sub>fuel</sub>*) takes into account that a minimum fuel level is necessary for the fire to spread into a cell, i.e. if the fuel load is less than 0.05 kg BM m<sup>2</sup>, *r<sub>fuel</sub>*=0, else *r<sub>fuel</sub>*=1. Both modifiers are applied to derive the final transition probability according to Eq. 13.
+
+$$
+odds_{spread}=\frac{ppix}{1-ppix}
+$$
+
+
+$$
+odds_{spread}=odds_{spread}\cdot r_{land}\cdot r_{fuel}
+$$
+
+
+$$
+P_{spread}=\frac{odds_{spread}}{1+odds_{spread}}
+$$
+
+Every cell only burns one timestep of the cellular automaton. Furthermore, a separate fire extinction probability, *P<sub>ext</sub>*, is considered following [Wimberly and Kennedy (2008)](http://dx.doi.org/10.1016/j.foreco.2007.06.044). If a random number is lower than *P<sub>ext</sub>* the cell is extinct before it can spread the fire to its neighbors. This parameter is currently a calibration parameter helping to achieve desired fire patterns on the landscape (cf. [Wimberly 2002](http://dx.doi.org/10.1139/X02-054)). However, in future versions more process understanding could be implemented into this parameter, in order to simulate fire sizes as emerging property of the system (i.e. without the use of an empirical fire size distribution).
+
+However, building on experiences with previous landscape models ([Wimberly and Kennedy 2008](http://dx.doi.org/10.1016/j.foreco.2007.06.044), [Sturtevant et al. 2009](http://dx.doi.org/10.1016/j.ecolmodel.2009.07.030), [Keane et al. 2011](http://www.treesearch.fs.fed.us/pubs/37464)) we currently constrain the fire size by a maximum fire size drawn from a fire size distribution (but see the approach of [Schumacher et al. (2006)](http://dx.doi.org/10.1007/s10980-005-2165-7)). A negative exponential fire size distribution is assumed (cf. He and Mladenoff 1999), and the fire size is sotchastically determined from the mean fire size (specified at the level of resource units in iLand) and a uniform random number according to Eq. 14:
+
+$$
+fsize=-ln(1-rnd)\cdot fsize_{mean}\newline
+$$
+
+
+$$fsize=\begin{cases}
+fsize<fsize_{min} & fsize_{min} \\
+fsize_{min}<fsize<fsize_{max} & fsize \\
+fsize>fsize_{max} & fsize_{max} \\
+\end{cases}$$
+
+with *fsize* the individual fire size, *fsize<sub>mean</sub>* the mean fire size (site-specific parameter), and *fsize<sub>min</sub>* and *fsize<sub>max</sub>* global parameters constraining the range of possible fire sizes. The above described cellular automaton approach is run until the *fsize* is reached, or the spread probability is zero in every direction. The [wildfire spread](wildfire-spread.qmd) page explains details of the implemented fire spread algorithm.
+
+To grant consistency with the iLand fire occurence algorithms we intermit the fire extinction routine (i.e. *P<sub>ext</sub>*=0) until the fire has reached *fsize<sub>min</sub>*, i.e. every ignited fire reaches at least the size specified by *fsize<sub>min</sub>*.
+
+        *
+
+
+
+# fire severity and effects
+
+
+Fire severity is modeled following the parsimonious approach presented by [Schumacher et al. (2006)](http://dx.doi.org/10.1007/s10980-005-2165-7), which accounts for the effect of fuel availability, fuel moisture, as well as tree size- and species-specific resistance, while not simulating fire intensity explicitly.
+As a proxy for fuel availability and structure the [detritus pools](soil-c-and-n-cycling.qmd) simulated in iLand are used. The litter pool conceptually corresponds to 1h and 10h fuels (i.e. fast-drying dead foliage and twigs), while the downed woody debris pool represents the slower drying 100h and 1000h fuels, i.e. bigger branches and logs. Following [Schumacher et al. (2006)](http://dx.doi.org/10.1007/s10980-005-2165-7), the available fuel is calculate from those pools assuming pool-specific moisture relationships. Fuel moisture is represented by the *KBDI *in iLand (Eq. 15).
+
+
+$$
+fuel=(kfc_{1}+kfc_{2}\cdot KBDI/800)\cdot FF+kfc_{3}\cdot KBDI/800\cdot DWD
+$$
+
+with *FF* the forest floor C (t ha<sup>-1</sup>), and *DWD *the downed woody debris C (t ha<sup>-1</sup>), and *kfc<sub>1</sub>* through *kfc<sub>3</sub>* general empirical parameters.
+
+The percentage of crown volume killed depends on scorch height, tree size and crown form. Scorch height is correlated with fire intensity, which in turn is related to the amount of fuel available for combustion. Crown kill (*ck*, %) is thus modeled as a function of tree size (*dbh*, cm) and available *fuel *(Eq. 16).
+
+
+$$
+ck=\begin{cases}
+min(100\cdot (kck_{1}+kck_{2}\cdot dbh)\cdot fuel\: ;\: 100) & \text{ if } dbh<=dbh_{thres} \\
+min(100\cdot (kck_{1}+kck_{2}\cdot dbh_{thres})\cdot fuel\: ;\: 100) & \text{ if } dbh>dbh_{thres}
+\end{cases}
+$$
+
+where *kck<sub>1</sub>*, *kck<sub>2</sub>*, and *dbh<sub>thres</sub>* are general empirical parameters (the latter defining the minimum *dbh *of canopy trees). In iLand *dbh<sub>thres</sub>* is calculated at the level of 20m cells, excluding trees in the regeneration layer.
+Individual tree mortality probability from fire is modeled according to [Ryan and Reinhardt (1998)](http://tinyurl.com/6ac33kg) and [Keane et al. (2011)](http://www.treesearch.fs.fed.us/pubs/37464), using bark thickness and crown kill as predictors (Eq. 17):
+
+
+$$
+p_{mort}=\frac{1}{1 + e^{-1.466 + 1.91\cdot bt - 0.1775 \cdot bt^2 - 5.41 \cdot ck^2}}
+$$
+
+where *bt* is the bark thickness (cm), and *P<sub>mort</sub>* the individual tree mortality probability, which is evaluated against a uniform random number to decide the fate of a tree. *bt* is calculated from a species-specific empirical parameter relating *bt* to diameter at breast height (see [Schumacher et al. 2006](http://dx.doi.org/10.1007/s10980-005-2165-7), [Keane et al. 2011](http://www.treesearch.fs.fed.us/pubs/37464)).
+
+Fire effects on forest floor and *DWD *pools are calculated from Eq. 15, i.e. the portion of the respective pools that is assumed fuel is also consumed by fire. We assumed that the C/N ratio of the fuel pools remained constant, i.e. that the released nitrogen will be quickly lost from the system (REF). For the trees killed by fire, pool-specific consumption rates are defined (*kfc4*: foliage, *kfc5*: branches, *kfc6*: stem wood), and the pools of fire-killed trees are updated accordingly. The remaining C is added to the respective standing and downed detritus pools and treated as the C of trees that died from [stress-related or chance mortality](snag-dynamics.qmd). All trees in the sapling layer are killed by a fire, and the consumption rate is defined as *kfc7*, with the remaining C routed to the litter pool. Soil organic matter is generally not assumed to be fuel in iLand (cf.[Schumacher et al. 2006](http://dx.doi.org/10.1007/s10980-005-2165-7), [Keane et al. 2011](http://www.treesearch.fs.fed.us/pubs/37464)), but a small percentage is assumed to be lost within the fire perimeter due to erosion (*kfc8*, see [Campbell et al. 2007](http://dx.doi.org/10.1029/2007JG000451), [Bormann et al. 2008](http://dx.doi.org/10.1139/X08-136)). No seeds are allowed to establish within the fire perimeter in the year of the burn. In addition, the effect of serotinous cones or resprouting could be added if required.
+
+ 
+
+
+::: {.callout-note title="citation"}
+[Seidl, R., Rammer, W., Spies, T.A. 2014](http://dx.doi.org/10.1890/14-0255.1). Disturbance legacies increase the resilience of forest ecosystem structure, composition, and functioning. Ecol. Appl., in press. http://dx.doi.org/10.1890/14-0255.1
+:::
+
+ 

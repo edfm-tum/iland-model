@@ -1,0 +1,25 @@
+---
+title: "Summer time is fire time"
+date: "2011-06-28"
+author: "Werner Rammer"
+---
+
+Reflecting pretty well the weather conditions outside, we recently started to implement some "hot" stuff, i.e. fire disturbances. The fire disturbance module is the first of its kind in the iLand world, others (like wind or bark beetle) are expected to follow.
+A question that we pondered regularly over the last years (note the plural!) is the degree of *modularization* we are aiming for. This is about how easy it would be to add or change such modules and also about how easy it should actually be to implement such a module.
+With the advent of the fire module it was necessary to nail some things down; at least for the time being. The guiding principles are now:
+
+* modules are implemented in C++.
+* A module is a module also in a technical sense, i.e. it is implemented as a [Qt-Plugin](http://doc.qt.nokia.com/latest/plugins-howto.html)
+* On the iLand-core side of things, a couple of C++ interfaces are defined. Such interfaces are rather specific and allow plugins to "hook" into some functionality. An example is the "WaterInterface" enabling a module to extract details of the soil water balance (e.g. used to calculate some fancy fire weather index)
+* For the time being, modules are statically linked to the iland core executable, so there is no way to distribute modules by copying only some DLLs. However, modules can be simply switched on/off using the standard XML project file
+
+With our design of the iLand structure we aim at some middle ground: on the one hand we'd like to have a modular concept allowing for some flexibility and different versions of modules, but on the other hand we keep the level of generalization low to avoid unnecessary complications and homegrown problems.
+
+A future option is to implement a more general module including a javascript interface: this would allow the implementation of modules with the core logic written in javascript (easily editable, easily readable,  ...). Such an approach would for sure lower the barrier for possible users to develop new or modify existing modules. However, complex modules with many interactions with the core model are likely to remain pure C++.
+Having a module in C++, of course, does not rule out possible contribution by third parties, but we think if somebody is interested in playing around with iLand, it will probably not the first thing for him or her to do to fire up a C++ editor...
+
+But let's get back to the fire module. One prerequisite for the module was the addition of a digital elevation model to iLand - an important step for the model to actually earn the 'landscape' in its name. Having that and a fire spread algorithm that is sensitive to the terrain provides an excellent pretext to post some screen shots of iLand in action:
+<img src='/img/spread1.jpg' border='0' alt='fire spread 1' />
+<img src='/img/spread2.jpg' border='0' alt='fire spread 2' />
+The grey scale image is the visualization of the DEM (it is mountain slope somewhere in Austria - you see the road in the lower part?) assuming a fixed position of the sun. The overlain colored patches depict the extent of a individual fire event (a fire-pixel is 20x20m). The colors indicate the sequence of burning cells: starting from blue (ignition point) over green to yellow.
+We really enjoy watching our iLand thingy grow along the lines laid out [quite some time ago](../wiki/project-abstract.qmd)!

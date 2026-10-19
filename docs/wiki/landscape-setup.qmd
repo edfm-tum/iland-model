@@ -1,0 +1,133 @@
+---
+title: "landscape setup"
+---
+
+This page describes the required steps and concepts for setting up a real landscape in iLand.
+
+
+
+
+
+## Defining the project area
+
+
+A real world project area is defined by a mix of GIS based data and other parameters/data. The GIS capabilities of iLand support grid files in the [ESRI text-based grid format](http://en.wikipedia.org/wiki/Esri_grid) as well as **GeoTIFF** files (supporting `INT16`, `INT32`, `FLOAT`, and `DOUBLE` data types). GeoTIFF files are much more memory-efficient and faster to process. iLand automatically extracts projection information from the first GeoTIFF it encounters, so it is important that all loaded GIS files share the same projection. The real world coordinates of the grid are transformed to the internal local coordinate system of iLand. The transformation is defined by the keys in the *model.world.location* section of the project file. The coordinate transformation is defined once and used for all grid files loaded for a model run. iLand performs no GIS projections and assumes flat metric coordinates.
+The spatial resolution for input map files is not fixed; however, in most cases an internal grid aligned with the 10m height grid and clipped to the project area is derived from the input grid.
+Note that the same type of spatial input files is not only used for the set up of the initial stand structure, but also for, e.g., management.
+
+
+
+## Setting up the stand grid
+
+
+
+The stand grid defines the spatial distribution of forest stands at the beginning of the simulation. A *stand* is defined by a numeric (integer) ID greater than zero. Pixel values of *-1* (or the NO_DATA_VALUE of the grid) are considered to be non-project-area. For instance, no regeneration establishes on such pixels. The stand grid is loaded during startup from a file specified in *model.world.standGrid.fileName* (and if *model.world.standGrid.enabled* is *true*). When displaying the "dominance grid" in the iLand viewer, non-project-area pixels are painted in white.
+
+<img src="/img/landscape_setup.png" alt="Image" width="500" class="img-fluid" />
+
+The screenshot taken from a GIS application (e.g., ArcMap) shows the target landscape. The shown grid is derived from stand polygons and has a cell size of 10m. Blank pixels are not within the project area.
+Also indicated are the metric coordinates of the lower left corner of the project area. The black frame indicates the planned simulation area (i.e. 500m x 500m). The next step is to export the grid file with the same projection to the ESRI text file format.
+
+The following snipped shows how to load this landscape into iLand:
+
+
+```xml
+<!-- below the "model.world" node in the project XML file -->
+<location x="-39539" y="215800" z="0" rotation="0" />
+<standGrid enabled="true">gis/landscape_grid.txt</standGrid>
+
+<!-- GeoTIFF files are also supported: -->
+<!-- <standGrid enabled="true">gis/landscape_grid.tif</standGrid> -->
+```
+
+ 
+
+
+
+## Setting up tree vegetation
+
+
+
+There are options for setting up the trees selected by the [tree initialization mode](initialize-trees.qmd): you can use *map* for individual init files for each stand, or *standgrid* for one large init file containing a *stand_id* column.
+
+
+
+### *map* mode
+
+
+A simple CSV-style textfile defines for each stand ID the file name of a [stand initialization file](initialize-trees.qmd). This data file is referred to by the key *model.init.mapFileName* and is expected to contain two columns named *id* and *filename* with pairs of stand IDs and stand file names, respectively.
+Each file in that list is loaded into the corresponding stand if *model.initialization.mode* is set to *map* and valid stand grid and *mapFileName* input data files are provided. Currently, only the distribution/iland mode of initalization files is supported. Tree numbers are always interpreted as trees per hectare and scaled to the actual area of the stand.
+
+Example for a init file (Note that not every possible stand is assigned a init file):
+
+
+```
+### Landscape file
+### two columns: id, filename
+### filenames are assumed to be relative to the 'init' path
+id;filename
+127;init_127.csv
+128;init_128.csv
+103;init_103.csv
+107;init_107.csv
+```
+
+ 
+
+
+
+### *standgrid* mode
+
+
+Here, the init file contains an additional column (*stand_id*), that links to the stand polygons described above. Each stand is initialized using all lines in the init file with the respective *stand_id*. Note that this mode does not support single tree initialization files.
+
+
+```
+# iLand init file: exampe for standgrid mode
+stand_id,species,count,dbh_from,dbh_to,hd,age
+1,piab,3000,6,8,100,20
+2,piab,1000,8,10,100,40
+2,fasy,1000,8,10,100,40
+```
+
+
+
+<img src="/img/landscape_screen.png" alt="Image" class="img-fluid" />
+The iLand-screenshot shows the 10m dominance grid; blank areas are outside of the project area (compare to the image above), blue areas are without initialized vegetation, and orange/yellow are four stand polygons that were successfully initialized.
+
+
+
+## Handling of border areas
+
+
+Generally, the stand grid (see section above) defines the project area, i.e. all 10m pixels with a dedicated stand are considered as active part of the simulation area. All other pixels are "outside". "Outside" pixels cannot grow trees, they are not considered when collecting radiation, etc. However, iLand distinguishes two types of outside area: namely forested and non-forested areas. The values of the stand input grid decide on the type of area: a grid value of -1 or the defined NO_DATA_VALUE (defaulting to -9999) means "non-forested outside pixel", a value less than -1 (e.g. -2) indicates a "forested outside" pixel. If a outside pixel is "forested" some differences apply:
+
+* a continuous "shading" from the assumed forest outside of the project area is applied (LIF calculation)
+* [external seeds](external-seeds.qmd): external seed input can stem only from "forested" outside areas
+* [wind module](wind-module.qmd): forested areas are handled differently in fetch calculations
+* the GUI visualizes forested (grey) and non-forested (white) areas differently
+
+
+
+## Metrics of landscape area
+
+
+Landscape area is - at first sight - a very easy concept, but it has its intricacies (perhaps similarly to the difficulties determining the shore length of Great Britain).
+
+iLand uses mainly the **stockable **area: This is area where trees can potentially establish and grow. The resolution is 10m (if a standgrid is used). stockable area does ***not*** include area that is outside of the project area (defined by the standgrid), or single, smaller parts of the landscape that cannot hold trees (e.g., rocky outcrops that are excluded from the standgrid). Every resource unit (100m) has a (fixed) proportion of stockable area. This stockable area per RU is reported in several outputs (e.g., carbon). **Note**: If no stand-grid with sub-1-ha resolution is used, then most of the considerations below to not apply and life may be a bit easier.
+
+Most output variables on resource unit level are scaled to fully stockable area. For example: A RU with a stockable area of 0.25 may have a standing volume of 100 m³ (located on the 0.25 ha). The output value m³/ha in the [#Stand_by_species_RU|stand-output](outputs.qmd) would be 400m³/ha (to get the actual volume on site calculate volume * area_ha). This allows meaningful maps and distributions of values across space. However, landscape averages need to take the fractional resource units into account! (This is, for instance, done for the landscape output).
+
+Focusing only on the stockable area has, however, also some drawbacks. For instance, small unstockable patches are usually not excluded from forest maps and therefore also included in average stand statistics. Exluding such patches in iLand can therefore lead to an overestimation of simulated stand values. 
+
+Every landscape is different (as is the underlying data), so general recommendations are not easy. As a guidance the [#Landscape_aggregates_per_species|landscape output](outputs.qmd) contains two different columns for area: "**area**" is the total stockable area that is simulated (based on the 10m grid), while "**area_100m**" is the total simulated ared based on the 100m resource-unit grid. Particular atttention should be given to "landscape size" when both metrics differ significantly.
+
+ 
+
+ 
+
+
+## Initializing other parameters
+
+
+The initialization of various other parameters (e.g. soil properties, mapping to climate, initialization of snags and soil pools) are on a per resource-unit basis. This is handled by the mechanism with environment files described [here](simulation-extent.qmd).

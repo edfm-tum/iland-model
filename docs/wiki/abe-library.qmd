@@ -1,0 +1,236 @@
+---
+title: "abe-library"
+---
+
+
+# ABE Management Library
+
+## Introduction
+
+The iLand Management Library (ABE Library) simplifies the implementation of management activities in the iLand forest landscape model. It provides a collection of pre-defined management functions that can be customized by adjusting key variables, making it easier for users to include management strategies, such as shelterwood or femel systems, or introducing new tree species, into their simulations. The ABE Library is a collection of real-world forest management approaches, implemented in Javascript and built on top of the ABE system of iLand. It offers a simplified interface to ABE, hiding much of the underlying complexity while retaining flexibility.
+
+## Key Concepts
+
+The library organizes management activities into major phases:
+
+* Planting
+
+* Thinning
+
+* Harvest
+
+Users can compose an individual forest management "menu" by selecting pre-defined options for each phase, which can then be further customized and interact with each other. Just like ordering two desserts but no main dish, it's not required to use all phases. All selected options are then combined to an actual Stand Treatment Program (STP).
+
+### API-Documentation
+
+The detailed API documentation of the JavaScript library is here:
+
+#### [[abe-lib](abe-lib.qmd)](abe-lib/modules/abe-lib.html)
+
+### How to Use
+
+The ABE library is compatible with the ABE system of iLand. A typical setup involves:
+
+* A Javascript file containing code to build specific management programs using the ABE library, defining one or several uniquely named STPs. This file is usually referenced from the project file.
+
+* A CSV table defining the STP for each stand and holding additional information for each stand (like rotation age).
+
+* Stands defined via a `standgrid`.
+
+The library can be included in a project by either loading the copy bundled with iLand or by using a local copy:
+
+```javascript
+// Load the copy of the library that is bundled with iLand
+Globals.include(':/abe-lib/ABE-library.js');
+```
+
+Or, if using a local copy (e.g., in a "scripts" folder):
+
+```javascript
+// Assume your copy of the library is in the "scripts" folder of your project:
+Globals.include(Globals.path('scripts/abe-lib/ABE-library.js'));
+```
+
+Management programs are built by combining pre-defined management options and then creating an STP. For example:
+
+```javascript
+Globals.include(':/abe-lib/ABE-library.js');
+
+// Use the pre-defined management options provided by the library:
+const Tending = lib.thinning.tending();
+const ThinningFromBelow = lib.thinning.fromBelow();
+const ShelterwoodHarvest = lib.harvest.shelterwood();
+
+// build a STP with the name 'ShelterwoodSystem'
+lib.createSTP('ShelterwoodSystem', Tending, ThinningFromBelow, ShelterwoodHarvest);
+```
+
+### Options and Default Values
+
+Each management option has customizable settings with default values. Options are passed as a Javascript object. For example:
+
+```javascript
+const planting = lib.planting.general({species='piab'}); // Plant spruce, other options at default
+const planting_later  = lib.planting.general({species='piab', schedule: 10}); // Plant spruce in year 10
+```
+
+### Scheduling
+
+Management options often have default execution times. This can be customized by providing a `schedule` object within the options:
+
+```javascript
+const thinning = lib.thinning.fromBelow( { schedule: { optRel: 0.25 }  }); // Thinning starts at 25% of rotation age
+```
+
+To let management options react to each other, users can use *`Signals`*. As the name says, those are iLand internal signals, that each management option can send out (`sendSignal`), when certain activities are executed and the scheduler of other management options can wait for those signals. For example:
+
+```javascript
+const SelectPatches = lib.selectOptimalPatches({
+    schedule: { optRel: 0.95  },
+    N: 4,
+    patchId: 1,
+    sendSignal: 'PatchesSelected'
+});
+const FemelHarvestPatches = lib.harvest.femel({ schedule: { signal: 'PatchesSelected' } }) ;
+```
+
+### Introspection
+
+Management options have a `description` property. The library also provides a human-readable description of a full STP:
+
+```javascript
+const my_stand_id = 1;
+Globals.alert( lib.formattedSTP( my_stand_id ) ); // Show description in a popup
+// or
+console.log( lib.formattedSTP(my_stand_id) ); // Log description to console
+```
+
+## 
+
+## Structure of the ABE Library
+
+Management activities are organized into sections (sub-libraries):
+
+* *'Planting*': Activities for establishing new trees.
+
+* *'Thinning*': Activities for selective tree removal to reduce competition.
+
+* *'Harvest*': Activities for final timber extraction.
+
+ 
+
+## Management Operations
+
+ 
+
+### Planting Operations
+
+The planting library includes management operations related to artificial and natural regeneration.
+
+##### *'lib.planting.general*': Schedules a general planting activity.
+
+**Description:** Plants a specified `species` with defined `spacing`, `fraction` of area, initial `treeHeight`, and optional `pattern`. Can `clear` existing vegetation before planting.
+
+##### *'lib.planting.dynamic*': Dynamically schedules planting activities based on provided options.
+
+**Description:** Allows for flexible planting where species and their properties are determined at runtime, often based on `speciesSelectivity` (which can be an object or a function) and `speciesDefaults`. Planting can be restricted to specific `patches`.
+
+ 
+
+### Thinning Operations
+
+The thinning module includes activities for thinning operations.
+
+##### *'lib.thinning.tending*': Tending operation.
+
+**Description:** Performs `times` tending actions at a defined `interval`, influencing species composition and growth of the regeneration through `speciesSelectivity` and `intensity`.
+
+##### *'lib.thinning.fromBelow*': Thinning from below.
+
+**Description:** Implements thinning from below by removing a `thinningShare` of trees based on `ranking` (e.g., '*basalarea*') across specified `thinningClasses`. This is repeated `times` times at a given `interval`. Can be `*simple*` or `*dynamic*` (where `thinningShare` can be a function) and can incorporate `speciesSelectivity`.
+
+##### *'lib.thinning.selectiveThinning*': Selective thinning operation.
+
+**Description:** Marks a number of crop trees (`nTrees`) based on `speciesSelectivity` and a `preferenceFunction`. For each crop tree it then marks `nCompetitors`. Competitors are removed over several (`times`) thinning events at a specified `interval`. Can operate in `*simple*` or `*dynamic*` mode (affecting if `nTrees`, `nCompetitors`, etc., are determined generally or for each stand using specific `stand.flags`).
+
+##### *'lib.thinning.plenter*': Plenter thinning operation (selection system).
+
+**Description:** Aims to maintain a target diameter distribution (`plenterCurve`) by periodically (every `interval`) comparing the current stand structure (in `dbhSteps`) to the target and removing surplus trees with a certain `intensity`.
+
+ 
+
+### Harvest Operations
+
+The harvest library includes management operations related to harvesting.
+
+##### *'lib.harvest.noManagement*: No management.
+
+**Description:** Implements a scenario with no activities. It's a general activity that repeats at a long interval with no specific action.
+
+##### *'lib.harvest.clearcut*': A clearcut operation that removes all trees above a minimum diameter.
+
+**Description:** Removes all trees with a specified `preferenceFunction` (e.g., `*dbh &gt; 0*`). The timing is controlled by a `schedule` object. It's marked as a final harvest.
+
+**Note:** By using the preference function, the clearcut operation can be used in multiple ways, e.g.: '*species=saca*' would remove all salix trees within the stand.
+
+##### *'lib.harvest.stripCut*': Strip cut system.
+
+**Description:** Divides the stand into strips of `stripWidth` and harvests them over time based on `harvestIntensities` for each harvest cycle on a strip, repeated at a specified `interval`. The `harvestDirection` and `nStrips` (number of strips before the pattern repeats) can also be defined.
+
+##### *'lib.harvest.CoppiceWithStandard*': Coppice with standards management system.
+
+**Description:** Periodically harvests trees above a `targetDBH` and most other trees, leaving a specified number of `nStandards` per hectare, selected based on a `preferenceFunction`. This repeats at a defined `interval`.
+
+##### *'lib.harvest.shelterwood*': A shelterwood harvest system.
+
+**Description:** Selects seed trees and removes all other trees in multiple harvest activities over time. It involves selecting a number of seed trees (`nTrees`) based on `speciesSelectivity` and a `preferenceFunction`. Non-seed trees are removed over several `times` at a given `interval`. A final harvest removes the seed trees.
+
+##### *'lib.harvest.femel*': Femel management system.
+
+**Description:** Implements a femel (group selection) harvest by harvesting the previously defined initial patches, then repeatedly enlarging and harvesting them over a defined number of `steps` and `<span style="color:#2980b9;">interval`. Optionally, it can `harvestAll` remaining trees outside the final femel area after the final step.
+
+**Note:** Patches for harvesting the initial femels must be defined previously using *'lib.selectOptimalPatches()'* (see helper functions). Here, the signals are really handy.
+
+##### *'lib.harvest.targetDBH*': Target diameter harvesting system.
+
+**Description:** A repeating harvest operation that removes trees exceeding a species-specific target DBH, defined in `dbhList`. If a species is not in `dbhList`, a general `targetDBH` is used.
+
+##### *'lib.harvest.salvage*': Disturbance response and salvaging operation.
+
+**Description:** Handles post-disturbance scenarios. It can salvage trees based on a `salvageCondition`. If disturbance severity exceeds `thresholdReset`, the stand can be cleared (e.g., simple clearcut if `clearAll` is true) or a custom function (`onClear`) can be executed. A signal (`sendSignal`) can be emitted upon clearing.
+
+ 
+
+### Helper Functions
+
+The library provides helper functions to build and inspect STPs, manage logging, and perform other utility tasks.
+
+* *'lib.createSTP*': Takes one or several activities and creates an STP with a given name in iLand. If the STP exists, it's updated.
+
+* *'lib.changeSTP*': Switches the active Stand Treatment Program (STP) for a stand to a new `STP` name.
+    * **Description:** Allows dynamic changing of the STP applied to a stand, triggered by a `schedule` (e.g., a signal or absolute time).
+
+* *'lib.buildProgram*': Combines one or multiple library function results (activity definitions) into a single Javascript object representing a program, before it's added to iLand as an STP.
+
+* *'lib.initStandObj*': Initializes the `stand.obj.lib` Javascript object for the current stand, used for library-internal communication and data storage.
+
+* *'lib.initAllStands*': Initializes `stand.obj.lib` for all stands in the simulation.
+
+* *'lib.log*' / *'lib.dbg*': Internal logging functions controlled by `lib.loglevel`.
+
+* *'lib.mergeOptions*': Combines default options with user-provided options for activities, ensuring only valid options are used.
+
+* *'lib.selectOptimalPatches*': Selects optimal patches within a stand based on criteria like light availability or a custom function, useful for spatially explicit management.
+    * **Description:** Identifies `N` patches per hectare of a given `patchsize`, potentially with `spacing`, based on a `criterium` (e.g., '*max_light*', '*min_basalarea*') or a `customPrefFunc`. Selected patches are assigned a `patchId` and an optional `sendSignal` can be emitted.
+
+* *'lib.repeater*': Creates a repeater activity that repeatedly triggers a specified `signal`.
+    * **Description:** Useful for executing activities multiple times. It triggers a `signal` for a `count` number of times at a specified `interval`. Can `block` other activities and pass a `parameter` with the signal.
+
+* *'lib.buildRareSpeciesFilter*': Constructs an iLand expression for filtering trees based on the proportion of target species, aiming to protect rare species by reducing their harvest probability if their combined relative basal area is below a `threshold`.
+
+* *'lib.activityLog*': Internal function to populate a management history for a stand, storing activity name, year, and optional extra details.
+
+* *'lib.formattedLog*': Returns the activity log for the current stand as formatted HTML.
+
+* *'lib.formattedSTP*': Returns a readable HTML description of the planned activities for the current stand's STP, indicating active/inactive status and planned timing.
+

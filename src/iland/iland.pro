@@ -91,36 +91,89 @@ LIBS += -L$$PLUGIN_PATH -liland_fire$$PLUGIN_SUFFIX -liland_wind$$PLUGIN_SUFFIX 
 message("PRE_TARGETDEPS:" $$PRE_TARGETDEPS)
 
 
+# ===============================================================
+# FreeImage linking setup (for GeoTIFF image support)
+# ===============================================================
+# The "FreeImage" library is required for GeoTIFF support.
+# On different platforms, it is linked and installed differently:
+#
+# Linux:
+#   Install via package manager:
+#     sudo apt-get install libfreeimage3 libfreeimage-dev   [Debian/Ubuntu]
+#     sudo dnf install freeimage freeimage-devel  [RHEL/Fedora]
+#
+# macOS:
+#   Install via Homebrew:
+#     brew install freeimage
+#   Homebrew usually installs to: /opt/homebrew/opt/freeimage
+#   This block ensures correct linking of headers and library files.
+#
+# Windows:
+#   Precompiled binaries are expected under the 3rd-party path
+#   (THIRDPARTY_PATH/FreeImage).
+# ===============================================================
+
 linux-g++ {
-# The "FreeImage" library is used for processing GeoTIFF data files.
-# FreeImage on Linux: see https://codeyarns.com/2014/02/11/how-to-install-and-use-freeimage/
-# basically sudo apt-get install libfreeimage3 libfreeimage-dev
-
-LIBS += -lfreeimage
-} else: macx{
-LIBS += -L/opt/homebrew/Cellar/freeimage/3.18.0/lib -lfreeimage
+    # The "FreeImage" library is used for processing GeoTIFF data files.
+    # FreeImage on Linux: see https://codeyarns.com/2014/02/11/how-to-install-and-use-freeimage/
+    # basically sudo apt-get install libfreeimage3 libfreeimage-dev
+    LIBS += -lfreeimage
+} else:macx {
+    INCLUDEPATH += /opt/homebrew/include /usr/local/include
+    LIBS += -L/opt/homebrew/lib -L/usr/local/lib -lfreeimage
+    #LIBS += -L/opt/homebrew/Cellar/freeimage/3.18.0/lib -lfreeimage
 } else {
-# external freeimage library (geotiff)
-LIBS += -L$$THIRDPARTY_PATH\FreeImage -lFreeImage
+    # external freeimage library (geotiff) (Windows)
+    LIBS += -L$$THIRDPARTY_PATH\FreeImage -lFreeImage
 }
 
-# querying git repo
+
+# --- Version & Build Info Generation ---
+
+# Ensure we run git in the source directory
+GIT_DIR = $$_PRO_FILE_PWD_
+
+# Helper function to safely escape strings for C++ preprocessor
+# Converts value into: -DVAR_NAME="value"
+defineReplace(addStringDefine) {
+    VAR_NAME = $$1
+    VAR_VAL  = $$2
+    # Double escaping needed: one for qmake/shell, one for the C++ string literal
+    return($$join(VAR_NAME, "", "", "=\\\"$$VAR_VAL\\\""))
+}
+
 win32 {
- !defined(GIT_HASH) {
-GIT_HASH="\\\"$$quote($$system(git rev-parse --short HEAD))\\\""
-GIT_BRANCH="\\\"$$quote($$system(git rev-parse --abbrev-ref HEAD))\\\""
-BUILD_TIMESTAMP="\\\"$$quote($$system(date /t))\\\""
-DEFINES += GIT_HASH=$$GIT_HASH GIT_BRANCH=$$GIT_BRANCH BUILD_TIMESTAMP=$$BUILD_TIMESTAMP
-}
+    # Windows: Use PowerShell to get a locale-independent ISO format.
+    BUILD_TIMESTAMP = $$system(powershell -noprofile -command "Get-Date -Format 'yyyy-MM-dd_HH-mm-ss'")
+
+    # Git commands for Windows
+    GIT_HASH = $$system(git -C "$$GIT_DIR" rev-parse --short HEAD)
+    GIT_BRANCH = $$system(git -C "$$GIT_DIR" rev-parse --abbrev-ref HEAD)
 } else {
-!defined(GIT_HASH) {
-GIT_HASH="\\\"$$system(git -C \""$$_PRO_FILE_PWD_"\" rev-parse --short HEAD)\\\""
-GIT_BRANCH="\\\"$$system(git -C \""$$_PRO_FILE_PWD_"\" rev-parse --abbrev-ref HEAD)\\\""
-BUILD_TIMESTAMP="\\\"$$system(date -u +\""%Y-%m-%dT%H:%M:%SUTC\"")\\\""
-DEFINES += GIT_HASH=$$GIT_HASH GIT_BRANCH=$$GIT_BRANCH BUILD_TIMESTAMP=$$BUILD_TIMESTAMP
-}
+    # Unix/macOS: Use standard date command
+    BUILD_TIMESTAMP = $$system(date -u "+%Y-%m-%dT%H:%M:%SUTC")
+
+    # Git commands for Unix
+    GIT_HASH = $$system(git -C "$$GIT_DIR" rev-parse --short HEAD)
+    GIT_BRANCH = $$system(git -C "$$GIT_DIR" rev-parse --abbrev-ref HEAD)
 }
 
+# Apply to DEFINES
+DEFINES += $$addStringDefine(GIT_HASH, $$GIT_HASH)
+DEFINES += $$addStringDefine(GIT_BRANCH, $$GIT_BRANCH)
+DEFINES += $$addStringDefine(BUILD_TIMESTAMP, $$BUILD_TIMESTAMP)
+
+message("BUILD_TIMESTAMP:" $$BUILD_TIMESTAMP "GIT_HASH:" $$GIT_HASH "GIT_BRANCH: " $$GIT_BRANCH)
+
+
+
+# Handle application icons
+macx {
+    ICON = res/iLand.icns
+}
+win32 {
+    RC_ICONS = res/iLand.ico
+}
 # to enable debug symbols in release code
 # CONFIG += force_debug_info
 # debug information in release-mode executable
@@ -131,9 +184,12 @@ DEFINES += GIT_HASH=$$GIT_HASH GIT_BRANCH=$$GIT_BRANCH BUILD_TIMESTAMP=$$BUILD_T
 #QMAKE_CXXFLAGS_RELEASE += -Zi
 #QMAKE_LFLAGS_RELEASE += /DEBUG /OPT:REF /OPT:ICF
 
-### Flag to allow 3GB on Win 32
-### you also need to modify boot.ini ... not necessary for 64bit
-#QMAKE_LFLAGS_WINDOWS += -Wl,--large-address-aware
+
+# make sure to remove AGL (build with 6.8 in July 2026 - probably not necessary with >qt6.10
+macx {
+    LIBS -= -framework AGL
+    QMAKE_LIBS_OPENGL -= -framework AGL
+}
 
 
 # This is the UI version of iLand!
@@ -454,6 +510,7 @@ OTHER_FILES += maindoc.cpp \
     ../apidoc/abe/abe_context_doc.js
 
 DISTFILES += \
+    ../../.github/workflows/build.yaml \
     ../3rdparty/FreeImage/FreeImage.dll \
     ../3rdparty/FreeImage/FreeImage.lib \
     ../abe-lib/ABE-library.js \
@@ -464,9 +521,12 @@ DISTFILES += \
     ../abe-lib/planting/planting.js \
     ../abe-lib/thinning/selective.js \
     ../abe-lib/thinning/thinning.js \
+    ../apidoc/ABE/abe_context_doc.js \
+    ../apidoc/ABE/abe_doc.js \
     ../apidoc/ABE/abe_patches.js \
     ../apidoc/ABE/deadtreelist_doc.js \
     ../apidoc/ABE/saplinglist_doc.js \
+    ../apidoc/ABE/treelist_doc.js \
     ../apidoc/iLand/grid_doc.js \
     ../apidoc/iLand/map_doc.js \
     ../apidoc/iLand/factory_doc.js \
@@ -476,7 +536,8 @@ DISTFILES += \
     ../apidoc/ABE/abe_stand.js \
     ../apidoc/iLand/csvfie_doc.js \
     ../apidoc/iLand/tree_doc.js \
-    ../apidoc/iLand/treeexpr_doc.js
+    ../apidoc/iLand/treeexpr_doc.js \
+    res/iland.desktop
 
 
 

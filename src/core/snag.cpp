@@ -79,8 +79,6 @@ double CNPool::parameter(const CNPool &s) const
 
 void Snag::setupThresholds(const double lower, const double upper, const double single_tree, QString decay_classes)
 {
-    if (mDBHLower == lower)
-        return;
     mDBHLower = lower;
     mDBHHigher = upper;
     mDBHSingle = single_tree;
@@ -279,7 +277,8 @@ void Snag::calculateYear()
     bool to_remove = false;
     CNPair flux_to_refr;
     for (auto &dead_tree : mDeadTrees)
-        to_remove |= dead_tree.calculate(climate_factor_re, mTotalToAtm, flux_to_refr);
+        if (!dead_tree.calculate(climate_factor_re, mTotalToAtm, flux_to_refr))
+            to_remove = true;
 
     if (to_remove)
         packDeadTreeList();

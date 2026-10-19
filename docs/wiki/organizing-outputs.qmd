@@ -1,0 +1,39 @@
+---
+title: "organizing outputs"
+---
+
+Outputs in iLand are per default created as a SQLite database. Every type of [output](outputs.qmd) is represented by one table within this output database. Thus, the results of one simulation run are contained in one single file. Each iLand output database contains a small table named "runinfo" which stores the timestamp when the simulation was started, and iLand version information.
+Alternatively, individual outputs can be configured to generate data tables as a text file instead of a table in the output database.
+
+
+
+## Output location
+
+
+Generally, the default location for output data is defined in the [project file](project-file.qmd). More on absolute/relative paths can be found in [filenames and paths](filenames-and-paths.qmd).
+
+
+
+## Output filename
+
+
+Basically, there are two options:
+
+1. reuse a database: in this case every run will overwrite the preceding run. This is an option when still "playing around".
+1. create a database for each run: this is clearly the option of choice for larger simulation jobs.
+
+The filename of the output-database is defined by the *home.database.out* key in the project file. If this key contains a normal filename, option 1 is pursued. If you want to go with option 2, a special syntax can be used for the filename (e.g. projectX_\$date\$.db), where the string between the \$-signs is replaced by a time stamp value (e.g. "20091021_143059"). See also [iLand console](iland-console.qmd) if you want to control the output location and filename for larger simulation batch jobs.
+
+
+
+## Output section in the project file
+
+
+The *output*section of the [project file](project-file.qmd) contains a sub-section for each output in iLand. Some outputs provide additional options, see [project file](project-file.qmd) and [Outputs](outputs.qmd) for details.
+
+
+
+## Controlling outputs during runtime
+
+
+Outputs can be controlled by Javascript, i.e. they can be started and stopped from a user defined script. See [#access_to_iLand_outputs](../apidoc/classes/iland/globals.qmd) for details.

@@ -9,7 +9,7 @@
 
 lib.thinning = {};
 
-Globals.include(lib.path.dir + '/thinning/selective.js');
+Globals.include(lib.path + '/thinning/selective.js');
 
 
 /**

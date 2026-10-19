@@ -1,0 +1,154 @@
+---
+title: "management example: parallel management"
+---
+
+
+
+### Background
+
+
+This management scheme aims at a situation characterized by:
+
+* parallel simulation of independent stands with a size of one hectare each
+* a specific yield table management is defined for each hectare
+* the management simply controls the stem numbers
+
+
+
+### Solution
+
+
+Thanks to the mighty javascript engine, a script based solution is rather straightforward. The solution consists of a Javascript-part and a CSV-based textfile containing the management definition.
+
+
+
+### Javascript code
+
+
+A brief explanation of the function is provided below. But here is the code itself:
+
+::: {.callout-note}
+
+```javascript
+/* Javascriptfile for iLand management. */
+
+// global variables
+var mgmt_list = {}
+var mgmt_loaded = false;
+
+/* Load the management descriptions from a CSV file.
+   Each line consists of a location (x/y), a year and a number of trees that should remain after management.
+   The data is stored as properties of an object (mgmt_list). */
+function load()
+{
+	mgmt_list = {};  // clear array
+    //var csvFile = new CSVFile; // (old Qt4 style)
+	var csvFile = Factory.newCSVFile(Globals.path('scripts/parallel_list.csv'));
+
+	var key, value;
+   for (i=0;i<csvFile.rowCount;i++) {
+        // create a combined key
+        key = csvFile.value(i,0) + '_' + csvFile.value(i,1) ; // ruindex_year
+	value = csvFile.value(i,2); // the remaining trees
+	mgmt_list[key] = value;
+	print (key); // just for debugging
+   }
+}
+
+// helping function to query the "database" of management operations
+// returns <undefined> if no entry is inside the list
+function queryMgmtList(ruindex, year)
+{
+	var key = ruindex + '_' + year;
+	return mgmt_list[key];
+}
+
+
+/* callback function called by iLand.
+   executes management for each resource unit.*/
+function manage(year)
+{
+   if (mgmt_loaded == false) {
+      print("1st call - loading management...");
+	  load();
+	  mgmt_loaded = true;
+	  print("loading management finished....");
+   }
+   print("executing management - year " + year);
+   var remains;
+   for (var i=0;i<Globals.resourceUnitCount;i++) {
+		remains = queryMgmtList(i, year);
+		if (remains!=undefined) {
+			// do some management
+			var tree_count = management.loadResourceUnit(i); // load all trees of resouce unit with index i
+			print("do management for resource unit " + i + ". Trees on RU: " + tree_count +". Trees to remain:" + remains);
+			// calculate how many trees are to be removed
+			var to_remove = tree_count - remains;
+			if (to_remove > 0) {
+			    // killPct(percentile_from, percentile_to, count)
+				// killPct(0,100,x) -> kill x trees randomly
+				// you can apply some sorting:
+				// management.sort('dbh'); // sort by dbh ascending
+				// management.killPct(0,33,x); // -> remove x from lowest third
+				management.killPct(0,100,to_remove);
+				print("killed " + to_remove+" trees from resource unit " + i + ".");
+			}
+		}
+	}
+
+}
+```
+
+:::
+
+
+
+
+#### Loading the data
+
+
+The function *load()* loads the content from a tabular textfile and stores it in a simple datastructure. It uses the *CSVFile* object which is actually a binding to a C++ class of iLand.
+The input table should have three columns: the index-number of the resource unit, a year and the number of trees that should remain after the management operation. Note that the resource unit index is 0-based, and that the first simulation year is year 1.
+
+A sample file looks like:
+
+
+::: {.callout-note}
+
+```javascript
+## sample file for the management definition
+## use either tab or ; as delimiter
+## *****************************************
+resourceUnitIndex	year	remaining
+0	1	5000
+0	10	4000
+0	20	2500
+0	30	1800
+0	40	900
+0	50	500
+1	1	250
+1	10	200
+1	20	150
+1	30	100
+1	40	50
+1	50	10
+2	1	5000
+2	10	3456
+2	20	2333
+2	30	1789
+2	40	852
+2	50	400
+```
+
+:::
+
+
+
+
+#### The management
+
+
+The *manage()* function deals with the actual management. If called the first time, *load()* is called and the data is setup.
+The real work starts with looping through all resource units of the system (using the model variable *Globals.resourceUnitCount*). For each unit the function checks if a entry is present in the *mgmt_list* object.
+If no data is present for the combination of year and resource unit, nothing happens.
+Otherwise, the actual management is performed: the current number of trees of the resource unit is compared with the target number; the surplus number of trees is then removed.

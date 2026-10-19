@@ -1,0 +1,49 @@
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  // Find the dropdown toggle button for Version
+  const versionToggle = Array.from(document.querySelectorAll(".nav-link.dropdown-toggle"))
+    .find(el => el.textContent.trim().toLowerCase().includes("version"));
+    
+  if (versionToggle) {
+    const dropdownMenu = versionToggle.nextElementSibling;
+    if (dropdownMenu) {
+      const versionLinks = dropdownMenu.querySelectorAll("a.dropdown-item");
+      versionLinks.forEach(link => {
+        link.addEventListener("click", function(e) {
+          e.preventDefault();
+          
+          const text = link.textContent.trim();
+          const href = link.getAttribute("href") || "";
+          
+          // Determine target version prefix dynamically
+          let targetPrefix = "";
+          if (text.toLowerCase().includes("latest")) {
+            targetPrefix = "";
+          } else {
+            // Match version patterns like 'dev', '2.2', '2.3', 'v3.0.1', etc.
+            const versionMatch = text.match(/(?:v)?\d+\.\d+(?:\.\d+)?|dev/i) || href.match(/(?:v)?\d+\.\d+(?:\.\d+)?|dev/i);
+            if (versionMatch) {
+              targetPrefix = "/" + versionMatch[0].toLowerCase();
+            }
+          }
+          
+          const currentPath = window.location.pathname;
+          
+          // Dynamically strip any existing version prefix from current path (/dev/, /2.2/, /3.0/, /latest/)
+          const versionPrefixRegex = /^\/((?:v)?\d+\.\d+(?:\.\d+)?|dev|latest)(\/.*)?$/i;
+          const match = currentPath.match(versionPrefixRegex);
+          const cleanPath = (match && match[2]) ? match[2] : (currentPath.startsWith("/") ? currentPath : "/" + currentPath);
+          
+          // Construct target URL
+          let newUrl = targetPrefix + cleanPath;
+          if (!newUrl.startsWith("/")) {
+            newUrl = "/" + newUrl;
+          }
+          
+          window.location.href = newUrl;
+        });
+      });
+    }
+  }
+});
+</script>

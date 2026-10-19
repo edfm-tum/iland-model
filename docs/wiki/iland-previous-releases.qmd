@@ -1,0 +1,79 @@
+---
+title: "iLand - previous releases"
+---
+
+This page contains older official releases of the iLand software and example packages. Find the latest release on the main [download](../download.qmd) page.
+
+::: {.callout-note collapse="true" title="iLand version 2.1 (2025-07-23)"}
+
+Release 2.1 focused on three key areas: a powerful new forest management library (*abe-lib*), enhanced deadwood dynamics, and various cross-platform build improvements.
+
+* **Release Notes**: [iLand 2.1 Release Notes](../blog/blogpost61-release-iland-21.qmd)
+* **Downloads**:
+  * <a href="/get_iland/iland_download.php?file=iLandPackage2.1-win.zip" class="btn btn-outline-primary btn-sm">Download Windows Package (ZIP)</a>
+  * <a href="/get_iland/iland_download.php?file=iLandPackage2.1-mac.dmg" class="btn btn-outline-primary btn-sm">Download macOS Package (DMG)</a>
+  * [View Source Code on GitHub](https://github.com/edfm-tum/iland-model/releases/tag/v2.1)
+
+:::
+
+::: {.callout-note collapse="true" title="iLand version 2.0 (2024-07-17)"}
+
+Release 2.0 included a major rewrite of core simulation interfaces, improved performance, and upgraded cross-platform builds.
+
+* **Release Notes**: [iLand 2.0 Release Notes](../blog/blogpost60-release-of-iland-20.qmd)
+* **Downloads**:
+  * <a href="/get_iland/iland_download.php?file=iLandPackage2.0.zip" class="btn btn-outline-primary btn-sm">Download Windows Package (ZIP)</a>
+  * [View Source Code on GitHub](https://github.com/edfm-tum/iland-model/releases/tag/v2.0)
+
+:::
+
+::: {.callout-note collapse="true" title="iLand version 1.0 (2016-11-16)"}
+
+Version 1.0 represented the "feature complete" milestone of the original model specification, introducing the agent-based forest management engine (ABE) and the bark beetle disturbance module.
+
+* **Release Notes**: [iLand 1.0 Released](../blog/blogpost58-iland-10-released.qmd) and [Release in Numbers](../blog/blogpost57-iland-10-release-in-numbers.qmd)
+* **Downloads**:
+  * <a href="/get_iland/iland_download.php?file=iLandPackage1.0.zip" class="btn btn-outline-primary btn-sm">Download Windows Package (ZIP)</a>
+  * [View Source Code on GitHub](https://github.com/edfm-tum/iland-model)
+
+:::
+
+::: {.callout-note collapse="true" title="iLand version 0.8 (2014-08-01)"}
+
+Version 0.8 included the fire disturbance module and legacy dynamics used in Seidl et al. (2014, *Ecol. Appl.*).
+
+* **Release Notes**: [iLand 0.8 Release Notes](../blog/blogpost52-new-iland-release-08.qmd) | [Publication](http://dx.doi.org/10.1890/14-0255.1)
+* **Downloads**:
+  * <a href="/get_iland/iland_download.php?file=iLandPackage0.8.zip" class="btn btn-outline-primary btn-sm">Download Windows Package (ZIP)</a>
+
+:::
+
+::: {.callout-note collapse="true" title="iLand version 0.7 (2013-10-14)"}
+
+Version 0.7 introduced the first disturbance module (wind disturbance mechanics), applied in Seidl et al. (2013, *Environ. Model. Software*).
+
+* **Release Notes**: [iLand 0.7 Release Notes](../blog/blogpost47-iland-v07-release-notes.qmd) | [Publication](http://dx.doi.org/10.1890/14-0255.1)
+* **Downloads**:
+  * <a href="/get_iland/iland_download.php?file=iLandPackage0.7.zip" class="btn btn-outline-primary btn-sm">Download Windows Package (ZIP)</a>
+
+:::
+
+::: {.callout-note collapse="true" title="iLand 0.6.9 (2012-09-26)"}
+
+Version 0.6.9 introduced enhanced regeneration and light competition modules, applied in Seidl et al. (2012b).
+
+* **Release Notes**: [What's New in 0.6.9](../blog/blogpost40-iland-v069-whats-new.qmd) and [Release Notes](../blog/blogpost39-iland-069-the-new-kid-on-the-block.qmd)
+* **Downloads**:
+  * <a href="/get_iland/iland_download.php?file=iLandPackage0.69.zip" class="btn btn-outline-primary btn-sm">Download Windows Package (ZIP)</a>
+
+:::
+
+::: {.callout-note collapse="true" title="iLand 0.3 (2012-03-21)"}
+
+Version 0.3 included early simulation experiments and full C++ source code releases for Oregon USA landscapes (Seidl et al. 2012, *Ecol. Model.*).
+
+* **Release Notes**: [iLand 0.3 Release](../blog/blogpost35-iland-release.qmd) | [Publication](http://dx.doi.org/10.1016/j.ecolmodel.2012.02.015)
+* **Downloads**:
+  * <a href="/get_iland/iland_download.php?file=iLandPackage0.3.zip" class="btn btn-outline-primary btn-sm">Download Windows Package (ZIP)</a>
+
+:::

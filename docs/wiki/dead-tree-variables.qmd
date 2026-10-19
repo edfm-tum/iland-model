@@ -1,0 +1,21 @@
+---
+title: "dead tree variables"
+---
+
+A list of variables available for "dead trees" (i.e., those snags and DWD that are tracked indvidually). These variables are used within expressions.
+See also: [tree variables](tree-variables.qmd), [resource unit variables](resource-unit-variables.qmd), [sapling variables](sapling-variables.qmd)
+
+
+
+
+| variable | description |
+| --- | --- |
+| snag | `true` if the tree is a standing dead tree, `false` if downed (DWD). |
+| volume | tree volume (m3) of the tree when dying (keeps constant, set to 0 for decay class = 5) |
+| decayClass | class 1 to 5 (1 least decayed, 5 most decayed). Classes are set based on the proportion of remaining stem biomass |
+| biomass | (remaining) stem biomass (kg) |
+| remaining | proportion of biomass that is remaining (relative to biomass at time of death) |
+| yearsStanding | years standing since death. The counter is set to 1 in the year following the year of death |
+| yearsDowned | number of years the stem is on the ground. The total number of years since death is yearsStanding + yearsDowned. |
+| reason | Reason of death: 1: normal mortality, 2: bark beetle, 3: wind, 4: fire, 5: management |
+

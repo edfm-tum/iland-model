@@ -1,0 +1,23 @@
+---
+title: "regeneration"
+---
+
+Modeling regeneration processes in iLand follows the general recommendation of [Price et al. (2001)](http://dx.doi.org/10.1023/A:1012579107129) to address the main processes associated with forest regeneration explicitly. Regeneration in iLand includes all processes of the stand initiation phase sensu [Oliver and Larson (1996)](http://tinyurl.com/ye4ymk9), i.e. from seeding to trees entering the stem exclusion stage (i.e. where trees are recruited into the iLand approach to model [individual-based competition for resources](resource-availability-and-competition.qmd)).
+
+The processes modeled in iLand regeneration module are
+
+* [dispersal](dispersal.qmd)
+* [establishment](establishment.qmd)
+* [sapling growth and competition](sapling-growth-and-competition.qmd)
+* [recruitment into the individual-based model structure](recruitment.qmd)
+
+Special topics are:
+
+* [sprouts](sprouts.qmd)
+* [serotiny](serotiny.qmd)
+
+
+
+::: {.callout-note title="citation"}
+[Seidl, R., Spies, T.A., Rammer, W., Steel, E.A., Pabst, R.J., Olsen, K. 2012](http://dx.doi.org/10.1007/s10021-012-9587-2). Multi-scale drivers of spatial variation in old-growth forest carbon density disentangled with Lidar and an individual-based landscape model. Ecosystems, DOI: 10.1007/s10021-012-9587-2.
+:::

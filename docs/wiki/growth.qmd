@@ -1,0 +1,7 @@
+---
+title: "growth"
+---
+
+* [primary production](primary-production.qmd)
+* [allocation](allocation.qmd)
+* [stem growth](stem-growth.qmd)

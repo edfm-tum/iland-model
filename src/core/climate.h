@@ -98,9 +98,11 @@ public:
     const Phenology &phenology(const int phenologyGroup) const; ///< phenology class of given type
     const Sun &sun() const { return mSun; } ///< solar radiation class
     double daylength_h(const int doy) const { return sun().daylength(doy); } ///< length of the day in hours
-
+    /// shifted climate data by half a year?
+    bool shiftedByHalfYear() const { return mSouthernHemisphere; }
 private:
     bool mIsSetup;
+    bool mSouthernHemisphere; ///< on southern hemisphere we shift climate data
     bool mDoRandomSampling; ///< if true, the sequence of years is randomized
     bool mTMaxAvailable; ///< tmax is part of the climate data
     QString mName;

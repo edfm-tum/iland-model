@@ -1,0 +1,86 @@
+name: Build & Deploy Documentation
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_version:
+        description: 'Target Version Folder in iland-docs/ (e.g., dev, 2.2, 2.3)'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - '2.2'
+          - '2.3'
+      update_latest_symlink:
+        description: 'Update "latest" symlink to point to this version?'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  build-and-deploy:
+    name: Render Quarto & Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Generate API Documentation Pages
+        run: |
+          python3 docs/apidoc/generate.py
+
+      - name: Setup Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          version: release
+
+      - name: Render Quarto Documentation
+        run: |
+          quarto render docs/
+
+      - name: Configure SSH Private Key & Host Verification
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_PORT: ${{ secrets.SERVER_PORT || 22 }}
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf "%s\n" "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H -p "$SERVER_PORT" "$SERVER_HOST" >> ~/.ssh/known_hosts || true
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Deploy via Rsync over SSH
+        env:
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SERVER_PORT: ${{ secrets.SERVER_PORT || 22 }}
+        run: |
+          TARGET="${{ inputs.target_version }}"
+          echo "Deploying rendered docs to /var/www/iland-model.org/html/iland-docs/${TARGET}/..."
+          
+          rsync -avz --delete \
+            -e "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=accept-new -p ${SERVER_PORT}" \
+            docs/_site/ \
+            ${SERVER_USER}@${SERVER_HOST}:/var/www/iland-model.org/html/iland-docs/${TARGET}/
+
+      - name: Update 'latest' Symlink (Optional)
+        if: inputs.update_latest_symlink == true
+        env:
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SERVER_PORT: ${{ secrets.SERVER_PORT || 22 }}
+        run: |
+          TARGET="${{ inputs.target_version }}"
+          echo "Updating 'latest' symlink -> ${TARGET}..."
+          
+          ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=accept-new -p ${SERVER_PORT} ${SERVER_USER}@${SERVER_HOST} \
+            "ln -sfn /var/www/iland-model.org/html/iland-docs/${TARGET} /var/www/iland-model.org/html/iland-docs/latest"

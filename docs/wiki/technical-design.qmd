@@ -1,0 +1,36 @@
+---
+title: "technical design"
+---
+
+
+
+### Principles
+
+
+The basic principles of iLand, the ecosystem model, and iLand, the software implementation, were developed in a joint effort. While model design decisions clearly were influenced by implementation considerations, the impact exerted by the general modeling task on the technical design was even larger. On that end, the goal of simulating a large number of individual objects (i.e. trees), accompanied with the need for flexibility in application (which seems to be a general need for models in the scientific world), led to the actual software.
+Main principles are:
+
+* High performance and scalability.
+* Low RAM footprint (iLand loads simulation state directly into RAM, enabling the simulation of millions of individual trees over large landscapes).
+* Native support for parallel computing and multi-threading (making full use of multiple CPU cores).
+* Potential to utilize the extensive calculation power of graphics devices (GPGPUs) and execute on high-performance computing (HPC) clusters.
+* Dual execution modes: a rich graphical user interface (GUI) for interactive visualization and debugging, and a headless command-line console mode (`ilandc`) for batch processing on servers and clusters.
+* Cross-platform compatibility (native execution support on Windows, Linux, and macOS).
+* Integrated JavaScript scripting engine to provide additional flexibility for dynamic model control and custom management scenarios.
+* Open-source code base allowing review and verification of all ecological and software processes.
+
+
+
+### Technolgies
+
+
+
+* Qt - the basic development framework: <http://qt.io>
+* SQLite - the lightweight database component: <http://www.sqlite.org>
+
+
+
+### 3rd party components
+
+* MersenneTwister.h - an implementation of a high-quality pseudo-random number generator under a BSD license: <http://www-personal.umich.edu/~wagnerr/MersenneTwister.html> - works great!
+* FreeImage - an open-source library to support reading and writing of GeoTIFF raster GIS data files: <https://freeimage.sourceforge.io/>

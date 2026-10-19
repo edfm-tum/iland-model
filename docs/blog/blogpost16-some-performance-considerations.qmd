@@ -1,0 +1,63 @@
+---
+title: "Some performance considerations"
+date: "2010-04-13"
+author: "Werner Rammer"
+---
+
+While applying several modifications in iLand (primarily in the water cycle, see http://iland.boku.ac.at/tiki-view_tracker_item.php?itemId=30) some performance issues came up as well.
+First, just out of curiosity I ran a test that compares the debug and the release mode of iLand:
+All tests were done on the HP-laptop (dual-core). The tree inits were 450Stems/ha with mean diameter of 40cm (only spruce). Outputs were turned off, log output was written in a file.
+
+
+
+## Comparison of debug vs. release mode
+
+
+A test with a simulation area of 5000x5000m (i.e. 2500ha) over 10 years:
+
+
+| metric | debug mode(sec) | release mode(sec) |
+| --- | --- | --- |
+| grow trees | 13.9 | 9.9 |
+| grow resource units | 14.2 | 8.6 |
+| water | 9.3 | 6.4 |
+| apply LIP | 135.4 | 31.1 |
+| total | 171 | 53 |
+
+
+From this figures it is very clear, that release mode is much faster.... not a big surprise, though. Currently, the 3pg-calculation (grow resource units) are not multithreaded (because of crashes). The CPU-percentage therefore drops from 100% (for single tree operations) to a lower value while calculation resource-unit related data.
+
+
+
+## dynamic stand output
+
+
+The dynamic stand output is a very convenient features as it allows the kind user to define the tree aggregates that he/she wants (see [Outputs](../wiki/outputs.qmd#dynamic-stand-output-by-species-ru) ). The drawback of all the dynamics is the poor performance. One reason is the calculation of percentiles: this is quite a complex computation which involves the sorting of the whole data set. Second: when using expressions (e.g. *if(stress>0.1,1,0)* there is additional overhead due to the execution of the expressions.
+A test with 2000x2000m (i.e. 400ha) and with a varying list of columns for the dynamic output yielded the following figures (same trees in the previous test, release mode):
+
+
+| case | timing(sec) |
+| --- | --- |
+| 34 columns | 4.3 |
+| 22 columns(removed most of the percentiles) | 2.8 |
+| 18 columns (removed expressions and percentiles) | 2.1 |
+
+
+Re-inspection of the statistics class (responsible for the calculations) revealed, that the median (i.e. the 50th percentile) is evaluated even if it is not used --- not good. A better approach is to calculate percentiles only when specifically requested... Ok. As shown in the next table this little optimization pays off:
+
+
+| case | timing(sec) old | timing (sec) new |
+| --- | --- | --- |
+| 34 columns | 4.3 | 2.7 |
+| 18 columns (removed expressions and percentiles) | 2.1 | 1.1 |
+
+
+The unoptimized version (with 34 columns) used up 31% of the total running time. In contrast, the updated algorithm consumes 22% (for the case with 18 columns the figures are 18% and 10%). I think the speed-up is not too bad considering that the time to actually implement the change was very short.
+Anyway - using the dynamic stand output has an impact on the overall performance of iLand.
+
+
+
+## Debug outputs
+
+
+Another class of outputs are the "debug outputs". They were designed for simple integration in the source code and not with performance in mind. These outputs should be deactivated if not actively used (system.settings.debugOutputAutoSave / system.settings.debugOutput).

@@ -1,0 +1,26 @@
+---
+title: "resource units"
+---
+
+
+
+
+# extent and definition
+
+
+Resource units (*RU*) are the main entities for which resource levels for plants (i.e. light, water, nutrients) are calculated. The chosen approach is to model resource dynamics at the resolution of *RU* and competition of individual trees for resources separately. The default *RU * are defined as a regular 100x100m grid over the landscape, although more complex *RU *definitions are generally possible in iLand.
+
+
+
+# stocked area
+
+
+For every resource unit the stocked area (*SA*, m<sup>2</sup>) is updated in every simulation year. It is calculated at a 10x10m resolution (i.e. to a precision of 1% for a 1ha resource unit), where all pixels containing >0 individuals are accounted for as stocked. *SA* plays an important role in the computation of resource unit [light interception](competition-for-light.qmd). The dynamic calculation of *SA* reduces erroneous effects of within-*RU *heterogeneity due to, e.g., disturbances, on the *RU*-level calculations of the light regime.
+
+
+
+
+::: {.callout-note title="citation"}
+[Seidl, R., Rammer, W., Scheller, R.M., Spies, T.A. 2012](http://dx.doi.org/10.1016/j.ecolmodel.2012.02.015). An individual-based process model to simulate landscape-scale forest ecosystem dynamics. Ecol. Model. 231, 87-100.
+:::
+

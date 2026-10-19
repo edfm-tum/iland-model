@@ -1,0 +1,15 @@
+---
+title: "Climate change and disturbance impacts on spatio-temporal trajectories of biodiversity"
+date: "2016-03-29"
+author: "Rupert Seidl"
+---
+
+This is a guest post by [Dominik Thom](https://forschung.boku.ac.at/fis/suchen.person_uebersicht?sprache_in=en&amp;menue_id_in=101&amp;id_in=124328).
+
+After focusing on disturbance effects on tree diversity in our last blog, we aim to pour some more oil into the debate of this hot topic. This time we employed iLand to simulate tree vegetation on 13,865 ha of the Kalkalpen National Park in Austria, studying 36 unique combinations of disturbance and climate scenarios. Furthermore, we extended our analysis from purely tree related indicators of biodiversity (including tree diversity and canopy complexity) to forest-dwelling species (see [here](http://onlinelibrary.wiley.com/doi/10.1111/1365-2664.12644/abstract)for more info). We developed empirical response functions for nine species groups including *Araneae*, *Carabidae*, ground vegetation, *Hemiptera*, *Hymenoptera*, *Mollusca*, saproxylic beetles, *Symphyta*, and *Syrphidae*, and linked them to our dynamic landscape simulation. To account for long lead-times of tree species adaptation to changing environmental conditions we simulated time a period of 1,000 years in each run. Check out the [video](https://www.youtube.com/watch?v=QzGsCAElUCk) of forest development trajectories under different climates below.
+
+{YOUTUBE(movie=QzGsCAElUCk,width=&gt;640,height=&gt;385,quality=&gt;high, allowFullScreen=y)}{YOUTUBE}
+
+Our results on climate change impacts on biodiversity did not confirm the [expectation of only negative climate effects](http://science.sciencemag.org/content/287/5459/1770). Indeed, the response of the 11 biodiversity indicators assessed here varied strongly: *Aranea*, canopy complexity, *Carabidae*, saproxylic beetles and tree species showed a decreasing trend with climate, while ground vegetation, *Hemiptera*, *Hymenoptera*, *Mollusca*, *Symphyta *and *Syrphidae *benefitted from climate change. Effects from disturbances on biodiversity were less pronounced but positive throughout, which is supported by a [large body of the peer-reviewed literature](http://dx.doi.org/10.1111/brv.12193) on that topic. Moreover, we found an upwards shift in elevation of the spatial hotspots of biodiversity at our mountainous study landscape.
+
+Our findings indicate that [climate change-induced intensifications in disturbance regimes](http://www.nature.com/nclimate/journal/v4/n9/full/nclimate2318.html) will likely compensate some of the negative effects of climate change on biodiversity. However, shifts in biodiversity hotspots may challenge conservation management, and thus need to be considered in future management activities. We will continue to study biodiversity-related topics in future simulation activities with iLand, in order to better understand the potential trajectories of forest biodiversity under changing environmental conditions.

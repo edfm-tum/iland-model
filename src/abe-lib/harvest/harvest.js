@@ -8,8 +8,8 @@
 lib.harvest = {};
 
 
-Globals.include(lib.path.dir + '/harvest/femel.js');
-Globals.include(lib.path.dir + '/harvest/salvage.js');
+Globals.include(lib.path + '/harvest/femel.js');
+Globals.include(lib.path + '/harvest/salvage.js');
 
 
 /**

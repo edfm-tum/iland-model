@@ -22,3 +22,9 @@ has been steadily developed over the last 15 years and has been used on in more 
 
 ## Instructions for building
 iLand is a C++ application using the Qt toolkit. The easiest way to build iLand is to use Qt Creator. Detailed instructions for building the model are here: https://iland-model.org/iland-book/Building_iLand.html
+
+## Contributing
+We welcome contributions to iLand! 
+* For standard pull request workflows, guidelines, and community links, please see the **[Contributor Guide](CONTRIBUTING.md)**.
+* For contributing to the documentation website, check out the **[Documentation Contributor Guide](docs/README.md)**.
+

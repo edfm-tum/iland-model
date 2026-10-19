@@ -1,0 +1,102 @@
+---
+title: "Lightroom"
+---
+
+
+
+## Lightroom
+
+
+The "Lightroom" is part of the iLand software framework and - as a separate executable - related to the creation of so-called "LIP"-files. A LIP file contains several [light influence patterns](competition-for-light.qmd) for various diameters and heights of a tree species. The results of the LightRoom are used as input files for iLand (see [species parameter](species-parameter.qmd). For more general information about the light model see [competition for light](competition-for-light.qmd)).
+The Lightroom is a stand-alone executable, which also served as a kind of playground during the development of the iLand. As development progressed, code was moved to what now is the iLand core, but still traces of earlier development stages are visible in the Lightroom software - especially in the GUI. However, in its current incarnation, the specific purpose of the Lightroom is the creation of species specific LIP-files.
+
+
+
+## How to create LIP files
+
+
+But now to the practicalites: how to setup and run the creation of light influence patterns?
+
+1. start "FONStudio"
+1. on tab XML settings, load the XML input file (see below) by clicking on "Load". Click on "Apply" next.
+1. switch to tab "Lightroom". Click on "Create Lightroom". Note the status messages in the lower part of the window.
+1. click on "Create writer stamps" - this starts the process. This may take a little while.
+1. you may click on "Test load Stamps" to load created files and dump the content in human-readable form to the logging area.
+
+
+
+### The XML input file
+
+
+The process is guided by a XML styled input file. Here is an example:
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Lightroom definition file. -->
+<lightroom>
+    <size x="100" y="100" z="66" cellsize="2" />
+    <hemigrid size="5" latitude="48" diffus="0.5" />
+    <cutvalue>0.05</cutvalue>
+    <!-- possible values for cuttoffMode: sum (percentage of sum of values), north (absolute value in north direction) -->
+    <cutoffMode>north</cutoffMode>
+    <aggregationMode>mean</aggregationMode>
+	<readerStamp>E:\Daten\iLand\Light\fons\test_reader.bin</readerStamp>
+	<outputStamp>E:\Daten\iLand\Light\fons\test_out.bin</outputStamp>
+    <desc>Just a test for the cleaning of fonstudio.</desc>
+    <trees>
+      <tree name="Piab_4.5_3.15" bhd="4.5" h="3.15" crown="1.2"
+            formula="0.954*(min(0.95, hrel)/0.95)^0.28483" />
+      <tree name="Piab_4.5_3.6" bhd="4.5" h="3.6" crown="1.38"
+            formula="0.954*(min(0.95, hrel)/0.95)^0.28483" />
+     </trees>
+</lightroom>
+```
+
+
+What follows, is a brief description of the individual values.
+
+
+
+### Simulation room
+
+
+The size of the "Lightroom" is defined by the *x*, *y* and *z* (in meters) attributes of the *size* tag. Each cell (or cube) has a edge length of *cellsize* m. In the given example, the room would consist of 50x50x33 cubes. Please use the same value for x and y!
+The properties of the virtual hemispheric images are defined using the *hemigrid* tag. *size* denotes the width/height in degrees of each cell on the surface, *latitude* the geographic latitude in degrees, and *diffus* the assumed fraction of diffuse radiation of the global radiation (e.g. diffus=0.3 means, that 30% of the global radiation are diffus, 70% are direct).
+The *cutvalue* and *cutoffMode* define how the extent of the LIP is defined.  As a optimization, not the full area potentially influenced by the focal tree (defined by a 45° angle from the zenith), is used.
+Values for *cutoffMode*:
+
+* *sum*: The *cutvalue* defines the fraction of aggregated influence that is ignored. The aggregation is performed from the outer cells towards the center (e.g. a value of 0.05 means, that the outermost 5% of cummulative influence are dropped).
+* *north*: The *cutvalue* is used as a threshold for the absolute values in the direction with maximum influence (i.e., north for simulations in the northern hemisphere).
+
+The value of *aggregationMode* influences the way of how the individual cells of the lightroom are aggregated. Possible values are currently *mean* and *sum*. When choosing *sum* the 'shading' value is summed vertically up to the 45° line. *mean* calculates the mean value of all cells up to the 45° line.
+
+
+
+
+### Files and more
+
+
+The "Reader-Input-File" (see creation of reader files) is expected to be located at *readerStamp*. The created binary LIP output file will be stored at *outputStamp*. The *desc* is stored inside the LIP file providing a way to obtain some identity information from suspicious LIP files lying around in your file system.
+
+
+
+### Tree properties
+
+
+Below the *trees* node, a list of trees is defined. For each tree defined here a LIP is calculated and stored in the output file. In parenthesis is a reference to the variable names used in other iLand documents. A tree is defined by:
+
+* *name*: a short name, merely for information purposes
+* *bhd*: the dbh of the tree in cm (the mean of the dbh class represented by this tree)
+* *h*: the height of the tree (m) (again, the mean of the height-diamter-range represented by this tree) (see the *hd<sub>min</sub>* and *hd<sub>max</sub>* species parameters)
+* *crown*: the height of the living crown above ground (m)
+* *formula*: an expression that calculates the width of the crown in a height defined by *hrel*,  the relative height is calculated from the ground, i.e. h/h_tree. (the expression includes the *kB* and *r<sub>max</sub>* parameters)
+
+
+
+## Creation of reader stamps
+
+
+A "Reader stamp" is a precalculated matrix defining for each pixel the fraction of that pixel lying inside the crown radius (i.e., the crown projection area). This information is used together with the light influence patters (see above) for the calculation of the light status of trees in iLand (see [competition for light](competition-for-light.qmd)).
+Clicking on the "Create reader stamps" button triggers the creation of readerstamps in for crown radii between 0.5m and 8m with a step width of 0.1m. The result file is stored in the location provided by the XML-file (node *readerStamp*). Currently, these ranges are hardcoded.
+

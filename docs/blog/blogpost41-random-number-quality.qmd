@@ -1,0 +1,78 @@
+---
+title: "Random number quality"
+date: "2012-10-08"
+author: "Werner Rammer"
+---
+
+
+
+## Background
+
+
+The modeling of stochastic processes such as tree mortality or the ignition of wild fires heavily relies on "randomness": a tree may either die or not, or a fire may start at a specific position or not. The probability of such events differ widely, but ultimately a decision is made: a tree dies or a fire ignites (or not). The typical approach in modeling involves drawing a random number from a uniform distribution and comparing that random number to the probability of the event. As probabilites are given in the range zero to one, we use also the 0-1 range for the random-numbers:
+
+In C-like pseudocode, this looks like:
+
+```
+if (random_number(0,1) &lt; probability_of_the_event)
+	event_happens();
+else
+	event_does_not_happen();
+```
+
+Of course, the non-trivial thing are the random numbers since computers are deterministic by design. Developing algorithms that provide random numbers is an art by itself and involves very clever maths. Luckily, some of those brilliant people are kind enough to provide either the code or papers such as "[A 623-Dimensionally Equidistributed Uniform Pseudo-Random Number Generator](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/emt.html)". By the way, those folks are also gifted in finding names for their creations like "*Mersenne Twister*" or "*XORShift96*". All random generators (or at least those that I am aware of) provide random numbers as "unsigned integers", i.e. as 32 bit numbers (between 0 and 2^32-1, i.e., approx. 4.3 billions) that are then converted to the target range. This granularity is usually not a problem, but if you look at the pseudocode above and if you consider events with a very low probability (e.g., 0.000001%), it is evident, that there are two potential problems: First, you'll run into troubles for probabilities close to the smallest possible probability that can be resolved with a single 32 bit random number (2.32E-10). Second, the approach is very sensitive to the quality of the distribution of very small numbers that the random generator is able to provide.
+
+Actually, I started the whole investigation when a strange pattern of ignitions in the iLands wildfire module was detected; usually, probabilities of a fire igniting a certain pixel in a year are around 10E-7 to 10E-8 (that is low, but still well above the probabilistic "planck-length" of 2E-10 - speaking in integers, if the random generator draws numbers below 100 or 1000, the event happens). The problem was, however, that the artificial test case that I set up used only a limited number of random numbers leading to a far too low a number of ignitions. So I decided to test the random generators more thoroughly.
+
+
+
+## The test
+
+
+
+Within the iLand framework, the following random number generators are available (documenting that this is not the first encounter with the topic). See also http://www.lomont.org/Math/Papers/2008/Lomont_PRNG_2008.pdf for a nice introduction to the general topic.
+
+Mersenne: [Mersenne Twister](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/emt.html), published 1998, very fast, very nice.
+Mersenne 2: the same [Mersenne Twister](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/emt.html), but with a new random seed after every 4000000 numbers (effect of artificial additional seeding)
+XOR96: The [Marsaglia Xor-shift](http://www.cse.yorku.ca/~oz/marsaglia-rng.html) generator
+Well-RNG: An partially [improved version](http://www.lomont.org/Math/Papers/2008/Lomont_PRNG_2008.pdf) of the Mersenne Twister, published 2006
+fastRandom: a very simple but yet powerful generator from [Intel](http://software.intel.com/en-us/articles/fast-random-number-generator-on-the-intel-pentiumr-4-processor/)
+
+
+
+### Setup of the test
+
+
+We were checking how good random number generators are able to produce very small numbers. We did this by drawing 4,000,000,000 random numbers from the range [0,1] for each algorithm, and by counting how many numbers were below 10e-8, 10e-7, 10e-6, 10e-5, 10e-4 and 10e-3, thus representing probabilities from 0.000001% to 0.1%. The resulting numbers were compared to the expected number from the Poisson distribution. For each random number generator, the test was repeated three times. For allowing comparisons of  different scales, results were scaled to the expected mean value, i.e. by dividing the counted result with the expected number of values (e.g. 4,000,000 for p=0.1%).
+
+
+
+### Results
+
+
+**Distribution of small random numbers**
+
+<img src="/img/probs.png" alt="Image" width="700" class="img-fluid" />
+*Frequency of extremely small random numbers. The dashed line provides the 1st and 99th percentile according to the general Poisson-distribution. The numbers are scaled to 1. (E.g.: the expected value for p=10e-8 would be 40 for 4,000,000,000 repetitions). *
+
+The Mersenne 2 and the XOR96 performed poorly, while all other algorithms yielded good results. When averaging all the values (except for the lowest p=10e-8), the Mersenne Twister and the fast Random algorithm performed best. It is quite interesting that reseeding the Mersenne Twister worsens the results.
+
+**Runtime performance**
+In good tradition of this blog, the runtime performance was also measured.
+<img src="/img/rnd_perf.png" alt="Image" width="400" class="img-fluid" />
+*Time for drawing 4,000,000,000 random numbers in milliseconds (2009 dual core laptop).*
+
+All assessed random number generators are reasonably fast (the measured time included also comparing and counting the results). The 2009-laptop crunched more than 60,000 numbers per millisecond.
+
+**Comparing to a random-number-caching approach**
+A test was also conducted with an approach that uses caching and re-using of random numbers: an internal buffer was filled (e.g. 500000 numbers) and then recycled for 20 times. This was originally designed to avoid problems with non-reentrant code and occasional crashes in multi threading mode.
+As could be expected, the results were poorer, as only 5% of the random numbers were effectively drawn from the distribution.  However, the average runtime was reduced by 15% to 20% (average of 52000ms).
+<img src="/img/rng_perf2.png" alt="Image" width="700" class="img-fluid" />
+*performance of random number generators when applying a cache algorithm. The outer dashed line provides the 1st and 99th percentile, the inner the 5th and 95th percentile according to the Poisson-distribution.*
+
+
+
+## Conclusion
+
+
+The assessed random number generators *Mersenne Twister*, *WellRNG* and *fastRandom* are well suited to provide very small random numbers used for modeling rare stochastic events. Caching random numbers provides a small performance benefit, but at the cost of precision. As a result, the caching algorithm with a reduced number of 5 cache cylces and with the Mersenne Twister generator will be used in future. (Note: the original problem of implausible ignition patters was removed when the caching algorithm was adapted to be refilled also within a simulation year).

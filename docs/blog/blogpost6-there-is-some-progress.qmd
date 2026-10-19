@@ -1,0 +1,31 @@
+---
+title: "There is some progress"
+date: "2009-08-30"
+author: "Werner Rammer"
+---
+
+
+This weekend is definitely dedicated to really start hacking on the iLand modelling software. After weeks and month of preparations, theoretical considerations, the creation of software pieces to toy around (but also with more tangible results like the pattern creation "[LightRoom](../wiki/lightroom.qmd)" software), now it was finally the time to directly dive into the "real thing", the development of the [iLand](../wiki/iland.qmd) platform.
+
+
+## Achievements so far
+
+
+After two days of intensive coding (with *lots* of coffee, but on pizza :)), the progress made is quite remarkable. Here are some cornerstones:
+
+* convenient means to parse and interpret input parameters based on XML
+* access to a database (SQLite)
+* the setup of multiple [RessourceUnits](../wiki/resource-units.qmd) including basic handling of trees per ressource unit
+* a "Model"-class that combines all the structural elements
+* the "LightCycle", i.e. the derivation of light concurrence indices for individual trees
+
+Put another way, now we can:
+
+* setup a large model-world (e.g. 10km x 10km) consisting of many ressource units (with the size of approx. 1ha) and a vast amount of trees
+* calculate the light status of individual trees - this is the result of writing/reading light influence patterns on a large grid
+
+The next step will be to implement the growth of trees - this is thoroughly elaborated on paper, but waits to be transformed into bits and bytes. Besides of that, the current model version allows a rough estimate of memory consumption and model performance:
+The model loaded with a 10x10km (=10.000ha) world and approx. 8.000.000 individual trees consumed roughly 500MB of RAM and took 30secs to calculate the light status of the trees. Over time, memory usage of trees will presumably grow, yet this figures are reassuring insofar, that the planned (maximum) use cases seem to be digestible for today's computers... Unknown, of course, is the behavior of all the things to come (growth, seed dispersal, ...), but on the outher hand the possibilities on the IT side are not exhausted (multithreading, SSE, GPUs, ...)... so it remains a thrilling race...
+A screenshot to illustrate the point:
+<img src='/img/screenshot1.jpg' border='0' alt='image' width='60%'/>
+In the case shown a 1ha-stand with a gap in the center is repeatedly used for the whole area of 5000x4000m. The color indicate the strength of the LightInfluenceField (red=dark) on the 2x2m basal grid.

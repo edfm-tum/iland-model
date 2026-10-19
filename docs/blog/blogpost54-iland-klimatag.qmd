@@ -1,0 +1,14 @@
+---
+title: "iLand @ Klimatag"
+date: "2015-04-23"
+author: "Rupert Seidl"
+---
+
+We’ll be presenting the newest iLand developments at the Austrian “[Klimatag](http://www.ccca.ac.at/de/ccca-aktivitaeten/oesterr-klimatag/klimatag-2015/)” (i.e. climate day) in Vienna next week. Both [Werner](https://www.wabo.boku.ac.at/waldbau/personen/rammer/)and [I](https://www.wabo.boku.ac.at/waldbau/personen/seidl/) will be giving insights into a recent iLand-related project in which we focused on dynamically integrating human responses to a changing environment into the model. The objective of the [MOCCA project](https://forschung.boku.ac.at/fis/suchen.projekt_uebersicht?sprache_in=de&amp;menue_id_in=300&amp;id_in=9549) (funded by the [Austrian Climate Research Program](https://www.klimafonds.gv.at/)) was to improve the simulation of managed forests under changing environmental conditions by not only considering ecological sensitivities (which are of course central to the iLand architecture) but also incorporating adaptive feedbacks between humans and forests. We approached this by integrating an agent-based model of forest management into the iLand framework, which we’ll be presenting at the Klimatag next week.
+
+Here’s the talks:
+Werner Rammer, Rupert Seidl, Filip Aggestam, Kristina Blennow, Bernhard Wolfslehner: Wie sensitiv reagieren WaldbewirtschafterInner auf klimabedingte Änderungen in ökologischen Prozessen? (April 30 2015, 10:35, Session D2)
+
+Rupert Seidl, Werner Rammer: Simulation von dynamischen Rückkoppelungen zwischen Wald und seinen Bewirtschaftern unter sich wandelnden Klimabedingungen (April 30 2015, 14:45, Session F1)
+
+And here’s a link to the [overall program](http://www.ccca.ac.at/de/ccca-aktivitaeten/oesterr-klimatag/klimatag-2015/programm/) (which is quite diverse and features a lot of exciting talks and posters).

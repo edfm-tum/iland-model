@@ -1,0 +1,65 @@
+---
+title: "Linux based profiling and performance"
+date: "2010-10-13"
+author: "Werner Rammer"
+---
+
+It is more than time for another blog post here as the last post had several month to mature. The strange thing, however, is that the urge to write is always highest after fiddling with performance-screws...
+After implementing the seed-dispersal and regeneration module, the performance of the new module was a little bit disappointing. I took this as an opportunity to spend an afternoon with profiling iLand. Well, most of the time I spent with research, installations and such. "Profiling" essentially means to let a profiling software perform extensive and very detailed timings of the runtime behavior of the target program; this helps when looking for performance bottlenecks, or simply when you want seek performance insights.
+After some research I figured that a good solution would be  [Valgrind](http://valgrind.org/) as measurement framework in Linux accompanied by [KCacheGrind](http://kcachegrind.sourceforge.net/html/Home.html) as a GUI. That of course requires iLand to be compiled for Linux (which I had tried already [before](blogpost9-iland-goes-linux.qmd)). So the steps were not particularly daunting:
+
+* take a Ubuntu (10.04) in a VirtualBox with installed Qt (currently 4.6.3)
+* checkout the iLand source code from iland.boku.ac.at
+* build iLand and fix the minor issues stemming from different compiler versions (e.g.: _isnan() on Windows versus isnan() on Linux - I am sure, there is a simple solution for that)
+* run valgrind + KCacheGrind
+
+Using valgrind is quite straightforward; cd to the iland executable directory and type the following into the terminal:
+
+::: {.callout-note}
+
+```
+valgrind --tool=callgrind --toggle-collect=Model::runYear() ./iland
+```
+
+:::
+
+
+the flag *--toggle-collect* instructs valgrind to start and stop measuring when entering/leaving the runYear() function of the Model-class, which is exactly the thing to do when interested in model performance. The valgrind tool produces a output file in that directory which can be conveniently read by KCacheGrid.
+
+More difficult was to enable debug symbols also in release mode. This is also one of those things that I wanted to try for a long time: debug symbols are needed if one wants to run the "real" iLand version in the debugger, i.e. to set breakpoints, and step through the code. Furthermore, debug symbols allow to check the assembler instructions produced by the compiler, which is particularly useful for critical code sections (and of course to satisfy personal curiosity). And last but not least, they are needed for sensible profiling results.
+Voila, here is my "solution", which is quite a crude hack, but works: to enable debug symbols in release mode, add those two lines in the iland.pro file:
+
+
+::: {.callout-note}
+
+```
+# to enable debug symbols in release code
+# debug information in release-mode executable
+QMAKE_CXXFLAGS_RELEASE += -g
+QMAKE_LFLAGS_RELEASE -= -Wl,-s
+```
+
+:::
+
+
+It took some tries until I found out that the linker also needs to know about debug symbols (the *-Wl,s* tells the linker not to remove debug information from the binary).
+After getting a little familiar with the profiling tool at hand, I started to look for possible villains, performance-wise. The sapling growth proved to be an especially rewarding field. However, I also did applied some minor optimizations, e.g. to the *indexOf()" method of the *Grid''-template class.
+
+And here are some results: the test case were a approx. 1km2 area with a stocked resource unit in the very center that acts as a source of seeds. I simulated 100 years; during the first half of the simulation a lot of regeneration/sapling growth took place on the bare ground; the second half was dominated by very high stem numbers. Multithreading was disabled (I ran the test in Windows XP on my good old HP dual-core laptop):
+
+<img src="/img/20101013_1.jpg" alt="Image" width="80%" class="img-fluid" />
+The image shows the runtimes (ms) for certain (sub-)tasks for the unoptimized and the optimized iLand version. Note that the "total" column is not the sum of the left-hand columns.
+
+<img src="/img/20101013_2.jpg" alt="Image" width="80%" class="img-fluid" />
+This chart shows the relative performance gain due to the optimization. For instance, the establishment routine is more than twice as fast as before. But also the "applyPattern" (i.e. the LIF generation) shows improved speed.
+
+Some conclusions:
+
+* iLand still runs flawless on Linux (see screenshot below for iLand running in  Ubuntu/Gnome)
+* valgrind/KCachegrind is a powerful profiling tool (and it is set up now!)
+* there is always room for improving performance
+
+
+<img src="/img/20101013_3.jpg" alt="Image" width="70%" class="img-fluid" />
+
+

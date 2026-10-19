@@ -1,0 +1,38 @@
+---
+title: "resource availability and competition"
+---
+
+
+
+## general
+
+
+
+* [resource units](resource-units.qmd)
+* [competition for belowground resources](competition-for-belowground-resources.qmd)
+
+
+
+## radiation
+
+
+
+* [competition for light](competition-for-light.qmd)
+* [individual tree light availability](individual-tree-light-availability.qmd)
+
+
+
+## water
+
+
+
+* [water cycle](water-cycle.qmd)
+* [landscape scale soil water dynamics](landscape-scale-soil-water-dynamics.qmd)
+
+
+
+## nutrients
+
+
+
+* [nitrogen cycle](soil-c-and-n-cycling.qmd)

@@ -1,0 +1,156 @@
+---
+title: "allocation"
+---
+
+Partitioning of NPP to plant compartments is modeled by means of compartment-specific allometric ratios (cf. [Landsberg and Waring 1997](http://dx.doi.org/10.1016/S0378-1127(97)), which was recently shown to yield promising results not only at stand level but also in individual-based modeling frameworks ([Seidl et al. 2009](http://dx.doi.org/10.1007/s00468-009-0387-z)). A hierarchical partitioning scheme was adopted in iLand, allocating NPP to the root, foliage, reserves and stem compartments.
+
+
+
+
+
+# belowground NPP
+
+
+Modeling allocation to root compartments follows [Landsberg and Waring (1997)](http://dx.doi.org/10.1016/S0378-1127(97), reflecting the accumulating evidence that trees allocate increased amounts of carbon to their roots when growing conditions deteriorate. This environmental effect on allocation is represented by the environmental modifiers introduced in the modeling of [primary production](primary-production.qmd) (Eq. 1).
+
+$$
+\eta_{r}=\frac{0.8}{1+2.5\cdot f_{N}\cdot \frac{uAPAR}{APAR}}
+$$
+
+with *η<sub>r</sub>* the fraction of *NPP* allocated to roots, *APAR *the photosynthetically active radiation and *uAPAR *its utilizable fraction. Consequently, aboveground *NPP *(*NPP<sub>ag</sub>*) is (Eq. 2)
+
+$$
+NPP_{ag}=NPP\cdot (1-\eta _{r})
+$$
+
+Functional root components, i.e. the allocation of *NPP *to coarse and fine roots, is simulated based on a functional balance between fine roots and foliage biomass. In this highly simplified scheme allocation to fine roots is linearly related to foliage by a species-specific parameter *p<sub>fr</sub>*. A two-step approach is used to make sure that the carbon cycle is closed. First, *NPP* is used to compensate the fine root turnover ($\gamma_{fr}$) and refill the pool up to the current limit (Eq. 3).
+
+$$
+w_{fr}=min(W_fp_{fr}-(W_{fr}-\gamma_rW_{fr}), NPP\cdot\eta_r)
+$$
+
+
+In a second step, the rest of the *NPP* allocated to belowground is routed to the coarse root pool $W_{cr}$. The maximum pool size of the $W_{cr}$ pool is given by the allometric equation for coarse root biomass. We allow the coarse root pool to grow to (currently) 120% of that value (Eq. 4). Excess biomass is finally routed to the downed woody debris pool.
+
+
+$$
+w_{cr}=min(NPP\cdot\eta_r-w_{fr}, a_rDBH^{b_r}\cdot1.2-W_{cr})
+$$
+
+with *w<sub>fr</sub>* and *w<sub>cr</sub>* the respective biomass increments of the fine root and coarse root compartments and *W<sub>fr</sub>* and *W<sub>cr</sub>* the corresponding pools, and $a_r$ and $b_r$ the empirical coefficients of the allometric coarse root function.
+---
+
+
+
+
+# allocation to foliage biomass
+
+
+We follow the modified scheme of [Duursma et al. (2007)](http://dx.doi.org/10.1016/j.ecolmodel.2006.11.032) to partition *NPP<sub>ag</sub>* into foliage and stem compartments. This approach extends the one of [Landsberg and Waring (1997)](http://dx.doi.org/10.1016/S0378-1127(97) by explicitly including compartment-specific turnover in the computation of allocation.
+The growth of the foliage pool relative to the woody biomass pool can be expressed by Eq. 5:
+
+$$
+\frac{dW_{f}}{dW_{w}}=\frac{\eta _{f}NPP-\gamma _{f}W_{f}}{\eta _{w}NPP-\gamma _{w}W_{w}}
+$$
+
+with *η* the allocation rates, *γ* the turnover rates and *W *the compartment biomass  of foliage (*f*) and wood (*w*) respectively. Woody and foliage biomass can be expressed as allometric equations of the stem diameter (Eq. 6).
+
+$$
+W_{f}=a_{f}\cdot dbh^{b_{f}} \: ;\:  W_{w}=a_{w}\cdot dbh^{b_{w}}
+$$
+
+with *a *and *b *the respective empirical coefficients. Differentiating the ratio of *W<sub>f</sub>* and *W<sub>w</sub>* from Eq. 6 with respect to time, and setting the result equal to the right-hand side of Eq. 5 gives Eq. 7:
+
+$$
+\frac{\eta _{f}NPP-\gamma _{f}W_{f}}{\eta _{w}NPP-\gamma _{w}W_{w}}=\frac{a_{f}b_{f}dbh^{b_{f}-1}}{a_{w}b_{w}dbh^{b_{w}-1}}
+$$
+
+From this equation, an expression for *η<sub>w</sub>* (or *η<sub>f</sub>*) can be found by substituting Eq. 4 into Eq. 5, and recognizing that *η<sub>w</sub>* + *η<sub>f</sub>* + *η<sub>r</sub>* = 1, which gives Eq. 8:
+
+$$
+\eta _{w}=\frac{\frac{W_{f}\gamma _{w}}{NPP}+b_{wf}(1-\eta _{r})-\frac{b_{wf}\gamma _{f}W_{f}}{NPP}}{\frac{W_{f}}{W_{w}}+b_{wf}}
+$$
+
+and
+
+$$
+\eta _{f}=1-\eta _{w}-\eta _{r}
+$$
+
+where *b<sub>wf</sub>=b<sub>w</sub>/b<sub>f</sub>*, *W<sub>f</sub>* and *W<sub>w</sub>* are functions of *dbh* (Eq. 4) and *η<sub>r</sub>* is calculated according to Eq. 1.
+
+The above assumes a single woody pool (i.e. stem and branch biomass lumped together). In order to support the simulation of explicit stem and branch pools, the approach was extended.  Adding branches and stems to Equation 7 yields:
+
+$$
+\frac{(1-\eta_w-\eta_r)NPP - \gamma_fa_fdbh^{b_f}}{\eta_wNPP-\gamma_w(a_sdbh^{b_s}+a_bdbh^{b_b})} = \frac{a_fb_fdbh^{b_f-1}}{a_sb_sdbh^{b_s-1}+a_bb_bdbh^{b_b-1}}
+$$
+
+
+with $a_s$, $b_s$ the coefficients for stem and $a_b$, $b_b$ for branches. Solving for $\eta_w$ results in Equation 11:
+
+
+$$
+\eta_w=\frac{W_fb_f\gamma_w(W_s+W_b)-(W_sb_s+W_bb_b)\cdot(W_f\gamma_f-NPP(1-\eta_r))}{NPP\cdot(W_fb_f+W_sb_s+W_bb_b)}
+$$
+
+
+The increment of woody aboveground compartments (stems and branches) is given by $NPP\eta_r$ (see Eq. 11). For updating the tree compartments, the woody increment needs to be split into branch and stem biomass increment.
+
+We use the first derivation of the allometric functions and calculate the fraction of increment going to stem biomass $S_{frac}$ at a given diameter $dbh$ as:
+
+
+$$
+S_{frac}=\frac{a_sb_sdbh^{b_s-1}}{a_sb_sdbh^{b_s-1}+a_bb_bdbh^{b_b-1}}
+$$
+
+
+
+Two modifications are made within this scheme to adapt it to the overall iLand model structure: First, since sapwood is not simulated explicitly wood turnover is omitted (for both aboveground compartments and coarse roots). Second, a reserves pool is introduced, allowing a limited amount of carbohydrates to be stored and used in subsequent years. Conceptually, this pool is integrated into the above described allocation scheme by accounting for a reserves term in the allocation to woody biomass.
+
+        *
+
+
+
+
+# carbohydrate reserves and allocation to stem growth
+
+
+As implemented in many process-based forest ecosystem models a carbohydrate reserves pool is introduced in iLand (e.g., [Aber et al. 1995](http://www.int-res.com/articles/cr/5/c005p207.pdf), [Bossel 1996](http://dx.doi.org/10.1016/0304-3800(95), [Friend et al. 1997](http://dx.doi.org/10.1016/S0304-3800(96)). We follow [Bossel (1997)](http://dx.doi.org/10.1016/0304-3800(95) in defining the size of this pool(*w<sub>res</sub>*) as one leaf and fine root turnover (Eq. 13). The reserves pool is conceptually integrated into the woody biomass pool and thus deduced from [#allocation to foliage biomass|gross allocation](allocation.qmd) to this compartment.
+
+$$
+w_{res}=min(W_{f}\cdot (\gamma _{f}+p_{fr}\cdot \gamma _{fr})\: ;\: NPP_{ag}\cdot \eta _{w})
+$$
+
+Stem biomass increment is subsequently derived as (Eq. 14)
+
+$$
+w_{s}=max(NPP_{ag}\cdot \eta _{w}-w_{res}-w_{b}\: ;\: 0)
+$$
+
+where *W<sub>b</sub>* is the branch biomass increment derived by allometric equations analog to Eq. 6 (using the *dbh *increment of the previous year).
+
+        *
+
+
+
+
+# hierachy of allocation
+
+
+Allocation and update of biomass pools is calculated annually in iLand, implementing the above described process into the following sequence:
+
+1. Calculate the available carbohydrates as a sum of NPP and *w<sub>res</sub>*.
+1. Derive belowground production according to Eq. 1 and update coarse and fine root pools by substracting turnover and adding *w<sub>cr</sub>* and *w<sub>fr</sub>* to the respective pools.
+1. Calculate partitioning into the foliage pool applying Eqs. 2 and 9, and update foliage biomass pool accounting for turnover and growth.
+1. Refill reserves pool from gross allocation to wood and reserves (Eq. 10). This annual turnover of the reserves pool is equicalent to the implementation in the process-based model HYBRID v3.0 ([Friend et al. (1997)](http://dx.doi.org/10.1016/S0304-3800(96)).
+1. Derive biomass growth allocated to the stem compartment by means of Eq. 11.
+
+This hierachical prioritzation of compartments in allocation, i.e. roots &gt; foliage &gt; reserves &gt; stem reproduces general plant strategies under limited resources and is in line with a number of physiological models (e.g., [Bossel 1996](http://dx.doi.org/10.1016/0304-3800(95), [Friend et al. 1997](http://dx.doi.org/10.1016/S0304-3800(96)). It is furthermore of relevance for the determination of stress in trees, and is as such used to simulate [mortality risk](base-mortality.qmd) in iLand.
+
+
+
+
+::: {.callout-note title="citation"}
+[Seidl, R., Rammer, W., Scheller, R.M., Spies, T.A. 2012](http://dx.doi.org/10.1016/j.ecolmodel.2012.02.015). An individual-based process model to simulate landscape-scale forest ecosystem dynamics. Ecol. Model. 231, 87-100.
+:::
+

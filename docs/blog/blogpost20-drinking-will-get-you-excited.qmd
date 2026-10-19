@@ -1,0 +1,19 @@
+---
+title: "Drinking will get you (ex)cited!"
+date: "2010-06-21"
+author: "Rupert Seidl"
+---
+
+Disclaimer: This is a totally modeling-unrelated post, so no tech specs and ecology thoughts this time.
+
+I’ve been thinking about our way of disseminating science recently (which evidently strongly influences the way we do science in general, since it’s the day and age of ‘publish or perish’), and who and what gets recognition in the scientific world. Well, [here](http://dx.doi.org/10.1007/s11192-010-0234-4) is an interesting bit that I stumbled upon:
+Your chances to get highly cited are good, if you are
+
+* male
+* between 50 and 70
+* work in the Western world, preferably the U.S. of A.
+* focus on theoretical questions rather than applied, socially beneficial projects
+* and, and that’s the most surprising part (for me at least), have a weak spot for drinking.
+
+According to [Parker and coworkers](http://dx.doi.org/10.1007/s11192-010-0234-4), most of the highest cited scientists in Ecology and the Environmental Sciences drink more than the average American, 54% of them consume 10 or more alcoholic beverages per week, and still 10% have even more than 20 drinks per week. Think for a second (Pareto principle, anyone?) which of the factors above you can influence most easily... right!
+So instead of posting my most recently published article [here](http://dx.doi.org/10.1007/s10584-010-9899-1), I figured I’d rather have another beer to get it read (and cited). And I assume by now you’re on your way to the bar… Cheers!

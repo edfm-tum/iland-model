@@ -1,0 +1,12 @@
+---
+title: "Redirecting..."
+---
+
+```{=html}
+<meta http-equiv="refresh" content="0; url=wiki/startpage.html">
+<script type="text/javascript">
+    window.location.href = "wiki/startpage.html";
+</script>
+```
+
+If you are not redirected automatically, please click [here](wiki/startpage.html).

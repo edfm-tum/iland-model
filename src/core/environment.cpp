@@ -251,5 +251,6 @@ bool Environment::setGridMode(const QString &grid_file_name)
     mGrid = new GisGrid();
     mGrid->loadFromFile(grid_file_name);
     mGridMode = true;
+
     return true;
 }

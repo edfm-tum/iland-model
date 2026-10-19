@@ -1,0 +1,19 @@
+---
+title: "The iLand universe is expanding"
+date: "2017-01-13"
+author: "Rupert Seidl"
+---
+
+Within the frame of the [RESIN project](http://resin.boku.ac.at), iLand applications in Central Europe are expanding to Slovakia. A key aim of RESIN is to understand the disturbance regime of Central Europe by contrasting dynamics in different landscapes of the area. One of the focal sites for this analysis is in the Tatra mountains of Slovakia. After considerable preparation (data gathering, a field trip to the area from the BOKU team, etc.) we’ve now started to implement the Tatra study landscape in the iLand model.
+
+<img src="/img/DSCF8325.jpg" alt="Image" class="img-fluid" />
+
+
+To facilitate the simulation in the Tatra mountains the RESIN collaborators Tomas Hlasny, Laura Dobor, and Ivan Barka visited [BOKU](http://boku.ac.at) for a two-day workshop in December of 2016. With the help of their local expertise we made great strides towards bringing the forests of the western Carpathians into the iLand framework. 
+
+<img src="/img/DSC_0024_1_small.jpg" alt="Image" class="img-fluid" />
+
+
+At the workshop, discussions concerned local data availability and issues of model use, but also addressed the important question of testing the model against independent data when applying it to a new study environment. In addition, we’ve already ventilated a number of exciting ideas on how to put the model to use once everything is set up and evaluated. 
+
+<img src="/img/DSC_0029_1_small.jpg" alt="Image" class="img-fluid" />
