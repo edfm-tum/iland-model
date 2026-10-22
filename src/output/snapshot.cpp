@@ -35,6 +35,7 @@
 #include "mapgrid.h"
 #include "fmdeadtreelist.h"
 
+#include <cmath>
 #include <QString>
 #include <QtSql>
 #include <QDataStream>
@@ -1340,8 +1341,13 @@ void Snapshot::loadDeadTrees()
         auto &dt_list = ru->snag()->deadTrees();
         auto &dt = dt_list.emplace_back();
 
-        dt.mX = q.value(ci++).toFloat();
-        dt.mY = q.value(ci++).toFloat();
+        // The stored position is in the coordinates of the saved project area. Keep the position within the
+        // resource unit and move it to the target resource unit, as loadTrees() and loadSaplings() do, so that
+        // a snapshot mapped into a different (e.g. smaller) project area keeps its dead trees in place.
+        const double pos_x = q.value(ci++).toDouble();
+        const double pos_y = q.value(ci++).toDouble();
+        dt.mX = static_cast<float>(ru->boundingBox().left() + (pos_x - std::floor(pos_x / cRUSize) * cRUSize));
+        dt.mY = static_cast<float>(ru->boundingBox().top() + (pos_y - std::floor(pos_y / cRUSize) * cRUSize));
 
         dt.mSpecies = GlobalSettings::instance()->model()->speciesSet()->species(q.value(ci++).toString());
         if (!dt.mSpecies) throw IException("Snapshot: loadDeadTrees: invalid species");
