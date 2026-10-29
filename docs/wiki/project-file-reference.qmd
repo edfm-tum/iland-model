@@ -438,6 +438,7 @@ The barkbeetle module simulates a specific biotic agent, namely the European Spr
 | `onAfterBarkbeetle` | string | `Javascript function` | **Run after**: Javascript function that is called after bark beetle module (e.g. for specific aggregagations) |
 | `colonizeProbabilityFormula` | string | `string` | **Colonalization probability formula**: string |
 | `deadTreeSelectivity` | string | `string` | **Dead tree selectivity**: string |
+| `sanitationTreatmentProbability` | numeric | `0` | **Sanitation treatment probability**: Probability (0..1) that a sanitation treatment is effective for an infested cell (preventing beetles from spreading from that cell). If 0 (default), sanitation can alternatively be managed via ABE salvage activities. |
 | `minimumDbh` | string | `string` | **Minimum Dbh**: string |
 | `backgroundInfestationProbability` | string | `string` | **Background**: string |
 | `initialInfestationProbability` | string | `string` | **Initial**: string |
@@ -466,7 +467,7 @@ The barkbeetle module simulates a specific biotic agent, namely the European Spr
 
 ## Bite (`modules.bite`)
 
-bite, the Biotic Disturbance Engine is a general module to simulate biotic disturbance agents in ecosystem models. See [Bite](bite.qmd) and [Bite](bite.qmd) for more details.
+BITE, the Biotic Disturbance Engine is a general module to simulate biotic disturbance agents in ecosystem models. See [Bite](bite.qmd) and [Bite](bite.qmd) for more details.
 
 | **XML Key** | **Type** | **Default Value** | **Description** |
 | :--- | :--- | :--- | :--- |

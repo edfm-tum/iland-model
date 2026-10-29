@@ -525,6 +525,7 @@ modules.barkbeetle.onAfterBarkbeetle = string|Javascript function|Run after|Java
 gui.layout = layout|hl
 modules.barkbeetle.colonizeProbabilityFormula = string|string|Colonalization probability formula|string|simple
 modules.barkbeetle.deadTreeSelectivity = string|string|Dead tree selectivity|string|simple
+modules.barkbeetle.sanitationTreatmentProbability = numeric|0|Sanitation treatment probability|Probability (0..1) that a sanitation treatment is effective for an infested cell (preventing beetles from spreading from that cell). If 0 (default), sanitation can alternatively be managed via ABE salvage activities.|simple
 modules.barkbeetle.minimumDbh = string|string|Minimum Dbh|string|simple
 
 gui.layout = layout|hl
