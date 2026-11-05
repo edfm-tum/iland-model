@@ -195,6 +195,7 @@ void ModelController::create()
         GlobalSettings::instance()->executeJSFunction("onAfterCreate");
     } catch(const IException &e) {
         QString error_msg = e.message();
+        qWarning() << error_msg;
         Helper::msg(error_msg);
         mLastError = error_msg;
         mHasError = true;

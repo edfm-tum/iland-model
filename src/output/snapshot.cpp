@@ -278,8 +278,8 @@ bool Snapshot::loadSnapshot(const QString &file_name)
         if (fmod(to.x(), cRUSize) != 0. || fmod(to.y(), cRUSize) != 0.) {
             QPointF world_offset = GisGrid::modelToWorld(QPointF(0., 0.));
 
-            throw IException(QString("The current project area does not match the project area of the snapshot. The origin of the project area of the snapshot is: origin-x: %2m, origin-y: %3m, " \
-                                     "while your current origin is %4 m/%5 m. Deviations are allowed only in 100m steps (resource unit size)!").arg(file_name)
+            throw IException(QString("The current project area does not match the project area of the snapshot. The origin of the project area of the snapshot is: origin-x: %1m, origin-y: %2m, " \
+                                     "while your current origin is %3 m/%4 m. Deviations are allowed only in 100m steps (resource unit size)!").arg(file_name)
                              .arg(grid.origin().x()).arg(grid.origin().y()).arg(world_offset.x()).arg(world_offset.y()));
         }
 
