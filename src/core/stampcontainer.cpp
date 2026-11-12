@@ -181,11 +181,15 @@ void StampContainer::addReaderStamp(Stamp *stamp, const float crown_radius_m)
 Internally, readers are stored in the same lookup-table, but using a encoding/decoding trick.*/
 const Stamp* StampContainer::readerStamp(const float crown_radius_m) const
 {
-    // Readers: from 0..10m in 50 steps???
+    if (std::isnan(crown_radius_m) || crown_radius_m < 0.f)
+        throw IException(QString("StampContainer::readerStamp: invalid crown radius (%1).").arg(crown_radius_m));
+    // Readers: from 0..15m in 0.1m steps
     int cls_hd = int( (fmod(crown_radius_m, 1.f)+0.0001) * 10 ); // 0 .. 9.99999999
     if (cls_hd>=cHDclassCount)
         cls_hd=cHDclassCount-1;
     int cls_bhd = int(crown_radius_m);
+    if (!m_lookup.isIndexValid(cls_bhd, cls_hd))
+        throw IException(QString("StampContainer::readerStamp: crown radius (%1) out of lookup bounds.").arg(crown_radius_m));
     const Stamp* stamp = m_lookup(cls_bhd, cls_hd);
     if (!stamp)
         qDebug() << "Stamp::readerStamp(): no stamp found for radius" << crown_radius_m;

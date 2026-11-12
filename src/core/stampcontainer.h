@@ -56,9 +56,17 @@ public:
     static const Grid<float> &distanceGrid()  { return m_distance; }
     void invert(); ///< invert stamps (value = 1. - value) (for multiplicative overlay)
     // description
-    const QString &description() { return m_desc; }
+    const QString &description() const { return m_desc; }
     void setDescription(const QString s) { m_desc = s; }
     QString dump();
+
+    struct StampItem {
+        Stamp* stamp;
+        float dbh;
+        float hd;
+        float crown_radius;
+    };
+    const QList<StampItem> &stamps() const { return m_stamps; }
 
 private:
     void finalizeSetup(); ///< complete lookup-grid by filling up zero values
@@ -70,12 +78,6 @@ private:
     static const int cHDclassLow; ///< hd classes offset is 40: class 0 = 40-50, class 1 = 50-60
     static const int cBHDclassCount; ///< class count, 50: highest class = 50*4 +- 2 = 198 - 202
     static const int cHDclassCount; ///< class count. highest class: 140-150
-    struct StampItem {
-        Stamp* stamp;
-        float dbh;
-        float hd;
-        float crown_radius;
-    };
     inline void getKey(const float dbh, const float hd_value, int &dbh_class, int &hd_class) const;
     void addStamp(Stamp* stamp, const int cls_dbh, const int cls_hd, const float crown_radius_m, const float dbh, const float hd_value);
     int m_maxBhd;

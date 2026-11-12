@@ -6,8 +6,14 @@
 
 LightRoom::LightRoom()
 {
-    m_roomObject = 0;
+    m_roomObject = nullptr;
     m_aggregationMode = 0;
+    m_countX = 0;
+    m_countY = 0;
+    m_countZ = 0;
+    m_cellsize = 2.;
+    m_solarrad_factor = 1.;
+    m_centervalue = 0.;
 }
 
 /** setup routine.
@@ -35,7 +41,6 @@ void LightRoom::setup(const double dimx, const double dimy, const double dimz,
     QRectF rect(-m_countX/2.*cellsize, -m_countY/2.*cellsize, m_countX*cellsize, m_countY*cellsize);
     qDebug() << "Lightroom size: " << m_countX << "/" << m_countY << "/" << m_countZ << " elements. rect: " << rect;
 
-
     m_2dvalues.setup(rect, cellsize);
     m_2dvalues.initialize(0.);
 
@@ -49,7 +54,7 @@ void LightRoom::setup(const double dimx, const double dimy, const double dimz,
     solar.calculateRadMatrix(hemigridsize, m_solarGrid);
     t2.showElapsed();
     m_shadowGrid.setup(hemigridsize); // setup size
-    m_solarrad_factor = 1. / m_solarGrid.sum(RAD(45)); // sum of rad. > 45°
+    m_solarrad_factor = 1. / m_solarGrid.sum(RAD(45)); // sum of rad. > 45 deg
     m_centervalue = 0.;
 }
 
@@ -59,14 +64,13 @@ double LightRoom::calculateGridAtPoint(const double p_x, const double p_y, const
         return 0;
     // check feasibility
     if (m_roomObject->noHitGuaranteed(p_x, p_y, p_z)) {
-        //qDebug()<<"skipped";
         return 0;
     }
 
     if (fillShadowGrid)
         m_shadowGrid.clear(0.);
 
-    // start with 45°
+    // start with 45 deg
     int ie = m_shadowGrid.indexElevation(RAD(45));
     int ia = 0;
     int max_a = m_shadowGrid.matrixCountAzimuth();
@@ -74,35 +78,25 @@ double LightRoom::calculateGridAtPoint(const double p_x, const double p_y, const
     double elevation, azimuth;
     double solar_sum=0;
     int hit;
-    int c_hit = 0;
-    int c_test = 0;
     for (;ie<max_e;ie++){
         for (ia=0;ia<max_a;ia++) {
             azimuth = m_shadowGrid.azimuthNorth(ia);
             elevation = m_shadowGrid.elevation(ie);
-            hit = m_roomObject->hittest(p_x, p_y, p_z,azimuth,elevation);
-            // if inside the crown: do nothing and return.
-            // 20090708: if inside the crown: return "totally dark"
+            hit = m_roomObject->hittest(p_x, p_y, p_z, azimuth, elevation);
+            // if inside the crown: return "totally dark"
             if (hit==-1)
                 return 1;
-            //qDebug() << "testing azimuth" << GRAD(azimuth) << "elevation" << GRAD(elevation)<<"hit"<<hit;
-            c_test++;
             if (hit==1) {
                 // retrieve value from solar grid
                 // Sum(cells) of solargrid =1 -> the sum of all "shadowed" pixels therefore is already the "ratio" of shaded/total radiation
                 solar_sum += m_solarGrid.rGetByIndex(ia, ie);
                 if (fillShadowGrid)
                   m_shadowGrid.rGetByIndex(ia, ie) = m_solarGrid.rGetByIndex(ia, ie);
-                c_hit++;
             }
         }
     }
-    // solar-rad-factor = 1/(sum rad > 45°)
+    // solar-rad-factor = 1/(sum rad > 45 deg)
     return solar_sum * m_solarrad_factor;
-    //double ratio = c_hit / double(c_test);
-    //qDebug() << "tested"<< c_test<<"hit count:" << c_hit<<"ratio"<<c_hit/double(c_test)<<"total sum"<<m_shadowGrid.getSum();
-    //return ratio; // TODO: the global radiation is not calculated!!!!!
-
 }
 
 void LightRoom::calculateFullGrid()
@@ -117,9 +111,7 @@ void LightRoom::calculateFullGrid()
     int c=0;
     float maxh = m_roomObject->maxHeight();
 
-    float *values = new float[m_countZ];
-
-    //double h_realized;
+    QVector<float> values(m_countZ, 0.f);
     double sum;
 
     while (v!=vend) {
@@ -128,29 +120,23 @@ void LightRoom::calculateFullGrid()
         double hor_distance = sqrt(coord.x()*coord.x() + coord.y()*coord.y());
 
         for (z=0;z<m_countZ && z*m_cellsize <= maxh;z++) {
-            // only calculate values up to the 45° line
-            // tan(45°)=1 -> so this is the case when the distance p->tree > height of the tree
+            // only calculate values up to the 45 deg line
+            // tan(45 deg)=1 -> so this is the case when the distance p->tree > height of the tree
             if (hor_distance > maxh-z*m_cellsize)
                 break;
             hit_ratio = calculateGridAtPoint(coord.x(), coord.y(), // coords x,y
-                                             z*m_cellsize,false); // heigth (z), false: do not clear and fill shadow grid structure
+                                             z*m_cellsize, false); // height (z), false: do not clear and fill shadow grid structure
             // stop calculating when return = -1 (e.g. when inside the crown)
             if (hit_ratio==-1)
                 break;
             values[z]=hit_ratio; // this value * height of cells
         }
-        // calculate average
+        // calculate average / sum
         sum = 0;
-        // 20090708: do not average, but keep the sum
-        // aggregate mean for all cells with angles>45° to the tree-top!
-        // 20090711: again average it, but now include the tree top.
-        // 20090713: go back to sum...
-        // 20090812: remove the weighting for the 10m cells again.
-        // 20100520: again, use the average value (per meter)
         for(int i=0;i<z;i++)
             sum+=values[i];
         if (m_aggregationMode==0) {
-            // average shadow / meter height (within the 45° cone)
+            // average shadow / meter height (within the 45 deg cone)
             if (z)
                 sum/=float(z);
         } else {
@@ -158,7 +144,6 @@ void LightRoom::calculateFullGrid()
             sum *= m_cellsize;  // multiply with height (shadow * meter)
         }
         *v = sum; // store in matrix
-        // sum
 
         v++;
         c++;
@@ -177,18 +162,25 @@ void LightRoom::calculateFullGrid()
 
 LightRoomObject::~LightRoomObject()
 {
-    if (m_radiusFormula)
-        delete m_radiusFormula;
+    delete m_radiusFormula;
 }
 
 void LightRoomObject::setuptree(const double height, const double crownheight, const QString &formula)
 {
-    if (m_radiusFormula)
-        delete m_radiusFormula;
+    if (height <= 0. || crownheight < 0. || crownheight >= height) {
+        throw IException(QString("LightRoomObject::setuptree: invalid tree geometry (height=%1, crown=%2). Required: height > 0 and 0 <= crown < height.")
+                             .arg(height).arg(crownheight));
+    }
 
+    delete m_radiusFormula;
     m_radiusFormula = new Expression(formula);
 
     m_baseradius = m_radiusFormula->calculate(crownheight/height);
+    if (std::isnan(m_baseradius) || std::isinf(m_baseradius) || m_baseradius <= 0.) {
+        throw IException(QString("LightRoomObject::setuptree: invalid crown base radius (%1) for height=%2, crown=%3, formula='%4'.")
+                             .arg(m_baseradius).arg(height).arg(crownheight).arg(formula));
+    }
+
     m_height = height;
     m_crownheight = crownheight;
     double h=0., r;
@@ -197,19 +189,21 @@ void LightRoomObject::setuptree(const double height, const double crownheight, c
     while (h<=m_height) {
         if (h<m_crownheight)
             r=0.;
-        else
+        else {
             r = m_radiusFormula->calculate(h/m_height);
+            if (std::isnan(r) || std::isinf(r) || r < 0.) {
+                throw IException(QString("LightRoomObject::setuptree: invalid crown radius (%1) at h=%2m for height=%3, crown=%4, formula='%5'.")
+                                     .arg(r).arg(h).arg(height).arg(crownheight).arg(formula));
+            }
+        }
         m_treeHeights.push_back(r);
         h++;
     }
 }
 
-
-// Angle-function. return the  difference between
-// two angles as a radian value between -pi..pi [-180..180°]
+// Angle-function. return the difference between
+// two angles as a radian value between -pi..pi [-180..180 deg]
 // >0: directionB is "left" (ccw) of directionA, <0: "right", clockwise
-// e.g.: result=-10: 10° cw, result=10°: 10° ccw
-// result:-180/+180: antiparallel.
 double DiffOfAngles(double DirectionA, double DirectionB)
 {
     DirectionA = fmod(DirectionA, PI2); // -> -2pi .. 2pi
@@ -219,27 +213,21 @@ double DiffOfAngles(double DirectionA, double DirectionB)
     double Delta = DirectionB - DirectionA;
     if (Delta<0) {
       if (Delta<-M_PI)
-         return Delta  + PI2; // ccw
+         return Delta + PI2; // ccw
       else
          return Delta; // cw
     } else {
       if (Delta>M_PI)
          return Delta - PI2; // cw
       else
-         return Delta;  // ccw
+         return Delta; // ccw
     }
-
 }
 
-
-// Angle-function. return the absolute difference between
-// two angles as a radian value between 0..pi [0..180°]
-// e.g. 10° = +10° or -10°; maximum value is 180°
 double AbsDiffOfAngles(double AngleA, double AngleB)
 {
      return fabs(DiffOfAngles(AngleA, AngleB));
 }
-
 
 /** The tree is located in x/y=0/0.
 */
@@ -252,10 +240,8 @@ int LightRoomObject::hittest(const double p_x, const double p_y, const double p_
     // Test 1: does the ray (azimuth) direction hit the crown?
     double phi = atan2(-p_y, -p_x); // angle between P and the tree center
     double dist2d = sqrt(p_x*p_x + p_y*p_y); // distance at ground
-    //if (dist2d==0)
-    //    return true;
 
-    double alpha = DiffOfAngles(phi, azimuth_rad); //  phi - azimuth_rad; // angle between the ray and the center of the tree
+    double alpha = DiffOfAngles(phi, azimuth_rad); // angle between the ray and the center of the tree
     if (dist2d>m_baseradius) { // test only, if p not the crown
         double half_max_angle = asin(m_baseradius / dist2d); // maximum deviation angle from direct connection p - tree where ray hits maxradius
         if (fabs(alpha) > half_max_angle)
@@ -273,7 +259,7 @@ int LightRoomObject::hittest(const double p_x, const double p_y, const double p_
     // Test 2: test if the crown-"plate" at the bottom of the crown is hit.
     if (elevation_rad>0. && p_z<m_crownheight) {
         // calc. base distance between p and the point where the height of the ray reaches the bottom of the crown:
-        double r_hitbottom = dist2d; // for 90°
+        double r_hitbottom = dist2d; // for 90 deg
         if (elevation_rad < M_PI_2) {
             double d_hitbottom = (m_crownheight - p_z) / tan(elevation_rad);
             // calc. position (projected) of that hit point
@@ -286,7 +272,6 @@ int LightRoomObject::hittest(const double p_x, const double p_y, const double p_
     }
     // Test 3: test for height steps...
     // distance from p to the plane normal to p-vector through the center of the tree
-    // do only when p is
     double rx,ry,rhit;
     double d_center = cos(alpha)*dist2d;
     if (d_center>=0) {
@@ -322,14 +307,12 @@ int LightRoomObject::hittest(const double p_x, const double p_y, const double p_
             return 0;
 
         // enter crown
-        if (!inside_crown && rhit <=  m_baseradius*m_baseradius)
+        if (!inside_crown && rhit <= m_baseradius*m_baseradius)
             inside_crown = true;
         d_cur+=d_1m;
         h++;
     }
     return 0;
-
-
 }
 
 bool LightRoomObject::noHitGuaranteed(const double p_x, const double p_y, const double p_z)
@@ -337,10 +320,9 @@ bool LightRoomObject::noHitGuaranteed(const double p_x, const double p_y, const 
     // 1. simple: compare height...
     if (p_z > m_height)
         return true;
-    // 2. 45° test:
-    if (p_z > m_height - sqrt(p_x*p_x + p_y*p_y)) // 45°: height = distance from tree center
+    // 2. 45 deg test:
+    if (p_z > m_height - sqrt(p_x*p_x + p_y*p_y)) // 45 deg: height = distance from tree center
         return true;
 
     return false;
 }
-
