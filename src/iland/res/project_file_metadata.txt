@@ -356,6 +356,7 @@ gui.layout = tab|tabSubmodules|Sub modules
 gui.layout = group|Browsing|This section contains settings related to the browsing effect by ungulate game species.
 model.settings.browsing.enabled = boolean|false|Enable|If false the browsing module is disabled, i.e. no effect is calculated.|simple
 model.settings.browsing.browsingPressure = numeric|0.1|Browsing Pressure|scaling factor modifying the base probability|simple
+model.settings.browsing.maxTreeHeight = numeric|2.0|Browsing Height|max Height a tree is browsed|simple
 
 gui.layout = group|Permafrost|The module simulates the annual freeze-thaw cycle of the active layer, driven by heat transfer from the atmosphere and the deeper permafrost layer. The module also simulates the growth dynamics of the moss layer, which plays a crucial role in insulating the permafrost (see advanced settings).
 model.settings.permafrost.enabled = boolean|false|Enable|Permafrost sub module switched on when true|simple
