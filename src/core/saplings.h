@@ -241,6 +241,7 @@ private:
     //Grid<SaplingCell> mGrid;
     static double mRecruitmentVariation;
     static double mBrowsingPressure;
+    static double mMaxBrowseTreeHeight; //Introduce attribute for configurable browsing height 
 };
 
 

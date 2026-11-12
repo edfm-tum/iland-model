@@ -31,6 +31,7 @@
 
 double Saplings::mRecruitmentVariation = 0.1; // +/- 10%
 double Saplings::mBrowsingPressure = 0.;
+double Saplings::mMaxBrowseTreeHeight = 2.;
 
 
 Saplings::Saplings()
@@ -468,11 +469,13 @@ int Saplings::addSprout(const Tree *t, bool tree_is_removed)
     return 1;
 }
 
+//MD: Browsing height configurable: browsing.maxBrowseTreeHeight
 void Saplings::updateBrowsingPressure()
 {
-    if (GlobalSettings::instance()->settings().valueBool("model.settings.browsing.enabled"))
+    if (GlobalSettings::instance()->settings().valueBool("model.settings.browsing.enabled")) {
         Saplings::mBrowsingPressure = GlobalSettings::instance()->settings().valueDouble("model.settings.browsing.browsingPressure");
-    else
+        Saplings::mMaxBrowseTreeHeight = GlobalSettings::instance()->settings().valueDouble("model.settings.browsing.maxTreeHeight");
+    } else
         Saplings::mBrowsingPressure = 0.;
 }
 
@@ -515,7 +518,8 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTr
         delta_h_factor = delta_h_factor *species->saplingGrowthParameters().sproutGrowth;
 
     // check browsing
-    if (mBrowsingPressure>0. && tree.height<=2.f) {
+    // MD: set tree.height from 2.f to mMaxBrowseTreeHeight 
+    if (mBrowsingPressure>0. && tree.height<=mMaxBrowseTreeHeight) {
         double p = rus->species()->saplingGrowthParameters().browsingProbability;
         // calculate modifed annual browsing probability via odds-ratios
         // odds = p/(1-p) -> odds_mod = odds * browsingPressure -> p_mod = odds_mod /( 1 + odds_mod) === p*pressure/(1-p+p*pressure)
