@@ -35,6 +35,9 @@ private slots:
     void variablesAndTreeWrapper();
     void linearization1DAnd2D();
     void errorHandlingOutsideJS();
+    void constantsExternalVarsAndIncSum();
+    void wrappersSaplingDeadTreeAndFome();
+    void scriptErrorRouting();
 };
 
 #endif // TEST_EXPRESSION_H

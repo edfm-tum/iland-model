@@ -62,6 +62,7 @@ FMStand::FMStand(FMUnit *unit, const int id)
 
     mU = 0; mSpeciesCompositionIndex = -1; mThinningIntensityClass = -1;
     mPatches = nullptr;
+    mRotationStartYear = 0;
 
     newRotatation();
     mSTP = nullptr;
@@ -76,7 +77,6 @@ FMStand::FMStand(FMUnit *unit, const int id)
     mThinningHarvest = 0.;
     mDisturbed = 0.;
     mSalvaged = 0.;
-    mRotationStartYear = 0;
     mLastUpdate = -1.;
     mLastExecution = -1.;
 
@@ -84,7 +84,9 @@ FMStand::FMStand(FMUnit *unit, const int id)
     mLastExecutedIndex=-1;
     mLastRotationAge = -1;
 
-    mArea = ForestManagementEngine::standGrid()->area(mId)/cRUArea;
+    mArea = (GlobalSettings::instance()->model() && ForestManagementEngine::standGrid())
+                ? ForestManagementEngine::standGrid()->area(mId)/cRUArea
+                : 0.;
 
 }
 
@@ -191,7 +193,9 @@ void FMStand::reset(FMSTP *stp)
 
 void FMStand::checkArea()
 {
-    mArea = ForestManagementEngine::standGrid()->area(mId)/cRUArea;
+    mArea = (GlobalSettings::instance()->model() && ForestManagementEngine::standGrid())
+                ? ForestManagementEngine::standGrid()->area(mId)/cRUArea
+                : 0.;
 }
 
 bool relBasalAreaIsHigher(const SSpeciesStand &a, const SSpeciesStand &b)
@@ -286,7 +290,7 @@ Patches *FMStand::patches() const
 
 double FMStand::absoluteAge() const
 {
-    return ForestManagementEngine::instance()->currentYear() - mRotationStartYear;
+    return (ForestManagementEngine::instance() ? ForestManagementEngine::instance()->currentYear() : 0) - mRotationStartYear;
 }
 
 
@@ -690,7 +694,7 @@ QStringList FMStand::info()
 void FMStand::newRotatation()
 {
     mLastRotationAge = absoluteAge();
-    mRotationStartYear = ForestManagementEngine::instance()->currentYear(); // reset stand age to 0.
+    mRotationStartYear = ForestManagementEngine::instance() ? ForestManagementEngine::instance()->currentYear() : 0; // reset stand age to 0.
     mRemovedVolumeTotal = 0.;
     mRemovedVolumeDecade = 0.;
     mLastMAIVolume = 0.;
@@ -700,8 +704,11 @@ void FMStand::newRotatation()
     // set U here: this is a problem, as "custom" U for the stand are overwritten at the end of a rotation
     // on the other hand: this is likely the mechanism to roll out agent behavior changes to all stands (?)
     // setU( unit()->U() );
-    setThinningIntensity( unit()->thinningIntensity() );
-    unit()->agent()->type()->agentUpdateForStand(this, QString(), 0); // update at age 0? maybe switch to new STP?
+    if (unit()) {
+        setThinningIntensity( unit()->thinningIntensity() );
+        if (unit()->agent() && unit()->agent()->type())
+            unit()->agent()->type()->agentUpdateForStand(this, QString(), 0); // update at age 0? maybe switch to new STP?
+    }
 
 }
 

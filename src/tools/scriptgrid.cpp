@@ -45,7 +45,8 @@ ScriptGrid::ScriptGrid(QObject *parent) : QObject(parent)
 
 ScriptGrid::~ScriptGrid()
 {
-    GlobalSettings::instance()->controller()->removeMapGrid(mGrid, nullptr);
+    if (GlobalSettings::instance()->controller())
+        GlobalSettings::instance()->controller()->removeMapGrid(mGrid, nullptr);
     if (mGrid && mOwner) {
         delete mGrid;
     }

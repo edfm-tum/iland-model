@@ -19,12 +19,22 @@
 
 #include "test_expression.h"
 
+#include <QDir>
+#include <QJSEngine>
+#include <QTemporaryDir>
 #include <QtTest/QtTest>
 #include <cmath>
 
+#include "deadtree.h"
 #include "exception.h"
 #include "expression.h"
 #include "expressionwrapper.h"
+#include "fmstand.h"
+#include "fmunit.h"
+#include "fomewrapper.h"
+#include "globalsettings.h"
+#include "saplings.h"
+#include "scriptglobal.h"
 #include "tree.h"
 
 void TestExpression::arithmeticAndPrecedence_data()
@@ -187,5 +197,89 @@ void TestExpression::errorHandlingOutsideJS()
         Expression unknownVar("non_existent_var + 1");
         unknownVar.setStrict(true);
         unknownVar.parse();
+    });
+}
+
+void TestExpression::constantsExternalVarsAndIncSum()
+{
+    Expression emptyExpr("");
+    emptyExpr.parse();
+    QVERIFY(emptyExpr.isEmpty());
+
+    Expression constExpr("42 * 2");
+    constExpr.parse();
+    QVERIFY(!constExpr.isEmpty());
+    QVERIFY(constExpr.isConstExpression());
+    QCOMPARE(constExpr.execute(), 84.0);
+
+    Expression nonConst;
+    nonConst.setAndParse("x + 1");
+    QVERIFY(!nonConst.isConstExpression());
+
+    Expression::addConstant("my_pi_test", 3.14159265);
+    Expression constUse("2 * my_pi_test");
+    QVERIFY(std::abs(constUse.execute() - 6.28318530) < 1e-8);
+
+    double extVals[2] = {3.5, 4.0};
+    Expression extExpr("alpha * beta + 1");
+    extExpr.setExternalVarSpace(QStringList() << "alpha" << "beta", extVals);
+    extExpr.parse();
+    QCOMPARE(extExpr.execute(), 15.0);
+
+    extVals[0] = 10.0;
+    QCOMPARE(extExpr.execute(), 41.0);
+
+    Expression incExpr("incsum(x)");
+    incExpr.enableIncSum();
+    QCOMPARE(incExpr.calculate(5.0), 5.0);
+    QCOMPARE(incExpr.calculate(3.0), 8.0);
+    QCOMPARE(incExpr.calculate(2.0), 10.0);
+}
+
+void TestExpression::wrappersSaplingDeadTreeAndFome()
+{
+    SaplingTree sap;
+    sap.setSapling(1.25f, 6, 2);
+    SaplingWrapper sw(&sap, nullptr);
+    QCOMPARE(Expression("height * 2 + age", &sw).execute(), 8.5);
+    QCOMPARE(Expression("species", &sw).execute(), 2.0);
+
+    DeadTree dt;
+    DeadTreeWrapper dtw(&dt, nullptr);
+    QCOMPARE(Expression("snag", &dtw).execute(), 1.0);
+    QCOMPARE(Expression("dbh", &dtw).execute(), 0.0);
+    QCOMPARE(Expression("species", &dtw).execute(), -1.0);
+    QCOMPARE(Expression("ruindex", &dtw).execute(), -1.0);
+
+    ABE::FMUnit unit(nullptr);
+    unit.setAnnualIncrement(9.5);
+    ABE::FMStand stand(&unit, 101);
+    stand.setArea(2.5);
+    stand.setU(120.0);
+    ABE::FOMEWrapper fw(&stand);
+
+    QCOMPARE(Expression("stand__area", &fw).execute(), 2.5);
+    QCOMPARE(Expression("site__U", &fw).execute(), 120.0);
+    QCOMPARE(Expression("site__annualIncrement", &fw).execute(), 9.5);
+}
+
+void TestExpression::scriptErrorRouting()
+{
+    GlobalSettings::instance()->resetScriptEngine();
+    ScriptGlobal::setupGlobalScripting();
+
+    {
+        ExprExceptionAsScriptError guard;
+        Expression bad("1 + * 2");
+        bad.parse();
+        QVERIFY(!bad.lastError().isEmpty());
+        QVERIFY(GlobalSettings::instance()->scriptEngine()->hasError());
+        QJSValue err = GlobalSettings::instance()->scriptEngine()->catchError();
+        QVERIFY(err.isError());
+    }
+
+    QVERIFY_THROWS_EXCEPTION(IException, {
+        Expression badOutside("1 + * 2");
+        badOutside.parse();
     });
 }

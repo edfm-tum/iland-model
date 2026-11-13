@@ -108,9 +108,9 @@ void Soil::setInitialState(const CNPool &young_labile_kg_ha,
         throw IException(QString("setup of Soil: kyl or kyr invalid: kyl: %1 kyr: %2").arg(mKyl).arg(mKyr));
     if (!mYL.isValid())
         throw IException(QString("setup of Soil: yl-pool invalid: c: %1 n: %2").arg(mYL.C).arg(mYL.N));
-    if (!mYL.isValid())
+    if (!mYR.isValid())
         throw IException(QString("setup of Soil: yr-pool invalid: c: %1 n: %2").arg(mYR.C).arg(mYR.N));
-    if (!mYL.isValid())
+    if (!mSOM.isValid())
         throw IException(QString("setup of Soil: som-pool invalid: c: %1 n: %2").arg(mSOM.C).arg(mSOM.N));
 
     mYLaboveground_frac = young_labile_aboveground_frac;

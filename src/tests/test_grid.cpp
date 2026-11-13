@@ -19,12 +19,16 @@
 
 #include "test_grid.h"
 
+#include <QFile>
 #include <QTemporaryDir>
+#include <QTextStream>
 #include <QtTest/QtTest>
 #include <cmath>
 
+#include "dem.h"
 #include "gisgrid.h"
 #include "grid.h"
+#include "layeredgrid.h"
 
 void TestGrid::setupAndCoordinateMapping()
 {
@@ -174,4 +178,203 @@ void TestGrid::asciiRasterRoundTrip()
     QVERIFY(std::abs(loaded.constValueAtIndex(1, 0) - 12.5f) < 1e-5f);
     QVERIFY2(loaded.isNull(loaded.constValueAtIndex(2, 1)),
              "NODATA cell must survive ESRI ASCII export/import as Grid::nullValue()");
+}
+
+namespace {
+struct TestLayerCell {
+    float a;
+    float b;
+};
+
+class TestLayeredGrid : public LayeredGrid<TestLayerCell>
+{
+public:
+    TestLayeredGrid(const Grid<TestLayerCell> &grid) : LayeredGrid<TestLayerCell>(grid)
+    {
+        mNames << LayerElement("layerA", "First layer", GridViewRainbow)
+               << LayerElement("layerB", "Second layer", GridViewRainbow);
+    }
+
+    const QVector<LayerElement> &names() override { return mNames; }
+
+    using LayeredGrid<TestLayerCell>::value;
+    double value(const TestLayerCell &data, const int index) const override
+    {
+        switch (index) {
+        case 0: return data.a;
+        case 1: return data.b;
+        default: return 0.0;
+        }
+    }
+
+private:
+    QVector<LayerElement> mNames;
+};
+} // namespace
+
+void TestGrid::gisCoordinateTransformsAndGisGrid()
+{
+    setupGISTransformation(5000.0, 20000.0, 0.0, 37.5);
+    const QPointF originModel = GisGrid::worldToModel(QPointF(5000.0, 20000.0));
+    QVERIFY(std::abs(originModel.x()) < 1e-9);
+    QVERIFY(std::abs(originModel.y()) < 1e-9);
+
+    const QList<QPointF> pts = {
+        QPointF(0.0, 0.0),
+        QPointF(123.45, 678.9),
+        QPointF(-50.0, 25.25)
+    };
+    for (const QPointF &p : pts) {
+        const QPointF back = GisGrid::worldToModel(GisGrid::modelToWorld(p));
+        QVERIFY(std::abs(back.x() - p.x()) < 1e-9);
+        QVERIFY(std::abs(back.y() - p.y()) < 1e-9);
+    }
+
+    setupGISTransformation(100.0, 200.0, 0.0, 90.0);
+    const QPointF rotBack = GisGrid::worldToModel(GisGrid::modelToWorld(QPointF(10.0, 20.0)));
+    QVERIFY(std::abs(rotBack.x() - 10.0) < 1e-9);
+    QVERIFY(std::abs(rotBack.y() - 20.0) < 1e-9);
+
+    setupGISTransformation(0.0, 0.0, 0.0, 0.0);
+
+    QTemporaryDir tmpDir;
+    QVERIFY(tmpDir.isValid());
+    const QString ascPath = tmpDir.filePath("gis_test.asc");
+    {
+        QFile f(ascPath);
+        QVERIFY(f.open(QIODevice::WriteOnly | QIODevice::Text));
+        QTextStream ts(&f);
+        ts << "ncols 4\n"
+           << "nrows 3\n"
+           << "xllcorner 0\n"
+           << "yllcorner 0\n"
+           << "cellsize 10\n"
+           << "NODATA_value -9999\n"
+           << "1 2 2 -9999\n"
+           << "3 4 1 2\n"
+           << "5 1 2 3\n";
+    }
+
+    GisGrid gg;
+    QVERIFY(gg.loadFromFile(ascPath));
+    QCOMPARE(gg.rows(), 3);
+    QCOMPARE(gg.cols(), 4);
+    QCOMPARE(gg.cellSize(), 10.0);
+    QCOMPARE(gg.minValue(), 1.0);
+    QCOMPARE(gg.maxValue(), 5.0);
+    QCOMPARE(gg.value(-5.0, -5.0), -1.0);
+    QCOMPARE(gg.value(3, 2), -1.0);
+
+    QList<double> distinct = gg.distinctValues();
+    std::sort(distinct.begin(), distinct.end());
+    QCOMPARE(distinct, QList<double>({-1.0, 1.0, 2.0, 3.0, 4.0, 5.0}));
+
+    gg.clip(QRectF(0.0, 0.0, 20.0, 20.0));
+    QCOMPARE(gg.value(QPointF(25.0, 5.0)), -1.0);
+    QCOMPARE(gg.value(QPointF(5.0, 5.0)), 5.0);
+}
+
+void TestGrid::layeredGridAndExport()
+{
+    setupGISTransformation(0.0, 0.0, 0.0, 0.0);
+
+    Grid<TestLayerCell> raw(10.0f, 3, 2);
+    for (int i = 0; i < raw.count(); ++i) {
+        raw[i].a = static_cast<float>(i + 1);
+        raw[i].b = static_cast<float>((i + 1) * 10);
+    }
+
+    TestLayeredGrid lg(raw);
+    QCOMPARE(lg.indexOf("layerA"), 0);
+    QCOMPARE(lg.indexOf("layerB"), 1);
+    QCOMPARE(lg.indexOf("missing"), -1);
+    QCOMPARE(lg.layerNames(), QStringList({"layerA", "layerB"}));
+    QCOMPARE(lg.value(1, 0, 0), 2.0);
+    QCOMPARE(lg.value(1, 0, 1), 20.0);
+
+    double minV = 0.0, maxV = 0.0;
+    lg.range(minV, maxV, 1);
+    QCOMPARE(minV, 10.0);
+    QCOMPARE(maxV, 60.0);
+
+    Grid<double> *copied = lg.copyGrid(1);
+    QVERIFY(copied != nullptr);
+    QCOMPARE(copied->constValueAtIndex(2, 1), 60.0);
+    delete copied;
+
+    const QString esri = gridToESRIRaster(lg, "layerA");
+    QVERIFY(!esri.isEmpty());
+    QVERIFY(esri.contains("ncols 3"));
+    QVERIFY(esri.contains("nrows 2"));
+}
+
+void TestGrid::demSlopeAspectAndBorderSafety()
+{
+    DEM demFlat;
+    demFlat.setup(QRectF(0.0, 0.0, 50.0, 50.0), 10.0f);
+    demFlat.initialize(200.0f);
+    float slp = -1.0f, asp = -1.0f;
+    QCOMPARE(demFlat.orientation(QPointF(25.0, 25.0), slp, asp), 200.0f);
+    QCOMPARE(slp, 0.0f);
+
+    // North-facing 45 deg slope (elevation decreases northward as y increases)
+    DEM demNorth;
+    demNorth.setup(QRectF(0.0, 0.0, 50.0, 50.0), 10.0f);
+    for (int y = 0; y < demNorth.sizeY(); ++y)
+        for (int x = 0; x < demNorth.sizeX(); ++x)
+            demNorth.valueAtIndex(x, y) = 500.0f - y * 10.0f;
+    QCOMPARE(demNorth.orientation(QPointF(25.0, 25.0), slp, asp), 480.0f);
+    QVERIFY(std::abs(slp - 1.0f) < 1e-5f);
+    QVERIFY(std::abs(asp - 0.0f) < 1e-4f || std::abs(asp - 360.0f) < 1e-4f);
+
+    // East-facing 45 deg slope (elevation decreases eastward as x increases)
+    DEM demEast;
+    demEast.setup(QRectF(0.0, 0.0, 50.0, 50.0), 10.0f);
+    for (int y = 0; y < demEast.sizeY(); ++y)
+        for (int x = 0; x < demEast.sizeX(); ++x)
+            demEast.valueAtIndex(x, y) = 500.0f - x * 10.0f;
+    demEast.orientation(QPointF(25.0, 25.0), slp, asp);
+    QVERIFY(std::abs(slp - 1.0f) < 1e-5f);
+    QVERIFY(std::abs(asp - 90.0f) < 1e-4f);
+
+    // South-facing 45 deg slope (elevation increases northward with y)
+    DEM demSouth;
+    demSouth.setup(QRectF(0.0, 0.0, 50.0, 50.0), 10.0f);
+    for (int y = 0; y < demSouth.sizeY(); ++y)
+        for (int x = 0; x < demSouth.sizeX(); ++x)
+            demSouth.valueAtIndex(x, y) = 100.0f + y * 10.0f;
+    demSouth.orientation(QPointF(25.0, 25.0), slp, asp);
+    QVERIFY(std::abs(slp - 1.0f) < 1e-5f);
+    QVERIFY(std::abs(asp - 180.0f) < 1e-4f);
+
+    // West-facing 45 deg slope (elevation increases eastward with x)
+    DEM demWest;
+    demWest.setup(QRectF(0.0, 0.0, 50.0, 50.0), 10.0f);
+    for (int y = 0; y < demWest.sizeY(); ++y)
+        for (int x = 0; x < demWest.sizeX(); ++x)
+            demWest.valueAtIndex(x, y) = 100.0f + x * 10.0f;
+    demWest.orientation(QPointF(25.0, 25.0), slp, asp);
+    QVERIFY(std::abs(slp - 1.0f) < 1e-5f);
+    QVERIFY(std::abs(asp - 270.0f) < 1e-4f);
+
+    // TPI and derived slope/aspect/view grids
+    DEM demPeak;
+    demPeak.setup(QRectF(0.0, 0.0, 50.0, 50.0), 10.0f);
+    demPeak.initialize(100.0f);
+    demPeak.valueAtIndex(2, 2) = 150.0f;
+    QVERIFY(demPeak.topographicPositionIndex(QPointF(25.0, 25.0), 15.0f) > 30.0f);
+    QCOMPARE(demPeak.slopeGrid()->sizeX(), 5);
+    QCOMPARE(demPeak.aspectGrid()->sizeX(), 5);
+    QVERIFY(std::isfinite(demPeak.viewGrid()->constValueAtIndex(2, 2)));
+
+    // Red -> Green Bug #1: east border (x == sizeX() - 1) must not read row (0, y+1) out-of-bounds across rows
+    DEM demBorder;
+    demBorder.setup(QRectF(0.0, 0.0, 50.0, 50.0), 10.0f);
+    demBorder.initialize(100.0f);
+    demBorder.valueAtIndex(0, 3) = 900.0f;
+    slp = -1.0f;
+    asp = -1.0f;
+    const float h = demBorder.orientation(demBorder.cellCenterPoint(QPoint(4, 2)), slp, asp);
+    QCOMPARE(h, 0.0f);
+    QCOMPARE(slp, 0.0f);
 }

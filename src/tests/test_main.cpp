@@ -23,8 +23,13 @@
 #include <cstdio>
 
 #include "globalsettings.h"
+#include "test_core_entities.h"
+#include "test_data_stats.h"
 #include "test_expression.h"
 #include "test_grid.h"
+#include "test_random_stamps.h"
+#include "test_script_engine.h"
+#include "test_xmlhelper.h"
 
 namespace {
 struct SuiteEntry {
@@ -43,10 +48,20 @@ int main(int argc, char *argv[])
 
     TestExpression testExpression;
     TestGrid testGrid;
+    TestXmlHelper testXmlHelper;
+    TestDataStats testDataStats;
+    TestRandomStamps testRandomStamps;
+    TestCoreEntities testCoreEntities;
+    TestScriptEngine testScriptEngine;
 
     const QVector<SuiteEntry> suites = {
-        {"TestExpression", &testExpression},
-        {"TestGrid",       &testGrid},
+        {"TestExpression",   &testExpression},
+        {"TestGrid",         &testGrid},
+        {"TestXmlHelper",    &testXmlHelper},
+        {"TestDataStats",    &testDataStats},
+        {"TestRandomStamps", &testRandomStamps},
+        {"TestCoreEntities", &testCoreEntities},
+        {"TestScriptEngine", &testScriptEngine},
     };
 
     const QStringList args = app.arguments();

@@ -76,7 +76,7 @@ struct SaplingCell {
                             if (!saplings[i].is_occupied())
                                 free=true;
                         }
-                        state = free? (occupied? CellEmpty: CellFree) : CellFull;
+                        state = free ? (occupied ? CellFree : CellEmpty) : CellFull;
                       }
     /// get an index to an open slot in the cell, or -1 if all slots are occupied
     int free_index() {

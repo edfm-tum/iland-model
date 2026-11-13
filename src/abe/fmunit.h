@@ -59,6 +59,7 @@ public:
     void setHarvestMode(const QString new_mode) { mHarvestMode = new_mode; }
 
     void setAverageMAI(const double avg_mai) { mAverageMAI = avg_mai; }
+    void setAnnualIncrement(const double mai) { mMAI = mai; }
     double averageMAI() const { return mAverageMAI; }
     // actions
 

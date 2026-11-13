@@ -32,6 +32,9 @@ private slots:
     void statisticsAndModifiers();
     void gridRunnerAndFloodFill();
     void asciiRasterRoundTrip();
+    void gisCoordinateTransformsAndGisGrid();
+    void layeredGridAndExport();
+    void demSlopeAspectAndBorderSafety();
 };
 
 #endif // TEST_GRID_H

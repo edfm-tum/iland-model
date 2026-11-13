@@ -128,7 +128,7 @@ bool DEM::loadFromFile(const QString &fileName)
 float DEM::orientation(const QPointF &point, float &rslope_angle, float &rslope_aspect) const
 {
     QPoint pt = indexAt(point);
-    if (pt.x()>0 && pt.x()<sizeX()+1 && pt.y()>0 && pt.y()<sizeY()-1) {
+    if (pt.x()>0 && pt.x()<sizeX()-1 && pt.y()>0 && pt.y()<sizeY()-1) {
         float *p = const_cast<DEM*>(this)->ptr(pt.x(), pt.y());
         float z2 = *(p-sizeX());
         float z4 = *(p-1);

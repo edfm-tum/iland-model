@@ -807,26 +807,27 @@ void UnitObj::updateManagementPlan()
 
 QString UnitObj::harvestMode() const
 {
-    if (!mStand || mStand->unit()) return QString("invalid");
+    if (!mStand || !mStand->unit()) return QString("invalid");
     return mStand->unit()->harvestMode();
 }
 
 QString UnitObj::speciesComposition() const
 {
-    if (!mStand || mStand->unit()) return QString("invalid");
+    if (!mStand || !mStand->unit() || !mStand->unit()->agent() || !mStand->unit()->agent()->type())
+        return QString("invalid");
     int index = mStand->unit()->targetSpeciesIndex();
     return mStand->unit()->agent()->type()->speciesCompositionName(index);
 }
 
 double UnitObj::U() const
 {
-    if (!mStand || mStand->unit()) return 0.;
+    if (!mStand || !mStand->unit()) return 0.;
     return mStand->U();
 }
 
 QString UnitObj::thinningIntensity() const
 {
-    if (!mStand || mStand->unit()) return QString("invalid");
+    if (!mStand || !mStand->unit()) return QString("invalid");
     int t = mStand->unit()->thinningIntensity();
     return FomeScript::levelLabel(t);
 }
@@ -834,14 +835,14 @@ QString UnitObj::thinningIntensity() const
 double UnitObj::MAIChange() const
 {
     // todo
-    if (!mStand || mStand->unit()) return 0.;
+    if (!mStand || !mStand->unit()) return 0.;
 
     return mStand->unit()->annualIncrement();
 }
 
 double UnitObj::MAILevel() const
 {
-    if (!mStand || mStand->unit()) return 0.;
+    if (!mStand || !mStand->unit()) return 0.;
     return mStand->unit()->averageMAI();
 }
 

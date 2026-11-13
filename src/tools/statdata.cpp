@@ -36,7 +36,7 @@ void StatData::calculatePercentiles() const
 void StatData::calculate()
 {
    if (mData.isEmpty()) {
-       mSum=mMedian=mP25=mP75=mMean=mMin=mMax=0.;
+       mSum=mMedian=mP25=mP75=mMean=mMin=mMax=mSD=0.;
        return;
    }
    mP25 = std::numeric_limits<double>::max();

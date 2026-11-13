@@ -39,6 +39,7 @@
 class DEM: public FloatGrid
 {
 public:
+    DEM() {}
     DEM(const QString &fileName) { loadFromFile(fileName); }
     bool loadFromFile(const QString &fileName);
     // create and fill grids for aspect/slope

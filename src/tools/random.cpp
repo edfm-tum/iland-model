@@ -21,6 +21,7 @@
 #include "global.h"
 #include "expression.h"
 #include "exception.h"
+#include <cmath>
 
 
 /** @class RandomIndex Access each index of a given size in a random order.
@@ -258,16 +259,19 @@ double RandomCustomPDF::getProbOfRange(const double lowerBound, const double upp
         return p2-p1;
     }
     // Wahrscheinlichkeit, dass wert zwischen lower- und upper-bound liegt.
-    if (lowerBound>upperBound)
+    if (!mExpression || mSteps <= 0 || mDeltaX <= 0.)
         return 0.;
-    if (lowerBound < mLowerBound || upperBound>mUpperBound)
+    if (lowerBound >= upperBound)
         return 0.;
-    // "steps" is the resolution between lower and upper bound
-    int iLow, iHigh;
-    iLow = int( (mUpperBound- mLowerBound)/double(mSteps)*(lowerBound - mLowerBound) );
-    iHigh = int( (mUpperBound -mLowerBound)/double(mSteps)*(upperBound - mUpperBound) );
-    if (iLow<0 || iLow>=mSteps || iHigh<0 || iHigh>=mSteps)
-        return -1;
-    return mRandomIndex.getRelWeight(iLow, iHigh);
-
+    if (lowerBound < mLowerBound || upperBound > mUpperBound)
+        return 0.;
+    const int kLow = qBound(0, static_cast<int>(std::round((lowerBound - mLowerBound) / mDeltaX)), mSteps);
+    const int kHigh = qBound(0, static_cast<int>(std::round((upperBound - mLowerBound) / mDeltaX)), mSteps);
+    auto cumProb = [this](int k) -> double {
+        if (k <= 0) return 0.;
+        if (k >= mSteps) return 1.;
+        if (k == 1) return mRandomIndex.getRelWeight(0);
+        return mRandomIndex.getRelWeight(0) + mRandomIndex.getRelWeight(0, k - 1);
+    };
+    return cumProb(kHigh) - cumProb(kLow);
 }

@@ -314,7 +314,7 @@ public slots:
     /// force an out-of-schedule update of the management plan
     void updateManagementPlan();
 public:
-    explicit UnitObj(QObject *parent = nullptr): QObject(parent) {}
+    explicit UnitObj(QObject *parent = nullptr): QObject(parent), mStand(nullptr) {}
     void setStand(const FMStand* stand) { mStand = stand; }
     QString harvestMode() const;
     QString speciesComposition() const;

@@ -49,7 +49,7 @@ void Scheduler::addTicket(FMStand *stand, ActivityFlags *flags, double prob_sche
     SchedulerItem *item = new SchedulerItem();
     item->stand = stand;
     item->flags = flags;
-    item->enterYear = ForestManagementEngine::instance()->currentYear();
+    item->enterYear = ForestManagementEngine::instance() ? ForestManagementEngine::instance()->currentYear() : 0;
     item->optimalYear = item->enterYear + std::max(flags->activity()->optimalSchedule(stand->U())- stand->absoluteAge(), 0.);
     item->scheduledYear = item->optimalYear;
     // estimate growth from now to the optimal time - we assume that growth of the last decade continues
@@ -74,10 +74,12 @@ int Scheduler::clearItemsOfStand(const FMStand *stand)
     QList<SchedulerItem*>::iterator it = mItems.begin();
     while (it!=mItems.end()) {
         if ((*it)->stand == stand) {
+            delete *it;
             it = mItems.erase(it);
             ++n;
+        } else {
+            ++it;
         }
-        ++it;
     }
     return n;
 }

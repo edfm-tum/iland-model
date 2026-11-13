@@ -66,7 +66,7 @@ const QStringList FOMEWrapper::getVariablesList()
 double FOMEWrapper::value(const int variableIndex)
 {
     // dispatch
-    if (variableIndex > siteVarListOffset)
+    if (variableIndex >= siteVarListOffset)
         return valueSite(variableIndex - siteVarListOffset);
 
 

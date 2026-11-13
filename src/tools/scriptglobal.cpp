@@ -320,7 +320,8 @@ MapGridWrapper::~MapGridWrapper()
     if (mCreated)
         delete mMap;
     // remove potential links in UI to this grid
-    GlobalSettings::instance()->controller()->removeMapGrid(nullptr, mMap);
+    if (GlobalSettings::instance()->controller())
+        GlobalSettings::instance()->controller()->removeMapGrid(nullptr, mMap);
 
 }
 
@@ -1121,7 +1122,7 @@ QString ScriptGlobal::executeScript(QString cmd)
 
 
         // throw only a exception during a simulation
-        if (GlobalSettings::instance()->controller()->isRunning())
+        if (GlobalSettings::instance()->controller() && GlobalSettings::instance()->controller()->isRunning())
             throw IException("A Javascript error occured: " + msg);
 
         return msg;
@@ -1150,7 +1151,7 @@ QString ScriptGlobal::executeJSFunction(QString function)
             mLastErrorMessage += msg + "\n";
             qCritical() << msg.trimmed();
             // throw only a exception during a simulation
-            if (GlobalSettings::instance()->controller()->isRunning())
+            if (GlobalSettings::instance()->controller() && GlobalSettings::instance()->controller()->isRunning())
                 throw IException("A Javascript error occured: " + msg);
 
             return msg;
