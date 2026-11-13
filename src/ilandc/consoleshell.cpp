@@ -21,105 +21,123 @@
 
 #include <QtCore>
 #include <QtDebug>
-//#include <QKeyEvent>
 
 #include "global.h"
 #include "model.h"
 #include "modelcontroller.h"
+#include "scriptglobal.h"
 #include "version.h"
 
-QTextStream *ConsoleShell::mLogStream = 0;
+QTextStream *ConsoleShell::mLogStream = nullptr;
 bool ConsoleShell::mFlushLog = false;
-
-// a try to really get keyboard strokes in console mode...
-// did not work.
-class KeyboardTaker : public QThread
- {
- public:
-     void run();
-     bool stop;
- };
-
- void KeyboardTaker::run()
- {
-     stop = false;
-     QTextStream qin(stdin, QFile::ReadOnly);
-     while (!stop) {
-         QString input = qin.read(1);
-         if (!input.isNull()) {
-             // .. process input
-             qWarning() << "input:" << input;
-         }
-     }
- }
 
 ConsoleShell::ConsoleShell()
 {
 }
 
-/*
-*/
+ConsoleShell::~ConsoleShell()
+{
+    closeLogging();
+}
 
 void ConsoleShell::run()
 {
+    const int exit_code = runSimulation();
+    closeLogging();
+    QCoreApplication::exit(exit_code);
+}
 
-    QString xml_name = QCoreApplication::arguments().at(1);
-    // get the number of years to run...
-    bool ok;
-    int years = QCoreApplication::arguments().at(2).toInt(&ok);
-    if (years<0 || !ok) {
-        qDebug() << QCoreApplication::arguments().at(2) << "is an invalid number of years to run!";
-        QCoreApplication::quit();
-        return;
+int ConsoleShell::runSimulation()
+{
+    const QStringList args = QCoreApplication::arguments();
+    const QString xml_name = args.at(1);
+
+    // Parse number of years to run
+    bool ok = false;
+    const int years = args.at(2).toInt(&ok);
+    if (years < 0 || !ok) {
+        fprintf(stderr, "Error: '%s' is an invalid number of years to run!\n", args.at(2).toLocal8Bit().constData());
+        return 1;
     }
 
     if (!QFile::exists(xml_name)) {
-        qDebug() << "invalid XML project file: " << xml_name;
-        QCoreApplication::quit();
-        return;
+        fprintf(stderr, "Error: invalid XML project file: %s\n", xml_name.toLocal8Bit().constData());
+        return 1;
     }
-    try {
 
+    try {
         ModelController iland_model;
-        GlobalSettings::instance()->setModelController( &iland_model );
-        QObject::connect(&iland_model, SIGNAL(year(int)),SLOT(runYear(int)));
+        GlobalSettings::instance()->setModelController(&iland_model);
+        QObject::connect(&iland_model, SIGNAL(year(int)), SLOT(runYear(int)));
         iland_model.setFileName(xml_name);
         if (iland_model.hasError()) {
             qWarning() << "!!!! ERROR !!!!";
             qWarning() << iland_model.lastError();
             qWarning() << "!!!! ERROR !!!!";
-            QCoreApplication::quit();
-            return;
+            return 1;
         }
 
-        mParams.clear();
-        if (QCoreApplication::arguments().count()>3) {
+        mTriggers.clear();
+        if (args.count() > 3) {
             qWarning() << "set command line values:";
             auto &settings = const_cast<XmlHelper&>(GlobalSettings::instance()->settings());
-            for (int i=3;i<QCoreApplication::arguments().count();++i) {
-                QString line = QCoreApplication::arguments().at(i);
-                line = line.remove(QChar('"')); // drop quotes
-                mParams.append(line);
-                //qDebug() << qPrintable(line);
-                QString key = line.left(line.indexOf('='));
-                QString value = line.mid(line.indexOf('=')+1);
-                if (!settings.hasNode(key)) {
+            bool paths_changed = false;
+
+            for (int i = 3; i < args.count(); ++i) {
+                QString line = args.at(i);
+                if (line.size() >= 2 && line.startsWith('"') && line.endsWith('"'))
+                    line = line.mid(1, line.size() - 2);
+
+                const int eq_pos = line.indexOf('=');
+                if (eq_pos <= 0) {
                     qWarning() << "!!!! ERROR !!!!";
-                    qWarning() << "Tried to set the project file key" << key << ", but it was not found (or is empty) in the project file!";
+                    qWarning() << "Invalid command line option (expected key=value):" << line;
                     qWarning() << "!!!! ERROR !!!!";
-                    QCoreApplication::quit();
-                    return;
+                    return 1;
                 }
-                settings.setNodeValue(key, value);
-                qWarning() << QString("set '%1' to value '%2'. result: '%3'").arg(key).arg(value).arg(settings.value(key));
+
+                const QString key = line.left(eq_pos).trimmed();
+                QString value = line.mid(eq_pos + 1);
+                if (value.size() >= 2 && value.startsWith('"') && value.endsWith('"'))
+                    value = value.mid(1, value.size() - 2);
+
+                // Special CLI JavaScript hooks (not XML settings)
+                if (key == QLatin1String("onCreate") || key == QLatin1String("onFinish")) {
+                    mTriggers.append(qMakePair(key, value));
+                    qWarning() << QString("registered CLI trigger '%1': %2").arg(key, value);
+                    continue;
+                }
+
+                if (!settings.hasNode(key)) {
+                    if (!settings.createNode(key)) {
+                        qWarning() << "!!!! ERROR !!!!";
+                        qWarning() << "Tried to create missing project file key" << key << ", but failed!";
+                        qWarning() << "!!!! ERROR !!!!";
+                        return 1;
+                    }
+                    qWarning() << "Note: created missing XML key" << key;
+                }
+                if (!settings.setNodeValue(key, value)) {
+                    qWarning() << "!!!! ERROR !!!!";
+                    qWarning() << "Failed to set project file key" << key << "to" << value;
+                    qWarning() << "!!!! ERROR !!!!";
+                    return 1;
+                }
+                if (key.startsWith(QLatin1String("system.path.")))
+                    paths_changed = true;
+
+                qWarning() << QString("set '%1' to value '%2'. result: '%3'").arg(key, value, settings.value(key));
+            }
+
+            if (paths_changed) {
+                GlobalSettings::instance()->setupDirectories(settings.node("system.path"),
+                                                             QFileInfo(xml_name).absolutePath());
             }
         }
+
         if (!setupLogging()) {
-            qWarning() << "**************************************************";
-            qWarning() << "********* Error in setup of logging **************";
-            qWarning() << "**************************************************";
-            QCoreApplication::quit();
-            return;
+            fprintf(stderr, "Error: failed to set up logging!\n");
+            return 1;
         }
 
         qDebug() << "**************************************************";
@@ -134,10 +152,11 @@ void ConsoleShell::run()
             qWarning() << "!!!! ERROR !!!!";
             qWarning() << iland_model.lastError();
             qWarning() << "!!!! ERROR !!!!";
-            QCoreApplication::quit();
-            return;
+            return 1;
         }
-        runJavascript("onCreate");
+        if (!runJavascript("onCreate"))
+            return 1;
+
         qWarning() << "**************************************************";
         qWarning() << "*** running model for" << years << "years";
         qWarning() << "**************************************************";
@@ -147,117 +166,146 @@ void ConsoleShell::run()
             qWarning() << "!!!! ERROR !!!!";
             qWarning() << iland_model.lastError();
             qWarning() << "!!!! ERROR !!!!";
-            QCoreApplication::quit();
-            return;
+            return 1;
         }
-        runJavascript("onFinish");
+
+        // Invoke global JS onFinish() if defined in the loaded script (matching GUI behavior)
+        GlobalSettings::instance()->executeJSFunction("onFinish");
+        if (!ScriptGlobal::lastErrorMessage().isEmpty()) {
+            qWarning() << "!!!! ERROR in onFinish() !!!!";
+            qWarning() << ScriptGlobal::lastErrorMessage();
+            return 1;
+        }
+
+        if (!runJavascript("onFinish"))
+            return 1;
 
         qWarning() << "**************************************************";
         qWarning() << "*** model run finished.";
         qWarning() << "**************************************************";
+        return 0;
 
     } catch (const IException &e) {
         qWarning() << "*** An exception occured ***";
         qWarning() << e.message();
-    }
-    catch (const std::exception &e) {
+        return 1;
+    } catch (const std::exception &e) {
         qWarning() << "*** An (std)exception occured ***";
         qWarning() << e.what();
+        return 1;
     }
-    QCoreApplication::quit();
-
-
 }
 
 void ConsoleShell::runYear(int year)
 {
-    printf("\r%s: simulating year %d %s          ", QDateTime::currentDateTime().toString("hh:mm:ss").toLocal8Bit().data(), year-1, GlobalSettings::instance()->controller()->timeString().toLocal8Bit().data());
+    printf("\r%s: simulating year %d %s          ",
+           QDateTime::currentDateTime().toString("hh:mm:ss").toLocal8Bit().data(),
+           year - 1,
+           GlobalSettings::instance()->controller()->timeString().toLocal8Bit().data());
 }
 
 static QMutex qdebug_mutex;
 void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
- {
+{
     Q_UNUSED(context);
     QMutexLocker m(&qdebug_mutex);
+    QTextStream *stream = ConsoleShell::logStream();
 
     switch (type) {
     case QtDebugMsg:
-        *ConsoleShell::logStream() << QTime::currentTime().toString("hh:mm:ss:zzz") << ": "  << msg << Qt::endl;
-        if (ConsoleShell::flush())
-            ConsoleShell::logStream()->flush();
+        if (stream) {
+            *stream << QTime::currentTime().toString("hh:mm:ss:zzz") << ": " << msg << Qt::endl;
+            if (ConsoleShell::flush())
+                stream->flush();
+        }
         break;
     case QtWarningMsg:
-        *ConsoleShell::logStream() << QTime::currentTime().toString("hh:mm:ss:zzz") << ": " << msg << Qt::endl;
-        if (ConsoleShell::flush())
-            ConsoleShell::logStream()->flush();
+        if (stream) {
+            *stream << QTime::currentTime().toString("hh:mm:ss:zzz") << ": " << msg << Qt::endl;
+            if (ConsoleShell::flush())
+                stream->flush();
+        }
         printf("%s: %s\n", QDateTime::currentDateTime().toString("hh:mm:ss").toLocal8Bit().data(), msg.toLocal8Bit().data());
         break;
-// available from qt5.5
     case QtInfoMsg:
-        *ConsoleShell::logStream() << QTime::currentTime().toString("hh:mm:ss:zzz") << ": " << msg << Qt::endl;
-        if (ConsoleShell::flush())
-            ConsoleShell::logStream()->flush();
+        if (stream) {
+            *stream << QTime::currentTime().toString("hh:mm:ss:zzz") << ": " << msg << Qt::endl;
+            if (ConsoleShell::flush())
+                stream->flush();
+        }
         printf("%s: %s\n", QDateTime::currentDateTime().toString("hh:mm:ss").toLocal8Bit().data(), msg.toLocal8Bit().data());
-
         break;
     case QtCriticalMsg:
-        *ConsoleShell::logStream() << msg << Qt::endl;
-        if (ConsoleShell::flush())
-            ConsoleShell::logStream()->flush();
+        if (stream) {
+            *stream << msg << Qt::endl;
+            if (ConsoleShell::flush())
+                stream->flush();
+        }
         printf("Critical: %s\n", msg.toLocal8Bit().data());
         break;
     case QtFatalMsg:
-        *ConsoleShell::logStream() << msg << Qt::endl;
-        if (ConsoleShell::flush())
-            ConsoleShell::logStream()->flush();
+        if (stream) {
+            *stream << msg << Qt::endl;
+            if (ConsoleShell::flush())
+                stream->flush();
+        }
         printf("Fatal: %s\n", msg.toLocal8Bit().data());
+        break;
     }
- }
-
+}
 
 bool ConsoleShell::setupLogging()
 {
-    if (mLogStream) {
-        if (mLogStream->device())
-            delete mLogStream->device();
-        delete mLogStream;
-        mLogStream = NULL;
-    }
+    closeLogging();
 
     QString fname = GlobalSettings::instance()->settings().value("system.logging.logFile", "logfile.txt");
     mFlushLog = GlobalSettings::instance()->settings().valueBool("system.logging.flush");
-    QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss");
+    const QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss");
     fname.replace("$date$", timestamp);
     fname = GlobalSettings::instance()->path(fname, "log");
+
+    QDir().mkpath(QFileInfo(fname).absolutePath());
     QFile *file = new QFile(fname);
 
     if (!file->open(QIODevice::WriteOnly)) {
         qDebug() << "cannot open logfile" << fname;
+        delete file;
         return false;
-    } else {
-        qDebug() << "Log output is redirected to logfile" << fname;
-        mLogStream = new QTextStream(file);
-        qInstallMessageHandler(myMessageOutput);
-        return true;
     }
-
-
-
+    qDebug() << "Log output is redirected to logfile" << fname;
+    mLogStream = new QTextStream(file);
+    qInstallMessageHandler(myMessageOutput);
+    return true;
 }
 
-void ConsoleShell::runJavascript(const QString key)
+void ConsoleShell::closeLogging()
 {
-    for (int i=0;i<mParams.count(); ++i) {
-        QString line=mParams[i];
-        QString pkey = line.left(line.indexOf('='));
-        if (pkey == key) {
-            QString command = line.mid(line.indexOf('=')+1);
-            // execute the function
-            qWarning() << "executing trigger" << key;
-            qWarning() << GlobalSettings::instance()->executeJavascript(command);
+    qInstallMessageHandler(nullptr);
+    QMutexLocker m(&qdebug_mutex);
+    if (mLogStream) {
+        mLogStream->flush();
+        QIODevice *dev = mLogStream->device();
+        delete mLogStream;
+        mLogStream = nullptr;
+        if (dev) {
+            dev->close();
+            delete dev;
         }
     }
-
-
 }
 
+bool ConsoleShell::runJavascript(const QString &key)
+{
+    for (const auto &trigger : mTriggers) {
+        if (trigger.first == key) {
+            qWarning() << "executing trigger" << key;
+            qWarning() << GlobalSettings::instance()->executeJavascript(trigger.second);
+            if (!ScriptGlobal::lastErrorMessage().isEmpty()) {
+                qWarning() << "!!!! ERROR in CLI trigger" << key << "!!!!";
+                qWarning() << ScriptGlobal::lastErrorMessage();
+                return false;
+            }
+        }
+    }
+    return true;
+}

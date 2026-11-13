@@ -28,10 +28,11 @@
 #include <locale.h>
 
 #include "consoleshell.h"
+
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
-    setlocale(LC_ALL,"C");
+    setlocale(LC_ALL, "C");
     QString copyright_str = QString("(c) Werner Rammer, Rupert Seidl, 2009-%1").arg(buildYear());
 
     printf("iLand console (%s)\n", currentVersion());
@@ -40,18 +41,23 @@ int main(int argc, char *argv[])
     printf("%s\n", copyright_str.toLocal8Bit().data());
     printf("version: %s\n", verboseVersion().toLocal8Bit().data());
     printf("**********************************************************\n\n");
-    if (a.arguments().count()<3) {
+
+    const QStringList args = a.arguments();
+    if (args.contains("--version")) {
+        return 0;
+    }
+    const bool help_requested = args.contains("--help") || args.contains("-h");
+    if (help_requested || args.count() < 3) {
         printf("Usage: \n");
-        printf("ilandc.exe <xml-project-file> <years> <...other options>\n");
+        printf("ilandc <xml-project-file> <years> <...other options>\n");
         printf("Options:\n");
         printf("you specify a number key=value pairs, and *after* loading of the project\n");
         printf("the 'key' settings are set to 'value'. E.g.: ilandc project.xml 100 output.stand.enabled=false output.stand.landscape=false\n");
-        printf("See also https://iland-model.org/iLand+console\n.");
-        return 0;
+        printf("See also https://iland-model.org/iLand+console\n");
+        return help_requested ? 0 : 1;
     }
     ConsoleShell iland_shell;
 
     QTimer::singleShot(0, &iland_shell, SLOT(run()));
-    //a.installEventFilter(&iland_shell);
     return a.exec();
 }

@@ -1,4 +1,4 @@
-# build iLand on Windows
+﻿# build iLand on Windows
 # release mode
 
 # for testing locally:
@@ -34,6 +34,11 @@ Build-QtProject "src/plugins/build/release" "plugins.pro"
 Build-QtProject "src/iland/build/release" "iland.pro"
 Build-QtProject "src/ilandc/build/release" "ilandc.pro"
 Build-QtProject "src/fonstudio/build/release" "fonstudio.pro"
+Build-QtProject "src/tests/build/release" "tests.pro"
+
+Write-Host "Running unit tests..." -ForegroundColor Cyan
+& "src/tests/build/release/release/iland_tests.exe"
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 Write-Host "===================================================================" -ForegroundColor Green
 Write-Host "Executables in src/ilandc/build/release and src/iland/build/release" -ForegroundColor Green

@@ -69,8 +69,8 @@ public:
     bool setup(const QRectF& rect, const double cellsize);
     bool setup(const Grid<T>& source) { clear();  mRect = source.mRect; return setup(source.mRect, source.mCellsize); }
     void initialize(const T& value) {for( T *p = begin();p!=end(); ++p) *p=value; }
-    void wipe(); ///< write 0-bytes with memcpy to the whole area
-    void wipe(const T value); ///< overwrite the whole area with "value" size of T must be the size of "int" ERRORNOUS!!!
+    void wipe(); ///< write 0-bytes with memset to the whole area
+    void wipe(const T value); ///< overwrite the whole area with "value"
     /// copies the content of the source grid to this grid.
     /// no operation, if the grids are not of the same size.
     void copy(const Grid<T> &source) { if (source.count()==count()) memcpy(mData, source.mData, count()*sizeof(T)); }
@@ -494,14 +494,8 @@ void  Grid<T>::wipe()
 template <class T>
 void  Grid<T>::wipe(const T value)
 {
-    /* this does not work properly !!! */
-    if (sizeof(T)==sizeof(int)) {
-        float temp = value;
-        float *pf = &temp;
-
-        memset(mData, *((int*)pf), mCount*sizeof(T));
-    } else
-        initialize(value);
+    if (mData)
+        std::fill(begin(), end(), value);
 }
 
 template <class T>
@@ -792,7 +786,7 @@ bool gridToGeoTIFF(const Grid<T> &grid, const QString &fileName, GeoTIFF::TIFDat
 
 
 template <class T, typename U>
-QString gridToESRIRaster(const Grid<T> &grid, std::function<U(const T&)>  valueFunction )
+QString gridToESRIRaster(const Grid<T> &grid, std::function<U(const T&)> valueFunction)
 {
     Vector3D model(grid.metricRect().left(), grid.metricRect().top(), 0.);
     Vector3D world;
@@ -802,12 +796,22 @@ QString gridToESRIRaster(const Grid<T> &grid, std::function<U(const T&)>  valueF
                          .arg(grid.sizeY())
                          .arg(world.x(),0,'f').arg(world.y(),0,'f')
                          .arg(grid.cellsize()).arg(-9999);
-    QString line =  gridToString(grid, valueFunction, ' '); // for special grids
-    return result + line;
+    std::ostringstream ts;
+    for (int y = grid.sizeY() - 1; y >= 0; --y) {
+        for (int x = 0; x < grid.sizeX(); ++x) {
+            const U val = valueFunction(grid.constValueAtIndex(x, y));
+            if (val == std::numeric_limits<U>::lowest())
+                ts << -9999 << ' ';
+            else
+                ts << val << ' ';
+        }
+        ts << "\r\n";
+    }
+    return result + QString::fromStdString(ts.str());
 }
 
 template <class T>
-QString gridToESRIRaster(const Grid<T> &grid )
+QString gridToESRIRaster(const Grid<T> &grid)
 {
     Vector3D model(grid.metricRect().left(), grid.metricRect().top(), 0.);
     Vector3D world;
@@ -817,8 +821,20 @@ QString gridToESRIRaster(const Grid<T> &grid )
                          .arg(grid.sizeY())
                          .arg(world.x(),0,'f').arg(world.y(),0,'f')
                          .arg(grid.cellsize()).arg(-9999);
-    QString line = gridToString(grid, ' '); // for normal grids (e.g. float)
-    return result + line;
+    QString body;
+    QTextStream ts(&body);
+    ts.setRealNumberPrecision(10);
+    for (int y = grid.sizeY() - 1; y >= 0; --y) {
+        for (int x = 0; x < grid.sizeX(); ++x) {
+            const T &val = grid.constValueAtIndex(x, y);
+            if (grid.isNull(val))
+                ts << -9999 << ' ';
+            else
+                ts << val << ' ';
+        }
+        ts << "\r\n";
+    }
+    return result + body;
 }
 
 

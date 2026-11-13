@@ -177,23 +177,22 @@ bool XmlHelper::createNode(const QString &path)
     if (hasNode(path)) {
         qDebug() << "Node already exists. Skipping!";
         return false;
-    } else
-    {
-        QDomNode curNode = top();
-        QDomNode childBranch;
-        foreach (QString xmlPath, path.split(".")) {
-            childBranch = curNode.firstChildElement(xmlPath);
-            if ( childBranch.isNull() ) {
-                curNode = curNode.appendChild(mDoc.createElement(xmlPath));
-            }
-            else {
-                curNode = childBranch;
-            }
-        }
-        curNode.appendChild(mDoc.createTextNode(""));
-
     }
 
+    QDomNode curNode = (path.size() > 0 && path.at(0) == '.') ? mCurrentTop : top();
+    if (curNode.isNull())
+        return false;
+    QDomDocument doc = curNode.ownerDocument().isNull() ? mDoc : curNode.ownerDocument();
+    QDomNode childBranch;
+    foreach (const QString &xmlPath, path.split('.', Qt::SkipEmptyParts)) {
+        childBranch = curNode.firstChildElement(xmlPath);
+        if (childBranch.isNull()) {
+            curNode = curNode.appendChild(doc.createElement(xmlPath));
+        } else {
+            curNode = childBranch;
+        }
+    }
+    curNode.appendChild(doc.createTextNode(""));
     return true;
 }
 
@@ -278,8 +277,23 @@ QDomElement XmlHelper::node(const QString &path) const
 // writers
 bool XmlHelper::setNodeValue(QDomElement &node, const QString &value)
 {
-    if (!node.isNull() && node.hasChildNodes()) {
-        node.firstChild().toText().setData(value);
+    if (node.isNull())
+        return false;
+    QDomDocument doc = node.ownerDocument().isNull() ? mDoc : node.ownerDocument();
+    if (!node.hasChildNodes()) {
+        node.appendChild(doc.createTextNode(value));
+        return true;
+    }
+    QDomNode child = node.firstChild();
+    while (!child.isNull()) {
+        if (child.isText()) {
+            child.toText().setData(value);
+            return true;
+        }
+        child = child.nextSibling();
+    }
+    if (node.firstChildElement().isNull()) {
+        node.appendChild(doc.createTextNode(value));
         return true;
     }
     return false;
@@ -291,7 +305,16 @@ bool XmlHelper::setNodeValue(const QString &path, const QString &value)
         qDebug() << "XML: attempting to set value of" << path << ": node not present.";
         return false;
     }
-    return setNodeValue(e,value);
+    bool ok = setNodeValue(e, value);
+    if (ok) {
+        QString full = fullName(path);
+        if (full.startsWith("model.parameter.")) {
+            QString paramKey = full.mid(QStringLiteral("model.parameter.").length());
+            if (!paramKey.isEmpty() && !paramKey.contains('.'))
+                mParamCache[paramKey] = value;
+        }
+    }
+    return ok;
 }
 
 QMutex xml_mutex;

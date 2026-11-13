@@ -20,9 +20,12 @@
 #ifndef CONSOLESHELL_H
 #define CONSOLESHELL_H
 #include <QObject>
-#include <QStringList>
+#include <QPair>
+#include <QList>
+#include <QString>
+
 /** ConsoleShell encapsulates the iLand model
-    when used in the console application ("ilandc.exe")
+    when used in the console application ("ilandc")
 */
 
 class QTextStream;
@@ -31,16 +34,20 @@ class ConsoleShell: public QObject
     Q_OBJECT
 public:
     ConsoleShell();
-    static QTextStream* logStream() {return mLogStream; }
+    ~ConsoleShell() override;
+    static QTextStream* logStream() { return mLogStream; }
     static bool flush() { return mFlushLog; }
 public slots:
     void run(); // execute the iLand model
     void runYear(int year); // slot called every year
 private:
-    QStringList mParams;
-    static bool mFlushLog; // immediately flush output to the logfile
+    int runSimulation();
     bool setupLogging();
-    void runJavascript(const QString key);
+    void closeLogging();
+    bool runJavascript(const QString &key);
+
+    QList<QPair<QString, QString>> mTriggers;
+    static bool mFlushLog; // immediately flush output to the logfile
     static QTextStream *mLogStream;
 };
 

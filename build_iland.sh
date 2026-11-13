@@ -5,6 +5,7 @@ mkdir -p src/plugins/build/release
 mkdir -p src/iland/build/release
 mkdir -p src/ilandc/build/release
 mkdir -p src/fonstudio/build/release
+mkdir -p src/tests/build/release
 
 echo "Building plugins..."
 cd src/plugins/build/release
@@ -28,6 +29,13 @@ echo "Building fonstudio..."
 cd src/fonstudio/build/release
 qmake ../../fonstudio.pro 
 make -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)
+cd ../../../..
+
+echo "Building and running unit tests..."
+cd src/tests/build/release
+qmake ../../tests.pro
+make -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)
+./iland_tests
 cd ../../../..
 
 echo "==================================================================="

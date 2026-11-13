@@ -1074,7 +1074,8 @@ void ScriptGlobal::test_tree_mortality(double thresh, int years, double p_death)
 
 void ScriptGlobal::throwError(const QString &errormessage)
 {
-    GlobalSettings::instance()->scriptEngine()->throwError(errormessage);
+    if (GlobalSettings::instance()->scriptEngine())
+        GlobalSettings::instance()->scriptEngine()->throwError(errormessage);
     // mLastErrorMessage += errormessage + "\n"; // not sure if it works to remove this?
     qWarning() << "Scripterror:" << errormessage;
 }

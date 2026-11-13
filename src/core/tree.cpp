@@ -87,7 +87,7 @@ Tree::Tree()
     mStamp = nullptr;
 
     m_statCreated++;
-    saps = GlobalSettings::instance()->model()->saplings(); // save link to saplings to static variable
+    saps = GlobalSettings::instance()->model() ? GlobalSettings::instance()->model()->saplings() : nullptr; // save link to saplings to static variable
 
     QMutexLocker lock(&_protectTreeId); // make sure tree Ids are unique
     mId = m_nextId++;

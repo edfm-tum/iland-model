@@ -94,7 +94,7 @@ void Expression::addConstant(const QString const_name, const double const_value)
 }
 
 bool Expression::mLinearizationAllowed = false;
-bool Expression::mThrowExceptionsInJS = true;
+bool Expression::mThrowExceptionsInJS = false;
 
 Expression::Expression()
 {
@@ -331,11 +331,12 @@ void  Expression::parse_levelL1()
         parse_level0();
         int logicaltok=0;
         if (op=="<") logicaltok=opLowerThen;
-        if (op==">") logicaltok=opGreaterThen;
-        if (op=="<>") logicaltok=opNotEqual;
-        if (op=="<=") logicaltok=opLowerOrEqual;
-        if (op==">=") logicaltok=opGreaterOrEqual;
-        if (op=="=")  logicaltok=opEqual;
+        else if (op==">") logicaltok=opGreaterThen;
+        else if (op=="<>") logicaltok=opNotEqual;
+        else if (op=="<=") logicaltok=opLowerOrEqual;
+        else if (op==">=") logicaltok=opGreaterOrEqual;
+        else if (op=="=")  logicaltok=opEqual;
+        else throw IException(QString("Invalid comparison operator '%1' (use '=' for equality, '<>' for inequality).").arg(op));
 
         m_execList[m_execIndex].Type=etCompare;
         m_execList[m_execIndex].Value=0;
@@ -410,8 +411,11 @@ void  Expression::atom()
             }
         }
         next_token();
-    } else if (m_state==etStop || m_state==etUnknown)
+    } else if (m_state==etStop || m_state==etUnknown) {
         throw IException("Unexpected end of m_expression.");
+    } else {
+        throw IException(QString("Unexpected token '%1' in expression.").arg(m_token));
+    }
 }
 
 
@@ -433,16 +437,17 @@ void  Expression::parse_level2()
 void  Expression::parse_level3()
 {
     // unary operator (- bzw. +)
-    QString op;
-    op=m_token;
-    bool Unary=false;
-    if (op=="-" && (m_lastState==etOperator || m_lastState==etUnknown || m_lastState==etCompare || m_lastState==etLogical || m_lastState==etFunction)) {
+    QString op = m_token;
+    bool Unary = false;
+    if ((op=="-" || op=="+") && (m_lastState==etOperator || m_lastState==etUnknown || m_lastState==etCompare || m_lastState==etLogical || m_lastState==etFunction || m_lastState==etDelimeter)) {
         next_token();
-        Unary=true;
+        Unary = true;
     }
-    parse_level4();
+    if (Unary)
+        parse_level3();
+    else
+        parse_level4();
     if (Unary && op=="-") {
-        //FResult=-FResult;
         m_execList[m_execIndex].Type=etOperator;
         m_execList[m_execIndex].Value=0;
         m_execList[m_execIndex++].Index='_';
@@ -455,8 +460,6 @@ void  Expression::parse_level4()
 {
     // Klammer und Funktionen
     QString func;
-    atom();
-    //double temp=FResult;
     if (m_token=="(" || m_state==etFunction) {
         func=m_token;
         if (func=="(")   // klammerausdruck
@@ -471,12 +474,17 @@ void  Expression::parse_level4()
             next_token();
             //m_token="{";
             // bei funktionen mit mehreren Parametern
-            while (m_token!=")") {
+            while (m_token!=")" && m_state!=etStop) {
                 argcount++;
                 parse_levelL0();
-                if (m_state==etDelimeter)
+                if (m_state==etDelimeter) {
                     next_token();
+                    if (m_token==")")
+                        throw IException(QString("Trailing comma in function '%1' in [%2].").arg(func, m_expression));
+                }
             }
+            if (argcount==0)
+                throw IException(QString("Function %1 requires arguments!").arg(func));
             if (MaxArgCount[idx]>0 && MaxArgCount[idx]!=argcount)
                 throw IException( QString("Function %1 assumes %2 arguments!").arg(func).arg(MaxArgCount[idx]));
             //throw std::logic_error("Funktion " + func + " erwartet " + std::string(MaxArgCount[idx]) + " Parameter!");
@@ -488,6 +496,8 @@ void  Expression::parse_level4()
         if (m_token!="}" && m_token!=")") // Fehler
             throw IException(QString("Expression::unbalanced number of parentheses in [%1].").arg(m_expression));
         next_token();
+    } else {
+        atom();
     }
 }
 
@@ -549,13 +559,9 @@ double Expression::execute(double *varlist, ExpressionWrapper *object) const
     int i;
     double result=0.;
     double Stack[200];
-    bool   LogicStack[200];
-    bool   *lp=LogicStack;
     double *p=Stack;  // p=head pointer
-    *lp++=true; // zumindest eins am anfang...
     if (isEmpty()) {
         // leere expr.
-        //m_logicResult=false;
         return 0.;
     }
     while (exec->Type!=etStop) {
@@ -601,7 +607,7 @@ double Expression::execute(double *varlist, ExpressionWrapper *object) const
                     *(p-1)=(*p>*(p-1))?*p:*(p-1);
                 break;
             case 8: // if
-                if (*(p-2)==1) // true
+                if (*(p-2) != 0.) // true
                     *(p-2)=*(p-1);
                 else
                     *(p-2)=*p; // false
@@ -637,18 +643,15 @@ double Expression::execute(double *varlist, ExpressionWrapper *object) const
             }
             p++;
             break;
-        case etLogical:
+        case etLogical: {
             p--;
-            lp--;
+            const bool lhs = (*(p-1) != 0.);
+            const bool rhs = (*p != 0.);
             switch (exec->Index) {
-                case opAnd: *(lp-1)=(*(lp-1) && *lp);  break;
-                case opOr:  *(lp-1)=(*(lp-1) || *lp);  break;
+                case opAnd: *(p-1) = (lhs && rhs) ? 1. : 0.; break;
+                case opOr:  *(p-1) = (lhs || rhs) ? 1. : 0.; break;
             }
-            if (*(lp-1))
-                *(p-1)=1;
-            else
-                *(p-1)=0;
-            break;
+            break; }
         case etCompare: {
             p--;
             bool LogicResult=false;
@@ -660,13 +663,7 @@ double Expression::execute(double *varlist, ExpressionWrapper *object) const
                  case opGreaterOrEqual: LogicResult=(*(p-1)>=*p); break;
                  case opLowerOrEqual: LogicResult=(*(p-1)<=*p); break;
                  }
-            if (LogicResult) {
-                *(p-1)=1.;   // 1 means true...
-            } else {
-                *(p-1)=0.;
-            }
-
-            *lp++=LogicResult;
+            *(p-1) = LogicResult ? 1. : 0.;
             break; }
         case etStop: case etUnknown: case etDelimeter: throw IException(QString("invalid token during execution: %1").arg(m_expression));
         } // switch()
@@ -959,15 +956,15 @@ double Expression::linearizedValue2d(const double x, const double y) const
     int idx = mLinearStepCountY*lowerx + lowery;
     Q_ASSERT(idx + mLinearStepCountY+1 <mLinearized.count());
     const QVector<double> &data = mLinearized;
-    // linear interpolation
-    // mean slope in x - direction
+    // bilinear interpolation across cell [lowerx, lowerx+1] x [lowery, lowery+1]
     const double *dval = &data[idx];
-    const double *dvaly = &data[idx+mLinearStepCountY];
-    double slope_x = ( (*(dvaly) - *dval)/mLinearStepY + (*(dvaly+1) - *(dval+1))/mLinearStepY ) / 2.;
-    double slope_y = ( (*(dval+1) - *dval)/mLinearStep + (*(dvaly+1) - *(dvaly))/mLinearStep ) / 2.;
-    double result = *dval + (x-(mLinearLow+lowerx*mLinearStep))*slope_x + (y-(mLinearLowY+lowery*mLinearStepY))*slope_y;
-//    double slope_x = ( (data[idx+mLinearStepCountY]-data[idx])/mLinearStepY + (data[idx+mLinearStepCountY+1]-data[idx+1])/mLinearStepY ) / 2.;
-//    double slope_y = ( (data[idx+1]-data[idx])/mLinearStep + (data[idx+mLinearStepCountY+1]-data[idx+mLinearStepCountY])/mLinearStep ) / 2.;
-//    double result = data[idx] + (x-(mLinearLow+lowerx*mLinearStep))*slope_x + (y-(mLinearLowY+lowery*mLinearStepY))*slope_y;
+    const double *dvaly = &data[idx + mLinearStepCountY];
+    const double f00 = *dval;
+    const double f01 = *(dval + 1);
+    const double f10 = *dvaly;
+    const double f11 = *(dvaly + 1);
+    const double tx = (x - (mLinearLow + lowerx * mLinearStep)) / mLinearStep;
+    const double ty = (y - (mLinearLowY + lowery * mLinearStepY)) / mLinearStepY;
+    double result = (1. - tx) * ((1. - ty) * f00 + ty * f01) + tx * ((1. - ty) * f10 + ty * f11);
     return result;
 }
