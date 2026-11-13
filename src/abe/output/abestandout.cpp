@@ -54,7 +54,7 @@ void ABEStandOut::exec()
         if (!mCondition.calculate(GlobalSettings::instance()->currentYear()))
             return;
 
-    foreach(FMStand *stand, ForestManagementEngine::instance()->stands()) {
+    foreach(FMStand *stand, ForestManagementEngine::instance()->standList()) {
 
         // Note: EXPENSIVE reload operation for every stand and every year....
         stand->reload();
@@ -102,7 +102,7 @@ void ABEStandDetailsOut::exec()
         if (!mCondition.calculate(GlobalSettings::instance()->currentYear()))
             return;
 
-    foreach(FMStand *stand, ForestManagementEngine::instance()->stands()) {
+    foreach(FMStand *stand, ForestManagementEngine::instance()->standList()) {
 
         // Note: EXPENSIVE reload operation for every stand and every year....
         stand->reload();

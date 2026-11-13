@@ -276,11 +276,9 @@ bool FomeScript::updateManagement(QJSValue program, QString name)
         }
         stp->setup(program, name);
         // update associated stands (fix stand flags)
-        QMultiMapIterator<FMUnit*, FMStand*> i(ForestManagementEngine::instance()->stands());
-        while (i.hasNext()) {
-            i.next();
-            if (i.value()->stp() == stp)
-                i.value()->initialize();
+        for (FMStand *stand : ForestManagementEngine::instance()->standList()) {
+            if (stand->stp() == stp)
+                stand->initialize();
         }
 
         return true;

@@ -1,0 +1,81 @@
+id: abe_management
+description: >-
+  5-year ABE management test over 6 irregular polygons (0.58 - 1.95 ha) crossing
+  Resource Unit boundaries: thinning (stands 1, 2), planting (stand 3), final
+  harvest (stand 4), and unharvested controls (stands 5, 6).
+project: ../fixtures/bgd_mini/project.xml
+years: 5
+check_determinism: true
+rel_tol: 1.0e-5
+abs_tol: 1.0e-6
+
+params:
+  model.management.abeEnabled: true
+  output.abeStand.enabled: true
+  output.abeStandDetail.enabled: true
+  output.abeStandRemoval.enabled: true
+  output.abeUnit.enabled: true
+
+assertions:
+  - name: irregular_stand_geometry
+    query: |
+      SELECT standid, area
+      FROM abeStand
+      WHERE year = 1
+      ORDER BY standid
+    expect: >-
+      n == 6
+      and all(0.5 <= r['area'] <= 2.0 and round(r['area'], 2) != 1.0 for r in rows)
+      and abs(sum(r['area'] for r in rows) - 8.0) < 1.0e-6
+
+  - name: thinning_and_final_harvest_executed
+    query: |
+      SELECT
+        SUM(CASE WHEN standid = 1 THEN volumeThinning ELSE 0 END) AS s1_thin,
+        SUM(CASE WHEN standid = 2 THEN volumeThinning ELSE 0 END) AS s2_thin,
+        SUM(CASE WHEN standid = 4 THEN volumeFinal ELSE 0 END) AS s4_final,
+        SUM(CASE WHEN standid = 3 AND activity = 'planting1' THEN 1 ELSE 0 END) AS s3_planted
+      FROM abeStandRemoval
+    expect: "row['s1_thin'] > 0 and row['s2_thin'] > 0 and row['s4_final'] > 0 and row['s3_planted'] == 1"
+
+  - name: rotation_reset_recruitment_and_control
+    query: |
+      SELECT
+        (SELECT COUNT(*) FROM abeStandRemoval WHERE standid = 5) AS s5_removals,
+        MAX(CASE WHEN standid = 5 AND year = 1 THEN age END) AS s5_age_y1,
+        MAX(CASE WHEN standid = 5 AND year = 5 THEN age END) AS s5_age_y5,
+        MAX(CASE WHEN standid = 4 AND year = 1 THEN age END) AS s4_age_y1,
+        MAX(CASE WHEN standid = 4 AND year = 2 THEN age END) AS s4_age_y2,
+        MAX(CASE WHEN standid = 3 AND year = 5 THEN stems END) - MAX(CASE WHEN standid = 3 AND year = 1 THEN stems END) AS s3_recruited,
+        MAX(CASE WHEN standid = 6 AND year = 5 THEN stems END) - MAX(CASE WHEN standid = 6 AND year = 1 THEN stems END) AS s6_recruited
+      FROM abeStand
+    expect: >-
+      row['s5_removals'] == 0
+      and row['s5_age_y1'] == 46 and row['s5_age_y5'] == 50
+      and row['s4_age_y1'] == 99 and row['s4_age_y2'] == 0
+      and row['s3_recruited'] > 100 and row['s6_recruited'] > 50
+
+baselines:
+  - name: abe_stand
+    query: |
+      SELECT *
+      FROM abeStand
+      ORDER BY year, standid
+
+  - name: abe_stand_removal
+    query: |
+      SELECT *
+      FROM abeStandRemoval
+      ORDER BY year, standid
+
+  - name: abe_unit
+    query: |
+      SELECT *
+      FROM abeUnit
+      ORDER BY year, id
+
+  - name: landscape
+    query: |
+      SELECT *
+      FROM landscape
+      ORDER BY year, species

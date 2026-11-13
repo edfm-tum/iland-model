@@ -1,0 +1,83 @@
+id: core_baseline
+description: >-
+  Baseline 5-year unmanaged simulation on the 8 ha bgd_mini landscape verifying
+  determinism, heterogeneous soil/climate RUs, sapling-only gap recruitment,
+  and full SQLite regression baselines.
+project: ../fixtures/bgd_mini/project.xml
+years: 5
+check_determinism: true
+rel_tol: 1.0e-5
+abs_tol: 1.0e-6
+
+assertions:
+  - name: eight_heterogeneous_resource_units
+    query: |
+      SELECT rid, soil_c
+      FROM carbon
+      WHERE year = 0 AND rid >= 1
+      ORDER BY rid
+    expect: "n == 8 and len({round(r['soil_c'], 2) for r in rows}) == 8"
+
+  - name: climate_elevation_temperature_gradient
+    query: |
+      SELECT
+        AVG(CASE WHEN rid IN (1, 2, 3) THEN mean_annual_temp END) AS valley_temp,
+        AVG(CASE WHEN rid IN (4, 5) THEN mean_annual_temp END) AS montane_temp,
+        AVG(CASE WHEN rid IN (6, 7, 8) THEN mean_annual_temp END) AS subalpine_temp
+      FROM water
+      WHERE year = 1 AND rid >= 1
+    expect: "row['valley_temp'] > row['montane_temp'] > row['subalpine_temp']"
+
+  - name: bare_ru_sapling_initialization_and_recruitment
+    query: |
+      SELECT
+        SUM(CASE WHEN year = 0 AND rid IN (3, 8) THEN count_ha ELSE 0 END) AS y0_trees,
+        SUM(CASE WHEN year = 5 AND rid IN (3, 8) THEN count_ha ELSE 0 END) AS y5_trees
+      FROM stand
+      WHERE rid IN (3, 8)
+    expect: "row['y0_trees'] == 0 and row['y5_trees'] > 0"
+
+  - name: saplings_present_in_bare_rus_at_start
+    query: |
+      SELECT
+        COUNT(*) AS n_rows,
+        SUM(cohort_count_ha) AS total_cohorts_ha,
+        SUM(count_ha + count_small_ha) AS total_saplings_ha
+      FROM sapling
+      WHERE year = 0 AND rid IN (3, 8)
+    expect: "row['n_rows'] >= 8 and row['total_cohorts_ha'] >= 300 and row['total_saplings_ha'] > 2000"
+
+baselines:
+  - name: landscape
+    query: |
+      SELECT *
+      FROM landscape
+      ORDER BY year, species
+
+  - name: stand_y5
+    query: |
+      SELECT *
+      FROM stand
+      WHERE year = 5 AND rid >= 1
+      ORDER BY rid, species
+
+  - name: sapling_y5
+    query: |
+      SELECT *
+      FROM sapling
+      WHERE year = 5
+      ORDER BY rid, species
+
+  - name: water_annual
+    query: |
+      SELECT *
+      FROM water
+      WHERE rid >= 1
+      ORDER BY year, rid
+
+  - name: carbon_y5
+    query: |
+      SELECT *
+      FROM carbon
+      WHERE year = 5 AND rid >= 1
+      ORDER BY rid

@@ -1,0 +1,6 @@
+year,unitid,standid,area,age,activity,volumeAfter,volumeThinning,volumeFinal,volumeSalvaged,volumeDisturbed
+1,u_west,2,1.95,62,thinning1,504.07,130.9732726,0,0,0
+1,u_east,3,0.88,9,planting1,176.35,0,0,0,0
+1,u_east,6,0.58,16,planting1,103.86,0,0,0,0
+2,u_west,1,1.55,62,thinning1,468.49,133.073932,0,0,0
+2,u_east,4,1.77,100,clearcut1,1.63,0,456.1559635,0,0

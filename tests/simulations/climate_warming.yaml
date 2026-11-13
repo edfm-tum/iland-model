@@ -1,0 +1,37 @@
+id: climate_warming
+description: >-
+  5-year scenario run on bgd_mini using ilandc CLI parameter overrides
+  (+2.5 degC warming shift + dynamic CO2 time events).
+project: ../fixtures/bgd_mini/project.xml
+years: 5
+rel_tol: 1.0e-5
+abs_tol: 1.0e-6
+
+params:
+  model.climate.temperatureShift: 2.5
+  model.world.timeEventsEnabled: true
+
+assertions:
+  - name: warming_applied_and_snowpack_gradient
+    query: |
+      SELECT
+        AVG(CASE WHEN rid IN (1, 2, 3) THEN mean_annual_temp END) AS valley_temp,
+        AVG(CASE WHEN rid IN (1, 2, 3) THEN snowcover_days END) AS valley_snow,
+        AVG(CASE WHEN rid IN (6, 7, 8) THEN snowcover_days END) AS subalpine_snow
+      FROM water
+      WHERE year = 1 AND rid >= 1
+    expect: "row['valley_temp'] > 9.5 and row['valley_snow'] < row['subalpine_snow']"
+
+baselines:
+  - name: landscape
+    query: |
+      SELECT *
+      FROM landscape
+      ORDER BY year, species
+
+  - name: water_landscape
+    query: |
+      SELECT *
+      FROM water
+      WHERE rid = -1
+      ORDER BY year

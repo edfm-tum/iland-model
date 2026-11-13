@@ -189,7 +189,7 @@ void StandLoader::processInit()
         parseInitFile(content, fileName);
 
         // setup the random distribution
-        QString density_func = xml.value("model.initialization.randomFunction", "1-x^2");
+        QString density_func = xml.value("randomFunction", "1-x^2");
         if (logLevelInfo())  qDebug() << "density function:" << density_func;
         if (!mRandom || (mRandom->densityFunction()!= density_func)) {
             if (mRandom)
@@ -231,18 +231,21 @@ void StandLoader::processAfterInit()
     XmlHelper xml(GlobalSettings::instance()->settings().node("model.initialization"));
 
     QString mode = xml.value("mode", "copy");
-    if (mode=="standgrid") {
+    if (mode=="standgrid" || mode=="unit" || mode=="map" || mode=="single") {
         // load a file with saplings per polygon
         QString  filename = xml.value("saplingFile", "");
         if (filename.isEmpty())
             return;
+        const MapGrid *sg = GlobalSettings::instance()->model()->standGrid();
+        if (!sg || !sg->isValid())
+            throw IException("Sapling-Init: 'model.initialization.saplingFile' requires an enabled and valid stand grid (model.world.standGrid).");
         filename = GlobalSettings::instance()->path(filename, "init");
         if (!QFile::exists(filename))
             throw IException(QString("load-sapling-ini-file: file '%1' does not exist.").arg(filename));
         CSVFile init_file(filename);
         int istandid = init_file.columnIndex("stand_id");
         if (istandid==-1)
-            throw IException("Sapling-Init: the init file contains no 'stand_id' column (required in 'standgrid' mode).");
+            throw IException("Sapling-Init: the init file contains no 'stand_id' column.");
 
         int stand_id = -99999;
         int ilow = -1, ihigh = 0;
@@ -339,7 +342,7 @@ int StandLoader::loadPicusFile(const QString &fileName, ResourceUnit *ru, int st
 int StandLoader::loadSingleTreeList(QStringList content, ResourceUnit *ru_offset, int stand_id, const QString &fileName)
 {
     QPointF offset;
-    if (ru_offset && stand_id<0) {
+    if (ru_offset && stand_id<=0) {
         offset = ru_offset->boundingBox().topLeft();
     }
 
@@ -1025,7 +1028,8 @@ int StandLoader::loadSaplingsLIF(int stand_id, const CSVFile &init, int low_inde
         if (!species)
             throw IException(QString("Error while loading saplings: invalid species '%1'.").arg(init.value(row, ispecies).toString()));
         height = iheight==-1?0.05: init.value(row, iheight).toDouble();
-        age = iage==-1?1:init.value(row,iage).toDouble();
+        const double row_age = iage==-1?1:init.value(row,iage).toDouble();
+        age = row_age;
         double age4m = itopage==-1?10:init.value(row, itopage).toDouble();
         double height_from = iheightfrom==-1?-1.: init.value(row, iheightfrom).toDouble();
         double height_to = iheightto==-1?-1.: init.value(row, iheightto).toDouble();
@@ -1055,6 +1059,7 @@ int StandLoader::loadSaplingsLIF(int stand_id, const CSVFile &init, int low_inde
         int n_added = 0;
         while (hits < pxcount) {
             int rnd_index = irandom(0, min_lif_index);
+            age = row_age;
             if (iheightfrom!=-1) {
                 height = limit(nrandom(height_from, height_to), 0.05, cSapHeight);
                 if (age<=1.)

@@ -1,0 +1,9 @@
+id;x;y;model.climate.tableName;model.site.availableNitrogen;model.site.soilDepth;model.site.pctSand;model.site.pctSilt;model.site.pctClay;model.site.youngLabileC;model.site.youngLabileN;model.site.youngRefractoryC;model.site.youngRefractoryN;model.site.somC;model.site.somN;model.site.somDecompRate;model.initialization.file;model.initialization.snags.swdC;model.initialization.snags.swdCount
+1;0;0;climate_valley;75.8;75;24;40;36;8500;92.4;4500;25.0;95200;4180;0.0150;init_trees.csv;1857;41
+2;1;0;climate_valley;38.5;15;65;25;10;3200;45.0;1800;12.0;32000;2400;0.0210;init_trees.csv;850;10
+3;2;0;climate_valley;58.0;45;35;45;20;6200;74.0;3400;19.0;68000;3800;0.0175;;1200;15
+4;3;0;climate_montane;52.4;55;50;32;18;7400;68.0;4100;21.0;78000;3950;0.0165;init_trees.csv;2250;18
+5;0;1;climate_montane;36.2;12;44;35;21;4800;52.0;2400;14.0;44000;3200;0.0185;init_trees.csv;950;9
+6;1;1;climate_subalpine;40.4;35;60;27;13;12500;95.0;7200;30.0;115000;3900;0.0145;init_trees.csv;3100;22
+7;2;1;climate_subalpine;33.9;8;56;29;15;3900;48.0;2100;12.0;52000;3500;0.0155;init_trees.csv;600;6
+8;3;1;climate_subalpine;42.0;30;44;35;21;9600;82.0;5100;22.0;85000;4050;0.0150;;1500;12

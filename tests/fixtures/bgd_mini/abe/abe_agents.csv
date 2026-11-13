@@ -1,0 +1,7 @@
+id;unit;agent;stp;U;age
+1;u_west;bgd_owner;stp_thin;100;60
+2;u_west;bgd_owner;stp_thin;100;61
+3;u_east;bgd_owner;stp_regen;100;8
+4;u_east;bgd_owner;stp_thin;100;98
+5;u_west;bgd_owner;stp_thin;100;45
+6;u_east;bgd_owner;stp_regen;120;15

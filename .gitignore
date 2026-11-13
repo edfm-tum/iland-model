@@ -16,3 +16,6 @@ _site
 .obsidian/
 .Rhistory
 /docs/docs.Rproj
+tests/**/output/
+tests/**/log/
+tests/**/temp/
