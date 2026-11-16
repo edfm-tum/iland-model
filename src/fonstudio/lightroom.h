@@ -9,7 +9,7 @@
 class LightRoomObject
 {
 public:
-    LightRoomObject(): m_radiusFormula(0) {}
+    LightRoomObject(): m_radiusFormula(nullptr), m_baseradius(0.), m_height(0.), m_crownheight(0.) {}
     ~LightRoomObject();
     /** Test if the ray starting at "p" hits the object.
         the ray has direction azimuth/elevation and starts from the position denoted by p_x, p_y and p_z
@@ -17,7 +17,7 @@ public:
     int hittest(const double p_x, const double p_y, const double p_z,
                  const double azimuth_rad, const double elevation_rad);
     /** sets up a tree as the obstacle.
-        @param height treehight in meter
+        @param height treeheight in meter
         @param crownheight height of the start of crown (above ground) in meter
         @param formula (as string representation) that yields the radius as f(relativeheight).
               the variable of the formula is 0 for ground 1 for tree top. */
@@ -27,9 +27,9 @@ public:
     double maxHeight() const { return m_height; }
     double maxRadius() const { return m_baseradius; }
 private:
-    Expression *m_radiusFormula; ///< formula for calculation of crown widht as f(relative_height)
+    Expression *m_radiusFormula; ///< formula for calculation of crown width as f(relative_height)
     double m_baseradius; ///< maximum radius of the crown (at the bottom of the crown) [m]
-    double m_height; ///< treehight [m]
+    double m_height; ///< treeheight [m]
     double m_crownheight; ///< height of the beginning of the living crown [m]
     QVector<double> m_treeHeights;
 };
@@ -42,36 +42,34 @@ class LightRoom
 {
 public:
     LightRoom();
-    ~LightRoom() { if (m_roomObject) delete m_roomObject; }
+    ~LightRoom() { delete m_roomObject; }
     /// setup the spatial grid.
     void setup(const double dimx, const double dimy, const double dimz,
                const double cellsize, const double hemigridsize,
                const double latitude=48., const double diffus_frac=0.5);
-    void setLightRoomObject(LightRoomObject *lro) { if (m_roomObject) delete m_roomObject; m_roomObject = lro; }
-    void setAggregationMode(const int mode ) { m_aggregationMode = mode; }
+    void setLightRoomObject(LightRoomObject *lro) { if (m_roomObject && m_roomObject != lro) delete m_roomObject; m_roomObject = lro; }
+    void setAggregationMode(const int mode) { m_aggregationMode = mode; }
     /// calculate a full hemiview image from given point
     double calculateGridAtPoint(const double p_x, const double p_y, const double p_z, bool fillShadowGrid=true);
-    /// calculate a hemigrid for each node of the grid (store results in m_3dvalues).
+    /// calculate a hemigrid for each node of the grid.
     /// @return fraction of "blocked" radiation [0..1]. -1: point inside the object
     void calculateFullGrid();
-        /// access to the hemigrid
     const HemiGrid &shadowGrid() const { return m_shadowGrid; }
     const HemiGrid &solarGrid() const { return m_solarGrid; }
     const FloatGrid &result() const { return m_2dvalues; }
     double centerValue() const { return m_centervalue; }
 
 private:
-    //Grid< QVector<float> > m_3dvalues; ///< storage for resulting 3d light values
     FloatGrid m_2dvalues; ///< resulting 2d pattern (derived from 3dvalues)
     int m_countX; ///< size of the grid in x-direction
     int m_countY;
     int m_countZ;
     double m_cellsize; ///< length of the side of one cell (equal for all 3 directions)
-    double m_solarrad_factor; ///< multiplier accounting for the difference of total radiation and the used part of the sky (45°)
+    double m_solarrad_factor; ///< multiplier accounting for the difference of total radiation and the used part of the sky (45 deg)
     HemiGrid m_solarGrid; ///< grid used for solar radiation (direct + diffus)
     HemiGrid m_shadowGrid; ///< grid used for shadow calculations
-   double m_centervalue; ///< value (shadow*height) of the tree center (relative) [-]
-   int m_aggregationMode; ///< aggregation mod
+    double m_centervalue; ///< value (shadow*height) of the tree center (relative) [-]
+    int m_aggregationMode; ///< aggregation mode
 
     LightRoomObject *m_roomObject;
 };

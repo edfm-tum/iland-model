@@ -3,69 +3,65 @@
 
 #include <QMainWindow>
 #include <QPlainTextEdit>
-#include <QWidget>
-#include <vector>
-
-#include "grid.h"
-
-#include "imagestamp.h"
-#include "helper.h"
-
+#include <QDomDocument>
 
 namespace Ui
 {
     class MainWindowClass;
 }
 
+class LightRoom;
+class StampContainer;
+class QTableWidgetItem;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = 0);
+    explicit MainWindow(QWidget *parent = nullptr);
+    ~MainWindow() override;
+
     static QPlainTextEdit* logSpace();
-    ~MainWindow();
-
-private:
-    Ui::MainWindowClass *ui;
-
-    ImageStamp mStamp;
-    int m_gfxtype;
-    float m_pixelpercell;
-    static QPlainTextEdit *mLogSpace;
-    void loadPicusIniFile(const QString &fileName);
-    // painter functions
-
-    //Viewport vp;
-
 
 private slots:
-
-    void on_reloadFile_clicked();
+    // Part A: Create LIP Files
     void on_openFile_clicked();
-
-    void on_lrReadStamps_clicked();
-
-    void on_lrLoadStamps_clicked();
-    void on_lrProcess_clicked(); // lightroom
-
-    void on_lrLightGrid_clicked();
-    void on_lrCalcFullGrid_clicked();
-    void on_lroTestHemi_clicked();
-    void on_testLRO_clicked();
-    void on_pbCreateLightroom_clicked();
-    void on_actionFON_action_triggered();
-    void on_actionEdit_XML_settings_triggered();
-    void on_actionLightroom_triggered();
-
-
-    void on_applyXML_clicked();
+    void on_reloadFile_clicked();
     void on_saveFile_clicked();
+    void on_lrProcess_clicked();
+    void on_lrReadStamps_clicked();
+    void on_cancelRunBtn_clicked();
+    void onXmlTextChanged();
 
-    void repaintArea(QPainter &painter);
+    // Part B: View LIP Files
+    void on_openLipBtn_clicked();
+    void on_dumpLipBtn_clicked();
+    void on_stampGridTable_currentItemChanged(QTableWidgetItem *current, QTableWidgetItem *previous);
+    void on_rb2DView_toggled(bool checked);
+    void on_rb3DView_toggled(bool checked);
+    void on_cbFixedScale_toggled(bool checked);
+    void on_cbShowValues_toggled(bool checked);
+    void on_cbShowCrown_toggled(bool checked);
+    void on_resetViewBtn_clicked();
 
+    // Common
+    void on_clearLogBtn_clicked();
 
+private:
+    bool parseCurrentXml(QDomDocument &doc, QString *errorMsg = nullptr);
+    void updateXmlSummary();
+    void loadLipFile(const QString &fileName);
+    void populateOverviewGrid();
+    void selectStampByIndex(int index);
+    void setRunningState(bool running);
+
+    Ui::MainWindowClass *ui;
+    LightRoom *m_lightroom;
+    StampContainer *m_viewContainer;
+    bool m_cancelRequested;
+
+    static QPlainTextEdit *mLogSpace;
 };
-
 
 #endif // MAINWINDOW_H
