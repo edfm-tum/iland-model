@@ -1,33 +1,35 @@
 #!/bin/bash
 set -e  # Exit on any error
 
+QMAKE_BIN="${QMAKE:-qmake}"
+
 mkdir -p src/plugins/build/release
 mkdir -p src/iland/build/release
 mkdir -p src/ilandc/build/release
 mkdir -p src/fonstudio/build/release
 mkdir -p src/tests/build/release
 
-echo "Building plugins..."
+echo "Building plugins with $QMAKE_BIN..."
 cd src/plugins/build/release
-qmake ../../plugins.pro 
+"$QMAKE_BIN" -r ../../plugins.pro
 make -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)
 cd ../../../..
 
 echo "Building iland..."
 cd src/iland/build/release
-qmake ../../iland.pro 
+"$QMAKE_BIN" ../../iland.pro
 make -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)
 cd ../../../..
 
 echo "Building ilandc..."
 cd src/ilandc/build/release
-qmake ../../ilandc.pro 
+"$QMAKE_BIN" ../../ilandc.pro
 make -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)
 cd ../../../..
 
 echo "Building fonstudio..."
 cd src/fonstudio/build/release
-qmake ../../fonstudio.pro 
+"$QMAKE_BIN" ../../fonstudio.pro
 make -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)
 cd ../../../..
 

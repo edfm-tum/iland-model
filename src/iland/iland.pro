@@ -5,7 +5,7 @@
 include(../iland_core.pri)
 
 QT += widgets
-# charts for the function plotter
+# charts for the function plotter and output visualization
 QT += charts
 # quick: for QML based user interface
 QT += quick
@@ -43,7 +43,10 @@ SOURCES += \
     ui/dialogfunctionplotter.cpp \
     ui/genericinputwidget.cpp \
     ui/linkxmlqt.cpp \
-    ui/settingsdialog.cpp
+    ui/resultvisualizer.cpp \
+    ui/settingsdialog.cpp \
+    ui/spatialmapwidget.cpp \
+    ui/vizmetadata.cpp
 
 HEADERS += \
     mainwindow.h \
@@ -60,7 +63,10 @@ HEADERS += \
     ui/dialogfunctionplotter.h \
     ui/genericinputwidget.h \
     ui/linkxmlqt.h \
-    ui/settingsdialog.h
+    ui/resultvisualizer.h \
+    ui/settingsdialog.h \
+    ui/spatialmapwidget.h \
+    ui/vizmetadata.h
 
 FORMS += \
     mainwindow.ui \

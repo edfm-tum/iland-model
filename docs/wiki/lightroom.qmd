@@ -7,28 +7,30 @@ title: "Lightroom"
 ## Lightroom
 
 
-The "Lightroom" is part of the iLand software framework and - as a separate executable - related to the creation of so-called "LIP"-files. A LIP file contains several [light influence patterns](competition-for-light.qmd) for various diameters and heights of a tree species. The results of the LightRoom are used as input files for iLand (see [species parameter](species-parameter.qmd). For more general information about the light model see [competition for light](competition-for-light.qmd)).
-The Lightroom is a stand-alone executable, which also served as a kind of playground during the development of the iLand. As development progressed, code was moved to what now is the iLand core, but still traces of earlier development stages are visible in the Lightroom software - especially in the GUI. However, in its current incarnation, the specific purpose of the Lightroom is the creation of species specific LIP-files.
+The "Lightroom" (`fonstudio`) is part of the iLand software framework and - as a separate executable - used for the creation and inspection of so-called "LIP"-files. A LIP file contains several [light influence patterns](competition-for-light.qmd) for various diameters and heights of a tree species. The results of the Lightroom are used as input files for iLand (see [species parameter](species-parameter.qmd); for more general information about the light model see [competition for light](competition-for-light.qmd)).
+
+The application consists of two main tabs:
+
+1. **Create LIP Files**: Load a Lightroom XML configuration file, create species-independent reader stamps (once for all species), and compute/write binary LIP files.
+2. **View LIP Files**: Load any binary LIP (`.bin`) or reader stamp file, inspect all contained dimensions in a 2D overview grid (DBH $\times$ H/D ratio), and visualize the individual light influence patterns as an interactive **2D Heatmap** (with fixed spatial scaling across tree sizes) or **3D Bar View**.
 
 
 
 ## How to create LIP files
 
 
-But now to the practicalites: how to setup and run the creation of light influence patterns?
-
-1. start "FONStudio"
-1. on tab XML settings, load the XML input file (see below) by clicking on "Load". Click on "Apply" next.
-1. switch to tab "Lightroom". Click on "Create Lightroom". Note the status messages in the lower part of the window.
-1. click on "Create writer stamps" - this starts the process. This may take a little while.
-1. you may click on "Test load Stamps" to load created files and dump the content in human-readable form to the logging area.
+1. Start **FONStudio** (`fonstudio`).
+2. On the **Create LIP Files** tab, click **Browse...** to select the XML input file (see below). A summary of the parsed room settings, cutoff/aggregation modes, number of trees, and whether the required reader stamp file exists is shown directly below the file path. You can also inspect or edit the XML directly in the text editor and click **Save XML**.
+3. If you do not yet have a binary reader stamp file (which is created once across *all* tree species), click **Create Reader Stamps...** first to generate it.
+4. Click **Run / Create LIP File** to start the calculation. A progress bar tracks the computation across all `<tree>` definitions, and detailed messages are written to the **Log Output** panel at the bottom.
+5. Once completed, the newly generated binary LIP file is saved to `<outputStamp>` and automatically loaded into the **View LIP Files** tab.
 
 
 
 ### The XML input file
 
 
-The process is guided by a XML styled input file. Here is an example:
+The process is guided by an XML input file. Here is an example:
 
 
 ```xml
@@ -38,11 +40,11 @@ The process is guided by a XML styled input file. Here is an example:
     <size x="100" y="100" z="66" cellsize="2" />
     <hemigrid size="5" latitude="48" diffus="0.5" />
     <cutvalue>0.05</cutvalue>
-    <!-- possible values for cuttoffMode: sum (percentage of sum of values), north (absolute value in north direction) -->
+    <!-- possible values for cutoffMode: sum (percentage of sum of values), north (absolute value in north direction) -->
     <cutoffMode>north</cutoffMode>
     <aggregationMode>mean</aggregationMode>
-	<readerStamp>E:\Daten\iLand\Light\fons\test_reader.bin</readerStamp>
-	<outputStamp>E:\Daten\iLand\Light\fons\test_out.bin</outputStamp>
+    <readerStamp>E:\Daten\iLand\Light\fons\test_reader.bin</readerStamp>
+    <outputStamp>E:\Daten\iLand\Light\fons\test_out.bin</outputStamp>
     <desc>Just a test for the cleaning of fonstudio.</desc>
     <trees>
       <tree name="Piab_4.5_3.15" bhd="4.5" h="3.15" crown="1.2"
@@ -54,22 +56,22 @@ The process is guided by a XML styled input file. Here is an example:
 ```
 
 
-What follows, is a brief description of the individual values.
+What follows is a brief description of the individual values.
 
 
 
 ### Simulation room
 
 
-The size of the "Lightroom" is defined by the *x*, *y* and *z* (in meters) attributes of the *size* tag. Each cell (or cube) has a edge length of *cellsize* m. In the given example, the room would consist of 50x50x33 cubes. Please use the same value for x and y!
-The properties of the virtual hemispheric images are defined using the *hemigrid* tag. *size* denotes the width/height in degrees of each cell on the surface, *latitude* the geographic latitude in degrees, and *diffus* the assumed fraction of diffuse radiation of the global radiation (e.g. diffus=0.3 means, that 30% of the global radiation are diffus, 70% are direct).
-The *cutvalue* and *cutoffMode* define how the extent of the LIP is defined.  As a optimization, not the full area potentially influenced by the focal tree (defined by a 45° angle from the zenith), is used.
+The size of the "Lightroom" is defined by the *x*, *y* and *z* (in meters) attributes of the *size* tag. Each cell (or cube) has an edge length of *cellsize* m. In the given example, the room consists of 50x50x33 cubes. Please use the same value for x and y!
+The properties of the virtual hemispheric images are defined using the *hemigrid* tag. *size* denotes the width/height in degrees of each cell on the hemisphere surface, *latitude* the geographic latitude in degrees, and *diffus* the assumed fraction of diffuse radiation of the global radiation (e.g. diffus=0.3 means that 30% of the global radiation is diffuse, 70% is direct).
+The *cutvalue* and *cutoffMode* define how the spatial extent of the LIP is truncated. As an optimization, not the full area potentially influenced by the focal tree (defined by a 45° angle from the zenith) is stored.
 Values for *cutoffMode*:
 
-* *sum*: The *cutvalue* defines the fraction of aggregated influence that is ignored. The aggregation is performed from the outer cells towards the center (e.g. a value of 0.05 means, that the outermost 5% of cummulative influence are dropped).
+* *sum*: The *cutvalue* defines the fraction of aggregated influence that is ignored. The aggregation is performed from the outer rings towards the center (e.g. a value of 0.05 means that the outermost 5% of cumulative influence are dropped).
 * *north*: The *cutvalue* is used as a threshold for the absolute values in the direction with maximum influence (i.e., north for simulations in the northern hemisphere).
 
-The value of *aggregationMode* influences the way of how the individual cells of the lightroom are aggregated. Possible values are currently *mean* and *sum*. When choosing *sum* the 'shading' value is summed vertically up to the 45° line. *mean* calculates the mean value of all cells up to the 45° line.
+The value of *aggregationMode* controls how the individual vertical cells of the lightroom are aggregated into the 2D pattern. Possible values are *mean* and *sum*. When choosing *sum* the 'shading' value is summed vertically up to the 45° line. *mean* calculates the mean value of all cells up to the 45° line.
 
 
 
@@ -77,26 +79,40 @@ The value of *aggregationMode* influences the way of how the individual cells of
 ### Files and more
 
 
-The "Reader-Input-File" (see creation of reader files) is expected to be located at *readerStamp*. The created binary LIP output file will be stored at *outputStamp*. The *desc* is stored inside the LIP file providing a way to obtain some identity information from suspicious LIP files lying around in your file system.
+A valid "Reader-Input-File" (see [Creation of reader stamps](#creation-of-reader-stamps)) is required at *readerStamp* before LIP files can be generated. The created binary LIP output file is stored at *outputStamp*. The *desc* text is stored inside the binary LIP file to provide descriptive metadata when inspecting LIP files later.
 
 
 
 ### Tree properties
 
 
-Below the *trees* node, a list of trees is defined. For each tree defined here a LIP is calculated and stored in the output file. In parenthesis is a reference to the variable names used in other iLand documents. A tree is defined by:
+Below the *trees* node, a list of trees is defined. For each tree defined here a LIP is calculated and stored in the output file. A tree is defined by:
 
 * *name*: a short name, merely for information purposes
 * *bhd*: the dbh of the tree in cm (the mean of the dbh class represented by this tree)
-* *h*: the height of the tree (m) (again, the mean of the height-diamter-range represented by this tree) (see the *hd<sub>min</sub>* and *hd<sub>max</sub>* species parameters)
+* *h*: the height of the tree (m) (the mean of the height-diameter-range represented by this tree; see the *hd<sub>min</sub>* and *hd<sub>max</sub>* species parameters)
 * *crown*: the height of the living crown above ground (m)
-* *formula*: an expression that calculates the width of the crown in a height defined by *hrel*,  the relative height is calculated from the ground, i.e. h/h_tree. (the expression includes the *kB* and *r<sub>max</sub>* parameters)
+* *formula*: an expression that calculates the radius of the crown at a relative height *hrel* (calculated from the ground, i.e. $h / h_{tree}$, including the *kB* and *r<sub>max</sub>* parameters)
 
 
 
 ## Creation of reader stamps
 
 
-A "Reader stamp" is a precalculated matrix defining for each pixel the fraction of that pixel lying inside the crown radius (i.e., the crown projection area). This information is used together with the light influence patters (see above) for the calculation of the light status of trees in iLand (see [competition for light](competition-for-light.qmd)).
-Clicking on the "Create reader stamps" button triggers the creation of readerstamps in for crown radii between 0.5m and 8m with a step width of 0.1m. The result file is stored in the location provided by the XML-file (node *readerStamp*). Currently, these ranges are hardcoded.
+A "Reader stamp" is a precalculated matrix defining for each pixel the fraction of that pixel lying inside the crown radius (i.e., the crown projection area). This information is used together with the light influence patterns for the calculation of the light status of trees in iLand (see [competition for light](competition-for-light.qmd)) and is created once across all species.
 
+Clicking the **Create Reader Stamps...** button triggers the creation of reader stamps for crown radii between 0.5 m and 15.0 m with a step width of 0.1 m and saves the resulting binary file (defaulting to the path specified in `<readerStamp>`).
+
+
+
+## Viewing LIP files
+
+
+Switching to the **View LIP Files** tab allows you to inspect any binary LIP file (or reader stamp file):
+
+1. Click **Open LIP File...** to select a `.bin` file (or pass a `.bin` file as a command-line argument to `fonstudio`).
+2. **Overview Grid**: On the left side, all available stamps in the file are arranged in a 2D grid (Rows: **DBH [cm]**, Columns: **H/D ratio**; or Crown Radius for reader stamp files). Realized combinations show the matrix size (e.g. `15x15`) and tree height and are color-tinted by total influence, whereas unrealized DBH $\times$ H/D combinations are shaded gray (`-`).
+3. **2D Heatmap & 3D Bar View**: Selecting any realized cell in the overview grid displays its metadata (DBH, height, H/D, crown radius, matrix dimensions, center/max/sum values) and renders the matrix on the right:
+   * **2D Heatmap**: Shows the LIP values with compass directions, crown radius circle overlay, numeric cell labels when zoomed in, and exact cell coordinates/values on mouse hover.
+   * **3D Bars**: Renders the LIP matrix as a 3D bar surface. Drag with the left mouse button to rotate/tilt, right-drag to pan, scroll to zoom, and double-click to reset the view.
+   * **Fixed Spatial Scale**: Enabled by default so all stamps in a file are drawn at the same spatial scale (locked to the largest footprint in the container), making it easy to see how the footprint and intensity grow with tree dimensions.

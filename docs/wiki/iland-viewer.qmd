@@ -17,7 +17,7 @@ In order to run simulations with iLand you need to (see also figure below):
 - Create the model ("Create" button in the toolbar). This sets up the model landscape and initial trees. 
 - Run the model ("Run many" button in the toolbar). Enter the number of years you want the model to run. 
 - While the model is running (there is also a “Pause” button), you can view different types of data in the GUI visualization (see below) 
-- The bulk of numeric outputs of the model are stored in an output database ([Outputs](outputs.qmd)). 
+- The bulk of numeric outputs of the model are stored in an output database ([Outputs](outputs.qmd)), and can also be explored directly inside the Viewer's **Output visualization** tab (see [Output visualization](result-visualization.qmd)). 
 
 See [Software Tools](software-tools.qmd) for tools helping to access the SQLite databases iLand uses to store simulation results in (it is also quite easy to read these databases into, for instance, R for further analysis).
 
