@@ -32,9 +32,34 @@ Six contiguous, curved polygon stands (`0.58`–`1.95` ha, summing to `8.00` ha)
 - `database/species_param.sqlite`: 10 active BGD species (`abal`, `acps`, `bepe`, `fasy`, `lade`, `piab`, `pice`, `pimu`, `pisy`, `soau`) + `wind` parameters.
 - `database/climate.sqlite`: 20 years (`1990–2009`) across `climate_valley`, `climate_montane`, `climate_subalpine`.
 - `lip/`: `readerstamp.bin` + the 9 LIP `.bin` files needed by active species.
-- `gis/`: `environment.txt` (`;` delimited, matrix mode), `stand_grid.asc` (10 m, 6 irregular stands), `dem.asc` (10 m covering `100` m buffer), `wind_topo.asc` (10 m).
+- `gis/`: `environment.txt` (`;` delimited, matrix mode), `environment_climate_site.txt` (climate + site columns only for `snapshot` mode), `stand_grid.asc` (10 m, 6 irregular stands), `dem.asc` (10 m covering `100` m buffer), `wind_topo.asc` (10 m).
 - `init/`: `init_trees.csv` (415 Endstal trees, `id` omitted) and `init_saplings.csv` (cohorts for irregular stands `3` and `6`).
-- `abe/`: self-contained ABE test scripts (`abe_stp.js`, `abe_agents.csv`), disabled by default (`model.management.abeEnabled=false`) and activated via CLI override when running ABE tests.
+- `scripts/`: `co2_rcp45.csv` (TimeEvents CO2 pathway), `wind_y2.csv` (TimeEvents year-2 storm), `force_fire_y2.js` (`Fire.onIgnition` prescribed fire in year 2), `save_snapshot_y10.js` (year-10 snapshot export).
+- `abe/`: self-contained ABE test scripts (`abe_stp.js`, `abe_agents.csv`), disabled by default (`model.management.abeEnabled=false`) in `project.xml` and enabled directly in `project_abe.xml`.
+
+## Dedicated Scenario Project Files (`project_*.xml`)
+
+Each XML below is standalone and GUI-ready (shares `database/`, `gis/`, `init/`, `lip/`, `abe/`, `scripts/`, writes to its own `output/bgd_mini_<scenario>.sqlite` and `log/bgd_mini_<scenario>.log`):
+
+| Project File | Recommended Years | Tested Scenario / Submodules |
+| :--- | :---: | :--- |
+| `project.xml` | `5`–`10` | Unmanaged baseline (`core_baseline`) |
+| `project_warming.xml` | `5` | `+2.5` °C warming + `co2_rcp45.csv` TimeEvents |
+| `project_abe.xml` | `5` | ABE irregular stand management (`thinning`, `planting`, `final harvest`) |
+| `project_wind.xml` | `10` | Forced storm in year 2 via `scripts/wind_y2.csv` |
+| `project_fire.xml` | `10` | Forced year-2 wildfire via `scripts/force_fire_y2.js` (`onlySimulation=false`) |
+| `project_barkbeetle.xml` | `10` | Standalone bark beetle spread & mortality |
+| `project_bb_wind.xml` | `10` | Coupled year-2 windthrow + bark beetle outbreak |
+| `project_browsing.xml` | `10` | Ungulate browsing (`browsingPressure=2`) |
+| `project_permafrost.xml` | `10` | Permafrost + moss dynamics under `-5` °C cooling |
+| `project_microclimate.xml` | `10` | Microclimate buffering enabled (`barkbeetle`, `decomposition`, `establishment`) |
+| `project_microclimate_off.xml` | `10` | Paired control for `project_microclimate.xml` (microclimate disabled) |
+| `project_svd.xml` | `10` | SVD states (`4m`) + indicators (`shannonIndex`, `IBP`, proportions, etc.) |
+| `project_external_seeds.xml` | `10` | Uniform background external seed rain (`abal`, `acps`, `pisy`, `pice`) |
+| `project_seedbelt.xml` | `10` | Spatially explicit West (`abal`/`acps`) vs East (`pisy`/`pice`) `seedBelt` |
+| `project_deadtree.xml` | `20` | Single standing/downed dead trees (`swdDBHSingle=5` cm) + decay classes |
+| `project_snapshot_save.xml` | `10` | Exports full model snapshot (`output/snapshot_y10.sqlite`) at year 10 |
+| `project_snapshot_load.xml` | `5` | Resumes from `output/snapshot_y10.sqlite` (`mode=snapshot`) |
 
 ## Running
 ```bash

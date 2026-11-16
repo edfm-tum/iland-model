@@ -209,6 +209,8 @@ void Species::setup()
     mSaplingGrowthParams.maxStressYears = intVar("sapMaxStressYears");
     mSaplingGrowthParams.referenceRatio = doubleVar("sapReferenceRatio");
     mSaplingGrowthParams.ReinekesR = doubleVar("sapReinekesR");
+    if (mSaplingGrowthParams.referenceRatio <= 0. || mSaplingGrowthParams.hdSapling <= 0. || mSaplingGrowthParams.ReinekesR <= 0.)
+        throw IException( QString("Error setting up species %1: invalid sapling growth parameters (sapReferenceRatio, sapHDSapling, or sapReinekesR <= 0).").arg(id()));
     mSaplingGrowthParams.browsingProbability = doubleVar("browsingProbability");
     mSaplingGrowthParams.sproutGrowth = doubleVar("sapSproutGrowth");
     if (mSaplingGrowthParams.sproutGrowth>0.)

@@ -81,6 +81,7 @@ class SimTestSpec:
     project: Path
     years: int
     description: str = ""
+    compare_with: str | None = None
     params: dict[str, Any] = field(default_factory=dict)
     check_determinism: bool = False
     assertions: list[AssertionSpec] = field(default_factory=list)
@@ -177,12 +178,16 @@ def parse_test_entry(raw: dict[str, Any], yaml_file: Path, defaults: dict[str, A
             )
         )
 
+    compare_with_raw = merged.get("compare_with")
+    compare_with = str(compare_with_raw).strip() if compare_with_raw else None
+
     return SimTestSpec(
         test_id=test_id,
         source_file=yaml_file,
         project=project,
         years=years,
         description=str(merged.get("description", "")).strip(),
+        compare_with=compare_with,
         params=params,
         check_determinism=bool(merged.get("check_determinism", False)),
         assertions=assertions,
@@ -231,7 +236,9 @@ def tail_text(path: Path, max_lines: int = 25) -> str:
     return "\n".join(["..."] + lines[-max_lines:])
 
 
-def run_ilandc(ilandc_bin: Path, spec: SimTestSpec, run_dir: Path) -> tuple[bool, float, Path, str]:
+def run_ilandc(
+    ilandc_bin: Path, spec: SimTestSpec, run_dir: Path, ref_dir: Path | None = None
+) -> tuple[bool, float, Path, str]:
     db_path = run_dir / "output.sqlite"
     log_path = run_dir / "run.log"
     stdout_path = run_dir / "stdout.txt"
@@ -246,7 +253,10 @@ def run_ilandc(ilandc_bin: Path, spec: SimTestSpec, run_dir: Path) -> tuple[bool
         f"system.logging.logFile={log_path}",
     ]
     for key, val in spec.params.items():
-        cmd.append(f"{key}={format_param_value(val)}")
+        val_str = format_param_value(val)
+        if ref_dir is not None:
+            val_str = val_str.replace("{ref_dir}", str(ref_dir))
+        cmd.append(f"{key}={val_str}")
 
     t0 = time.perf_counter()
     proc = subprocess.run(cmd, capture_output=True, text=True)
@@ -282,6 +292,9 @@ def query_sqlite(conn: sqlite3.Connection, sql: str) -> tuple[list[str], list[tu
     return cols, rows
 
 
+UNORDERED_TABLES = {"landscape_removed"}  # populated by QHash iteration in C++
+
+
 def check_determinism(db1: Path, db2: Path) -> tuple[bool, str]:
     c1 = sqlite3.connect(str(db1))
     c2 = sqlite3.connect(str(db2))
@@ -307,6 +320,9 @@ def check_determinism(db1: Path, db2: Path) -> tuple[bool, str]:
                 return False, f"Table '{tbl}' columns differ: {cols1} vs {cols2}"
             if len(rows1) != len(rows2):
                 return False, f"Table '{tbl}' row count differs: {len(rows1)} vs {len(rows2)}"
+            if tbl in UNORDERED_TABLES:
+                rows1 = sorted(rows1, key=lambda r: tuple("" if v is None else str(v) for v in r))
+                rows2 = sorted(rows2, key=lambda r: tuple("" if v is None else str(v) for v in r))
             for r_idx, (r1, r2) in enumerate(zip(rows1, rows2)):
                 if r1 != r2:
                     for col, v1, v2 in zip(cols1, r1, r2):
@@ -322,7 +338,10 @@ def check_determinism(db1: Path, db2: Path) -> tuple[bool, str]:
 
 
 def evaluate_assertion(conn: sqlite3.Connection, spec: AssertionSpec) -> tuple[bool, str]:
-    cols, raw_rows = query_sqlite(conn, spec.query)
+    try:
+        cols, raw_rows = query_sqlite(conn, spec.query)
+    except sqlite3.Error as exc:
+        return False, f"Assertion '{spec.name}' SQL error: {exc}"
     rows = [dict(zip(cols, r)) for r in raw_rows]
     row = rows[0] if rows else None
     env = {"rows": rows, "row": row, "n": len(rows)}
@@ -410,7 +429,10 @@ def compare_baseline(
             f"Baseline '{spec.name}' missing at {csv_path}. Run with --update-baseline to generate.",
         )
 
-    act_cols, act_rows = query_sqlite(conn, spec.query)
+    try:
+        act_cols, act_rows = query_sqlite(conn, spec.query)
+    except sqlite3.Error as exc:
+        return False, f"Baseline '{spec.name}' SQL error: {exc}"
     exp_cols, exp_rows = read_csv_baseline(csv_path)
 
     if exp_cols != act_cols:
@@ -481,6 +503,33 @@ def filter_specs(specs: list[SimTestSpec], filters: list[str]) -> list[SimTestSp
         if any(n in haystack for n in needles):
             selected.append(s)
     return selected
+
+
+def resolve_execution_order(selected: list[SimTestSpec], all_specs: list[SimTestSpec]) -> list[SimTestSpec]:
+    """Ensure every compare_with prerequisite is included and scheduled before dependents."""
+    by_id = {s.test_id: s for s in all_specs}
+    ordered: list[SimTestSpec] = []
+    state: dict[str, int] = {}  # 1 = visiting, 2 = visited
+
+    def visit(spec: SimTestSpec) -> None:
+        st = state.get(spec.test_id, 0)
+        if st == 2:
+            return
+        if st == 1:
+            raise ValueError(f"Cycle detected in compare_with dependencies involving '{spec.test_id}'")
+        state[spec.test_id] = 1
+        if spec.compare_with:
+            if spec.compare_with not in by_id:
+                raise ValueError(
+                    f"Test '{spec.test_id}' references unknown compare_with '{spec.compare_with}'"
+                )
+            visit(by_id[spec.compare_with])
+        state[spec.test_id] = 2
+        ordered.append(spec)
+
+    for s in selected:
+        visit(s)
+    return ordered
 
 
 def run_unit_tests(unit_bin: Path) -> bool:
@@ -572,6 +621,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"ERROR: No simulation tests matched filter(s): {args.filters}")
         return 1
 
+    selected = resolve_execution_order(selected, specs)
+
     overall_ok = True
     if args.with_unit:
         if not run_unit_tests(args.unit_bin.resolve()):
@@ -585,20 +636,33 @@ def main(argv: list[str] | None = None) -> int:
     print(f"=== Tier 2 Simulation Tests ({len(selected)} suite(s), binary={ilandc_bin.name}) ===")
 
     passed_tests = 0
-    for spec in selected:
-        test_ok = True
-        temp_dirs: list[Path] = []
-        run1_dir = Path(tempfile.mkdtemp(prefix=f"iland_t2_{spec.test_id}_1_"))
-        temp_dirs.append(run1_dir)
+    all_temp_dirs: list[Path] = []
+    completed_runs: dict[str, tuple[Path, Path]] = {}
+    try:
+        for spec in selected:
+            test_ok = True
+            ref_dir: Path | None = None
+            ref_db: Path | None = None
+            if spec.compare_with:
+                if spec.compare_with not in completed_runs:
+                    print(
+                        f"[FAIL] {spec.test_id}: prerequisite '{spec.compare_with}' did not complete successfully"
+                    )
+                    overall_ok = False
+                    continue
+                ref_dir, ref_db = completed_runs[spec.compare_with]
 
-        try:
-            ok, elapsed, db1, err_detail = run_ilandc(ilandc_bin, spec, run1_dir)
+            run1_dir = Path(tempfile.mkdtemp(prefix=f"iland_t2_{spec.test_id}_1_"))
+            all_temp_dirs.append(run1_dir)
+
+            ok, elapsed, db1, err_detail = run_ilandc(ilandc_bin, spec, run1_dir, ref_dir=ref_dir)
             if not ok:
                 print(f"[FAIL] {spec.test_id}: ilandc run failed ({elapsed:.2f}s)")
                 print(err_detail)
-                test_ok = False
                 overall_ok = False
                 continue
+
+            completed_runs[spec.test_id] = (run1_dir, db1)
 
             if args.verbose:
                 print(f"[RUN ] {spec.test_id} ({spec.years} yr, {elapsed*1000:.0f} ms)")
@@ -606,8 +670,8 @@ def main(argv: list[str] | None = None) -> int:
             # Determinism check
             if spec.check_determinism:
                 run2_dir = Path(tempfile.mkdtemp(prefix=f"iland_t2_{spec.test_id}_2_"))
-                temp_dirs.append(run2_dir)
-                ok2, elapsed2, db2, err2 = run_ilandc(ilandc_bin, spec, run2_dir)
+                all_temp_dirs.append(run2_dir)
+                ok2, elapsed2, db2, err2 = run_ilandc(ilandc_bin, spec, run2_dir, ref_dir=ref_dir)
                 if not ok2:
                     print(f"  [FAIL] determinism second run failed ({elapsed2:.2f}s)\n{err2}")
                     test_ok = False
@@ -621,6 +685,9 @@ def main(argv: list[str] | None = None) -> int:
 
             conn = sqlite3.connect(str(db1))
             try:
+                if ref_db is not None:
+                    conn.execute("ATTACH DATABASE ? AS ref", (str(ref_db),))
+
                 # SQL assertions
                 for a in spec.assertions:
                     a_ok, a_msg = evaluate_assertion(conn, a)
@@ -658,13 +725,13 @@ def main(argv: list[str] | None = None) -> int:
             else:
                 print(f"[FAIL] {spec.test_id}")
                 overall_ok = False
-        finally:
-            if args.keep_temp:
-                for td in temp_dirs:
-                    print(f"  [TEMP] {td}")
-            else:
-                for td in temp_dirs:
-                    shutil.rmtree(td, ignore_errors=True)
+    finally:
+        if args.keep_temp:
+            for td in all_temp_dirs:
+                print(f"  [TEMP] {td}")
+        else:
+            for td in all_temp_dirs:
+                shutil.rmtree(td, ignore_errors=True)
 
     print(f"\nSummary: {passed_tests}/{len(selected)} simulation suite(s) passed.")
     return 0 if overall_ok else 1

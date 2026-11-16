@@ -25,7 +25,7 @@ python3 tests/run_tests.py abe_management -v
 
 - `tests/run_tests.py` — Tier 2 runner and SQLite-vs-CSV comparator (uses Python 3 stdlib + `PyYAML`). Runs every test in an isolated temporary output directory so fixtures stay untouched.
 - `tests/fixtures/bgd_mini/` — 8 ha (`400 x 200` m) deterministic Berchtesgaden/Endstal fixture with 8 heterogeneous ResourceUnits, 3 climate zones, 6 irregular polygon stands (`0.58`–`1.95` ha), single-tree + sapling initialization, and optional ABE scripts.
-- `tests/simulations/*.yaml` — Declarative simulation test specs (`core_baseline.yaml`, `climate_warming.yaml`, `abe_management.yaml`).
+- `tests/simulations/*.yaml` — Declarative simulation test specs (`core_baseline`, `climate_warming`, `abe_management`, `wind`, `fire`, `barkbeetle`, `bb_wind`, `browsing`, `permafrost`, `microclimate`, `svd`, `external_seeds`, `deadtree`, `snapshot`).
 - `tests/simulations/expected/<test_id>/*.csv` — Committed, human-readable CSV reference tables generated from SQLite queries.
 
 ## Updating Baselines After Expected Model Changes
@@ -101,3 +101,11 @@ baselines:
 ```
 
 Run `--update-baseline my_new_test` once to create `tests/simulations/expected/wind_and_beetle_smoke/*.csv`, then `python3 tests/run_tests.py` automatically discovers and executes it.
+
+### 3. Cross-Scenario Comparisons (`compare_with` & `{ref_dir}`)
+
+To assert paired differences against another test (e.g., `bb_wind` vs `barkbeetle`, `microclimate_on` vs `microclimate_off`, or `snapshot_load` vs `snapshot_save`), set `compare_with: <other_test_id>` in the dependent test spec:
+
+- **Automatic scheduling**: Filtering to the dependent test (e.g., `python3 tests/run_tests.py bb_wind`) automatically schedules its `compare_with` prerequisite first.
+- **SQL `ref` schema**: The prerequisite's `output.sqlite` is attached as SQLite schema `ref`, so assertions can join or compare `main.<table>` vs `ref.<table>`.
+- **Artifact reuse (`{ref_dir}`)**: Any `params:` value containing `{ref_dir}` resolves to the prerequisite's run directory (used by `snapshot_load` to pass `model.initialization.file: "{ref_dir}/snapshot_y10.sqlite"`).

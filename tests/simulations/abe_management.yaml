@@ -3,18 +3,11 @@ description: >-
   5-year ABE management test over 6 irregular polygons (0.58 - 1.95 ha) crossing
   Resource Unit boundaries: thinning (stands 1, 2), planting (stand 3), final
   harvest (stand 4), and unharvested controls (stands 5, 6).
-project: ../fixtures/bgd_mini/project.xml
+project: ../fixtures/bgd_mini/project_abe.xml
 years: 5
 check_determinism: true
 rel_tol: 1.0e-5
 abs_tol: 1.0e-6
-
-params:
-  model.management.abeEnabled: true
-  output.abeStand.enabled: true
-  output.abeStandDetail.enabled: true
-  output.abeStandRemoval.enabled: true
-  output.abeUnit.enabled: true
 
 assertions:
   - name: irregular_stand_geometry
