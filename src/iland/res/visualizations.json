@@ -1,0 +1,896 @@
+// =============================================================================
+// iLand built-in output visualization definitions (JSONC)
+// =============================================================================
+// Users can override any entry (by matching "id") or add custom visualizations
+// by placing a "visualizations.json" file in either:
+//   1) the iLand executable directory (applies to all projects), or
+//   2) the project directory next to the XML project file.
+// See README_visualizations.md (or click "?" in Output options)
+// for the complete metadata reference.
+{
+  "version": 1,
+  "visualizations": [
+    // -------------------------------------------------------------------------
+    // 1. Landscape timelines
+    // -------------------------------------------------------------------------
+    {
+      "id": "landscape_species_shares",
+      "name": "Species shares",
+      "category": "Landscape timelines",
+      "description": "Landscape-level forest development per species (stacked area).",
+      "table": "landscape",
+      "type": "stacked_area",
+      "allowPercentToggle": true,
+      "x": "year",
+      "xLabel": "Year",
+      "group": "species",
+      "colorMode": "species",
+      "metricsMode": "select",
+      "metrics": [
+        { "col": "basal_area_m2",   "label": "Basal area (m²/ha)" },
+        { "col": "volume_m3",       "label": "Volume (m³/ha)" },
+        { "col": "count_ha",        "label": "Stem count (n/ha)" },
+        { "col": "LAI",             "label": "Leaf area index (m²/m²)" },
+        { "col": "total_carbon_kg", "label": "Total living carbon (kg C/ha)" },
+        { "col": "NPP_kg",          "label": "NPP (kg DM/ha)" },
+        { "col": "NPPabove_kg",     "label": "Aboveground NPP (kg DM/ha)" },
+        { "col": "gwl_m3",          "label": "Cumulative volume growth GWL (m³/ha)" },
+        { "col": "cohort_count_ha", "label": "Regeneration cohorts (n/ha)" }
+      ],
+      "sql": "SELECT year, species, basal_area_m2, volume_m3, count_ha, LAI, total_carbon_kg, NPP_kg, NPPabove_kg, gwl_m3, cohort_count_ha FROM landscape ORDER BY year, species"
+    },
+    {
+      "id": "landscape_species_lines",
+      "name": "Species trajectories",
+      "category": "Landscape timelines",
+      "description": "Landscape-level variables per species as lines (including non-additive mean DBH and height).",
+      "table": "landscape",
+      "type": "line",
+      "x": "year",
+      "xLabel": "Year",
+      "group": "species",
+      "colorMode": "species",
+      "metricsMode": "select",
+      "metrics": [
+        { "col": "basal_area_m2",   "label": "Basal area (m²/ha)" },
+        { "col": "volume_m3",       "label": "Volume (m³/ha)" },
+        { "col": "dbh_avg_cm",      "label": "Mean DBH (cm)" },
+        { "col": "height_avg_m",    "label": "Mean height (m)" },
+        { "col": "count_ha",        "label": "Stem count (n/ha)" },
+        { "col": "LAI",             "label": "Leaf area index (m²/m²)" },
+        { "col": "NPP_kg",          "label": "NPP (kg DM/ha)" },
+        { "col": "cohort_count_ha", "label": "Regeneration cohorts (n/ha)" }
+      ],
+      "sql": "SELECT year, species, basal_area_m2, volume_m3, dbh_avg_cm, height_avg_m, count_ha, LAI, NPP_kg, cohort_count_ha FROM landscape ORDER BY year, species"
+    },
+    {
+      "id": "landscape_removed_by_reason",
+      "name": "Removals & mortality by cause",
+      "category": "Landscape timelines",
+      "description": "Removed trees across the landscape grouped by cause (natural, harvest, disturbance, salvage, cut).",
+      "table": "landscape_removed",
+      "type": "stacked_bar",
+      "allowPercentToggle": true,
+      "fillMissingYears": true,
+      "x": "year",
+      "xLabel": "Year",
+      "group": "reason",
+      "groupLabels": {
+        "N": "Natural mortality",
+        "H": "Harvest",
+        "D": "Disturbance (unsalvaged)",
+        "S": "Salvage harvest",
+        "C": "Cut down (mgmt)"
+      },
+      "groupColors": {
+        "N": "#6a3d9a",
+        "H": "#1b7837",
+        "D": "#e31a1c",
+        "S": "#ff7f00",
+        "C": "#a6cee3"
+      },
+      "metricsMode": "select",
+      "metrics": [
+        { "col": "volume_m3",     "label": "Removed volume (m³)" },
+        { "col": "basal_area_m2", "label": "Removed basal area (m²)" },
+        { "col": "count",         "label": "Removed trees (count)" },
+        { "col": "total_carbon",  "label": "Removed carbon (kg C)" }
+      ],
+      "sql": [
+        "SELECT year, reason,",
+        "  SUM(volume_m3) AS volume_m3,",
+        "  SUM(basal_area_m2) AS basal_area_m2,",
+        "  SUM(count) AS count,",
+        "  SUM(total_carbon) AS total_carbon",
+        "FROM landscape_removed",
+        "GROUP BY year, reason ORDER BY year, reason"
+      ]
+    },
+    {
+      "id": "landscape_removed_by_species",
+      "name": "Removals & mortality by species",
+      "category": "Landscape timelines",
+      "description": "Removed trees across the landscape grouped by species (filtered by removal cause).",
+      "table": "landscape_removed",
+      "type": "stacked_bar",
+      "allowPercentToggle": true,
+      "fillMissingYears": true,
+      "x": "year",
+      "xLabel": "Year",
+      "group": "species",
+      "colorMode": "species",
+      "filters": ["reason"],
+      "groupLabels": {
+        "N": "Natural mortality",
+        "H": "Harvest",
+        "D": "Disturbance (unsalvaged)",
+        "S": "Salvage harvest",
+        "C": "Cut down (mgmt)"
+      },
+      "metricsMode": "select",
+      "metrics": [
+        { "col": "volume_m3",     "label": "Removed volume (m³)" },
+        { "col": "basal_area_m2", "label": "Removed basal area (m²)" },
+        { "col": "count",         "label": "Removed trees (count)" },
+        { "col": "total_carbon",  "label": "Removed carbon (kg C)" }
+      ],
+      "sql": [
+        "SELECT year, species,",
+        "  SUM(volume_m3) AS volume_m3,",
+        "  SUM(basal_area_m2) AS basal_area_m2,",
+        "  SUM(count) AS count,",
+        "  SUM(total_carbon) AS total_carbon",
+        "FROM landscape_removed",
+        "WHERE reason = :reason",
+        "GROUP BY year, species ORDER BY year, species"
+      ]
+    },
+    {
+      "id": "devstage_landscape",
+      "name": "Stand development stages",
+      "category": "Landscape timelines",
+      "description": "Landscape share (%) of forest development stages over time.",
+      "table": "devstage",
+      "type": "stacked_area",
+      "allowPercentToggle": false,
+      "x": "year",
+      "xLabel": "Year",
+      "group": "stage",
+      "metricsMode": "select",
+      "metrics": [
+        { "col": "percent_area", "label": "Landscape share (%)" },
+        { "col": "ncells",       "label": "Number of cells" }
+      ],
+      "sql": "SELECT year, stage, percent_area, ncells FROM devstage ORDER BY year, stage"
+    },
+    {
+      "id": "carbon_pools_landscape",
+      "name": "Ecosystem carbon pools (landscape)",
+      "category": "Landscape timelines",
+      "description": "Landscape-mean ecosystem carbon pools (soil, litter, deadwood, roots, regeneration, stem, branches+foliage).",
+      "table": "carbon",
+      "type": "stacked_area",
+      "allowPercentToggle": true,
+      "x": "year",
+      "xLabel": "Year",
+      "yLabel": "Carbon (t C/ha)",
+      "metricsMode": "all",
+      "metrics": [
+        { "col": "soil_t",       "label": "Soil (SOM)",        "color": "#543005" },
+        { "col": "litter_t",     "label": "Litter",            "color": "#bf812d" },
+        { "col": "dwd_t",        "label": "Downed deadwood",   "color": "#dfc27d" },
+        { "col": "snags_t",      "label": "Standing snags",    "color": "#878787" },
+        { "col": "roots_t",      "label": "Coarse+fine roots", "color": "#d95f02" },
+        { "col": "regen_t",      "label": "Regeneration",      "color": "#a6dba0" },
+        { "col": "stem_t",       "label": "Stem",              "color": "#1b7837" },
+        { "col": "branch_fol_t", "label": "Branches+foliage",  "color": "#5aae61" },
+        { "col": "understorey_t","label": "Understorey/moss",  "color": "#80cdc1" }
+      ],
+      "sql": [
+        "SELECT year,",
+        "  soil_c / 1000.0 AS soil_t,",
+        "  litter_c / 1000.0 AS litter_t,",
+        "  downedWood_c / 1000.0 AS dwd_t,",
+        "  (snags_c + snagsOther_c) / 1000.0 AS snags_t,",
+        "  (coarseRoot_c + fineRoot_c) / 1000.0 AS roots_t,",
+        "  regeneration_c / 1000.0 AS regen_t,",
+        "  stem_c / 1000.0 AS stem_t,",
+        "  (branch_c + foliage_c) / 1000.0 AS branch_fol_t,",
+        "  understorey_c / 1000.0 AS understorey_t",
+        "FROM carbon WHERE ru = -1 ORDER BY year"
+      ]
+    },
+    {
+      "id": "nitrogen_pools_landscape",
+      "name": "Ecosystem nitrogen pools (landscape)",
+      "category": "Landscape timelines",
+      "description": "Landscape-mean ecosystem nitrogen pools (kg N/ha).",
+      "table": "carbon",
+      "type": "stacked_area",
+      "allowPercentToggle": true,
+      "x": "year",
+      "xLabel": "Year",
+      "yLabel": "Nitrogen (kg N/ha)",
+      "metricsMode": "all",
+      "metrics": [
+        { "col": "soil_n",        "label": "Soil (SOM)",        "color": "#543005" },
+        { "col": "litter_n",      "label": "Litter",            "color": "#bf812d" },
+        { "col": "downedWood_n",  "label": "Downed deadwood",   "color": "#dfc27d" },
+        { "col": "snags_n_tot",   "label": "Standing snags",    "color": "#878787" },
+        { "col": "roots_n",       "label": "Coarse+fine roots", "color": "#d95f02" },
+        { "col": "regeneration_n","label": "Regeneration",      "color": "#a6dba0" },
+        { "col": "stem_n",        "label": "Stem",              "color": "#1b7837" },
+        { "col": "branch_fol_n",  "label": "Branches+foliage",  "color": "#5aae61" }
+      ],
+      "sql": [
+        "SELECT year, soil_n, litter_n, downedWood_n,",
+        "  (snags_n + snagsOther_n) AS snags_n_tot,",
+        "  (coarseRoot_n + fineRoot_n) AS roots_n,",
+        "  regeneration_n, stem_n,",
+        "  (branch_n + foliage_n) AS branch_fol_n",
+        "FROM carbon WHERE ru = -1 ORDER BY year"
+      ]
+    },
+    {
+      "id": "carbon_fluxes_landscape",
+      "name": "Carbon fluxes (landscape)",
+      "category": "Landscape timelines",
+      "description": "Landscape-mean annual carbon fluxes (positive = uptake, negative = ecosystem loss).",
+      "table": "carbonflow",
+      "type": "line",
+      "x": "year",
+      "xLabel": "Year",
+      "yLabel": "Carbon flux (kg C/ha/yr)",
+      "metricsMode": "all",
+      "metrics": [
+        { "col": "GPP",       "label": "GPP",              "color": "#1b7837" },
+        { "col": "NPP",       "label": "NPP",              "color": "#66bd63" },
+        { "col": "Rh",        "label": "Heterotrophic Rh", "color": "#8c510a" },
+        { "col": "dist_loss", "label": "Disturbance loss", "color": "#e31a1c" },
+        { "col": "mgmt_loss", "label": "Management loss",  "color": "#ff7f00" },
+        { "col": "NEP",       "label": "NEP",              "color": "#1f78b4" }
+      ],
+      "sql": "SELECT year, GPP, NPP, Rh, dist_loss, mgmt_loss, NEP FROM carbonflow WHERE ru = -1 ORDER BY year"
+    },
+    {
+      "id": "carbon_cumulative_landscape",
+      "name": "Cumulative carbon balance (landscape)",
+      "category": "Landscape timelines",
+      "description": "Cumulative NPP, heterotrophic respiration (Rh), and net ecosystem productivity (NEP) across the landscape.",
+      "table": "carbonflow",
+      "type": "line",
+      "x": "year",
+      "xLabel": "Year",
+      "yLabel": "Cumulative C (kg C/ha)",
+      "metricsMode": "all",
+      "metrics": [
+        { "col": "cumNPP", "label": "Cumulative NPP", "color": "#1b7837" },
+        { "col": "cumRh",  "label": "Cumulative Rh",  "color": "#8c510a" },
+        { "col": "cumNEP", "label": "Cumulative NEP", "color": "#1f78b4" }
+      ],
+      "sql": "SELECT year, cumNPP, cumRh, cumNEP FROM carbonflow WHERE ru = -1 ORDER BY year"
+    },
+    {
+      "id": "water_balance_landscape",
+      "name": "Water balance (landscape)",
+      "category": "Landscape timelines",
+      "description": "Landscape-mean precipitation, evapotranspiration, lateral outflow/excess, and soil water content.",
+      "table": "water",
+      "type": "line",
+      "x": "year",
+      "xLabel": "Year",
+      "yLabel": "Water (mm)",
+      "metricsMode": "all",
+      "metrics": [
+        { "col": "precipitation_mm", "label": "Precipitation (mm)",     "color": "#1f78b4" },
+        { "col": "et_mm",            "label": "ET (mm)",                "color": "#33a02c" },
+        { "col": "excess_mm",        "label": "Outflow / excess (mm)",  "color": "#a6cee3" },
+        { "col": "mean_swc_mm",      "label": "Mean SWC (mm)",          "color": "#ff7f00" },
+        { "col": "mean_swc_gs_mm",   "label": "Growing season SWC (mm)","color": "#e31a1c" }
+      ],
+      "sql": "SELECT year, precipitation_mm, et_mm, excess_mm, mean_swc_mm, mean_swc_gs_mm FROM water WHERE ru = -1 ORDER BY year"
+    },
+    {
+      "id": "water_climate_permafrost_landscape",
+      "name": "Climate, snow & permafrost (landscape)",
+      "category": "Landscape timelines",
+      "description": "Landscape-mean temperature, snow cover, effective LAI, and permafrost depth metrics.",
+      "table": "water",
+      "type": "line",
+      "x": "year",
+      "xLabel": "Year",
+      "metricsMode": "select",
+      "metrics": [
+        { "col": "mean_annual_temp", "label": "Mean annual temp (°C)",      "color": "#e31a1c" },
+        { "col": "snowcover_days",   "label": "Snow cover (days)",          "color": "#1f78b4" },
+        { "col": "effective_lai",    "label": "Effective LAI (m²/m²)",      "color": "#1b7837" },
+        { "col": "total_radiation",  "label": "Total radiation (MJ/m²)",    "color": "#ff7f00" },
+        { "col": "maxDepthFrozen",   "label": "Max freezing depth (m)",     "color": "#2b8cbe" },
+        { "col": "maxDepthThawed",   "label": "Max thawing depth (m)",      "color": "#8c510a" },
+        { "col": "maxSnowCover",     "label": "Max snow cover (m)",         "color": "#7bccc4" },
+        { "col": "SOLLayer",         "label": "Soil organic layer (m)",     "color": "#543005" }
+      ],
+      "sql": "SELECT year, mean_annual_temp, snowcover_days, effective_lai, total_radiation, maxDepthFrozen, maxDepthThawed, maxSnowCover, SOLLayer FROM water WHERE ru = -1 ORDER BY year"
+    },
+
+    // -------------------------------------------------------------------------
+    // 2. Resource unit timelines
+    // -------------------------------------------------------------------------
+    {
+      "id": "stand_ru_shares",
+      "name": "Stand development (by RU)",
+      "category": "Resource unit timelines",
+      "description": "Per-RU species shares over time (stacked area).",
+      "table": "stand",
+      "type": "stacked_area",
+      "allowPercentToggle": true,
+      "x": "year",
+      "xLabel": "Year",
+      "group": "species",
+      "colorMode": "species",
+      "filters": ["ru"],
+      "metricsMode": "select",
+      "metrics": [
+        { "col": "basal_area_m2",   "label": "Basal area (m²/ha)" },
+        { "col": "volume_m3",       "label": "Volume (m³/ha)" },
+        { "col": "count_ha",        "label": "Stem count (n/ha)" },
+        { "col": "LAI",             "label": "Leaf area index (m²/m²)" },
+        { "col": "total_carbon_kg", "label": "Total living carbon (kg C/ha)" },
+        { "col": "NPP_kg",          "label": "NPP (kg DM/ha)" },
+        { "col": "cohort_count_ha", "label": "Regen cohorts (n/ha)" }
+      ],
+      "sql": "SELECT year, species, basal_area_m2, volume_m3, count_ha, LAI, total_carbon_kg, NPP_kg, cohort_count_ha FROM stand WHERE ru = :ru ORDER BY year, species"
+    },
+    {
+      "id": "stand_ru_lines",
+      "name": "Stand trajectories (by RU)",
+      "category": "Resource unit timelines",
+      "description": "Per-RU variables per species as lines (including mean DBH and height).",
+      "table": "stand",
+      "type": "line",
+      "x": "year",
+      "xLabel": "Year",
+      "group": "species",
+      "colorMode": "species",
+      "filters": ["ru"],
+      "metricsMode": "select",
+      "metrics": [
+        { "col": "basal_area_m2",   "label": "Basal area (m²/ha)" },
+        { "col": "volume_m3",       "label": "Volume (m³/ha)" },
+        { "col": "dbh_avg_cm",      "label": "Mean DBH (cm)" },
+        { "col": "height_avg_m",    "label": "Mean height (m)" },
+        { "col": "count_ha",        "label": "Stem count (n/ha)" },
+        { "col": "LAI",             "label": "Leaf area index (m²/m²)" },
+        { "col": "gwl_m3",          "label": "Cumulative growth GWL (m³/ha)" }
+      ],
+      "sql": "SELECT year, species, basal_area_m2, volume_m3, dbh_avg_cm, height_avg_m, count_ha, LAI, gwl_m3 FROM stand WHERE ru = :ru ORDER BY year, species"
+    },
+    {
+      "id": "sapling_ru",
+      "name": "Sapling / regeneration (by RU)",
+      "category": "Resource unit timelines",
+      "description": "Regeneration layer counts, heights, ages, and LAI per species on a selected resource unit.",
+      "table": "sapling",
+      "type": "line",
+      "x": "year",
+      "xLabel": "Year",
+      "group": "species",
+      "colorMode": "species",
+      "filters": ["ru"],
+      "metricsMode": "select",
+      "metrics": [
+        { "col": "count_ha",        "label": "Saplings >1.3m (n/ha)" },
+        { "col": "count_small_ha",  "label": "Small saplings <=1.3m (n/ha)" },
+        { "col": "cohort_count_ha", "label": "Cohorts (n/ha)" },
+        { "col": "height_avg_m",    "label": "Mean height (m)" },
+        { "col": "age_avg",         "label": "Mean age (years)" },
+        { "col": "LAI",             "label": "Sapling LAI (m²/m²)" }
+      ],
+      "sql": "SELECT year, species, count_ha, count_small_ha, cohort_count_ha, height_avg_m, age_avg, LAI FROM sapling WHERE ru = :ru ORDER BY year, species"
+    },
+    {
+      "id": "carbon_pools_ru",
+      "name": "Carbon pools (by RU)",
+      "category": "Resource unit timelines",
+      "description": "Carbon pools on a selected resource unit (note: frequency depends on conditionRU).",
+      "table": "carbon",
+      "type": "stacked_area",
+      "allowPercentToggle": true,
+      "x": "year",
+      "xLabel": "Year",
+      "yLabel": "Carbon (t C/ha)",
+      "filters": ["ru"],
+      "metricsMode": "all",
+      "metrics": [
+        { "col": "soil_t",       "label": "Soil (SOM)",        "color": "#543005" },
+        { "col": "litter_t",     "label": "Litter",            "color": "#bf812d" },
+        { "col": "dwd_t",        "label": "Downed deadwood",   "color": "#dfc27d" },
+        { "col": "snags_t",      "label": "Standing snags",    "color": "#878787" },
+        { "col": "roots_t",      "label": "Coarse+fine roots", "color": "#d95f02" },
+        { "col": "regen_t",      "label": "Regeneration",      "color": "#a6dba0" },
+        { "col": "stem_t",       "label": "Stem",              "color": "#1b7837" },
+        { "col": "branch_fol_t", "label": "Branches+foliage",  "color": "#5aae61" },
+        { "col": "understorey_t","label": "Understorey/moss",  "color": "#80cdc1" }
+      ],
+      "sql": [
+        "SELECT year,",
+        "  soil_c / 1000.0 AS soil_t,",
+        "  litter_c / 1000.0 AS litter_t,",
+        "  downedWood_c / 1000.0 AS dwd_t,",
+        "  (snags_c + snagsOther_c) / 1000.0 AS snags_t,",
+        "  (coarseRoot_c + fineRoot_c) / 1000.0 AS roots_t,",
+        "  regeneration_c / 1000.0 AS regen_t,",
+        "  stem_c / 1000.0 AS stem_t,",
+        "  (branch_c + foliage_c) / 1000.0 AS branch_fol_t,",
+        "  understorey_c / 1000.0 AS understorey_t",
+        "FROM carbon WHERE ru = :ru ORDER BY year"
+      ]
+    },
+    {
+      "id": "carbon_fluxes_ru",
+      "name": "Carbon fluxes (by RU)",
+      "category": "Resource unit timelines",
+      "description": "Annual ecosystem carbon fluxes on a selected resource unit.",
+      "table": "carbonflow",
+      "type": "line",
+      "x": "year",
+      "xLabel": "Year",
+      "yLabel": "Carbon flux (kg C/ha/yr)",
+      "filters": ["ru"],
+      "metricsMode": "all",
+      "metrics": [
+        { "col": "GPP",       "label": "GPP",              "color": "#1b7837" },
+        { "col": "NPP",       "label": "NPP",              "color": "#66bd63" },
+        { "col": "Rh",        "label": "Heterotrophic Rh", "color": "#8c510a" },
+        { "col": "dist_loss", "label": "Disturbance loss", "color": "#e31a1c" },
+        { "col": "mgmt_loss", "label": "Management loss",  "color": "#ff7f00" },
+        { "col": "NEP",       "label": "NEP",              "color": "#1f78b4" }
+      ],
+      "sql": "SELECT year, GPP, NPP, Rh, dist_loss, mgmt_loss, NEP FROM carbonflow WHERE ru = :ru ORDER BY year"
+    },
+    {
+      "id": "water_balance_ru",
+      "name": "Water balance (by RU)",
+      "category": "Resource unit timelines",
+      "description": "Annual water balance components on a selected resource unit.",
+      "table": "water",
+      "type": "line",
+      "x": "year",
+      "xLabel": "Year",
+      "yLabel": "Water (mm)",
+      "filters": ["ru"],
+      "metricsMode": "all",
+      "metrics": [
+        { "col": "precipitation_mm", "label": "Precipitation (mm)",     "color": "#1f78b4" },
+        { "col": "et_mm",            "label": "ET (mm)",                "color": "#33a02c" },
+        { "col": "excess_mm",        "label": "Outflow / excess (mm)",  "color": "#a6cee3" },
+        { "col": "mean_swc_mm",      "label": "Mean SWC (mm)",          "color": "#ff7f00" },
+        { "col": "mean_swc_gs_mm",   "label": "Growing season SWC (mm)","color": "#e31a1c" }
+      ],
+      "sql": "SELECT year, precipitation_mm, et_mm, excess_mm, mean_swc_mm, mean_swc_gs_mm FROM water WHERE ru = :ru ORDER BY year"
+    },
+    {
+      "id": "soil_input_ru",
+      "name": "Soil carbon input (by RU)",
+      "category": "Resource unit timelines",
+      "description": "Labile and refractory organic matter inputs to soil (t C/ha) and decay modifier re.",
+      "table": "soilinput",
+      "type": "line",
+      "x": "year",
+      "xLabel": "Year",
+      "filters": ["ru"],
+      "metricsMode": "all",
+      "metrics": [
+        { "col": "input_lab", "label": "Labile input (t C/ha)",     "color": "#bf812d" },
+        { "col": "input_ref", "label": "Refractory input (t C/ha)", "color": "#543005" },
+        { "col": "re",        "label": "Climate modifier re",       "color": "#1f78b4" }
+      ],
+      "sql": "SELECT year, input_lab, input_ref, re FROM soilinput WHERE ru = :ru ORDER BY year"
+    },
+    {
+      "id": "production_month_boxplot",
+      "name": "3PG monthly responses (seasonality)",
+      "category": "Resource unit timelines",
+      "description": "Monthly distribution across simulated years for a selected species and resource unit.",
+      "table": "production_month",
+      "type": "boxplot",
+      "x": "month",
+      "xLabel": "Month",
+      "xCategories": ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
+      "filters": ["species", "ru"],
+      "metricsMode": "select",
+      "metrics": [
+        { "col": "waterResponse",          "label": "Soil water response (0..1)" },
+        { "col": "tempResponse",           "label": "Temperature response (0..1)" },
+        { "col": "vpdResponse",            "label": "VPD response (0..1)" },
+        { "col": "co2Response",            "label": "CO2 response" },
+        { "col": "phenology",              "label": "Phenology fraction (0..1)" },
+        { "col": "GPP_kg_m2",              "label": "Monthly GPP (kg/m²)" },
+        { "col": "utilizableRadiation_m2", "label": "Utilizable PAR (MJ/m²)" },
+        { "col": "radiation_m2",           "label": "Global radiation PAR (MJ/m²)" }
+      ],
+      "sql": [
+        "SELECT month, waterResponse, tempResponse, vpdResponse, co2Response,",
+        "  phenology, GPP_kg_m2, utilizableRadiation_m2, radiation_m2",
+        "FROM production_month WHERE species = :species AND ru = :ru ORDER BY month"
+      ]
+    },
+    {
+      "id": "production_month_timeline",
+      "name": "3PG monthly responses (timeline)",
+      "category": "Resource unit timelines",
+      "description": "Monthly 3PG response and GPP trajectory over simulation time.",
+      "table": "production_month",
+      "type": "line",
+      "x": "time",
+      "xLabel": "Year",
+      "filters": ["species", "ru"],
+      "metricsMode": "select",
+      "metrics": [
+        { "col": "waterResponse",          "label": "Soil water response (0..1)", "color": "#1f78b4" },
+        { "col": "tempResponse",           "label": "Temperature response (0..1)", "color": "#e31a1c" },
+        { "col": "vpdResponse",            "label": "VPD response (0..1)",        "color": "#ff7f00" },
+        { "col": "GPP_kg_m2",              "label": "Monthly GPP (kg/m²)",        "color": "#1b7837" },
+        { "col": "utilizableRadiation_m2", "label": "Utilizable PAR (MJ/m²)",     "color": "#6a3d9a" }
+      ],
+      "sql": [
+        "SELECT year + (month - 0.5) / 12.0 AS time,",
+        "  waterResponse, tempResponse, vpdResponse, GPP_kg_m2, utilizableRadiation_m2",
+        "FROM production_month WHERE species = :species AND ru = :ru ORDER BY year, month"
+      ]
+    },
+
+    // -------------------------------------------------------------------------
+    // 3. Disturbances & management
+    // -------------------------------------------------------------------------
+    {
+      "id": "fire_disturbance",
+      "name": "Fire disturbance",
+      "category": "Disturbances & management",
+      "description": "Annual wildfire burned area, fire count, and tree mortality.",
+      "table": "fire",
+      "type": "bar",
+      "fillMissingYears": true,
+      "x": "year",
+      "xLabel": "Year",
+      "metricsMode": "select",
+      "metrics": [
+        { "col": "burned_ha",    "label": "Burned area (ha)",       "color": "#e31a1c" },
+        { "col": "n_fires",      "label": "Number of fires",        "color": "#ff7f00" },
+        { "col": "killed_ba_m2", "label": "Killed basal area (m²)", "color": "#8c510a" },
+        { "col": "killed_trees", "label": "Killed trees (count)",   "color": "#6a3d9a" }
+      ],
+      "sql": [
+        "SELECT year,",
+        "  SUM(area_m2) / 10000.0 AS burned_ha,",
+        "  COUNT(*) AS n_fires,",
+        "  SUM(basalArea_died) AS killed_ba_m2,",
+        "  SUM(n_trees_died) AS killed_trees",
+        "FROM fire GROUP BY year ORDER BY year"
+      ]
+    },
+    {
+      "id": "wind_disturbance",
+      "name": "Wind disturbance",
+      "category": "Disturbances & management",
+      "description": "Annual storm-affected area, killed volume, and peak wind speed.",
+      "table": "wind",
+      "type": "bar",
+      "fillMissingYears": true,
+      "x": "year",
+      "xLabel": "Year",
+      "metricsMode": "select",
+      "metrics": [
+        { "col": "area_ha",         "label": "Affected area (ha)",      "color": "#1f78b4" },
+        { "col": "killedVolume",    "label": "Killed volume (m³)",      "color": "#e31a1c" },
+        { "col": "killedBasalArea", "label": "Killed basal area (m²)",  "color": "#ff7f00" },
+        { "col": "killedTrees",     "label": "Killed trees (count)",    "color": "#6a3d9a" },
+        { "col": "windspeed_ms",    "label": "Wind speed (m/s)",        "color": "#01665e" }
+      ],
+      "sql": [
+        "SELECT year,",
+        "  SUM(area_ha) AS area_ha,",
+        "  SUM(killedVolume) AS killedVolume,",
+        "  SUM(killedBasalArea) AS killedBasalArea,",
+        "  SUM(killedTrees) AS killedTrees,",
+        "  MAX(windspeed_ms) AS windspeed_ms",
+        "FROM wind GROUP BY year ORDER BY year"
+      ]
+    },
+    {
+      "id": "barkbeetle_dynamics",
+      "name": "Bark beetle dynamics",
+      "category": "Disturbances & management",
+      "description": "Annual bark beetle infested/killed area and killed Norway spruce volume.",
+      "table": "barkbeetle",
+      "type": "line",
+      "x": "year",
+      "xLabel": "Year",
+      "metricsMode": "select",
+      "metrics": [
+        { "col": "killedVolume",          "label": "Killed volume (m³)",           "color": "#8c510a" },
+        { "col": "killedArea_ha",         "label": "Killed area (ha)",             "color": "#e31a1c" },
+        { "col": "infestedArea_ha",       "label": "Newly infested area (ha)",     "color": "#ff7f00" },
+        { "col": "killedTrees",           "label": "Killed trees (count)",         "color": "#6a3d9a" },
+        { "col": "stormActivation_ha",    "label": "Storm-activated area (ha)",    "color": "#1f78b4" },
+        { "col": "backgroundActivation_ha","label": "Background activation (ha)",  "color": "#33a02c" }
+      ],
+      "sql": [
+        "SELECT year,",
+        "  SUM(killedVolume) AS killedVolume,",
+        "  SUM(killedArea_ha) AS killedArea_ha,",
+        "  SUM(infestedArea_ha) AS infestedArea_ha,",
+        "  SUM(killedTrees) AS killedTrees,",
+        "  SUM(stormActivation_ha) AS stormActivation_ha,",
+        "  SUM(backgroundActivation_ha) AS backgroundActivation_ha",
+        "FROM barkbeetle GROUP BY year ORDER BY year"
+      ]
+    },
+    {
+      "id": "abe_unit_harvests",
+      "name": "ABE planned vs. realized harvest",
+      "category": "Disturbances & management",
+      "description": "Planned harvest targets and realized final, thinning, and salvage harvests per planning unit.",
+      "table": "abeUnit",
+      "type": "line",
+      "x": "year",
+      "xLabel": "Year",
+      "yLabel": "Timber volume (m³/ha/yr)",
+      "filters": ["id"],
+      "metricsMode": "all",
+      "metrics": [
+        { "col": "decadePlan",      "label": "Decade plan",       "color": "#7f7f7f" },
+        { "col": "annualPlan",      "label": "Annual plan",       "color": "#1f78b4" },
+        { "col": "realizedHarvest", "label": "Realized total",    "color": "#1b7837" },
+        { "col": "finalHarvest",    "label": "Final harvest",     "color": "#33a02c" },
+        { "col": "thinningHarvest", "label": "Thinning harvest",  "color": "#a6cee3" },
+        { "col": "salvageHarvest",  "label": "Salvage harvest",   "color": "#ff7f00" }
+      ],
+      "sql": "SELECT year, decadePlan, annualPlan, realizedHarvest, finalHarvest, thinningHarvest, salvageHarvest FROM abeUnit WHERE id = :id ORDER BY year"
+    },
+    {
+      "id": "abe_unit_growing_stock",
+      "name": "ABE growing stock & MAI",
+      "category": "Disturbances & management",
+      "description": "Standing volume, mean annual increment (MAI), and mean age per ABE planning unit (updated decadal).",
+      "table": "abeUnit",
+      "type": "line",
+      "x": "year",
+      "xLabel": "Year",
+      "filters": ["id"],
+      "metricsMode": "select",
+      "metrics": [
+        { "col": "volume", "label": "Mean standing volume (m³/ha)", "color": "#1b7837" },
+        { "col": "MAI",    "label": "Mean annual increment (m³/ha/yr)", "color": "#1f78b4" },
+        { "col": "age",    "label": "Mean stand age (years)", "color": "#8c510a" }
+      ],
+      "sql": "SELECT year, volume, MAI, age FROM abeUnit WHERE id = :id ORDER BY year"
+    },
+    {
+      "id": "abe_removals_by_activity",
+      "name": "ABE harvests by activity",
+      "category": "Disturbances & management",
+      "description": "Area-weighted harvested and disturbed timber volume grouped by ABE management activity.",
+      "table": "abeStandRemoval",
+      "type": "stacked_bar",
+      "fillMissingYears": true,
+      "x": "year",
+      "xLabel": "Year",
+      "group": "activity",
+      "metricsMode": "select",
+      "metrics": [
+        { "col": "total_harvest_m3", "label": "Harvested volume (m³)" },
+        { "col": "thinning_m3",      "label": "Thinning volume (m³)" },
+        { "col": "final_m3",         "label": "Final harvest volume (m³)" },
+        { "col": "salvaged_m3",      "label": "Salvaged volume (m³)" },
+        { "col": "disturbed_m3",     "label": "Disturbed volume (m³)" }
+      ],
+      "sql": [
+        "SELECT year, COALESCE(NULLIF(activity, ''), '(none)') AS activity,",
+        "  SUM((volumeThinning + volumeFinal + volumeSalvaged) * area) AS total_harvest_m3,",
+        "  SUM(volumeThinning * area) AS thinning_m3,",
+        "  SUM(volumeFinal * area) AS final_m3,",
+        "  SUM(volumeSalvaged * area) AS salvaged_m3,",
+        "  SUM(volumeDisturbed * area) AS disturbed_m3",
+        "FROM abeStandRemoval",
+        "GROUP BY year, activity ORDER BY year, activity"
+      ]
+    },
+    {
+      "id": "bite_agent_summary",
+      "name": "BITE biotic agent summary",
+      "category": "Disturbances & management",
+      "description": "Annual spread, colonization, and tree/sapling impact for a selected BITE agent.",
+      "table": "bite",
+      "type": "line",
+      "x": "year",
+      "xLabel": "Year",
+      "filters": ["agent"],
+      "metricsMode": "select",
+      "metrics": [
+        { "col": "NColonized",      "label": "Colonized cells (n)",     "color": "#e31a1c" },
+        { "col": "NNewlyColonized", "label": "Newly colonized cells",   "color": "#ff7f00" },
+        { "col": "treesKilled",     "label": "Trees killed (count)",    "color": "#6a3d9a" },
+        { "col": "volumeKilled",    "label": "Volume killed (m³)",      "color": "#8c510a" },
+        { "col": "totalImpact",     "label": "Total impact",            "color": "#1f78b4" },
+        { "col": "saplingKilled",   "label": "Sapling cohorts killed",  "color": "#33a02c" }
+      ],
+      "sql": "SELECT year, NColonized, NNewlyColonized, treesKilled, volumeKilled, totalImpact, saplingKilled FROM bite WHERE agent = :agent ORDER BY year"
+    },
+
+    // -------------------------------------------------------------------------
+    // 4. Spatial maps (RU)
+    // -------------------------------------------------------------------------
+    {
+      "id": "dominant_species_spatial_map",
+      "name": "Dominant species map (RU)",
+      "category": "Spatial maps (RU)",
+      "description": "Dominant tree species per resource unit (dashed fill where dominant species share is <50%).",
+      "table": "stand",
+      "type": "spatial",
+      "spatialKey": "rid",
+      "speciesMode": "dominant",
+      "metricsMode": "select",
+      "metrics": [
+        { "col": "basal_area_m2",   "label": "Basal area (m²/ha)" },
+        { "col": "volume_m3",       "label": "Volume (m³/ha)" },
+        { "col": "count_ha",        "label": "Stem count (n/ha)" },
+        { "col": "LAI",             "label": "Leaf area index (m²/m²)" },
+        { "col": "total_carbon_kg", "label": "Living carbon (kg C/ha)" },
+        { "col": "NPP_kg",          "label": "NPP (kg DM/ha)" },
+        { "col": "cohort_count_ha", "label": "Regen cohorts (n/ha)" }
+      ],
+      "sql": "SELECT year, ru, rid, species, basal_area_m2, volume_m3, count_ha, LAI, total_carbon_kg, NPP_kg, cohort_count_ha FROM stand"
+    },
+    {
+      "id": "stand_spatial_map",
+      "name": "Stand map (RU)",
+      "category": "Spatial maps (RU)",
+      "description": "Spatial distribution of stand volume, basal area, LAI, stem count, or mean dimensions per resource unit.",
+      "table": "stand",
+      "type": "spatial",
+      "spatialKey": "rid",
+      "palette": "turbo",
+      "speciesMode": "select_with_aggregates",
+      "metricsMode": "select",
+      "metrics": [
+        { "col": "volume_m3",       "label": "Volume (m³/ha)",          "agg": "sum" },
+        { "col": "basal_area_m2",   "label": "Basal area (m²/ha)",      "agg": "sum" },
+        { "col": "LAI",             "label": "Leaf area index (m²/m²)", "agg": "sum" },
+        { "col": "count_ha",        "label": "Stem count (n/ha)",       "agg": "sum" },
+        { "col": "total_carbon_kg", "label": "Living carbon (kg C/ha)", "agg": "sum" },
+        { "col": "NPP_kg",          "label": "NPP (kg DM/ha)",          "agg": "sum" },
+        { "col": "cohort_count_ha", "label": "Regen cohorts (n/ha)",    "agg": "sum" },
+        { "col": "dbh_avg_cm",      "label": "Mean DBH (cm)",           "agg": "none" },
+        { "col": "height_avg_m",    "label": "Mean height (m)",         "agg": "none" }
+      ],
+      "sql": "SELECT year, ru, rid, species, volume_m3, basal_area_m2, LAI, count_ha, total_carbon_kg, NPP_kg, cohort_count_ha, dbh_avg_cm, height_avg_m FROM stand"
+    },
+    {
+      "id": "sapling_spatial_map",
+      "name": "Regeneration map (RU)",
+      "category": "Spatial maps (RU)",
+      "description": "Spatial distribution of saplings and regeneration cohorts per resource unit.",
+      "table": "sapling",
+      "type": "spatial",
+      "spatialKey": "rid",
+      "palette": "greens",
+      "speciesMode": "select_with_aggregates",
+      "metricsMode": "select",
+      "metrics": [
+        { "col": "count_ha",        "label": "Saplings >1.3m (n/ha)",        "agg": "sum" },
+        { "col": "count_small_ha",  "label": "Small saplings <=1.3m (n/ha)", "agg": "sum" },
+        { "col": "cohort_count_ha", "label": "Cohorts (n/ha)",               "agg": "sum" },
+        { "col": "LAI",             "label": "Sapling LAI (m²/m²)",          "agg": "sum" },
+        { "col": "height_avg_m",    "label": "Mean sapling height (m)",      "agg": "none" },
+        { "col": "age_avg",         "label": "Mean sapling age (years)",     "agg": "none" }
+      ],
+      "sql": "SELECT year, ru, rid, species, count_ha, count_small_ha, cohort_count_ha, LAI, height_avg_m, age_avg FROM sapling"
+    },
+    {
+      "id": "carbon_spatial_map",
+      "name": "Carbon pools map (RU)",
+      "category": "Spatial maps (RU)",
+      "description": "Spatial distribution of total, live aboveground, deadwood, and soil carbon pools (t C/ha).",
+      "table": "carbon",
+      "type": "spatial",
+      "spatialKey": "rid",
+      "palette": "greens",
+      "metricsMode": "select",
+      "metrics": [
+        { "col": "total_t",    "label": "Total ecosystem C (t C/ha)" },
+        { "col": "live_ag_t",  "label": "Live aboveground C (t C/ha)" },
+        { "col": "deadwood_t", "label": "Snags + downed wood C (t C/ha)" },
+        { "col": "soil_t",     "label": "Soil + litter C (t C/ha)" },
+        { "col": "stem_t",     "label": "Stem C (t C/ha)" }
+      ],
+      "sql": [
+        "SELECT year, ru, rid,",
+        "  (stem_c + branch_c + foliage_c + coarseRoot_c + fineRoot_c + regeneration_c + snags_c + snagsOther_c + downedWood_c + litter_c + soil_c + understorey_c) / 1000.0 AS total_t,",
+        "  (stem_c + branch_c + foliage_c + regeneration_c) / 1000.0 AS live_ag_t,",
+        "  (snags_c + snagsOther_c + downedWood_c) / 1000.0 AS deadwood_t,",
+        "  (soil_c + litter_c) / 1000.0 AS soil_t,",
+        "  stem_c / 1000.0 AS stem_t",
+        "FROM carbon WHERE ru >= 0"
+      ]
+    },
+    {
+      "id": "carbonflow_spatial_map",
+      "name": "Carbon fluxes map (RU)",
+      "category": "Spatial maps (RU)",
+      "description": "Spatial distribution of annual GPP, NPP, Rh, and NEP across resource units.",
+      "table": "carbonflow",
+      "type": "spatial",
+      "spatialKey": "rid",
+      "palette": "turbo",
+      "metricsMode": "select",
+      "metrics": [
+        { "col": "NPP",    "label": "NPP (kg C/ha/yr)" },
+        { "col": "GPP",    "label": "GPP (kg C/ha/yr)" },
+        { "col": "NEP",    "label": "NEP (kg C/ha/yr)" },
+        { "col": "Rh",     "label": "Heterotrophic Rh (kg C/ha/yr)" },
+        { "col": "cumNEP", "label": "Cumulative NEP (kg C/ha)" }
+      ],
+      "sql": "SELECT year, ru, rid, NPP, GPP, NEP, Rh, cumNEP FROM carbonflow WHERE ru >= 0"
+    },
+    {
+      "id": "water_spatial_map",
+      "name": "Water & permafrost map (RU)",
+      "category": "Spatial maps (RU)",
+      "description": "Spatial variation in evapotranspiration, soil water, temperature, snow, and permafrost across resource units.",
+      "table": "water",
+      "type": "spatial",
+      "spatialKey": "rid",
+      "palette": "blues",
+      "metricsMode": "select",
+      "metrics": [
+        { "col": "et_mm",            "label": "Evapotranspiration (mm)" },
+        { "col": "mean_swc_gs_mm",   "label": "Growing season SWC (mm)" },
+        { "col": "excess_mm",        "label": "Lateral outflow / excess (mm)" },
+        { "col": "precipitation_mm", "label": "Precipitation (mm)" },
+        { "col": "mean_annual_temp", "label": "Mean annual temp (°C)" },
+        { "col": "effective_lai",    "label": "Effective LAI (m²/m²)" },
+        { "col": "snowcover_days",   "label": "Snow cover (days)" },
+        { "col": "maxDepthThawed",   "label": "Permafrost max thaw depth (m)" },
+        { "col": "maxDepthFrozen",   "label": "Permafrost max freeze depth (m)" }
+      ],
+      "sql": "SELECT year, ru, rid, et_mm, mean_swc_gs_mm, excess_mm, precipitation_mm, mean_annual_temp, effective_lai, snowcover_days, maxDepthThawed, maxDepthFrozen FROM water WHERE ru >= 0"
+    },
+    {
+      "id": "standdead_spatial_map",
+      "name": "Mortality map (RU)",
+      "category": "Spatial maps (RU)",
+      "description": "Annual tree mortality per resource unit.",
+      "table": "standdead",
+      "type": "spatial",
+      "spatialKey": "rid",
+      "palette": "reds",
+      "speciesMode": "select_with_aggregates",
+      "metricsMode": "select",
+      "metrics": [
+        { "col": "volume_m3",     "label": "Dead volume (m³/ha)",     "agg": "sum" },
+        { "col": "basal_area_m2", "label": "Dead basal area (m²/ha)", "agg": "sum" },
+        { "col": "count_ha",      "label": "Dead trees (n/ha)",       "agg": "sum" }
+      ],
+      "sql": "SELECT year, ru, rid, species, volume_m3, basal_area_m2, count_ha FROM standdead"
+    },
+    {
+      "id": "management_spatial_map",
+      "name": "Management removals map (RU)",
+      "category": "Spatial maps (RU)",
+      "description": "Annual harvested/removed timber per resource unit.",
+      "table": "management",
+      "type": "spatial",
+      "spatialKey": "rid",
+      "palette": "reds",
+      "speciesMode": "select_with_aggregates",
+      "metricsMode": "select",
+      "metrics": [
+        { "col": "volume_m3",     "label": "Removed volume (m³/ha)",     "agg": "sum" },
+        { "col": "basal_area_m2", "label": "Removed basal area (m²/ha)", "agg": "sum" },
+        { "col": "count_ha",      "label": "Removed trees (n/ha)",       "agg": "sum" }
+      ],
+      "sql": "SELECT year, ru, rid, species, volume_m3, basal_area_m2, count_ha FROM management"
+    }
+  ]
+}

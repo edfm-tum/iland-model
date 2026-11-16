@@ -35,6 +35,7 @@
 #include "settingmetadata.h"
 #include "ui/linkxmlqt.h"
 #include "ui/dialogfunctionplotter.h"
+#include "ui/resultvisualizer.h"
 
 #include "model.h"
 #include "resourceunit.h"
@@ -289,10 +290,26 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->scriptCode, SIGNAL(executeJS(QString)),
             this, SLOT(executeJS(QString)) );
 
+    // Output visualization widget & linked left/right docks
+    mResultVisualizer = new ResultVisualizerWidget(this);
+    ui->vizTabLayout->addWidget(mResultVisualizer);
+
+    mDockOutputLegend = new QDockWidget(QStringLiteral("Output legend"), this);
+    mDockOutputLegend->setObjectName(QStringLiteral("dockOutputLegend"));
+    mDockOutputLegend->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    mDockOutputLegend->setWidget(mResultVisualizer->legendPanel());
+
+    mDockOutputOptions = new QDockWidget(QStringLiteral("Output options"), this);
+    mDockOutputOptions->setObjectName(QStringLiteral("dockOutputOptions"));
+    mDockOutputOptions->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    mDockOutputOptions->setWidget(mResultVisualizer->optionsPanel());
+
     // dock windows
     ui->menuView->addAction( ui->dockLegend->toggleViewAction() );
+    ui->menuView->addAction( mDockOutputLegend->toggleViewAction() );
     ui->menuView->addAction( ui->dockLogviewer->toggleViewAction() );
     ui->menuView->addAction( ui->dockVisualization->toggleViewAction() );
+    ui->menuView->addAction( mDockOutputOptions->toggleViewAction() );
     ui->menuView->addAction( ui->dockModelDrill->toggleViewAction() );
     ui->menuView->addAction( ui->dockJavascriptEditor->toggleViewAction() );
     ui->menuView->addAction( ui->dockJavascriptWorkspace->toggleViewAction() );
@@ -300,12 +317,16 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->dockLogviewer->installEventFilter(this); // for dynamic resize
     // position of dock widgets
+    addDockWidget(Qt::DockWidgetArea::LeftDockWidgetArea, mDockOutputLegend);
     addDockWidget(Qt::DockWidgetArea::RightDockWidgetArea, ui->dockJavascriptWorkspace);
+    addDockWidget(Qt::DockWidgetArea::RightDockWidgetArea, mDockOutputOptions);
     addDockWidget(Qt::DockWidgetArea::RightDockWidgetArea, ui->dockTreeExpression);
     ui->dockTreeExpression->setVisible(false);
     // put some of the docks into tabs
     tabifyDockWidget(ui->dockJavascriptEditor, ui->dockLegend);
+    tabifyDockWidget(ui->dockLegend, mDockOutputLegend);
     tabifyDockWidget(ui->dockJavascriptWorkspace, ui->dockVisualization);
+    tabifyDockWidget(ui->dockVisualization, mDockOutputOptions);
 
 
     resizeDocks({ui->dockLogviewer}, {100}, Qt::Vertical);
@@ -363,6 +384,17 @@ MainWindow::MainWindow(QWidget *parent)
         QByteArray state = Helper::loadFile(fileName);
         restoreState(state);
     }
+    {
+        QSettings dockSettings;
+        if (!dockSettings.value(QStringLiteral("MainWindow/outputVizDocksV1"), false).toBool()) {
+            addDockWidget(Qt::LeftDockWidgetArea, mDockOutputLegend);
+            tabifyDockWidget(ui->dockLegend, mDockOutputLegend);
+            addDockWidget(Qt::RightDockWidgetArea, mDockOutputOptions);
+            tabifyDockWidget(ui->dockVisualization, mDockOutputOptions);
+            dockSettings.setValue(QStringLiteral("MainWindow/outputVizDocksV1"), true);
+        }
+    }
+    syncDocksForMainTab(ui->mainTabWidget->currentIndex());
     checkModelState();
     ui->statusBar->addPermanentWidget(ui->modelRunProgress);
     ui->modelRunProgress->setValue(0);
@@ -442,8 +474,67 @@ MainWindow::MainWindow(QWidget *parent)
     QString mainDir = ":";
     mSettingMetaData.loadFromFile(mainDir + "/project_file_metadata.txt", mMetaKeys, mMetaValues);
 
-    connect(ui->initFileName, &QLineEdit::textChanged, this, [=]() {mLinkxqt->setXmlPath(ui->initFileName->text());});
+    if (mResultVisualizer)
+        mResultVisualizer->setProjectXmlPath(ui->initFileName->text());
 
+    connect(ui->mainTabWidget, &QTabWidget::currentChanged, this, [this](int index) {
+        syncDocksForMainTab(index);
+    });
+
+    connect(ui->initFileName, &QLineEdit::textChanged, this, [=]() {
+        mLinkxqt->setXmlPath(ui->initFileName->text());
+        if (mResultVisualizer)
+            mResultVisualizer->setProjectXmlPath(ui->initFileName->text());
+    });
+
+}
+
+void MainWindow::syncDocksForMainTab(int tabIndex)
+{
+    if (tabIndex == 1) {
+        if (mActiveDockTabMode == 0) {
+            mSavedLandscapeLegendVisible = ui->dockLegend->isVisible();
+            mSavedLandscapeVisVisible = ui->dockVisualization->isVisible();
+            mSavedDrillVisible = ui->dockModelDrill->isVisible();
+            mSavedTreeExprVisible = ui->dockTreeExpression->isVisible();
+        }
+        mActiveDockTabMode = 1;
+        ui->dockLegend->hide();
+        ui->dockVisualization->hide();
+        ui->dockModelDrill->hide();
+        ui->dockTreeExpression->hide();
+        if (mDockOutputLegend) {
+            mDockOutputLegend->show();
+            mDockOutputLegend->raise();
+        }
+        if (mDockOutputOptions) {
+            mDockOutputOptions->show();
+            mDockOutputOptions->raise();
+        }
+        if (mResultVisualizer)
+            mResultVisualizer->onTabActivated();
+    } else {
+        if (mDockOutputLegend)
+            mDockOutputLegend->hide();
+        if (mDockOutputOptions)
+            mDockOutputOptions->hide();
+        if (mActiveDockTabMode == 1) {
+            ui->dockLegend->setVisible(mSavedLandscapeLegendVisible);
+            if (mSavedLandscapeLegendVisible)
+                ui->dockLegend->raise();
+            ui->dockVisualization->setVisible(mSavedLandscapeVisVisible);
+            if (mSavedLandscapeVisVisible)
+                ui->dockVisualization->raise();
+            ui->dockModelDrill->setVisible(mSavedDrillVisible);
+            ui->dockTreeExpression->setVisible(mSavedTreeExprVisible);
+        } else {
+            ui->dockLegend->raise();
+            ui->dockVisualization->raise();
+        }
+        mActiveDockTabMode = 0;
+        mDoRepaint = true;
+        ui->PaintWidget->update();
+    }
 }
 
 MainWindow::~MainWindow()
@@ -2150,7 +2241,10 @@ void MainWindow::yearSimulated(int year)
     ui->modelRunProgress->setValue(year);
     labelMessage(QString("Running.... year %1 of %2. %3").arg(year).arg(mRemoteControl.totalYears()).arg(mRemoteControl.timeString()));
     mDoRepaint = true;
-    repaint();
+    if (ui->mainTabWidget->currentIndex() == 0)
+        repaint();
+    if (mResultVisualizer)
+        mResultVisualizer->onYearSimulated(year);
 }
 
 void MainWindow::modelFinished(QString errorMessage)
@@ -2210,7 +2304,10 @@ void MainWindow::setupModel()
     Model *model = mRemoteControl.model();
     if (model && model->isSetup()) {
         // set viewport of paintwidget
-        vp = Viewport(model->grid()->metricRect(), ui->PaintWidget->rect());
+        QRect paintRect = ui->PaintWidget->rect();
+        if (paintRect.width() < 50 || paintRect.height() < 50)
+            paintRect = ui->mainTabWidget->currentWidget()->rect();
+        vp = Viewport(model->grid()->metricRect(), paintRect);
         // dominance grid is the default view after model start
         ui->visDomGrid->setChecked(true);
         //ui->PaintWidget->update();
@@ -2240,6 +2337,8 @@ void MainWindow::setupModel()
         ui->scriptActiveScriptFile->setText(QString("%1").arg(mRemoteControl.loadedJavascriptFile()));
     labelMessage("Model created. Ready to run.");
     checkModelState();
+    if (mResultVisualizer)
+        mResultVisualizer->onModelCreated(ui->initFileName->text());
 
 }
 
@@ -2286,6 +2385,8 @@ void MainWindow::on_actionModelCreate_triggered()
 void MainWindow::on_actionModelDestroy_triggered()
 {
     mPaintNext.what = PaintObject::PaintNothing;
+    if (mResultVisualizer)
+        mResultVisualizer->onModelDestroyed();
     mRemoteControl.destroy();
     mRegenerationGrid.clear();
     checkModelState();
@@ -2321,7 +2422,10 @@ void MainWindow::on_actionRun_one_year_triggered()
     labelMessage(QString("Simulated a single year. year %1.").arg(mRemoteControl.currentYear()));
 
     mDoRepaint = true;
-    ui->PaintWidget->update();
+    if (ui->mainTabWidget->currentIndex() == 0)
+        ui->PaintWidget->update();
+    if (mResultVisualizer)
+        mResultVisualizer->onYearSimulated(mRemoteControl.currentYear());
     checkModelState();
 }
 
@@ -2330,6 +2434,8 @@ void MainWindow::on_actionReload_triggered()
     if (!mRemoteControl.canDestroy())
         return;
     mPaintNext.what = PaintObject::PaintNothing;
+    if (mResultVisualizer)
+        mResultVisualizer->onModelDestroyed();
     mRemoteControl.destroy();
     mRegenerationGrid.clear();
     setupModel();
@@ -2420,6 +2526,14 @@ void MainWindow::on_actionPerformance_triggered()
 
 QImage MainWindow::screenshot()
 {
+    if (mDoRepaint || ui->mainTabWidget->currentIndex() != 0) {
+        if (ui->PaintWidget->width() > 0 && ui->PaintWidget->height() > 0) {
+            if (ui->PaintWidget->drawImage().size() != ui->PaintWidget->size())
+                ui->PaintWidget->drawImage() = QImage(ui->PaintWidget->size(), QImage::Format_ARGB32_Premultiplied);
+            QPainter pxpainter(&ui->PaintWidget->drawImage());
+            repaintArea(pxpainter);
+        }
+    }
     return ui->PaintWidget->drawImage();
 }
 
@@ -2492,6 +2606,18 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 
 void MainWindow::on_actionImageToClipboard_triggered()
 {
+    if (ui->mainTabWidget->currentIndex() == 1 && mResultVisualizer) {
+        QImage vizImg = mResultVisualizer->grabCurrentImage();
+        if (!vizImg.isNull()) {
+            QString pth = GlobalSettings::instance()->path("screenshot.png", "temp");
+            if (!QDir(pth).exists())
+                pth = GlobalSettings::instance()->path("screenshot.png");
+            vizImg.save(pth);
+            qDebug() << "copied visualization image to clipboard. Saved the image also to: " << pth;
+            QApplication::clipboard()->setImage(vizImg);
+        }
+        return;
+    }
     //QClipboard *clipboard = QApplication::clipboard();
     QImage my_img = screenshot();
     // my_img.convertToFormat(QImage::Format_RGB32);
@@ -2745,6 +2871,8 @@ void MainWindow::on_actionDebug_triggered()
 
 void MainWindow::writeSettings()
 {
+    if (mActiveDockTabMode == 1)
+        syncDocksForMainTab(0);
     QSettings settings;
     settings.beginGroup("MainWindow");
     settings.setValue("geometry", saveGeometry());

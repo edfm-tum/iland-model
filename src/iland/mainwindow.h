@@ -38,12 +38,14 @@
 #include "ui/linkxmlqt.h"
 
 class QQuickView;
+class QDockWidget;
 class Model;
 class Tree;
 class ResourceUnit;
 class MapGrid;
 class LayeredGridBase;
 class Colors;
+class ResultVisualizerWidget;
 
 struct metadata {
     QStringList elements;
@@ -128,6 +130,15 @@ private:
     QLabel *mStatusLabel;
     QQuickView *mRuler;
     Colors *mRulerColors;
+    ResultVisualizerWidget *mResultVisualizer;
+    QDockWidget *mDockOutputLegend = nullptr;
+    QDockWidget *mDockOutputOptions = nullptr;
+    int mActiveDockTabMode = -1;
+    bool mSavedLandscapeLegendVisible = true;
+    bool mSavedLandscapeVisVisible = true;
+    bool mSavedDrillVisible = true;
+    bool mSavedTreeExprVisible = false;
+    void syncDocksForMainTab(int tabIndex);
     QString mLastPaintError;
     // setup
 

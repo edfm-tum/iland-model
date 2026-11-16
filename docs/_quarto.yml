@@ -186,6 +186,7 @@ website:
               contents:
                 - wiki/iland-software.qmd
                 - wiki/iland-viewer.qmd
+                - wiki/result-visualization.qmd
                 - wiki/iland-console.qmd
                 - wiki/iland-cluster.qmd
                 - wiki/software-tools.qmd

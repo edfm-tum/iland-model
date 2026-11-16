@@ -30,5 +30,7 @@
         <file>iland_splash3.jpg</file>
         <file>iland.desktop</file>
         <file>iLand512.png</file>
+        <file>visualizations.json</file>
+        <file>README_visualizations.md</file>
     </qresource>
 </RCC>

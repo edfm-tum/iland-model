@@ -338,7 +338,10 @@ SOURCES += main.cpp \
     ui/dialogfunctionplotter.cpp \
     ui/genericinputwidget.cpp \
     ui/linkxmlqt.cpp \
-    ui/settingsdialog.cpp
+    ui/resultvisualizer.cpp \
+    ui/settingsdialog.cpp \
+    ui/spatialmapwidget.cpp \
+    ui/vizmetadata.cpp
 
 HEADERS += mainwindow.h \
     ../3rdparty/FreeImage/FreeImage.h \
@@ -482,7 +485,10 @@ HEADERS += mainwindow.h \
     ui/dialogfunctionplotter.h \
     ui/genericinputwidget.h \
     ui/linkxmlqt.h \
-    ui/settingsdialog.h
+    ui/resultvisualizer.h \
+    ui/settingsdialog.h \
+    ui/spatialmapwidget.h \
+    ui/vizmetadata.h
 FORMS += mainwindow.ui \
     aboutdialog.ui \
     ui/dialogchangedvalues.ui \
