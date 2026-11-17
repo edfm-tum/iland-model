@@ -369,7 +369,7 @@ SpatialLegendWidget::SpatialLegendWidget(QWidget *parent)
     : QWidget(parent)
 {
     setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
-    setMinimumHeight(140);
+    setMinimumHeight(80);
 }
 
 void SpatialLegendWidget::setLegendData(const SpatialFrameData &frame, GridViewType palette, double scaleMin, double scaleMax,

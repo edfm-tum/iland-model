@@ -44,6 +44,7 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QFont>
+#include <QFrame>
 #include <QGraphicsLayout>
 #include <QGraphicsScene>
 #include <QGridLayout>
@@ -59,6 +60,7 @@
 #include <QPixmap>
 #include <QProxyStyle>
 #include <QPushButton>
+#include <QScrollArea>
 #include <QSignalBlocker>
 #include <QSlider>
 #include <QStackedBarSeries>
@@ -339,9 +341,22 @@ void ResultVisualizerWidget::buildUi()
     // -----------------------------------------------------------------------
     mOptionsPanel = new QWidget();
     mOptionsPanel->setMinimumWidth(230);
-    auto *optPanelLayout = new QVBoxLayout(mOptionsPanel);
+    auto *optOuterLayout = new QVBoxLayout(mOptionsPanel);
+    optOuterLayout->setContentsMargins(0, 0, 0, 0);
+    optOuterLayout->setSpacing(0);
+
+    auto *optScroll = new QScrollArea(mOptionsPanel);
+    optScroll->setWidgetResizable(true);
+    optScroll->setFrameShape(QFrame::NoFrame);
+    optScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    optScroll->setMinimumHeight(120);
+    optOuterLayout->addWidget(optScroll);
+
+    auto *optContent = new QWidget(optScroll);
+    auto *optPanelLayout = new QVBoxLayout(optContent);
     optPanelLayout->setContentsMargins(6, 6, 6, 6);
     optPanelLayout->setSpacing(5);
+    optScroll->setWidget(optContent);
 
     mSourceLabel = new QLabel(QStringLiteral("No output DB"), mOptionsPanel);
     mSourceLabel->setStyleSheet(QStringLiteral("font-weight: bold;"));
@@ -382,7 +397,7 @@ void ResultVisualizerWidget::buildUi()
     mTree->setHeaderHidden(true);
     mTree->setRootIsDecorated(true);
     mTree->setIndentation(14);
-    mTree->setMinimumHeight(140);
+    mTree->setMinimumHeight(90);
     optPanelLayout->addWidget(mTree, 1);
 
     // Options GroupBox

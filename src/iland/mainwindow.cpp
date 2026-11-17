@@ -331,7 +331,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     resizeDocks({ui->dockLogviewer}, {100}, Qt::Vertical);
 
-    resize(QSize(1000, 750));
+    resize(QSize(1000, 680));
 
 
     setUIshortcuts(QVariantMap());
