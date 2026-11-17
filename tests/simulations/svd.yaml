@@ -1,0 +1,69 @@
+id: svd
+description: >-
+  10-year SVD state classification and biodiversity/structural indicator test
+  verifying svdstate, svduniquestate, and svdindicator (including IBP, Shannon
+  index, crown cover, species proportions, and disturbance history columns).
+project: ../fixtures/bgd_mini/project_svd.xml
+years: 10
+check_determinism: true
+rel_tol: 1.0e-5
+abs_tol: 1.0e-6
+
+assertions:
+  - name: svd_states_and_unique_states_populated
+    query: |
+      SELECT
+        (SELECT COUNT(*) FROM svduniquestate) AS n_unique_states,
+        (SELECT COUNT(*) FROM svdstate WHERE year BETWEEN 1 AND 10) AS n_transitions,
+        (SELECT COUNT(*) FROM svdstate WHERE year = 0) AS n_y0_states,
+        (SELECT COUNT(DISTINCT stateId) FROM svdindicator WHERE year = 10) AS n_y10_states
+      FROM (SELECT 1)
+    expect: >-
+      row['n_unique_states'] >= 2
+      and row['n_y0_states'] == 8
+      and row['n_transitions'] >= 10
+      and row['n_y10_states'] >= 2
+
+  - name: svd_indicators_and_ibp_valid
+    query: |
+      SELECT
+        COUNT(*) AS n_rows,
+        MIN(CASE WHEN rid IN (1, 2, 4, 5, 6, 7) THEN shannonIndex END) AS min_shannon_stocked,
+        MIN(totalCarbon - abovegroundCarbon) AS min_detrital_c,
+        MIN(crownCover) AS min_cc,
+        MAX(crownCover) AS max_cc,
+        MIN(IBP) AS min_ibp,
+        MAX(IBP) AS max_ibp,
+        MIN(CASE WHEN rid IN (1, 2, 4, 5, 6, 7)
+          THEN prop_piab + prop_fasy + prop_lade END) AS min_prop_sum,
+        MAX(CASE WHEN rid IN (1, 2, 4, 5, 6, 7)
+          THEN prop_piab + prop_fasy + prop_lade END) AS max_prop_sum
+      FROM svdindicator
+      WHERE year = 10
+    expect: >-
+      row['n_rows'] == 8
+      and row['min_shannon_stocked'] >= 1.0
+      and row['min_detrital_c'] > 0
+      and 0.0 <= row['min_cc'] <= row['max_cc'] <= 1.0
+      and 0.0 < row['min_ibp'] <= row['max_ibp'] <= 1.0
+      and 0.99 <= row['min_prop_sum'] <= row['max_prop_sum'] <= 1.0001
+
+baselines:
+  - name: svdstate
+    query: |
+      SELECT *
+      FROM svdstate
+      ORDER BY year, rid
+
+  - name: svduniquestate
+    query: |
+      SELECT *
+      FROM svduniquestate
+      ORDER BY stateId
+
+  - name: svdindicator_y10
+    query: |
+      SELECT *
+      FROM svdindicator
+      WHERE year = 10
+      ORDER BY rid

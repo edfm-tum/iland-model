@@ -128,6 +128,8 @@ int FMTreeList::loadFromPatch(int patchId, bool append)
 {
     if (!append)
         mTrees.clear();
+    if (!mStand)
+        return mTrees.size();
     // test
     for (auto tp : mTrees) {
         int patch = mStand->patches()->patch(tp.first->positionIndex());
@@ -291,7 +293,7 @@ int FMTreeList::removeMarkedTrees()
             n_removed++;
         }
     }
-    if (mStand->trace())
+    if (mStand && mStand->trace())
         qCDebug(abe) << mStand->context() << "removeMarkedTrees: n=" << n_removed;
 
     return n_removed;
@@ -355,7 +357,7 @@ int FMTreeList::harvest(QString filter, double fraction)
 
 bool FMTreeList::trace() const
 {
-    return FomeScript::bridge()->standObj()->trace();
+    return (FomeScript::bridge() && FomeScript::bridge()->standObj()) ? FomeScript::bridge()->standObj()->trace() : false;
 }
 
 
@@ -377,7 +379,8 @@ int FMTreeList::remove_percentiles(int pctfrom, int pctto, int number, bool mana
             for (i=index_from; i<index_to; i++)
                 if (simulate()) {
                     mTrees.at(i).first->markForHarvest(true);
-                    mStand->addScheduledHarvest(mTrees.at(i).first->volume());
+                    if (mStand)
+                        mStand->addScheduledHarvest(mTrees.at(i).first->volume());
                 } else {
                     mTrees.at(i).first->remove(removeFoliage(), removeBranch(), removeStem());
                 }
@@ -386,7 +389,8 @@ int FMTreeList::remove_percentiles(int pctfrom, int pctto, int number, bool mana
             for (i=index_from; i<index_to; i++)
                 if (simulate()) {
                     mTrees.at(i).first->markForCut(true);
-                    mStand->addScheduledHarvest(mTrees.at(i).first->volume());
+                    if (mStand)
+                        mStand->addScheduledHarvest(mTrees.at(i).first->volume());
                 } else
                     mTrees.at(i).first->remove();
         }
@@ -410,13 +414,15 @@ int FMTreeList::remove_percentiles(int pctfrom, int pctto, int number, bool mana
             if (management) {
                 if (simulate()) {
                     tree->markForHarvest(true);
-                    mStand->addScheduledHarvest( tree->volume());
+                    if (mStand)
+                        mStand->addScheduledHarvest( tree->volume());
                 } else
                     tree->remove( removeFoliage(), removeBranch(), removeStem() );
             } else {
                 if (simulate()) {
                     tree->markForCut(true);
-                    mStand->addScheduledHarvest( tree->volume());
+                    if (mStand)
+                        mStand->addScheduledHarvest( tree->volume());
                 } else
                     tree->remove();
             }
@@ -460,7 +466,8 @@ int FMTreeList::remove_trees(QString expression, double fraction, bool managemen
                 if (management) {
                     if (simulate()) {
                         tp->first->markForHarvest(true);
-                        mStand->addScheduledHarvest(tp->first->volume());
+                        if (mStand)
+                            mStand->addScheduledHarvest(tp->first->volume());
                     } else {
                         tp->first->markForHarvest(true);
                         tp->first->remove(removeFoliage(), removeBranch(), removeStem()); // management with removal fractions
@@ -469,7 +476,8 @@ int FMTreeList::remove_trees(QString expression, double fraction, bool managemen
                     if (simulate()) {
                         tp->first->markForCut(true);
                         tp->first->setDeathCutdown();
-                        mStand->addScheduledHarvest(tp->first->volume());
+                        if (mStand)
+                            mStand->addScheduledHarvest(tp->first->volume());
                     } else {
                         tp->first->markForCut(true);
                         tp->first->setDeathCutdown();

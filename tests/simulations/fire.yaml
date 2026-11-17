@@ -1,0 +1,58 @@
+id: fire
+description: >-
+  10-year wildfire test forcing a prescribed fire ignition in year 2 via
+  Fire.onIgnition (force_fire_y2.js) with onlySimulation=false, verifying
+  burned area, tree mortality, fuel consumption, and fire carbon emissions.
+project: ../fixtures/bgd_mini/project_fire.xml
+years: 10
+check_determinism: true
+rel_tol: 1.0e-5
+abs_tol: 1.0e-6
+
+assertions:
+  - name: fire_burns_and_kills_trees_in_year_2
+    query: |
+      SELECT
+        COUNT(*) AS n_fires,
+        MIN(year) AS min_year,
+        MAX(year) AS max_year,
+        SUM(area_m2) AS area_m2,
+        SUM(n_trees_died) AS trees_died,
+        SUM(basalArea_died) AS ba_died,
+        AVG(avgFuel_kg_ha) AS avg_fuel
+      FROM fire
+    expect: >-
+      row['n_fires'] == 1
+      and row['min_year'] == 2 and row['max_year'] == 2
+      and row['area_m2'] > 0
+      and row['trees_died'] > 0
+      and row['ba_died'] > 0
+      and row['avg_fuel'] > 0
+
+  - name: fire_disturbance_carbon_loss_in_year_2
+    query: |
+      SELECT
+        SUM(CASE WHEN year = 2 AND rid = -1 THEN dist_loss ELSE 0 END) AS y2_dist_loss,
+        COALESCE((SELECT SUM(count) FROM landscape_removed WHERE year = 2 AND reason = 'D'), 0) AS y2_dist_removed
+      FROM carbonflow
+    expect: "row['y2_dist_loss'] < 0 and row['y2_dist_removed'] > 0"
+
+baselines:
+  - name: fire
+    query: |
+      SELECT *
+      FROM fire
+      ORDER BY year, fireId
+
+  - name: carbonflow_y2
+    query: |
+      SELECT *
+      FROM carbonflow
+      WHERE year = 2
+      ORDER BY rid
+
+  - name: landscape
+    query: |
+      SELECT *
+      FROM landscape
+      ORDER BY year, species

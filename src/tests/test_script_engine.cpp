@@ -196,3 +196,53 @@ void TestScriptEngine::jsCsvFileAndFactoryObjects()
     QCOMPARE(res.property("isNumVal").toString(), QString("number"));
     QVERIFY(std::abs(res.property("v1").toNumber() - 25.5) < 1e-12);
 }
+
+void TestScriptEngine::loadScriptErrorsAndFunctionStack()
+{
+    QTemporaryDir tmpDir;
+    QVERIFY(tmpDir.isValid());
+    GlobalSettings::instance()->loadProjectFile(writeScriptProjectXml(tmpDir));
+    GlobalSettings::instance()->resetScriptEngine();
+    ScriptGlobal::setupGlobalScripting();
+
+    // Missing file must populate lastErrorMessage()
+    ScriptGlobal::loadScript(tmpDir.filePath("does_not_exist.js"));
+    QVERIFY(!ScriptGlobal::lastErrorMessage().isEmpty());
+    QVERIFY(ScriptGlobal::lastErrorMessage().contains("does_not_exist.js"));
+
+    // Syntax error must populate lastErrorMessage() with file and line details
+    const QString brokenPath = tmpDir.filePath("broken_syntax.js");
+    {
+        QFile f(brokenPath);
+        QVERIFY(f.open(QIODevice::WriteOnly | QIODevice::Text));
+        QTextStream ts(&f);
+        ts << "var ok = 1;\nfunction broken( {\n";
+    }
+    ScriptGlobal::loadScript(brokenPath);
+    QVERIFY(!ScriptGlobal::lastErrorMessage().isEmpty());
+    QVERIFY(ScriptGlobal::lastErrorMessage().contains("broken_syntax.js"));
+
+    // Simulate Model::loadProject() order: setupGlobalScripting() runs after loadScript()
+    // and must not overwrite a pre-existing startup/syntax error message.
+    GlobalSettings::instance()->resetScriptEngine();
+    ScriptGlobal::loadScript(brokenPath);
+    QVERIFY(!ScriptGlobal::lastErrorMessage().isEmpty());
+    ScriptGlobal::setupGlobalScripting();
+    QVERIFY(!ScriptGlobal::lastErrorMessage().isEmpty());
+    QVERIFY(ScriptGlobal::lastErrorMessage().contains("broken_syntax.js"));
+
+    // Valid file clears lastErrorMessage(), and executeJSFunction records errors + stack
+    const QString validPath = tmpDir.filePath("throwing_fn.js");
+    {
+        QFile f(validPath);
+        QVERIFY(f.open(QIODevice::WriteOnly | QIODevice::Text));
+        QTextStream ts(&f);
+        ts << "function failHere() { throw new Error('boom-from-fn'); }\n";
+    }
+    ScriptGlobal::loadScript(validPath);
+    QVERIFY(ScriptGlobal::lastErrorMessage().isEmpty());
+
+    const QString fnRes = ScriptGlobal::executeJSFunction("failHere");
+    QVERIFY(!fnRes.isEmpty());
+    QVERIFY(ScriptGlobal::lastErrorMessage().contains("boom-from-fn"));
+}

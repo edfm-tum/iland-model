@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import json
 import math
 import shutil
 import sqlite3
@@ -33,6 +34,7 @@ except ImportError as exc:  # pragma: no cover
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_SUITE_DIR = Path(__file__).resolve().parent / "simulations"
+DEFAULT_JS_MANIFEST = Path(__file__).resolve().parent / "js" / "js_suites.yaml"
 DEFAULT_ILANDC = REPO_ROOT / "src" / "ilandc" / "build" / "release" / "ilandc"
 DEFAULT_UNIT_BIN = REPO_ROOT / "src" / "tests" / "build" / "release" / "iland_tests"
 
@@ -81,6 +83,7 @@ class SimTestSpec:
     project: Path
     years: int
     description: str = ""
+    script: Path | None = None
     compare_with: str | None = None
     params: dict[str, Any] = field(default_factory=dict)
     check_determinism: bool = False
@@ -181,12 +184,18 @@ def parse_test_entry(raw: dict[str, Any], yaml_file: Path, defaults: dict[str, A
     compare_with_raw = merged.get("compare_with")
     compare_with = str(compare_with_raw).strip() if compare_with_raw else None
 
+    script: Path | None = None
+    if merged.get("script"):
+        script = resolve_project_path(str(merged["script"]), yaml_file)
+        params["system.javascript.fileName"] = str(script)
+
     return SimTestSpec(
         test_id=test_id,
         source_file=yaml_file,
         project=project,
         years=years,
         description=str(merged.get("description", "")).strip(),
+        script=script,
         compare_with=compare_with,
         params=params,
         check_determinism=bool(merged.get("check_determinism", False)),
@@ -194,6 +203,30 @@ def parse_test_entry(raw: dict[str, Any], yaml_file: Path, defaults: dict[str, A
         baselines=baselines,
         expected_dir=expected_root / test_id,
     )
+
+
+def load_yaml_specs(
+    yf: Path, expected_root: Path, seen_ids: set[str]
+) -> list[SimTestSpec]:
+    data = yaml.safe_load(yf.read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        raise ValueError(f"{yf}: top-level YAML document must be a mapping")
+    specs: list[SimTestSpec] = []
+    if "tests" in data and isinstance(data["tests"], list):
+        defaults = {k: v for k, v in data.items() if k != "tests"}
+        for entry in data["tests"]:
+            spec = parse_test_entry(entry, yf, defaults, expected_root)
+            if spec.test_id in seen_ids:
+                raise ValueError(f"Duplicate test id '{spec.test_id}' in {yf}")
+            seen_ids.add(spec.test_id)
+            specs.append(spec)
+    else:
+        spec = parse_test_entry(data, yf, {}, expected_root)
+        if spec.test_id in seen_ids:
+            raise ValueError(f"Duplicate test id '{spec.test_id}' in {yf}")
+        seen_ids.add(spec.test_id)
+        specs.append(spec)
+    return specs
 
 
 def discover_tests(suite_dir: Path) -> list[SimTestSpec]:
@@ -204,27 +237,16 @@ def discover_tests(suite_dir: Path) -> list[SimTestSpec]:
     yaml_files = sorted(list(suite_dir.glob("*.yaml")) + list(suite_dir.glob("*.yml")))
     specs: list[SimTestSpec] = []
     seen_ids: set[str] = set()
-
     for yf in yaml_files:
-        data = yaml.safe_load(yf.read_text(encoding="utf-8"))
-        if not isinstance(data, dict):
-            raise ValueError(f"{yf}: top-level YAML document must be a mapping")
-        if "tests" in data and isinstance(data["tests"], list):
-            defaults = {k: v for k, v in data.items() if k != "tests"}
-            for entry in data["tests"]:
-                spec = parse_test_entry(entry, yf, defaults, expected_root)
-                if spec.test_id in seen_ids:
-                    raise ValueError(f"Duplicate test id '{spec.test_id}' in {yf}")
-                seen_ids.add(spec.test_id)
-                specs.append(spec)
-        else:
-            spec = parse_test_entry(data, yf, {}, expected_root)
-            if spec.test_id in seen_ids:
-                raise ValueError(f"Duplicate test id '{spec.test_id}' in {yf}")
-            seen_ids.add(spec.test_id)
-            specs.append(spec)
-
+        specs.extend(load_yaml_specs(yf, expected_root, seen_ids))
     return specs
+
+
+def discover_js_tests(js_manifest: Path) -> list[SimTestSpec]:
+    if not js_manifest.is_file():
+        return []
+    seen_ids: set[str] = set()
+    return load_yaml_specs(js_manifest, js_manifest.parent / "expected", seen_ids)
 
 
 def tail_text(path: Path, max_lines: int = 25) -> str:
@@ -237,7 +259,11 @@ def tail_text(path: Path, max_lines: int = 25) -> str:
 
 
 def run_ilandc(
-    ilandc_bin: Path, spec: SimTestSpec, run_dir: Path, ref_dir: Path | None = None
+    ilandc_bin: Path,
+    spec: SimTestSpec,
+    run_dir: Path,
+    ref_dir: Path | None = None,
+    require_db: bool = True,
 ) -> tuple[bool, float, Path, str]:
     db_path = run_dir / "output.sqlite"
     log_path = run_dir / "run.log"
@@ -274,7 +300,7 @@ def run_ilandc(
         )
         return False, elapsed, db_path, detail
 
-    if not db_path.is_file():
+    if require_db and not db_path.is_file():
         detail = (
             f"ilandc exited 0 but output SQLite DB was not created at {db_path}\n"
             f"--- stdout/stderr tail ---\n{tail_text(stdout_path)}\n"
@@ -499,7 +525,8 @@ def filter_specs(specs: list[SimTestSpec], filters: list[str]) -> list[SimTestSp
     needles = [f.lower() for f in filters]
     selected = []
     for s in specs:
-        haystack = f"{s.test_id.lower()} {s.source_file.stem.lower()}"
+        script_part = f" {s.script.stem.lower()} {s.script.name.lower()}" if s.script else ""
+        haystack = f"{s.test_id.lower()} {s.source_file.stem.lower()}{script_part}"
         if any(n in haystack for n in needles):
             selected.append(s)
     return selected
@@ -542,20 +569,100 @@ def run_unit_tests(unit_bin: Path) -> bool:
     return proc.returncode == 0
 
 
+def run_js_suite(
+    ilandc_bin: Path,
+    spec: SimTestSpec,
+    run_dir: Path,
+    verbose: bool,
+) -> bool:
+    need_db = len(spec.assertions) > 0 or len(spec.baselines) > 0
+    ok, elapsed, db_path, err_detail = run_ilandc(
+        ilandc_bin, spec, run_dir, require_db=need_db
+    )
+    results_file = run_dir / "js_test_results.json"
+
+    if verbose:
+        script_name = spec.script.name if spec.script else "inline"
+        print(f"[RUN ] {spec.test_id} ({script_name}, {spec.years} yr, {elapsed*1000:.0f} ms)")
+
+    report: dict[str, Any] | None = None
+    if results_file.is_file():
+        try:
+            report = json.loads(results_file.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as exc:
+            print(f"  [FAIL] invalid js_test_results.json: {exc}")
+            return False
+
+    if report is not None and (verbose or not ok or report.get("failed", 0) > 0):
+        for t in report.get("tests", []):
+            st = t.get("status", "unknown")
+            tname = t.get("name", "unnamed")
+            dt = t.get("duration_ms", 0)
+            if st == "pass" and verbose:
+                print(f"  [PASS] {tname} ({dt} ms)")
+            elif st == "skip" and verbose:
+                print(f"  [SKIP] {tname}")
+            elif st == "fail":
+                print(f"  [FAIL] {tname}: {t.get('error', '')}")
+
+    if not ok:
+        print(f"[FAIL] {spec.test_id}: ilandc run failed ({elapsed:.2f}s)")
+        print(err_detail)
+        return False
+
+    if report is None:
+        print(
+            f"[FAIL] {spec.test_id}: Test.run() did not produce {results_file.name}\n"
+            f"--- run.log tail ---\n{tail_text(run_dir / 'run.log')}"
+        )
+        return False
+
+    js_total = int(report.get("total", 0))
+    js_passed = int(report.get("passed", 0))
+    js_failed = int(report.get("failed", 0))
+    suite_ok = js_failed == 0 and js_passed > 0 and js_passed == js_total
+
+    if spec.assertions:
+        conn = sqlite3.connect(str(db_path))
+        try:
+            for a in spec.assertions:
+                a_ok, a_msg = evaluate_assertion(conn, a)
+                if not a_ok:
+                    print(f"  [FAIL] {a_msg}")
+                    suite_ok = False
+                elif verbose:
+                    print(f"  [PASS] assertion '{a.name}': {a_msg}")
+        finally:
+            conn.close()
+
+    if suite_ok:
+        extra = f", assertions={len(spec.assertions)}" if spec.assertions else ""
+        print(f"[PASS] {spec.test_id} ({js_passed}/{js_total} JS checks{extra}, {elapsed*1000:.0f} ms)")
+    else:
+        print(f"[FAIL] {spec.test_id} ({js_passed}/{js_total} JS checks passed)")
+    return suite_ok
+
+
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Run iLand Tier 2 simulation tests and SQLite baseline comparisons."
+        description="Run iLand Tier 1 unit, Tier 2 simulation, and JavaScript API tests."
     )
     parser.add_argument(
         "filters",
         nargs="*",
-        help="Optional substring filter(s) matching test id or YAML file stem.",
+        help="Optional substring filter(s) matching test id, YAML stem, or JS filename.",
     )
     parser.add_argument(
         "--suite-dir",
         type=Path,
         default=DEFAULT_SUITE_DIR,
-        help=f"Directory containing *.yaml test specs (default: {DEFAULT_SUITE_DIR}).",
+        help=f"Directory containing *.yaml simulation specs (default: {DEFAULT_SUITE_DIR}).",
+    )
+    parser.add_argument(
+        "--js-manifest",
+        type=Path,
+        default=DEFAULT_JS_MANIFEST,
+        help=f"YAML manifest of JavaScript API test suites (default: {DEFAULT_JS_MANIFEST}).",
     )
     parser.add_argument(
         "--ilandc",
@@ -574,12 +681,22 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--all",
         dest="with_unit",
         action="store_true",
-        help="Also run Tier 1 C++ unit tests before simulation tests.",
+        help="Also run Tier 1 C++ unit tests before simulation and JS API tests.",
+    )
+    parser.add_argument(
+        "--js",
+        action="store_true",
+        help="Run only JavaScript API test suites (unless --with-unit/--all is also set).",
+    )
+    parser.add_argument(
+        "--no-js",
+        action="store_true",
+        help="Skip JavaScript API test suites.",
     )
     parser.add_argument(
         "--list",
         action="store_true",
-        help="List discovered simulation tests and exit.",
+        help="List discovered simulation and JS API tests and exit.",
     )
     parser.add_argument(
         "--update-baseline",
@@ -589,7 +706,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--keep-temp",
         action="store_true",
-        help="Keep temporary run directories (output.sqlite, run.log, stdout.txt).",
+        help="Keep temporary run directories (output.sqlite, run.log, stdout.txt, js_test_results.json).",
     )
     parser.add_argument(
         "-v",
@@ -603,25 +720,46 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
 
-    specs = discover_tests(args.suite_dir.resolve())
-    selected = filter_specs(specs, args.filters)
+    sim_specs = discover_tests(args.suite_dir.resolve())
+    js_specs = discover_js_tests(args.js_manifest.resolve())
 
     if args.list:
-        print(f"Discovered {len(selected)} simulation test(s) in {args.suite_dir}:")
-        for s in selected:
-            rel_proj = s.project.relative_to(REPO_ROOT) if s.project.is_relative_to(REPO_ROOT) else s.project
-            print(
-                f"  - {s.test_id} ({s.source_file.name}): project={rel_proj}, "
-                f"years={s.years}, assertions={len(s.assertions)}, "
-                f"baselines={len(s.baselines)}, determinism={s.check_determinism}"
-            )
+        sel_sim = filter_specs(sim_specs, args.filters)
+        sel_js = filter_specs(js_specs, args.filters)
+        if not args.js:
+            print(f"Discovered {len(sel_sim)} Tier 2 simulation test(s) in {args.suite_dir}:")
+            for s in sel_sim:
+                rel_proj = s.project.relative_to(REPO_ROOT) if s.project.is_relative_to(REPO_ROOT) else s.project
+                print(
+                    f"  - {s.test_id} ({s.source_file.name}): project={rel_proj}, "
+                    f"years={s.years}, assertions={len(s.assertions)}, "
+                    f"baselines={len(s.baselines)}, determinism={s.check_determinism}"
+                )
+        if not args.no_js:
+            print(f"Discovered {len(sel_js)} JavaScript API test(s) in {args.js_manifest}:")
+            for s in sel_js:
+                rel_proj = s.project.relative_to(REPO_ROOT) if s.project.is_relative_to(REPO_ROOT) else s.project
+                sname = s.script.name if s.script else ""
+                print(
+                    f"  - {s.test_id} ({sname}): project={rel_proj}, "
+                    f"years={s.years}, assertions={len(s.assertions)}"
+                )
         return 0
 
-    if not selected:
-        print(f"ERROR: No simulation tests matched filter(s): {args.filters}")
+    if args.filters:
+        selected_sim = [] if args.js else filter_specs(sim_specs, args.filters)
+        selected_js = [] if args.no_js else filter_specs(js_specs, args.filters)
+    else:
+        selected_sim = [] if args.js else list(sim_specs)
+        run_js_default = not args.no_js and (args.js or not args.update_baseline)
+        selected_js = list(js_specs) if run_js_default else []
+
+    if not selected_sim and not selected_js:
+        print(f"ERROR: No tests matched filter(s): {args.filters}")
         return 1
 
-    selected = resolve_execution_order(selected, specs)
+    if selected_sim:
+        selected_sim = resolve_execution_order(selected_sim, sim_specs)
 
     overall_ok = True
     if args.with_unit:
@@ -633,98 +771,115 @@ def main(argv: list[str] | None = None) -> int:
         print(f"ERROR: ilandc binary not found: {ilandc_bin}")
         return 1
 
-    print(f"=== Tier 2 Simulation Tests ({len(selected)} suite(s), binary={ilandc_bin.name}) ===")
-
-    passed_tests = 0
     all_temp_dirs: list[Path] = []
-    completed_runs: dict[str, tuple[Path, Path]] = {}
+    passed_sim = 0
+    passed_js = 0
     try:
-        for spec in selected:
-            test_ok = True
-            ref_dir: Path | None = None
-            ref_db: Path | None = None
-            if spec.compare_with:
-                if spec.compare_with not in completed_runs:
-                    print(
-                        f"[FAIL] {spec.test_id}: prerequisite '{spec.compare_with}' did not complete successfully"
-                    )
+        if selected_sim:
+            print(f"=== Tier 2 Simulation Tests ({len(selected_sim)} suite(s), binary={ilandc_bin.name}) ===")
+            completed_runs: dict[str, tuple[Path, Path]] = {}
+            for spec in selected_sim:
+                test_ok = True
+                ref_dir: Path | None = None
+                ref_db: Path | None = None
+                if spec.compare_with:
+                    if spec.compare_with not in completed_runs:
+                        print(
+                            f"[FAIL] {spec.test_id}: prerequisite '{spec.compare_with}' did not complete successfully"
+                        )
+                        overall_ok = False
+                        continue
+                    ref_dir, ref_db = completed_runs[spec.compare_with]
+
+                run1_dir = Path(tempfile.mkdtemp(prefix=f"iland_t2_{spec.test_id}_1_"))
+                all_temp_dirs.append(run1_dir)
+
+                ok, elapsed, db1, err_detail = run_ilandc(ilandc_bin, spec, run1_dir, ref_dir=ref_dir)
+                if not ok:
+                    print(f"[FAIL] {spec.test_id}: ilandc run failed ({elapsed:.2f}s)")
+                    print(err_detail)
                     overall_ok = False
                     continue
-                ref_dir, ref_db = completed_runs[spec.compare_with]
 
-            run1_dir = Path(tempfile.mkdtemp(prefix=f"iland_t2_{spec.test_id}_1_"))
-            all_temp_dirs.append(run1_dir)
+                completed_runs[spec.test_id] = (run1_dir, db1)
 
-            ok, elapsed, db1, err_detail = run_ilandc(ilandc_bin, spec, run1_dir, ref_dir=ref_dir)
-            if not ok:
-                print(f"[FAIL] {spec.test_id}: ilandc run failed ({elapsed:.2f}s)")
-                print(err_detail)
-                overall_ok = False
-                continue
+                if args.verbose:
+                    print(f"[RUN ] {spec.test_id} ({spec.years} yr, {elapsed*1000:.0f} ms)")
 
-            completed_runs[spec.test_id] = (run1_dir, db1)
-
-            if args.verbose:
-                print(f"[RUN ] {spec.test_id} ({spec.years} yr, {elapsed*1000:.0f} ms)")
-
-            # Determinism check
-            if spec.check_determinism:
-                run2_dir = Path(tempfile.mkdtemp(prefix=f"iland_t2_{spec.test_id}_2_"))
-                all_temp_dirs.append(run2_dir)
-                ok2, elapsed2, db2, err2 = run_ilandc(ilandc_bin, spec, run2_dir, ref_dir=ref_dir)
-                if not ok2:
-                    print(f"  [FAIL] determinism second run failed ({elapsed2:.2f}s)\n{err2}")
-                    test_ok = False
-                else:
-                    det_ok, det_msg = check_determinism(db1, db2)
-                    if not det_ok:
-                        print(f"  [FAIL] determinism: {det_msg}")
+                # Determinism check
+                if spec.check_determinism:
+                    run2_dir = Path(tempfile.mkdtemp(prefix=f"iland_t2_{spec.test_id}_2_"))
+                    all_temp_dirs.append(run2_dir)
+                    ok2, elapsed2, db2, err2 = run_ilandc(ilandc_bin, spec, run2_dir, ref_dir=ref_dir)
+                    if not ok2:
+                        print(f"  [FAIL] determinism second run failed ({elapsed2:.2f}s)\n{err2}")
                         test_ok = False
-                    elif args.verbose:
-                        print(f"  [PASS] determinism: {det_msg}")
-
-            conn = sqlite3.connect(str(db1))
-            try:
-                if ref_db is not None:
-                    conn.execute("ATTACH DATABASE ? AS ref", (str(ref_db),))
-
-                # SQL assertions
-                for a in spec.assertions:
-                    a_ok, a_msg = evaluate_assertion(conn, a)
-                    if not a_ok:
-                        print(f"  [FAIL] {a_msg}")
-                        test_ok = False
-                    elif args.verbose:
-                        print(f"  [PASS] assertion '{a.name}': {a_msg}")
-
-                # CSV baselines
-                for b in spec.baselines:
-                    csv_path = spec.expected_dir / f"{b.name}.csv"
-                    if args.update_baseline:
-                        cols, rows = query_sqlite(conn, b.query)
-                        summary = summarize_baseline_update(csv_path, cols, rows)
-                        write_csv_baseline(csv_path, cols, rows)
-                        print(f"  [BASE] {spec.test_id}/{b.name}.csv -> {summary}")
                     else:
-                        b_ok, b_msg = compare_baseline(conn, b, csv_path)
-                        if not b_ok:
-                            print(f"  [FAIL] {b_msg}")
+                        det_ok, det_msg = check_determinism(db1, db2)
+                        if not det_ok:
+                            print(f"  [FAIL] determinism: {det_msg}")
                             test_ok = False
                         elif args.verbose:
-                            print(f"  [PASS] baseline '{b.name}': {b_msg}")
-            finally:
-                conn.close()
+                            print(f"  [PASS] determinism: {det_msg}")
 
-            if test_ok:
-                passed_tests += 1
-                if not args.update_baseline:
-                    print(
-                        f"[PASS] {spec.test_id} "
-                        f"(assertions={len(spec.assertions)}, baselines={len(spec.baselines)}, {elapsed*1000:.0f} ms)"
-                    )
-            else:
-                print(f"[FAIL] {spec.test_id}")
-                overall_ok = False
+                conn = sqlite3.connect(str(db1))
+                try:
+                    if ref_db is not None:
+                        conn.execute("ATTACH DATABASE ? AS ref", (str(ref_db),))
+
+                    # SQL assertions
+                    for a in spec.assertions:
+                        a_ok, a_msg = evaluate_assertion(conn, a)
+                        if not a_ok:
+                            print(f"  [FAIL] {a_msg}")
+                            test_ok = False
+                        elif args.verbose:
+                            print(f"  [PASS] assertion '{a.name}': {a_msg}")
+
+                    # CSV baselines
+                    for b in spec.baselines:
+                        csv_path = spec.expected_dir / f"{b.name}.csv"
+                        if args.update_baseline:
+                            cols, rows = query_sqlite(conn, b.query)
+                            summary = summarize_baseline_update(csv_path, cols, rows)
+                            write_csv_baseline(csv_path, cols, rows)
+                            print(f"  [BASE] {spec.test_id}/{b.name}.csv -> {summary}")
+                        else:
+                            b_ok, b_msg = compare_baseline(conn, b, csv_path)
+                            if not b_ok:
+                                print(f"  [FAIL] {b_msg}")
+                                test_ok = False
+                            elif args.verbose:
+                                print(f"  [PASS] baseline '{b.name}': {b_msg}")
+                finally:
+                    conn.close()
+
+                if test_ok:
+                    passed_sim += 1
+                    if not args.update_baseline:
+                        print(
+                            f"[PASS] {spec.test_id} "
+                            f"(assertions={len(spec.assertions)}, baselines={len(spec.baselines)}, {elapsed*1000:.0f} ms)"
+                        )
+                else:
+                    print(f"[FAIL] {spec.test_id}")
+                    overall_ok = False
+
+            print(f"\nSummary: {passed_sim}/{len(selected_sim)} simulation suite(s) passed.")
+
+        if selected_js:
+            if selected_sim:
+                print()
+            print(f"=== JavaScript API Tests ({len(selected_js)} suite(s), binary={ilandc_bin.name}) ===")
+            for spec in selected_js:
+                run_dir = Path(tempfile.mkdtemp(prefix=f"iland_js_{spec.test_id}_"))
+                all_temp_dirs.append(run_dir)
+                if run_js_suite(ilandc_bin, spec, run_dir, verbose=args.verbose):
+                    passed_js += 1
+                else:
+                    overall_ok = False
+
+            print(f"\nSummary: {passed_js}/{len(selected_js)} JS API suite(s) passed.")
     finally:
         if args.keep_temp:
             for td in all_temp_dirs:
@@ -733,7 +888,6 @@ def main(argv: list[str] | None = None) -> int:
             for td in all_temp_dirs:
                 shutil.rmtree(td, ignore_errors=True)
 
-    print(f"\nSummary: {passed_tests}/{len(selected)} simulation suite(s) passed.")
     return 0 if overall_ok else 1
 
 

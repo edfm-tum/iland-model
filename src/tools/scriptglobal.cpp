@@ -1083,9 +1083,15 @@ void ScriptGlobal::throwError(const QString &errormessage)
 
 void ScriptGlobal::loadScript(const QString &fileName)
 {
+    mLastErrorMessage.clear();
     QJSEngine *engine = GlobalSettings::instance()->scriptEngine();
     ExprExceptionAsScriptError no_expression;
 
+    if (!QFile::exists(fileName)) {
+        mLastErrorMessage = QString("Loading of Javascript file '%1' failed: file does not exist.").arg(fileName);
+        qCritical().noquote() << mLastErrorMessage;
+        return;
+    }
 
     QString program = Helper::loadTextFile(fileName);
     if (program.isEmpty()) {
@@ -1097,6 +1103,7 @@ void ScriptGlobal::loadScript(const QString &fileName)
     qDebug() << "javascript file loaded" << fileName;
     if (result.isError()) {
         QString err = formattedErrorMessage(result, program);
+        mLastErrorMessage = err;
         qCritical().noquote() << err;
     }
 
@@ -1149,6 +1156,9 @@ QString ScriptGlobal::executeJSFunction(QString function)
         if (result.isError()) {
             QString msg = QString( "Script Error occured: %1\n").arg( result.toString() );
             mLastErrorMessage += msg + "\n";
+            const QString stack = result.property("stack").toString();
+            if (!stack.isEmpty())
+                mLastErrorMessage += stack + "\n";
             qCritical() << msg.trimmed();
             // throw only a exception during a simulation
             if (GlobalSettings::instance()->controller() && GlobalSettings::instance()->controller()->isRunning())
@@ -1363,7 +1373,10 @@ void ScriptGlobal::setupGlobalScripting()
                     "console.log(JSON.stringify(x, replacer, 4)); " \
         "}";
 
+    const QString prev_error = mLastErrorMessage;
     ScriptGlobal::executeScript(code);
+    if (!prev_error.isEmpty() && mLastErrorMessage.isEmpty())
+        mLastErrorMessage = prev_error;
     // add a (fake) console.log / console.print
 /*/    engine->evaluate("var console = { log: function(x) {Globals.print(x); }, " \
 //                     "                print: function(x) { for(var propertyName in x)  " \

@@ -1,0 +1,43 @@
+id: bb_wind
+description: >-
+  10-year coupled bark beetle + forced year-2 windthrow test verifying storm
+  damage triggers bark beetle storm activation and increases cumulative beetle
+  mortality relative to standalone barkbeetle.
+project: ../fixtures/bgd_mini/project_bb_wind.xml
+years: 10
+check_determinism: true
+compare_with: barkbeetle
+rel_tol: 1.0e-5
+abs_tol: 1.0e-6
+
+assertions:
+  - name: storm_activates_barkbeetle_and_amplifies_mortality
+    query: |
+      SELECT
+        (SELECT COUNT(*) FROM main.wind WHERE year = 2 AND killedTrees > 0) AS n_wind_y2,
+        (SELECT SUM(stormActivation_ha) FROM main.barkbeetle WHERE year >= 2) AS bb_storm_act,
+        (SELECT SUM(killedTrees) FROM main.barkbeetle) AS bb_wind_killed,
+        (SELECT SUM(killedTrees) FROM ref.barkbeetle) AS bb_only_killed
+    expect: >-
+      row['n_wind_y2'] == 1
+      and row['bb_storm_act'] > 0
+      and row['bb_wind_killed'] > row['bb_only_killed']
+
+baselines:
+  - name: wind
+    query: |
+      SELECT *
+      FROM wind
+      ORDER BY year
+
+  - name: barkbeetle
+    query: |
+      SELECT *
+      FROM barkbeetle
+      ORDER BY year
+
+  - name: landscape
+    query: |
+      SELECT *
+      FROM landscape
+      ORDER BY year, species

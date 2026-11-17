@@ -192,7 +192,8 @@ void ModelController::create()
         GlobalSettings::instance()->setCurrentYear(1); // reset clock
         // initialization of trees, output on startup
         mModel->beforeRun();
-        GlobalSettings::instance()->executeJSFunction("onAfterCreate");
+        if (ScriptGlobal::lastErrorMessage().isEmpty())
+            GlobalSettings::instance()->executeJSFunction("onAfterCreate");
     } catch(const IException &e) {
         QString error_msg = e.message();
         qWarning() << error_msg;

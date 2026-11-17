@@ -1,0 +1,56 @@
+id: permafrost
+description: >-
+  10-year permafrost and moss test with -5 degC cooling verifying active soil
+  freeze/thaw depth, snowpack, surface organic layer (SOL), and moss dynamics.
+project: ../fixtures/bgd_mini/project_permafrost.xml
+years: 10
+check_determinism: true
+rel_tol: 1.0e-5
+abs_tol: 1.0e-6
+
+assertions:
+  - name: permafrost_freeze_thaw_and_moss_active
+    query: |
+      SELECT
+        AVG(CASE WHEN rid IN (1, 2, 3) THEN mean_annual_temp END) AS valley_temp,
+        AVG(CASE WHEN rid IN (6, 7, 8) THEN mean_annual_temp END) AS subalpine_temp,
+        AVG(CASE WHEN rid IN (1, 2, 3) THEN maxDepthFrozen END) AS valley_frozen,
+        AVG(CASE WHEN rid IN (6, 7, 8) THEN maxDepthFrozen END) AS subalpine_frozen,
+        MAX(maxDepthThawed) AS max_thawed,
+        MAX(maxSnowCover) AS max_snow,
+        MIN(SOLLayer) AS min_sol,
+        MIN(mossLayer) AS min_moss
+      FROM water
+      WHERE year = 10 AND rid >= 1
+    expect: >-
+      row['valley_temp'] < 3.0
+      and row['subalpine_temp'] < row['valley_temp']
+      and row['subalpine_frozen'] > 0
+      and row['subalpine_frozen'] >= row['valley_frozen']
+      and row['max_thawed'] > 0
+      and row['max_snow'] > 0
+      and row['min_sol'] > 0
+      and row['min_moss'] > 0
+
+baselines:
+  - name: water_permafrost
+    query: |
+      SELECT
+        year, rid, mean_annual_temp, snowcover_days,
+        maxDepthFrozen, maxDepthThawed, maxSnowCover, SOLLayer, mossLayer
+      FROM water
+      WHERE rid >= 1
+      ORDER BY year, rid
+
+  - name: carbon_y10
+    query: |
+      SELECT *
+      FROM carbon
+      WHERE year = 10 AND rid >= 1
+      ORDER BY rid
+
+  - name: landscape
+    query: |
+      SELECT *
+      FROM landscape
+      ORDER BY year, species

@@ -1,0 +1,39 @@
+id: barkbeetle
+description: >-
+  10-year standalone bark beetle test (no wind) verifying annual generation
+  tracking, background/initial infestation, cohort spread, and spruce mortality.
+project: ../fixtures/bgd_mini/project_barkbeetle.xml
+years: 10
+check_determinism: true
+rel_tol: 1.0e-5
+abs_tol: 1.0e-6
+
+assertions:
+  - name: barkbeetle_spread_and_mortality_without_storm
+    query: |
+      SELECT
+        COUNT(*) AS n_years,
+        SUM(killedTrees) AS killed_trees,
+        SUM(killedVolume) AS killed_vol,
+        SUM(spreadCohorts) AS spread_cohorts,
+        SUM(stormActivation_ha) AS storm_act
+      FROM barkbeetle
+    expect: >-
+      row['n_years'] == 10
+      and row['killed_trees'] > 0
+      and row['killed_vol'] > 0
+      and row['spread_cohorts'] > 0
+      and row['storm_act'] == 0
+
+baselines:
+  - name: barkbeetle
+    query: |
+      SELECT *
+      FROM barkbeetle
+      ORDER BY year
+
+  - name: landscape
+    query: |
+      SELECT *
+      FROM landscape
+      ORDER BY year, species

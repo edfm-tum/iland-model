@@ -1,0 +1,3 @@
+# Forced windthrow event in simulation year 2
+year,modules.wind.speed,modules.wind.direction,modules.wind.duration,modules.wind.dayOfYear
+2,15,270,40,160

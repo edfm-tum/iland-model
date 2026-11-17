@@ -232,6 +232,59 @@
       ]
     },
     {
+      "id": "deadtree_pools_landscape",
+      "name": "Dead trees by type & decay class (landscape)",
+      "category": "Landscape timelines",
+      "description": "Individual dead trees across the landscape grouped by standing ('S') vs. lying/downed ('D') and decay class (1–5).",
+      "table": "deadtree",
+      "type": "stacked_area",
+      "allowPercentToggle": true,
+      "fillMissingYears": true,
+      "x": "year",
+      "xLabel": "Year",
+      "group": "deadwood_class",
+      "groupLabels": {
+        "D_1": "Lying DC 1",
+        "D_2": "Lying DC 2",
+        "D_3": "Lying DC 3",
+        "D_4": "Lying DC 4",
+        "D_5": "Lying DC 5",
+        "S_1": "Standing DC 1",
+        "S_2": "Standing DC 2",
+        "S_3": "Standing DC 3",
+        "S_4": "Standing DC 4",
+        "S_5": "Standing DC 5"
+      },
+      "groupColors": {
+        "D_1": "#fed98e",
+        "D_2": "#fe9929",
+        "D_3": "#ec7014",
+        "D_4": "#cc4c02",
+        "D_5": "#8c2d04",
+        "S_1": "#bdd7e7",
+        "S_2": "#6baed6",
+        "S_3": "#3182bd",
+        "S_4": "#08519c",
+        "S_5": "#08306b"
+      },
+      "metricsMode": "select",
+      "metrics": [
+        { "col": "biomass_t",  "label": "Biomass (t/ha)" },
+        { "col": "volume_m3",  "label": "Volume at death (m³/ha)" },
+        { "col": "tree_count", "label": "Dead trees (n/ha)" }
+      ],
+      "sql": [
+        "SELECT year,",
+        "  type || '_' || decayClass AS deadwood_class,",
+        "  SUM(biomass_kg) / 1000.0 / (SELECT COUNT(DISTINCT ru) FROM deadtree) AS biomass_t,",
+        "  SUM(volume_m3) / (SELECT COUNT(DISTINCT ru) FROM deadtree) AS volume_m3,",
+        "  CAST(COUNT(*) AS REAL) / (SELECT COUNT(DISTINCT ru) FROM deadtree) AS tree_count",
+        "FROM deadtree",
+        "GROUP BY year, type, decayClass",
+        "ORDER BY year, deadwood_class"
+      ]
+    },
+    {
       "id": "carbon_fluxes_landscape",
       "name": "Carbon fluxes (landscape)",
       "category": "Landscape timelines",
@@ -424,6 +477,61 @@
         "  (branch_c + foliage_c) / 1000.0 AS branch_fol_t,",
         "  understorey_c / 1000.0 AS understorey_t",
         "FROM carbon WHERE ru = :ru ORDER BY year"
+      ]
+    },
+    {
+      "id": "deadtree_pools_ru",
+      "name": "Dead trees by type & decay class (by RU)",
+      "category": "Resource unit timelines",
+      "description": "Individual dead trees on a selected resource unit grouped by standing ('S') vs. lying/downed ('D') and decay class (1–5).",
+      "table": "deadtree",
+      "type": "stacked_area",
+      "allowPercentToggle": true,
+      "fillMissingYears": true,
+      "x": "year",
+      "xLabel": "Year",
+      "group": "deadwood_class",
+      "filters": ["ru"],
+      "groupLabels": {
+        "D_1": "Lying DC 1",
+        "D_2": "Lying DC 2",
+        "D_3": "Lying DC 3",
+        "D_4": "Lying DC 4",
+        "D_5": "Lying DC 5",
+        "S_1": "Standing DC 1",
+        "S_2": "Standing DC 2",
+        "S_3": "Standing DC 3",
+        "S_4": "Standing DC 4",
+        "S_5": "Standing DC 5"
+      },
+      "groupColors": {
+        "D_1": "#fed98e",
+        "D_2": "#fe9929",
+        "D_3": "#ec7014",
+        "D_4": "#cc4c02",
+        "D_5": "#8c2d04",
+        "S_1": "#bdd7e7",
+        "S_2": "#6baed6",
+        "S_3": "#3182bd",
+        "S_4": "#08519c",
+        "S_5": "#08306b"
+      },
+      "metricsMode": "select",
+      "metrics": [
+        { "col": "biomass_t",  "label": "Biomass (t/ha)" },
+        { "col": "volume_m3",  "label": "Volume at death (m³/ha)" },
+        { "col": "tree_count", "label": "Dead trees (n/ha)" }
+      ],
+      "sql": [
+        "SELECT year,",
+        "  type || '_' || decayClass AS deadwood_class,",
+        "  SUM(biomass_kg) / 1000.0 AS biomass_t,",
+        "  SUM(volume_m3) AS volume_m3,",
+        "  COUNT(*) AS tree_count",
+        "FROM deadtree",
+        "WHERE ru = :ru",
+        "GROUP BY year, type, decayClass",
+        "ORDER BY year, deadwood_class"
       ]
     },
     {

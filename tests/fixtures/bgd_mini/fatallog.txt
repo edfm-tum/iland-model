@@ -1,0 +1,12 @@
+18:15:00:666: reading settings from "/home/werner/.config/iLand/iLand.ini"
+18:15:00:822: QML Debugger: Waiting for connection on port 42461...
+18:15:01:662: threadcount:  14
+18:15:02:520 [WARNING]: virtual void QtWaylandClient::QWaylandTextInputv3::disableSurface(wl_surface*) Trying to disable 0x1733900 but 0x0 is focused
+18:15:02:521 [WARNING]: virtual void QtWaylandClient::QWaylandTextInputv3::disableSurface(wl_surface*) Trying to disable 0x1733900 but 0x0 is focused
+18:15:03:503: Loading Project file "/home/werner/dev/iland-model/tests/fixtures/bgd_mini/project_permafrost.xml"
+18:15:03:504: Log output is redirected to logfile "/home/werner/dev/iland-model/tests/fixtures/bgd_mini/log/bgd_mini_permafrost.log"
+18:15:03:621 [WARNING]: QSqlQuery::exec: database not open
+18:15:03:621 [WARNING]: QSqlQuery::exec: database not open
+18:15:06:212 [WARNING]: virtual void QtWaylandClient::QWaylandTextInputv3::disableSurface(wl_surface*) Trying to disable 0x1733900 but 0x0 is focused
+18:15:06:212 [WARNING]: virtual void QtWaylandClient::QWaylandTextInputv3::disableSurface(wl_surface*) Trying to disable 0x1733900 but 0x0 is focused
+18:15:06:238 [FATAL]: ASSERT: "!std::isnan(value)" in file /home/werner/Qt/6.12.0/gcc_64/include/QtCore/qnumeric.h, line 508

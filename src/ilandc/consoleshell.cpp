@@ -154,19 +154,28 @@ int ConsoleShell::runSimulation()
             qWarning() << "!!!! ERROR !!!!";
             return 1;
         }
+        if (!ScriptGlobal::lastErrorMessage().isEmpty()) {
+            qWarning() << "!!!! ERROR in Javascript during model creation !!!!";
+            qWarning().noquote() << ScriptGlobal::lastErrorMessage();
+            return 1;
+        }
         if (!runJavascript("onCreate"))
             return 1;
 
-        qWarning() << "**************************************************";
-        qWarning() << "*** running model for" << years << "years";
-        qWarning() << "**************************************************";
+        if (years > 0) {
+            qWarning() << "**************************************************";
+            qWarning() << "*** running model for" << years << "years";
+            qWarning() << "**************************************************";
 
-        iland_model.run(years + 1);
-        if (iland_model.hasError()) {
-            qWarning() << "!!!! ERROR !!!!";
-            qWarning() << iland_model.lastError();
-            qWarning() << "!!!! ERROR !!!!";
-            return 1;
+            iland_model.run(years + 1);
+            if (iland_model.hasError()) {
+                qWarning() << "!!!! ERROR !!!!";
+                qWarning() << iland_model.lastError();
+                qWarning() << "!!!! ERROR !!!!";
+                return 1;
+            }
+        } else {
+            qWarning() << "*** 0 years requested: skipping annual simulation loop.";
         }
 
         // Invoke global JS onFinish() if defined in the loaded script (matching GUI behavior)

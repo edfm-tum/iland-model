@@ -1,0 +1,77 @@
+tests:
+  - id: external_seeds
+    description: >-
+      10-year test with uniform background external seed rain and no initial
+      saplings, verifying establishment of 4 non-resident species across west
+      and east RUs (including bare RUs 3 and 8).
+    project: ../fixtures/bgd_mini/project_external_seeds.xml
+    years: 10
+    check_determinism: true
+    rel_tol: 1.0e-5
+    abs_tol: 1.0e-6
+
+    assertions:
+      - name: uniform_external_seeds_establish_everywhere
+        query: |
+          SELECT
+            (SELECT COALESCE(SUM(cohort_count_ha), 0) FROM sapling WHERE year = 0) AS y0_cohorts,
+            (SELECT COUNT(DISTINCT species) FROM sapling
+              WHERE year = 10 AND rid IN (1, 2, 5, 6) AND species IN ('abal', 'acps', 'pisy', 'pice')
+                AND cohort_count_ha > 0) AS west_ext_spp,
+            (SELECT COUNT(DISTINCT species) FROM sapling
+              WHERE year = 10 AND rid IN (3, 4, 7, 8) AND species IN ('abal', 'acps', 'pisy', 'pice')
+                AND cohort_count_ha > 0) AS east_ext_spp,
+            (SELECT SUM(cohort_count_ha) FROM sapling
+              WHERE year = 10 AND rid IN (3, 8) AND species IN ('abal', 'acps', 'pisy', 'pice')) AS bare_ext_cohorts
+          FROM (SELECT 1)
+        expect: >-
+          row['y0_cohorts'] == 0
+          and row['west_ext_spp'] >= 3
+          and row['east_ext_spp'] >= 3
+          and row['bare_ext_cohorts'] > 0
+
+    baselines:
+      - name: sapling_y10
+        query: |
+          SELECT *
+          FROM sapling
+          WHERE year = 10
+          ORDER BY rid, species
+
+  - id: seedbelt
+    description: >-
+      10-year spatially explicit external seedBelt test (west belt: abal/acps;
+      east belt: pisy/pice) verifying directional spatial segregation across
+      west and east Resource Units.
+    project: ../fixtures/bgd_mini/project_seedbelt.xml
+    years: 10
+    check_determinism: true
+    compare_with: external_seeds
+    rel_tol: 1.0e-5
+    abs_tol: 1.0e-6
+
+    assertions:
+      - name: seedbelt_spatial_segregation_west_vs_east
+        query: |
+          SELECT
+            COALESCE(SUM(CASE WHEN rid IN (1, 2, 5, 6) AND species IN ('abal', 'acps') THEN cohort_count_ha END), 0) AS west_abal_acps,
+            COALESCE(SUM(CASE WHEN rid IN (3, 4, 7, 8) AND species IN ('abal', 'acps') THEN cohort_count_ha END), 0) AS east_abal_acps,
+            COALESCE(SUM(CASE WHEN rid IN (3, 4, 7, 8) AND species IN ('pisy', 'pice') THEN cohort_count_ha END), 0) AS east_pisy_pice,
+            COALESCE(SUM(CASE WHEN rid IN (1, 2, 5, 6) AND species IN ('pisy', 'pice') THEN cohort_count_ha END), 0) AS west_pisy_pice,
+            COALESCE(SUM(CASE WHEN rid = 3 AND species IN ('pisy', 'pice') THEN cohort_count_ha END), 0) AS ru3_east_cohorts
+          FROM main.sapling
+          WHERE year = 10
+        expect: >-
+          row['west_abal_acps'] > 0
+          and row['west_abal_acps'] > row['east_abal_acps']
+          and row['east_pisy_pice'] > 0
+          and row['east_pisy_pice'] > row['west_pisy_pice']
+          and row['ru3_east_cohorts'] > 0
+
+    baselines:
+      - name: sapling_y10
+        query: |
+          SELECT *
+          FROM sapling
+          WHERE year = 10
+          ORDER BY rid, species

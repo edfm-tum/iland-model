@@ -1,0 +1,154 @@
+---
+title: "Output visualization"
+---
+
+The iLand Viewer provides a built-in **Output visualization** tab alongside the spatial **Landscape** view. It visualizes SQLite [output tables](outputs.qmd) directly during a simulation run—updating automatically every simulated year when the tab is active—and also lets you open and inspect finished `.sqlite` output databases without running a simulation.
+
+## Overview
+
+The central view of the [iLand Viewer](iland-viewer.qmd) is organized into two tabs, with linked side panels that switch automatically with the active tab:
+
+1. **Landscape**: Interactive 2D visualization of trees, light fields, regeneration, disturbance grids, and resource units during a model run (using the **Legend** left dock and **Visualization options** right dock).
+2. **Output visualization**: Full-width canvas of time-series charts, monthly boxplots, and resource-unit spatial maps queried directly from the active SQLite output database, paired with:
+   * **Output legend** (left dock): Interactive series/species color legend (check/uncheck items to show or hide individual series in charts) or continuous/categorical color legend for spatial maps.
+   * **Output options** (right dock): Database source controls (**Open DB...**, **Live**), visualization catalog tree & search filter, active metric/species/RU/palette/scale selectors, and export actions (**Reset zoom**, **Copy image**, **Copy CSV**).
+
+### Data sources
+
+* **Live model**: As soon as a simulation model is created (`Model -> Create`), the tab connects to the active output database and refreshes automatically at the end of every year whenever the **Output visualization** tab is visible. Switching from **Landscape** back to **Output visualization** triggers an immediate catch-up refresh.
+* **Standalone SQLite database (`Open DB...`)**: Click **Open DB...** in the **Output options** dock to inspect any existing iLand `.sqlite` output file in read-only mode. Click **Live** to switch back to a currently loaded simulation.
+
+### Available plot types
+
+* **Stacked area & line timelines**: Species shares (colored with iLand species colors, optional **Normalize to 100%** toggle), carbon/nitrogen pools, annual and cumulative carbon fluxes, water balance, climate/permafrost variables, ABE planning unit harvests, and BITE agent summaries.
+* **Bar & stacked bar timelines**: Sparse event tables such as `fire`, `wind`, `landscape_removed`, and `abeStandRemoval`, automatically zero-filling event-free years.
+* **Monthly boxplots**: Seasonal distributions (`min`, `Q25`, `median`, `Q75`, `max`) across months 1–12 for `production_month` 3PG environmental modifiers.
+* **Spatial maps (RU)**: Interactive 2D resource-unit maps across simulation years for **Dominant species map (RU)** (`stand`) as well as continuous maps for `stand`, `sapling`, `carbon`, `carbonflow`, `water`, `standdead`, and `management`.
+  * **Dominant species map (RU)** determines the species with the highest share per resource unit (defaulting to basal area, or switchable to volume, stem count, LAI, living carbon, or NPP), colors cells by species color, and applies a dashed fill where the dominant species share is `< 50%`—matching iLand's classic **Landscape** view while supporting historical year scrubbing and external `.sqlite` files.
+  * The **Year** slider above the map steps or jumps directly to any year snapshot present in the database (supporting decadal `conditionRU` intervals).
+  * For species-resolved continuous maps (`stand`, `sapling`, `standdead`, `management`), the **Species** selector offers `<Total (all species)>` and individual species.
+  * **Scale** switches between `Auto (year)` (rescaled per snapshot), `Auto 98% (year)` (clips top 2% outlier cells so low/mid-range patterns stay clearly visible), `Global (all years)` (fixed range across all simulated years), and `Manual` (`Min`/`Max` range spinboxes).
+  * When viewing a standalone `.sqlite` file (`Open DB...`), iLand automatically locates the project XML to reconstruct the resource-unit grid, or you can click **Spatial grid...** in **Output options** to select a project XML or ASCII/GeoTIFF raster manually (not shown in live simulation mode, where the model supplies the grid automatically).
+
+---
+
+## Customizing visualizations (`visualizations.json`)
+
+The visualization catalog is defined in JSONC (JSON with `//` line comments and `/* ... */` block comments). You can customize existing entries or add visualizations for [dynamic / custom outputs](dynamic-outputs.qmd) without recompiling iLand.
+
+### File lookup & override priority
+
+Definitions are merged in three tiers by matching `"id"`:
+
+1. **Built-in defaults** compiled into iLand (`:/visualizations.json`).
+2. **Global user file**: `visualizations.json` placed in the iLand executable directory (applies to all projects).
+3. **Project user file**: `visualizations.json` placed next to the active project XML file (or in `system.path.home`).
+
+Click **Reload** in the **Output options** dock after saving edits to reload tiers 2 and 3 immediately. Click **?** next to **Reload** to view or export the built-in guide inside the Viewer.
+
+To hide a built-in visualization, override its `"id"` with `"enabled": false`:
+
+```json
+{
+  "version": 1,
+  "visualizations": [
+    { "id": "nitrogen_pools_landscape", "enabled": false }
+  ]
+}
+```
+
+### Field reference
+
+Every `visualizations.json` file contains `"version": 1` and a `"visualizations"` array of definition objects:
+
+| Key | Type | Description |
+| :--- | :--- | :--- |
+| `id` | string | Required unique identifier. Matching an existing `id` overrides it. |
+| `name` | string | Display name shown in the catalog, legend, and chart title. |
+| `category` | string | Grouping header in the **Output options** catalog tree (default `"Custom"`). |
+| `description` | string | Short description shown below the plot and as tooltip. |
+| `table` | string | Primary SQLite table name (used by *Active outputs only* filtering). Leave empty for multi-table JOINs. |
+| `type` | string | `"line"`, `"stacked_area"`, `"bar"`, `"stacked_bar"`, `"boxplot"`, or `"spatial"`. |
+| `enabled` | boolean | Default `true`. Set `false` to hide an overridden built-in entry. |
+| `sql` | string / string[] | SQLite `SELECT` query (a string array is joined with newlines). |
+| `x` | string | X-axis column name (default `"year"`). |
+| `xLabel` / `yLabel` | string | Optional axis labels. |
+| `xCategories` | string[] | Optional category labels (e.g. `["Jan","Feb",...,"Dec"]` for `month` `1..12`). |
+| `group` | string | Grouping column splitting rows into multiple series (e.g. `"species"`, `"reason"`). |
+| `colorMode` | string | `"species"` uses species colors from the species table/model (auto-enabled when `group == "species"`). |
+| `groupLabels` / `groupColors` | object | Optional maps from group codes to display labels or hex colors (`"#rrggbb"`). |
+| `metricsMode` | string | `"select"` (dropdown, default) or `"all"` (plots all listed `metrics` together). |
+| `metrics` | array | Objects `{ "col": "...", "label": "...", "color": "#...", "agg": "sum"|"none" }`. |
+| `filters` | string[] | Filter dropdowns bound as `:name` in SQL (e.g. `["ru"]`, `["species", "ru"]`, `["id"]`, `["agent"]`). |
+| `allowPercentToggle` | boolean | Enables the **Normalize to 100%** checkbox on stacked charts. |
+| `fillMissingYears` | boolean | Zero-fills missing integer years (for sparse event tables). |
+| `spatialKey` | string | For `"spatial"`: `"rid"` (environment ID, default) or `"ru"` (0-based RU index). |
+| `palette` | string | For `"spatial"`: `"turbo"`, `"greens"`, `"rainbow"`, `"blues"`, `"reds"`, `"heat"`, or `"gray"`. |
+| `speciesMode` | string | For `"spatial"`: `""`, `"select"`, `"select_with_aggregates"`, or `"dominant"`. |
+
+### Named SQL parameters
+
+Filter columns listed in `"filters"` are bound automatically as SQLite named parameters (`:ru`, `:species`, `:id`, `:agent`, `:reason`):
+
+* Reference them directly in your SQL `WHERE` clause (e.g. `WHERE ru = :ru AND species = :species`).
+* If a listed filter parameter is omitted from `sql`, iLand automatically wraps the query as `SELECT * FROM (<sql>) WHERE <filter> = :<filter>`.
+* When `"filters"` includes `"ru"` and the table only contains landscape aggregate rows (`ru = -1`), iLand automatically hides the **RU** dropdown.
+
+### Examples
+
+#### Custom `dynamicstand` output
+
+```json
+{
+  "version": 1,
+  "visualizations": [
+    {
+      "id": "custom_dynamicstand_dbh",
+      "name": "Stand diameter distribution (dynamic)",
+      "category": "Custom project charts",
+      "description": "Mean and 90th-percentile DBH per species on a selected RU.",
+      "table": "dynamicstand",
+      "type": "line",
+      "x": "year",
+      "xLabel": "Year",
+      "group": "species",
+      "colorMode": "species",
+      "filters": ["ru"],
+      "metricsMode": "select",
+      "metrics": [
+        { "col": "dbh_mean",   "label": "Mean DBH (cm)" },
+        { "col": "dbh_p90",    "label": "90th percentile DBH (cm)" },
+        { "col": "volume_sum", "label": "Volume sum (m³)" }
+      ],
+      "sql": "SELECT year, species, dbh_mean, dbh_p90, volume_sum FROM dynamicstand WHERE ru = :ru ORDER BY year, species"
+    }
+  ]
+}
+```
+
+#### Custom spatial map (`svdindicator`)
+
+```json
+{
+  "version": 1,
+  "visualizations": [
+    {
+      "id": "custom_svd_shannon_map",
+      "name": "Shannon diversity & IBP map",
+      "category": "Spatial maps (RU)",
+      "description": "Spatial map of SVD biodiversity and structural indicators.",
+      "table": "svdindicator",
+      "type": "spatial",
+      "spatialKey": "rid",
+      "palette": "turbo",
+      "metricsMode": "select",
+      "metrics": [
+        { "col": "shannonIndex",      "label": "Shannon index" },
+        { "col": "IBP",               "label": "Index of biodiversity potential" },
+        { "col": "abovegroundCarbon", "label": "Aboveground C (t C/ha)" }
+      ],
+      "sql": "SELECT year, ru, rid, shannonIndex, IBP, abovegroundCarbon FROM svdindicator"
+    }
+  ]
+}
+```

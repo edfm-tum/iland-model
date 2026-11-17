@@ -1,0 +1,2 @@
+year,fireId,area_plan_m2,area_m2,iterations,coord_x,coord_y,n_trees,n_trees_died,basalArea_total,basalArea_died,psme_died,avgFuel_kg_ha,windSpeed,windDirection
+2,1,25000,24800,7,0,0,552,276,74.65470724,21.8888241,0,4649.13549,15,270

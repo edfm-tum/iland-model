@@ -1,0 +1,520 @@
+<?xml version='1.0' encoding='utf-8'?>
+<project>
+    <system>
+        <path>
+            <home />
+            <database>database</database>
+            <lip>lip</lip>
+            <temp>temp</temp>
+            <script>scripts</script>
+            <init>init</init>
+            <output>output</output>
+        </path>
+        <database>
+            <in>species_param.sqlite</in>
+            <out>bgd_mini_microclimate_off.sqlite</out>
+            <climate>climate.sqlite</climate>
+        </database>
+        <logging>
+            <logTarget>file</logTarget>
+            <logFile>log/bgd_mini_microclimate_off.log</logFile>
+            <flush>false</flush>
+        </logging>
+        <settings>
+            <multithreading>false</multithreading>
+            <debugOutput>0</debugOutput>
+            <debugOutputAutoSave>false</debugOutputAutoSave>
+            <randomSeed>12345</randomSeed>
+            <expressionLinearizationEnabled>true</expressionLinearizationEnabled>
+            <logLevel>Info</logLevel>
+            <responsive>false</responsive>
+            <threadCount>1</threadCount>
+        </settings>
+        <javascript>
+            <fileName />
+        </javascript>
+    </system>
+    <model>
+        <settings>
+            <regenerationEnabled>true</regenerationEnabled>
+            <mortalityEnabled>true</mortalityEnabled>
+            <growthEnabled>true</growthEnabled>
+            <carbonCycleEnabled>true</carbonCycleEnabled>
+            <epsilon>2.7</epsilon>
+            <lightExtinctionCoefficient>0.6</lightExtinctionCoefficient>
+            <lightExtinctionCoefficientOpacity>0.6</lightExtinctionCoefficientOpacity>
+            <temperatureTau>6</temperatureTau>
+            <airDensity>1.204</airDensity>
+            <laiThresholdForClosedStands>3</laiThresholdForClosedStands>
+            <boundaryLayerConductance>0.2</boundaryLayerConductance>
+            <interceptionStorageNeedle>4</interceptionStorageNeedle>
+            <interceptionStorageBroadleaf>2</interceptionStorageBroadleaf>
+            <snowMeltTemperature>0</snowMeltTemperature>
+            <waterUseSoilSaturation>false</waterUseSoilSaturation>
+            <usePARFractionBelowGroundAllocation>true</usePARFractionBelowGroundAllocation>
+            <groundVegetationLAI>1</groundVegetationLAI>
+            <groundVegetationPsiMin>-1.5</groundVegetationPsiMin>
+            <seedDispersal>
+                <seedBelt>
+                    <enabled>false</enabled>
+                    <width>5</width>
+                    <sizeX>4</sizeX>
+                    <sizeY>2</sizeY>
+                </seedBelt>
+                <dumpSeedMapsEnabled>false</dumpSeedMapsEnabled>
+                <dumpSeedMapsPath />
+                <externalSeedEnabled>true</externalSeedEnabled>
+                <externalSeedBackgroundInput>abal 0.03 piab 0.03 lade 0.01 pisy 0.005 fasy 0.04 acps 0.015 bepe 0.003 pice 0.003 soau 0.003 pimu 0.005</externalSeedBackgroundInput>
+                <externalSeedSource />
+                <externalSeedSpecies />
+                <externalSeedBuffer />
+                <recruitmentDimensionVariation>0.1</recruitmentDimensionVariation>
+                <longDistanceDispersal>
+                    <rings />
+                    <thresholdArea>0.0001</thresholdArea>
+                    <thresholdLDD>0.0000001</thresholdLDD>
+                    <LDDSeedlings>0.5</LDDSeedlings>
+                </longDistanceDispersal>
+                <seedBackgroundFilter />
+            </seedDispersal>
+            <soil>
+                <qb>5</qb>
+                <qh>14.5</qh>
+                <leaching>0.47</leaching>
+                <el>0.152</el>
+                <er>0.319</er>
+                <swdDBHClass12>20</swdDBHClass12>
+                <swdDBHClass23>100</swdDBHClass23>
+                <useDynamicAvailableNitrogen>false</useDynamicAvailableNitrogen>
+                <nitrogenDeposition>21.8</nitrogenDeposition>
+                <decayClassThresholds />
+                <swdDBHSingle />
+            </soil>
+            <grass>
+                <enabled>false</enabled>
+                <type>pixel</type>
+                <grassDuration>polygon(x, 0,0, 6,0, 6,1, 30,1, 30,0)</grassDuration>
+                <LIFThreshold>0.2</LIFThreshold>
+                <grassPotential>0.9999*x^0.15</grassPotential>
+                <maxTimeLag>3</maxTimeLag>
+                <grassEffect>0.9999*x^0.15</grassEffect>
+            </grass>
+            <browsing>
+                <enabled>false</enabled>
+                <browsingPressure>1</browsingPressure>
+            </browsing>
+            <permafrost>
+                <enabled>false</enabled>
+                <groundBaseDepth />
+                <initialDepthFrozen />
+                <initialGroundTemperature />
+                <lambdaOrganicLayer />
+                <lambdaSnow />
+                <maxFreezeThawPerDay />
+                <moss>
+                    <CNRatio />
+                    <biomass />
+                    <bulk_density />
+                    <light_comp />
+                    <light_k />
+                    <light_sat />
+                    <r_deciduous_inhibition />
+                    <r_decomp />
+                    <respiration_b />
+                    <respiration_q />
+                </moss>
+                <organicLayerDefaultDepth />
+                <organicLayerDensity />
+            </permafrost>
+            <snowDensity />
+            <snowInitialDepth />
+            <svdStates>
+                <enabled>false</enabled>
+                <functioning>3</functioning>
+                <structure>2m</structure>
+            </svdStates>
+        </settings>
+        <species>
+            <source>species</source>
+            <reader>readerstamp.bin</reader>
+            <nitrogenResponseClasses>
+                <class_1_a>-0.045</class_1_a>
+                <class_1_b>10</class_1_b>
+                <class_2_a>-0.055</class_2_a>
+                <class_2_b>25</class_2_b>
+                <class_3_a>-0.065</class_3_a>
+                <class_3_b>40</class_3_b>
+            </nitrogenResponseClasses>
+            <CO2Response>
+                <p0>1</p0>
+                <baseConcentration>380</baseConcentration>
+                <compensationPoint>80</compensationPoint>
+                <beta0>0.3</beta0>
+            </CO2Response>
+            <lightResponse>
+                <shadeTolerant>min(10*lri,max(0.1613*lri+0.7871,lri))</shadeTolerant>
+                <shadeIntolerant>1-exp(-5.5*(lri-0.05))</shadeIntolerant>
+                <LRImodifier>exp(ln(lri)/0.5*(1-0.5*relH))</LRImodifier>
+            </lightResponse>
+            <phenology>
+                <type id="1">
+                    <vpdMin>0.9</vpdMin>
+                    <vpdMax>4.1</vpdMax>
+                    <dayLengthMin>10</dayLengthMin>
+                    <dayLengthMax>11</dayLengthMax>
+                    <tempMin>-2</tempMin>
+                    <tempMax>5</tempMax>
+                </type>
+                <type id="2">
+                    <vpdMin>1</vpdMin>
+                    <vpdMax>4.1</vpdMax>
+                    <dayLengthMin>10</dayLengthMin>
+                    <dayLengthMax>11</dayLengthMax>
+                    <tempMin>-4</tempMin>
+                    <tempMax>3</tempMax>
+                </type>
+            </phenology>
+            <sprouting>
+                <adultSproutProbability>pimu 0.1</adultSproutProbability>
+            </sprouting>
+        </species>
+        <world>
+            <cellSize>2</cellSize>
+            <width>400</width>
+            <height>200</height>
+            <buffer>100</buffer>
+            <latitude>47.63</latitude>
+            <resourceUnitsAsGrid>true</resourceUnitsAsGrid>
+            <environmentEnabled>true</environmentEnabled>
+            <environmentMode>matrix</environmentMode>
+            <environmentGrid />
+            <environmentFile>gis/environment.txt</environmentFile>
+            <areaMask>
+                <enabled>false</enabled>
+                <imageFile />
+            </areaMask>
+            <timeEventsEnabled>false</timeEventsEnabled>
+            <timeEventsFile>co2_rcp45.csv</timeEventsFile>
+            <location>
+                <x>0</x>
+                <y>0</y>
+                <z>0</z>
+                <rotation>0</rotation>
+            </location>
+            <standGrid>
+                <enabled>true</enabled>
+                <fileName>gis/stand_grid.asc</fileName>
+            </standGrid>
+            <DEM>gis/dem.asc</DEM>
+        </world>
+        <site>
+            <availableNitrogen>50</availableNitrogen>
+            <soilDepth>45</soilDepth>
+            <pctSand>44</pctSand>
+            <pctSilt>35</pctSilt>
+            <pctClay>21</pctClay>
+            <youngLabileC>7000</youngLabileC>
+            <youngLabileN>70</youngLabileN>
+            <youngLabileDecompRate>0.227</youngLabileDecompRate>
+            <youngRefractoryC>4000</youngRefractoryC>
+            <youngRefractoryN>20</youngRefractoryN>
+            <youngRefractoryDecompRate>0.071</youngRefractoryDecompRate>
+            <youngLabileAbovegroundFraction>0.7</youngLabileAbovegroundFraction>
+            <youngRefractoryAbovegroundFraction>0.7</youngRefractoryAbovegroundFraction>
+            <somC>70000</somC>
+            <somN>3800</somN>
+            <somDecompRate>0.015</somDecompRate>
+            <soilHumificationRate>0.22</soilHumificationRate>
+        </site>
+        <climate>
+            <co2concentration>380</co2concentration>
+            <tableName>climate_valley</tableName>
+            <batchYears>20</batchYears>
+            <temperatureShift>0</temperatureShift>
+            <precipitationShift>1</precipitationShift>
+            <randomSamplingEnabled>false</randomSamplingEnabled>
+            <randomSamplingList />
+            <filter>year&gt;0</filter>
+            <co2pathway>No</co2pathway>
+            <co2startYear />
+            <dayLengthLimit />
+            <microclimate>
+                <barkbeetle>false</barkbeetle>
+                <decomposition>false</decomposition>
+                <enabled>false</enabled>
+                <establishment>false</establishment>
+            </microclimate>
+        </climate>
+        <initialization>
+            <mode>unit</mode>
+            <type>single</type>
+            <randomFunction>max(1-x^2,0)</randomFunction>
+            <file>init_trees.csv</file>
+            <saplingFile>init_saplings.csv</saplingFile>
+            <snags>
+                <swdC>1500</swdC>
+                <swdCN>334</swdCN>
+                <swdCount>15</swdCount>
+                <otherC>400</otherC>
+                <otherCN>22.95</otherCN>
+                <swdDecompRate>0.036</swdDecompRate>
+                <swdHalfLife>32</swdHalfLife>
+                <otherAbovegroundFraction>0.2</otherAbovegroundFraction>
+                <woodDecompRate />
+            </snags>
+            <heightGrid>
+                <enabled>false</enabled>
+                <fileName />
+                <maxTries>10</maxTries>
+                <fitFormula>polygon(x, 0,0, 0.8,1, 1.1,1, 1.25,0)</fitFormula>
+            </heightGrid>
+            <mapFileName />
+        </initialization>
+        <management>
+            <enabled>false</enabled>
+            <file />
+            <abeEnabled>false</abeEnabled>
+            <abe>
+                <file>abe/abe_stp.js</file>
+                <agentDataFile>abe/abe_agents.csv</agentDataFile>
+            </abe>
+        </management>
+        <parameter>
+            <torus>false</torus>
+            <debug_tree>0</debug_tree>
+            <debug_clear>false</debug_clear>
+            <gpp_per_year>0</gpp_per_year>
+            <debugDumpStamps>false</debugDumpStamps>
+        </parameter>
+    </model>
+    <output>
+        <dynamic>
+            <enabled>false</enabled>
+            <columns>dbh.mean, height.mean, foliageMass.sum, stemMass.sum</columns>
+        </dynamic>
+        <tree>
+            <enabled>false</enabled>
+            <filter>1</filter>
+        </tree>
+        <treeremoved>
+            <enabled>false</enabled>
+            <filter>1</filter>
+        </treeremoved>
+        <stand>
+            <enabled>true</enabled>
+            <condition>1</condition>
+            <rufilter>1</rufilter>
+            <byRU />
+        </stand>
+        <standdead>
+            <enabled>false</enabled>
+        </standdead>
+        <production_month>
+            <enabled>false</enabled>
+            <condition />
+        </production_month>
+        <management>
+            <enabled>false</enabled>
+        </management>
+        <sapling>
+            <enabled>true</enabled>
+            <condition>1</condition>
+        </sapling>
+        <saplingdetail>
+            <enabled>false</enabled>
+            <condition>1</condition>
+            <minDbh>0</minDbh>
+        </saplingdetail>
+        <carbon>
+            <enabled>true</enabled>
+            <condition>1</condition>
+            <conditionRU>1</conditionRU>
+        </carbon>
+        <carbonflow>
+            <enabled>true</enabled>
+            <condition>1</condition>
+            <conditionRU>1</conditionRU>
+        </carbonflow>
+        <water>
+            <enabled>true</enabled>
+            <condition>1</condition>
+            <conditionRU>1</conditionRU>
+        </water>
+        <landscape>
+            <enabled>true</enabled>
+            <condition>1</condition>
+        </landscape>
+        <dynamicstand>
+            <enabled>false</enabled>
+            <condition>1</condition>
+            <rufilter>1</rufilter>
+            <treefilter>1</treefilter>
+            <by_species>true</by_species>
+            <by_ru>true</by_ru>
+            <columns>dbh.mean, dbh.sd, height.mean, height.max, count.sum</columns>
+            <conditionRU />
+        </dynamicstand>
+        <barkbeetle>
+            <enabled>true</enabled>
+        </barkbeetle>
+        <wind>
+            <enabled>false</enabled>
+        </wind>
+        <fire>
+            <enabled>false</enabled>
+        </fire>
+        <landscape_removed>
+            <enabled>false</enabled>
+            <includeHarvest>false</includeHarvest>
+            <includeNatural>false</includeNatural>
+        </landscape_removed>
+        <abeStand>
+            <enabled>false</enabled>
+            <condition />
+        </abeStand>
+        <abeStandDetail>
+            <enabled>false</enabled>
+            <condition />
+        </abeStandDetail>
+        <abeUnit>
+            <enabled>false</enabled>
+        </abeUnit>
+        <abeStandRemoval>
+            <enabled>false</enabled>
+        </abeStandRemoval>
+        <bite>
+            <enabled>false</enabled>
+        </bite>
+        <customagg>
+            <enabled>false</enabled>
+        </customagg>
+        <deadtree>
+            <condition />
+            <enabled>false</enabled>
+            <filter />
+        </deadtree>
+        <devstage>
+            <cellsize>10</cellsize>
+            <enabled>false</enabled>
+            <filter />
+            <handler />
+        </devstage>
+        <ecoviz>
+            <binary>false</binary>
+            <condition />
+            <enabled>false</enabled>
+            <fileName />
+        </ecoviz>
+        <soilinput>
+            <enabled>false</enabled>
+        </soilinput>
+        <svdgpp>
+            <enabled>false</enabled>
+        </svdgpp>
+        <svdindicator>
+            <enabled>false</enabled>
+        </svdindicator>
+        <svdstate>
+            <enabled>false</enabled>
+        </svdstate>
+        <svduniquestate>
+            <condition />
+            <enabled>false</enabled>
+        </svduniquestate>
+    </output>
+    <modules>
+        <fire>
+            <enabled>false</enabled>
+            <onlySimulation>true</onlySimulation>
+            <KBDIref>0.3</KBDIref>
+            <rFireSuppression>1</rFireSuppression>
+            <rLand>1</rLand>
+            <meanAnnualPrecipitation>1650</meanAnnualPrecipitation>
+            <averageFireSize>9650000</averageFireSize>
+            <fireReturnInterval>10</fireReturnInterval>
+            <fireExtinctionProbability>0.05</fireExtinctionProbability>
+            <fuelKFC1>0.75</fuelKFC1>
+            <fuelKFC2>0.75</fuelKFC2>
+            <fuelKFC3>0.75</fuelKFC3>
+            <crownKill1>0.21111</crownKill1>
+            <crownKill2>0.00445</crownKill2>
+            <crownKillDbh>40</crownKillDbh>
+            <burnSOMFraction>0.02</burnSOMFraction>
+            <burnFoliageFraction>0.9</burnFoliageFraction>
+            <burnBranchFraction>0.51</burnBranchFraction>
+            <burnStemFraction>0.11</burnStemFraction>
+            <wind>
+                <speedMin>10</speedMin>
+                <speedMax>20</speedMax>
+                <direction>270</direction>
+            </wind>
+            <allowBurnIn>false</allowBurnIn>
+            <fireSizeSigma />
+            <maxFireSize />
+            <minFireSize />
+        </fire>
+        <wind>
+            <enabled>false</enabled>
+            <speciesParameter>wind</speciesParameter>
+            <soilFreezeMode>auto</soilFreezeMode>
+            <durationPerIteration>10</durationPerIteration>
+            <gustModifier>0.1</gustModifier>
+            <topoModifier>1</topoModifier>
+            <directionVariation>30</directionVariation>
+            <direction>270</direction>
+            <dayOfYear>0</dayOfYear>
+            <speed>0</speed>
+            <duration>720</duration>
+            <topoGridFile>gis/wind_topo.asc</topoGridFile>
+            <factorEdge>3</factorEdge>
+            <edgeDetectionThreshold>10</edgeDetectionThreshold>
+            <topexModifierType>additive</topexModifierType>
+            <LRITransferFunction>max(min(3.733-6.467*LRI, 3.41),3)</LRITransferFunction>
+            <edgeProbability>polygon(x,0,0,20,0.5)</edgeProbability>
+            <edgeAgeBaseValue>20</edgeAgeBaseValue>
+            <edgeBackgroundProbability>0.1</edgeBackgroundProbability>
+            <onAfterWind />
+            <onBeforeWind />
+            <triggeredByTimeEvent>false</triggeredByTimeEvent>
+        </wind>
+        <barkbeetle>
+            <enabled>true</enabled>
+            <minimumDbh>15</minimumDbh>
+            <backgroundInfestationProbability>0.05</backgroundInfestationProbability>
+            <stormInfestationProbability>0.8</stormInfestationProbability>
+            <baseWinterMortality>0.4</baseWinterMortality>
+            <winterMortalityFormula>1-exp(-0.1005*x)</winterMortalityFormula>
+            <spreadKernelFormula>exp(-((x/4.5)^2)/4/40.5)</spreadKernelFormula>
+            <spreadKernelMaxDistance>257</spreadKernelMaxDistance>
+            <cohortsPerGeneration>20</cohortsPerGeneration>
+            <cohortsPerSisterbrood>30</cohortsPerSisterbrood>
+            <colonizeProbabilityFormula>0.85*x+0.15</colonizeProbabilityFormula>
+            <deadTreeSelectivity>1</deadTreeSelectivity>
+            <outbreakClimateSensitivityFormula>Psummer^-0.9609</outbreakClimateSensitivityFormula>
+            <outbreakDurationMin>5</outbreakDurationMin>
+            <outbreakDurationMax>6</outbreakDurationMax>
+            <outbreakDurationMortalityFormula>polygon(t, 0.5,0, 1,1)</outbreakDurationMortalityFormula>
+            <initialInfestationProbability>0.015</initialInfestationProbability>
+            <referenceClimate>
+                <tableName>climate_valley</tableName>
+                <seasonalPrecipSum>367, 631, 353, 280</seasonalPrecipSum>
+                <seasonalTemperatureAverage>6.73, 14.1, 7.02, -1.50</seasonalTemperatureAverage>
+            </referenceClimate>
+            <onAfterBarkbeetle />
+            <airTempMaxLimit />
+            <ddLimit />
+            <sanitationTreatmentProbability />
+            <tempSumLimit />
+            <winterMortalityInSoil />
+            <winterMortalityShareInSoil />
+            <winterMortalityShareUnderBark />
+        </barkbeetle>
+        <bite>
+            <enabled>false</enabled>
+            <file />
+        </bite>
+    </modules>
+    <user>
+        <placeholder>0</placeholder>
+    </user>
+</project>

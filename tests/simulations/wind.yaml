@@ -1,0 +1,47 @@
+id: wind
+description: >-
+  10-year wind disturbance test forcing a storm event in year 2 via TimeEvents
+  (wind_y2.csv) and verifying storm mortality, swept area, and natural removal output.
+project: ../fixtures/bgd_mini/project_wind.xml
+years: 10
+check_determinism: true
+rel_tol: 1.0e-5
+abs_tol: 1.0e-6
+
+assertions:
+  - name: wind_event_only_in_year_2_with_partial_mortality
+    query: |
+      SELECT
+        COUNT(*) AS n_events,
+        MIN(year) AS min_year,
+        MAX(year) AS max_year,
+        SUM(area_ha) AS area_ha,
+        SUM(killedTrees) AS killed_trees,
+        SUM(killedVolume) AS killed_volume
+      FROM wind
+    expect: >-
+      row['n_events'] == 1
+      and row['min_year'] == 2 and row['max_year'] == 2
+      and row['area_ha'] > 0
+      and row['killed_trees'] >= 15
+      and row['killed_volume'] > 0
+
+  - name: landscape_removed_records_disturbance_in_year_2
+    query: |
+      SELECT COALESCE(SUM(count), 0) AS dist_removed
+      FROM landscape_removed
+      WHERE year = 2 AND reason = 'D'
+    expect: "row['dist_removed'] >= 15"
+
+baselines:
+  - name: wind
+    query: |
+      SELECT *
+      FROM wind
+      ORDER BY year
+
+  - name: landscape
+    query: |
+      SELECT *
+      FROM landscape
+      ORDER BY year, species

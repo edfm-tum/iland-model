@@ -1,0 +1,66 @@
+# Declarative manifest for iLand JavaScript API test suites.
+# Executed by tests/run_tests.py (--js / --all) via headless ilandc, or interactively in the GUI.
+tests:
+  - id: js_globals_io
+    description: "Globals settings/file I/O, seeded RNG, ESM loadModule, ResourceUnit, CSVFile, DBHDistribution, ClimateConverter."
+    project: ../fixtures/bgd_mini/project.xml
+    years: 0
+    script: test_globals_io.js
+
+  - id: js_grids_maps
+    description: "Globals.grid(), speciesShareGrid(), resourceUnitGrid(), gridToFile(), Grid algebra, Map polygon creation/copyFromGrid."
+    project: ../fixtures/bgd_mini/project.xml
+    years: 0
+    script: test_grids_maps.js
+
+  - id: js_vegetation_lists
+    description: "TreeList filtering/sorting/simulate/kill/harvest, ScriptTree/TreeExpr, SaplingList, addSingleTrees/addSaplings."
+    project: ../fixtures/bgd_mini/project.xml
+    years: 0
+    script: test_vegetation_lists.js
+
+  - id: js_spatial
+    description: "SpatialAnalysis rumpleIndex, patches() connected components, and saveCrownCoverGrid()."
+    project: ../fixtures/bgd_mini/project.xml
+    years: 0
+    script: test_spatial.js
+
+  - id: js_lifecycle_dead
+    description: "Global hook sequence (onBeforeCreate..onYearEnd), startOutput/stopOutput, DeadTreeList, saveModelSnapshot."
+    project: ../fixtures/bgd_mini/project_deadtree.xml
+    years: 6
+    script: test_lifecycle_dead.js
+    params:
+      output.stand.enabled: false
+      output.carbon.enabled: false
+
+  - id: js_abe_api
+    description: "ABE fmengine, StandObj, UnitObj, STPObj, Scheduler, Patches, programmatic STPs, runPlanting, and :/abe-lib/."
+    project: ../fixtures/bgd_mini/project_abe.xml
+    years: 2
+    script: test_abe_api.js
+
+  - id: js_bite_api
+    description: "BITE BiteAgent/Items setup, agent variables, BiteCellScript, daily climate series, and SQLite BiteOutput."
+    project: ../fixtures/bgd_mini/project.xml
+    years: 2
+    script: test_bite_api.js
+    params:
+      modules.bite.enabled: true
+      modules.bite.file: ../../js/bite_test_agent.js
+    assertions:
+      - name: bite_output_table_populated
+        query: "SELECT COUNT(*) AS n_rows FROM bite_test_bug"
+        expect: "row['n_rows'] > 0"
+
+  - id: js_disturbance_api
+    description: "Wind, Fire, and BarkBeetle JS bindings, grids, callbacks (onAfterWind/onAfterBarkbeetle), and prescribed fire."
+    project: ../fixtures/bgd_mini/project_fire.xml
+    years: 2
+    script: test_disturbance_api.js
+    params:
+      modules.wind.enabled: true
+      modules.wind.onAfterWind: onWindDone()
+      modules.barkbeetle.enabled: true
+      modules.barkbeetle.referenceClimate.tableName: climate_valley
+      modules.barkbeetle.onAfterBarkbeetle: onBBDone()

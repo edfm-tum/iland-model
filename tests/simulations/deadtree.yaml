@@ -1,0 +1,113 @@
+id: deadtree
+description: >-
+  20-year single dead tree tracking test (swdDBHSingle=5 cm) verifying individual
+  standing ('S') and downed ('D') dead trees, decay classes, biomass remaining,
+  and snag carbon pool accumulation.
+project: ../fixtures/bgd_mini/project_deadtree.xml
+years: 20
+check_determinism: true
+rel_tol: 1.0e-5
+abs_tol: 1.0e-6
+
+assertions:
+  - name: standing_and_downed_dead_trees_tracked
+    query: |
+      SELECT
+        (SELECT COUNT(*) FROM deadtree WHERE year = 0) AS y0_count,
+        COUNT(*) AS y20_count,
+        SUM(CASE WHEN type = 'S' THEN 1 ELSE 0 END) AS n_standing,
+        SUM(CASE WHEN type = 'D' THEN 1 ELSE 0 END) AS n_downed,
+        MIN(dbh) AS min_dbh,
+        MIN(decayClass) AS min_dc,
+        MAX(decayClass) AS max_dc,
+        MIN(remaining) AS min_rem,
+        MAX(remaining) AS max_rem
+      FROM deadtree
+      WHERE year = 20
+    expect: >-
+      row['y0_count'] == 0
+      and row['y20_count'] > 20
+      and row['n_standing'] > 0
+      and row['n_downed'] > 0
+      and row['min_dbh'] >= 5.0
+      and row['min_dc'] >= 1 and row['max_dc'] <= 5
+      and row['min_rem'] > 0.0 and row['max_rem'] <= 1.0
+
+  - name: carbon_pools_positive_at_year_20
+    query: |
+      SELECT
+        SUM(snags_c) AS sum_snags_c,
+        SUM(downedWood_c) AS sum_woody_c
+      FROM carbon
+      WHERE year = 20 AND rid >= 1
+    expect: "row['sum_snags_c'] > 0 and row['sum_woody_c'] > 0"
+
+  - name: single_tree_live_standing_lying_transition
+    query: |
+      SELECT
+        (SELECT COUNT(*) FROM tree WHERE id = 2158) AS live_years,
+        (SELECT MAX(year) FROM tree WHERE id = 2158) AS last_live_year,
+        COUNT(*) AS dead_years,
+        SUM(CASE WHEN type = 'S' THEN 1 ELSE 0 END) AS standing_years,
+        MIN(CASE WHEN type = 'S' THEN year END) AS first_standing_year,
+        MAX(CASE WHEN type = 'S' THEN year END) AS last_standing_year,
+        SUM(CASE WHEN type = 'D' THEN 1 ELSE 0 END) AS lying_years,
+        MIN(CASE WHEN type = 'D' THEN year END) AS first_lying_year,
+        MAX(CASE WHEN type = 'D' THEN year END) AS last_lying_year,
+        MIN(decayClass) AS min_dc,
+        MAX(decayClass) AS max_dc,
+        (SELECT type FROM deadtree WHERE x = 239.0 AND y = 173.0 AND year = 20) AS y20_type,
+        (SELECT decayClass FROM deadtree WHERE x = 239.0 AND y = 173.0 AND year = 20) AS y20_dc,
+        (SELECT remaining FROM deadtree WHERE x = 239.0 AND y = 173.0 AND year = 20) AS y20_rem,
+        (SELECT biomass_kg FROM deadtree WHERE x = 239.0 AND y = 173.0 AND year = 20) AS y20_bm,
+        (SELECT COUNT(*) FROM deadtree d1 JOIN deadtree d2
+           ON d1.x = d2.x AND d1.y = d2.y AND d2.year = d1.year + 1
+          WHERE d1.x = 239.0 AND d1.y = 173.0
+            AND (d2.remaining >= d1.remaining OR d2.biomass_kg >= d1.biomass_kg OR d2.decayClass < d1.decayClass)
+        ) AS non_monotonic_steps
+      FROM deadtree
+      WHERE x = 239.0 AND y = 173.0
+    expect: >-
+      row['live_years'] == 2 and row['last_live_year'] == 1
+      and row['dead_years'] == 19
+      and row['standing_years'] == 3 and row['first_standing_year'] == 2 and row['last_standing_year'] == 4
+      and row['lying_years'] == 16 and row['first_lying_year'] == 5 and row['last_lying_year'] == 20
+      and row['min_dc'] == 1 and row['max_dc'] == 4
+      and row['y20_type'] == 'D' and row['y20_dc'] == 4
+      and 0.2 < row['y20_rem'] <= 0.4
+      and row['y20_bm'] > 0
+      and row['non_monotonic_steps'] == 0
+
+baselines:
+  - name: deadtree_y20_summary
+    query: |
+      SELECT
+        type, decayClass, reason, COUNT(*) AS n_trees,
+        SUM(volume_m3) AS sum_volume_m3,
+        SUM(biomass_kg) AS sum_biomass_kg,
+        AVG(remaining) AS avg_remaining
+      FROM deadtree
+      WHERE year = 20
+      GROUP BY type, decayClass, reason
+      ORDER BY type, decayClass, reason
+
+  - name: carbon_y20
+    query: |
+      SELECT *
+      FROM carbon
+      WHERE year = 20 AND rid >= 1
+      ORDER BY rid
+
+  - name: standdead
+    query: |
+      SELECT *
+      FROM standdead
+      WHERE year IN (5, 10, 15, 20)
+      ORDER BY year, rid, species
+
+  - name: deadtree_single_trajectory
+    query: |
+      SELECT year, type, decayClass, biomass_kg, remaining, yearsStanding, yearsDowned, reason
+      FROM deadtree
+      WHERE x = 239.0 AND y = 173.0
+      ORDER BY year

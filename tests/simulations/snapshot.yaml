@@ -1,0 +1,71 @@
+tests:
+  - id: snapshot_save
+    description: >-
+      10-year simulation with single dead trees (swdDBHSingle=5 cm) saving a full
+      model snapshot at year 10 (output/snapshot_y10.sqlite).
+    project: ../fixtures/bgd_mini/project_snapshot_save.xml
+    years: 10
+
+  - id: snapshot_load
+    description: >-
+      5-year continuation loaded from snapshot_y10.sqlite verifying exact state
+      restoration of trees, saplings, soil, snags, and single dead trees at
+      year 0 vs snapshot_save year 10, plus 5 years of ongoing continuation.
+    project: ../fixtures/bgd_mini/project_snapshot_load.xml
+    years: 5
+    check_determinism: true
+    compare_with: snapshot_save
+    params:
+      model.initialization.file: "{ref_dir}/snapshot_y10.sqlite"
+    rel_tol: 1.0e-5
+    abs_tol: 1.0e-6
+
+    assertions:
+      - name: snapshot_restores_stand_carbon_and_deadtrees
+        query: |
+          SELECT
+            (SELECT SUM(count_ha) FROM main.stand WHERE year = 0 AND rid >= 1) AS load_stems,
+            (SELECT SUM(count_ha) FROM ref.stand WHERE year = 10 AND rid >= 1) AS save_stems,
+            (SELECT SUM(basal_area_m2) FROM main.stand WHERE year = 0 AND rid >= 1) AS load_ba,
+            (SELECT SUM(basal_area_m2) FROM ref.stand WHERE year = 10 AND rid >= 1) AS save_ba,
+            (SELECT COUNT(*) FROM main.deadtree WHERE year = 0) AS load_dt,
+            (SELECT COUNT(*) FROM ref.deadtree WHERE year = 10) AS save_dt,
+            (SELECT COALESCE(SUM(biomass_kg), 0) FROM main.deadtree WHERE year = 0) AS load_dt_bm,
+            (SELECT COALESCE(SUM(biomass_kg), 0) FROM ref.deadtree WHERE year = 10) AS save_dt_bm,
+            (SELECT SUM(soil_c) FROM main.carbon WHERE year = 0 AND rid >= 1) AS load_soil_c,
+            (SELECT SUM(soil_c) FROM ref.carbon WHERE year = 10 AND rid >= 1) AS save_soil_c,
+            (SELECT SUM(snags_c) FROM main.carbon WHERE year = 0 AND rid >= 1) AS load_snags_c,
+            (SELECT SUM(snags_c) FROM ref.carbon WHERE year = 10 AND rid >= 1) AS save_snags_c
+          FROM (SELECT 1)
+        expect: >-
+          row['load_stems'] == row['save_stems']
+          and abs(row['load_ba'] - row['save_ba']) <= 1.0e-3 * max(1.0, row['save_ba'])
+          and row['load_dt'] > 0 and row['load_dt'] == row['save_dt']
+          and abs(row['load_dt_bm'] - row['save_dt_bm']) <= 1.0e-3 * max(1.0, row['save_dt_bm'])
+          and abs(row['load_soil_c'] - row['save_soil_c']) <= 1.0e-3 * max(1.0, row['save_soil_c'])
+          and abs(row['load_snags_c'] - row['save_snags_c']) <= 1.0e-3 * max(1.0, row['save_snags_c'])
+
+      - name: snapshot_continuation_runs_and_grows
+        query: |
+          SELECT
+            SUM(CASE WHEN year = 5 THEN total_carbon_kg ELSE 0 END) AS y5_c,
+            SUM(CASE WHEN year = 5 THEN NPP_kg ELSE 0 END) AS y5_npp
+          FROM main.landscape
+        expect: "row['y5_c'] > 0 and row['y5_npp'] > 0"
+
+    baselines:
+      - name: landscape
+        query: |
+          SELECT *
+          FROM landscape
+          ORDER BY year, species
+
+      - name: deadtree_y0_y5
+        query: |
+          SELECT
+            year, type, decayClass, reason, COUNT(*) AS n_trees,
+            SUM(biomass_kg) AS sum_biomass_kg
+          FROM deadtree
+          WHERE year IN (0, 5)
+          GROUP BY year, type, decayClass, reason
+          ORDER BY year, type, decayClass, reason

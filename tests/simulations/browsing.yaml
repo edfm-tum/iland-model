@@ -1,0 +1,46 @@
+tests:
+  - id: browsing_control
+    description: >-
+      10-year unbrowsed baseline control on bgd_mini for cross-run comparison
+      against browsing.
+    project: ../fixtures/bgd_mini/project.xml
+    years: 10
+
+  - id: browsing
+    description: >-
+      10-year ungulate browsing test (browsingPressure=2) verifying reduced
+      height/abundance of palatable saplings relative to unbrowsed control.
+    project: ../fixtures/bgd_mini/project_browsing.xml
+    years: 10
+    check_determinism: true
+    compare_with: browsing_control
+    rel_tol: 1.0e-5
+    abs_tol: 1.0e-6
+
+    assertions:
+      - name: browsing_suppresses_palatable_regeneration
+        query: |
+          SELECT
+            (SELECT AVG(height_avg_m) FROM main.sapling
+              WHERE year = 10 AND species IN ('abal', 'fasy', 'acps', 'soau', 'bepe')) AS brow_h,
+            (SELECT AVG(height_avg_m) FROM ref.sapling
+              WHERE year = 10 AND species IN ('abal', 'fasy', 'acps', 'soau', 'bepe')) AS ctrl_h,
+            (SELECT SUM(count_ha) FROM main.stand
+              WHERE year = 10 AND rid IN (3, 8) AND species IN ('abal', 'fasy', 'acps', 'soau', 'bepe')) AS brow_recruited,
+            (SELECT SUM(count_ha) FROM ref.stand
+              WHERE year = 10 AND rid IN (3, 8) AND species IN ('abal', 'fasy', 'acps', 'soau', 'bepe')) AS ctrl_recruited
+        expect: "row['brow_h'] < row['ctrl_h'] and row['brow_recruited'] < row['ctrl_recruited']"
+
+    baselines:
+      - name: sapling_y10
+        query: |
+          SELECT *
+          FROM sapling
+          WHERE year = 10
+          ORDER BY rid, species
+
+      - name: landscape
+        query: |
+          SELECT *
+          FROM landscape
+          ORDER BY year, species

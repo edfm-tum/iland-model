@@ -29,6 +29,7 @@ private slots:
     void globalsFileIoSettingsAndInclude();
     void scriptGridOperationsAndGarbageCollection();
     void jsCsvFileAndFactoryObjects();
+    void loadScriptErrorsAndFunctionStack();
 };
 
 #endif // TEST_SCRIPT_ENGINE_H

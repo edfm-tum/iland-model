@@ -1,5 +1,5 @@
 // Self-contained ABE silvicultural programs for bgd_mini irregular-stand tests.
-// Does not require :/abe-lib/ so it works identically in both GUI and headless ilandc.
+// (Note: :/abe-lib/ is also embedded in both GUI iland and headless ilandc via iland_core.pri.)
 
 var stpThin = {
   U: [100, 100, 100],

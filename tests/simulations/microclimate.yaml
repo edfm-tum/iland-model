@@ -1,0 +1,61 @@
+tests:
+  - id: microclimate_off
+    description: >-
+      10-year reference run with microclimate buffering disabled (paired with
+      microclimate_on).
+    project: ../fixtures/bgd_mini/project_microclimate_off.xml
+    years: 10
+
+  - id: microclimate_on
+    description: >-
+      10-year microclimate buffering test with barkbeetle, decomposition, and
+      establishment effects enabled, asserting shifts relative to microclimate_off.
+    project: ../fixtures/bgd_mini/project_microclimate.xml
+    years: 10
+    check_determinism: true
+    compare_with: microclimate_off
+    rel_tol: 1.0e-5
+    abs_tol: 1.0e-6
+
+    assertions:
+      - name: microclimate_shifts_barkbeetle_decomp_and_establishment
+        query: |
+          SELECT
+            ABS((SELECT SUM(infestedArea_ha + spreadCohorts + killedVolume) FROM main.barkbeetle) -
+                (SELECT SUM(infestedArea_ha + spreadCohorts + killedVolume) FROM ref.barkbeetle)) AS bb_diff,
+            ABS((SELECT SUM(Rh) FROM main.carbonflow WHERE rid = -1) -
+                (SELECT SUM(Rh) FROM ref.carbonflow WHERE rid = -1)) AS rh_diff,
+            (SELECT SUM(Rh) FROM ref.carbonflow WHERE rid = -1) AS rh_ref,
+            ABS((SELECT SUM(cohort_count_ha + count_ha + count_small_ha) FROM main.sapling WHERE year = 10) -
+                (SELECT SUM(cohort_count_ha + count_ha + count_small_ha) FROM ref.sapling WHERE year = 10)) AS sap_diff
+        expect: >-
+          row['bb_diff'] > 0
+          and row['rh_diff'] > 0 and row['rh_diff'] / row['rh_ref'] < 0.25
+          and row['sap_diff'] > 0
+
+    baselines:
+      - name: barkbeetle
+        query: |
+          SELECT *
+          FROM barkbeetle
+          ORDER BY year
+
+      - name: carbon_y10
+        query: |
+          SELECT *
+          FROM carbon
+          WHERE year = 10 AND rid >= 1
+          ORDER BY rid
+
+      - name: sapling_y10
+        query: |
+          SELECT *
+          FROM sapling
+          WHERE year = 10
+          ORDER BY rid, species
+
+      - name: landscape
+        query: |
+          SELECT *
+          FROM landscape
+          ORDER BY year, species

@@ -49,7 +49,8 @@ void BiteDispersal::setup(BiteAgent *parent_agent)
         double kernel_size = BiteEngine::valueFromJs(mObj, "maxDistance", "",  "'maxDistance' is a required property!").toNumber();
         QString expr = BiteEngine::valueFromJs(mObj, "kernel", "",  "'kernel' is a required property!").toString();
 
-        QString dbg_file = BiteEngine::valueFromJs(mObj, "debugKernel", "").toString();
+        QJSValue dbg_val = BiteEngine::valueFromJs(mObj, "debugKernel", "");
+        QString dbg_file = dbg_val.isUndefined() ? QString() : dbg_val.toString();
         setupKernel(expr, kernel_size, dbg_file);
 
         // setup of the dispersal grid

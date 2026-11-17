@@ -546,7 +546,8 @@ void Model::loadProject()
         ScriptGlobal::loadScript(script_file);
         g->controller()->setLoadedJavascriptFile(script_file);
         // call the global event very early in the process of creating the model
-        GlobalSettings::instance()->executeJSFunction("onBeforeCreate");
+        if (ScriptGlobal::lastErrorMessage().isEmpty())
+            GlobalSettings::instance()->executeJSFunction("onBeforeCreate");
     }
 
 
