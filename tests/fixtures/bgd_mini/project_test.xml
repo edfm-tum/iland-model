@@ -310,7 +310,7 @@
             <enabled>false</enabled>
         </standdead>
         <production_month>
-            <enabled>false</enabled>
+            <enabled>true</enabled>
             <condition></condition>
         </production_month>
         <management>

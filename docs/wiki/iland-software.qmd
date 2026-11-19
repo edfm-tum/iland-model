@@ -22,15 +22,19 @@ From time to time, we create "official" iLand releases; usually this are version
 ## iLand source code
 
 
-The iLand software itself is released under the [GPL](http://www.gnu.org/copyleft/gpl.html) open source licence. The full source code of iLand is packaged together with the official [iLand releases](iland-releases.qmd). However, as we use a [subversion](http://subversion.tigris.org/) repository for iLand development, the code is also available online at [iland-model.org/publicsvn](http://iland-model.org/publicsvn). We also generate additional documentation directly from the source code using [Doxygen](http://www.stack.nl/~dimitri/doxygen/). A current snapshot of that is online at [our doxy site](http://iland-model.org/doxy/index.html).
+The iLand software itself is released under the [GNU General Public License (GPL v3)](https://www.gnu.org/licenses/gpl-3.0.html) open source license. The full source code is hosted on GitHub at [github.com/edfm-tum/iland-model](https://github.com/edfm-tum/iland-model). Official tagged versions are listed under [GitHub Releases](https://github.com/edfm-tum/iland-model/releases), and pre-built executable packages are available on the [download](../download.qmd) page.
 
 
 
 ## Building iLand
 
 
-The source code of iLand is bundled with the [download package](../download.qmd) of the model  and is also available online at http://iland-model.org/publicsvn . Within the download package, the full source code of the model is in the ZIP archive “sourcecode.zip”. In order to be able to modify and compile iLand for yourself, you will need Qt and the QtCreator IDE. Both packages are freely available at http://qt.io/ .
-After installing the Qt Creator IDE, open the “iland.pro” project in the “src/iland” folder (be sure to preserve file paths when extracting the source code). iLand uses no external libraries (except the Qt libraries) which should simplify the building process considerably – a click to “build” should suffice.
+iLand is a C++ application built with the [Qt](https://www.qt.io/) toolkit (Qt 6). Detailed, step-by-step instructions for compiling iLand from source—using Qt Creator or the repository build scripts—are maintained in the [Building iLand](https://iland-model.org/iland-book/Building_iLand.html) chapter of the iLand book. For building and running the headless console version (`ilandc`) on Linux compute clusters, see also [iLand cluster](iland-cluster.qmd).
+
+If you would like to contribute code, report issues, or help improve the documentation, please refer to the guides on GitHub:
+
+* [Contributor Guide](https://github.com/edfm-tum/iland-model/blob/main/CONTRIBUTING.md): pull request workflow (`dev` branch), coding guidelines, issue reporting, and community links.
+* [Documentation Contributor Guide](https://github.com/edfm-tum/iland-model/blob/main/docs/README.md): setting up Quarto, previewing the documentation site locally, and regenerating reference pages.
 
 
 
@@ -90,7 +94,7 @@ You may be prompted to enter your password. After completing this step, the app 
 ## project files and folders
 
 
-For iLand, a **project** combines all the necessary settings and input files that are needed to run a simulation for a specific case. The different files that are needed by the model may (but not necessarily have to) be stored in a specific folder structure. Examples are [climate files](climatedata.qmd), files to [initialize trees](initialize-trees.qmd) or to [initialize the landscape]. The iLand packages contain example projects that demonstrate the organization.
+For iLand, a **project** combines all the necessary settings and input files that are needed to run a simulation for a specific case. The different files that are needed by the model may (but not necessarily have to) be stored in a specific folder structure. Examples are [climate files](climatedata.qmd), files to [initialize trees](initialize-trees.qmd) or to [initialize the landscape](landscape-setup.qmd). The iLand packages contain example projects that demonstrate the organization.
 The [project file](project-file.qmd) is a single file in a XML format that contains various model settings:
 
 * paths and locations to other data (see also [filenames and paths](filenames-and-paths.qmd))

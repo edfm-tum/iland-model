@@ -21,8 +21,10 @@
 #define GLOBALSETTINGS_H
 
 #include <QtCore>
+#ifndef FONSTUDIO
 #include <QtSql>
 #include <QtSql/QSqlDatabase>
+#endif
 
 #include "global.h"
 #include "settingmetadata.h"
@@ -93,10 +95,12 @@ public:
     /// output for all available items (trees, ...) in table form or write to a file
     QStringList debugDataTable(GlobalSettings::DebugOutputs type, const QString separator, const QString fileName=QString(), const bool do_append=false);
 
+#ifndef FONSTUDIO
     // database access functions
     QSqlDatabase dbin() { return QSqlDatabase::database("in"); }
     QSqlDatabase dbout() { return QSqlDatabase::database("out"); }
     QSqlDatabase dbclimate() { return QSqlDatabase::database("climate"); }
+#endif
 
     // path and directory
     QString path(const QString &fileName, const QString &type="home");
