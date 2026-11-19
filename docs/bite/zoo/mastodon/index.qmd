@@ -1,0 +1,50 @@
+---
+title: "Mastodon"
+subtitle: "*Mammut americanum*"
+description: "Pleistocene megaherbivore illustrating stratified impacts across sapling browsing and tree diameter or height classes."
+categories: [Mammals, Browser]
+author: "Juha Honkaniemi"
+date: 2021-04-01
+host: "Norway spruce (piab, dbh ≤ 15 cm)"
+cell-size: "1000 m"
+paper-doi: "10.1016/j.envsoft.2021.104977"
+---
+
+## Ecological Background
+
+American mastodons (*Mammut americanum*) were large Pleistocene forest-dwelling browsers (~8,000 kg body mass) inhabiting North America and Eurasia until ~10–11 ka BP, with *Picea* spp. forming a major component of their diet (Birks et al., 2018; Teale & Miller, 2012; Larramendi, 2015).
+
+Here mastodons occupy the landscape at an initial density of 1.5 individuals per 100 ha (120 kg ha⁻¹; Bakker et al., 2016) with 1% yr⁻¹ logistic population growth. Alongside browsing trees up to ~4 m height (Guy, 1976), they uproot small-diameter Norway spruce (*Picea abies*) stems similarly to modern African elephants (Shannon et al., 2008; Scheiter & Higgins, 2012).
+
+## Model Implementation
+
+Like roe deer, mastodons use `BiteDistribution` across 1000 m cells without a spatial dispersal kernel. Carrying capacity in `BiteBiomass` combines foliage biomass from all Norway spruce saplings and trees with dbh ≤ 15 cm.
+
+`BiteImpact` demonstrates pairing sapling browsing (`target: 'browsing'`) with uprooting mortality (`target: 'tree'`). The second code tab provides three alternative `BiteImpact` configurations showing how to stratify uprooting probabilities by DBH or tree height class.
+
+## Source Code
+
+::: {.panel-tabset}
+
+### Base Agent (`mastodon.js`)
+
+```{.javascript file="mastodon.js"}
+```
+
+### Alternative Impacts (`alternative_impacts.js`)
+
+```{.javascript file="alternative_impacts.js"}
+```
+
+:::
+
+## References
+
+- **Primary BITE paper:** Honkaniemi, J., Rammer, W., & Seidl, R. (2021). From mycelia to mastodons – a general approach for simulating biotic disturbances in forest ecosystems. *Environmental Modelling & Software*, 138, 104977. <https://doi.org/10.1016/j.envsoft.2021.104977>
+- Bakker, E. S., et al. (2016). Combining paleo-data and modern exclosure experiments to assess the impact of megafauna extinctions on woody vegetation. *PNAS*, 113, 847–855.
+- Birks, H. H., et al. (2018). Late-glacial macrofossil and pollen records of *Picea* in mastodon habitats.
+- Guy, P. R. (1976). The feeding behaviour of elephant (*Loxodonta africana*) in the Sengwa area, Rhodesia. *South African Journal of Wildlife Research*, 6, 55–63.
+- Larramendi, A. (2015). Shoulder height, body mass, and shape of proboscideans. *Acta Palaeontologica Polonica*, 61, 537–574.
+- Scheiter, S., & Higgins, S. I. (2012). How many elephants can you fit into a tree? Modelling megaherbivore impacts.
+- Shannon, G., et al. (2008). The effects of large herbivores on tree structure and savanna dynamics.
+- Teale, C. L., & Miller, N. G. (2012). Mastodon herbivory in late-glacial spruce forests.

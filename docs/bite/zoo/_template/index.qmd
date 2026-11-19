@@ -1,0 +1,52 @@
+---
+title: "Agent Common Name"
+subtitle: "*Scientific name*"
+description: "One- or two-sentence summary shown on the BITE Zoo card."
+# image: thumb.jpg                  # optional: omit to use the default BITE thumbnail
+# image-alt: "Short alt description of the thumbnail image"
+categories: [Insects, Defoliator] # e.g., Fungi, Insects, Mammals + guild
+author: "Your Name"
+date: 2026-01-01
+host: "Host species (speciesCode)"
+cell-size: "20 m"
+# paper-doi: "10.1016/j.envsoft.2021.104977" # optional DOI link in top metadata strip
+---
+
+## Ecological Background
+
+Describe the biology, host range, dispersal ecology, and forest impact of the disturbance agent.
+
+## Model Implementation
+
+Summarize how the agent is represented in BITE (cell resolution, dispersal kernel or distribution, colonization filters, growth/mortality assumptions, and vegetation impacts).
+
+<!-- Optional: display your image (or multiple figures) inside the page body:
+![Caption describing the image. Photo/Figure credit.](thumb.jpg){width=420px}
+
+::: {layout-ncol=2}
+![Organism or damage photo](thumb.jpg)
+
+![Example simulation output](output_map.png)
+:::
+-->
+
+## Source Code
+
+```{.javascript file="agent.js"}
+```
+
+<!-- For multi-file agents (e.g., BITE + ABE script), wrap two blocks in a tabset:
+::: {.panel-tabset}
+### BITE Agent
+```{.javascript file="agent.js"}
+```
+
+### ABE Response
+```{.javascript file="abe_response.js"}
+```
+:::
+-->
+
+## References
+
+- Author, A., & Author, B. (Year). Title. *Journal*, Volume, Pages. <https://doi.org/...>

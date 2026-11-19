@@ -1,0 +1,39 @@
+---
+title: "Heterobasidion root rot"
+subtitle: "*Heterobasidion annosum*"
+description: "Conifer root-rot fungus spreading via airborne basidiospores to fresh harvest stumps and vegetatively via root contacts."
+categories: [Fungi, Root pathogen]
+author: "Juha Honkaniemi"
+date: 2021-04-01
+host: "Scots pine (pisy)"
+cell-size: "20 m"
+paper-doi: "10.1016/j.envsoft.2021.104977"
+---
+
+## Ecological Background
+
+*Heterobasidion annosum* is one of the most destructive forest pathogens in the northern hemisphere, causing root rot specifically on conifers (Garbelotto & Gonthier, 2013). Different species of the group are well established in many regions of Eurasia and North America, and are currently spreading into new areas (e.g., Bérubé et al., 2018).
+
+*Heterobasidion* spp. spread via airborne basidiospore infections through fresh stumps created by harvesting, and persist within stands across multiple tree generations by spreading vegetatively via mycelia along root contacts (Stenlid & Redfern, 1998). Roughly 99.5% of spores land within a few hundred meters, with the remaining 0.5% driving long-distance dispersal (Kallio, 1970).
+
+## Model Implementation
+
+Primary aerial dispersal is simulated with a power-law kernel (`min((x)^-1.5,1)`, `maxDistance: 1000` m) combined with a 0.5% background long-distance colonization chance (Kallio, 1970; Möykkynen et al., 1997). Colonization is restricted to 20 m cells containing freshly cut stump surfaces (`stumpBasalArea > 0`), tracked dynamically via `onSetup` and `onTreeRemoved` hooks.
+
+Population dynamics follow a logistic growth model driven by mean annual temperature (`MAT`) with rates derived from Honkaniemi et al. (2017b). During the first 10 years after colonization, the pathogen consumes only stump root mass before infecting living Scots pine roots outward from the cell center (`order: 'mod(x+10,20)^2 + mod(y+10,20)^2'`), reducing root biomass and eventually causing tree mortality.
+
+## Source Code
+
+```{.javascript file="heterobasidion.js"}
+```
+
+## References
+
+- **Primary BITE paper:** Honkaniemi, J., Rammer, W., & Seidl, R. (2021). From mycelia to mastodons – a general approach for simulating biotic disturbances in forest ecosystems. *Environmental Modelling & Software*, 138, 104977. <https://doi.org/10.1016/j.envsoft.2021.104977>
+- Bérubé, J. A., et al. (2018). Range expansion of *Heterobasidion* species in North America.
+- Garbelotto, M., & Gonthier, P. (2013). Variability and management of *Heterobasidion* root rot. *Annual Review of Phytopathology*, 51, 39–59.
+- Honkaniemi, J., et al. (2017b). Temperature-driven growth and consumption rates of *Heterobasidion annosum*.
+- Kallio, T. (1970). Aerial distribution of the root-rot fungus *Fomes annosus* (Fr.) Cooke in Finland. *Acta Forestalia Fennica*, 107.
+- Möykkynen, T., Miina, J., & Pukkala, T. (1997). Dispersal of *Heterobasidion annosum* spores in Norway spruce stands.
+- Rishbeth, J. (1951). Observations on the biology of *Fomes annosus*, with particular reference to East Anglian pine plantations. *Annals of Botany*, 15.
+- Stenlid, J., & Redfern, D. B. (1998). Spread within the tree and stand. In *Heterobasidion annosum: Biology, Ecology, Impact and Control*.

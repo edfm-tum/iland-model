@@ -1,0 +1,40 @@
+---
+title: "BITE Zoo"
+subtitle: "Community collection of BITE biotic disturbance scripts for iLand"
+page-layout: full
+listing:
+  id: zoo-listing
+  contents:
+    - "*/index.qmd"
+    - "!_template/index.qmd"
+  type: grid
+  grid-columns: 3
+  sort: "title asc"
+  sort-ui: [title, date]
+  filter-ui: true
+  categories: true
+  fields: [image, title, subtitle, categories, description, host, cell-size]
+  field-display-names:
+    host: "Host"
+    cell-size: "Cell size"
+  image-height: "180px"
+  image-placeholder: placeholder.svg
+resources:
+  - placeholder.svg
+---
+
+A curated, extensible collection of JavaScript agent parameterizations for the [BITE module](../index.qmd) in iLand. Browse existing agents by taxonomic group or keyword, inspect their ecological parameterization, and download or copy the scripts for your own simulations.
+
+::: {#zoo-listing}
+:::
+
+---
+
+## Contributing an Agent
+
+BITE Zoo entries live centrally in the iLand Git repository under `docs/bite/zoo/<agent-slug>/` and are automatically discovered when the site is rendered.
+
+1. Copy [`docs/bite/zoo/_template/`](https://github.com/edfm-tum/iland-model/tree/master/docs/bite/zoo/_template) to a new folder named after your agent (lowercase, hyphen-separated).
+2. Add your JavaScript agent file (e.g., `my_agent.js`) and an optional thumbnail image (`thumb.jpg` or `thumb.png`).
+3. Fill in `index.qmd` (YAML metadata, ecological background, references, and the `file="my_agent.js"` code block).
+4. Open a pull request on [GitHub](https://github.com/edfm-tum/iland-model) — no manual edits to `index.qmd` or `_quarto.yml` are required.

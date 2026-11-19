@@ -58,9 +58,9 @@ Item | Description
 [BiteLifeCycle](bitelifecycle.qmd) | general agent properties such as voltinism
 [BiteOutput](biteoutput.qmd) | cell level detailed outputs per agent
 
-## Code examples
+## BITE Zoo
 
-[BITE Example code](codeexamples.qmd)
+[Browse the BITE Zoo](zoo/index.qmd) — a community collection of ready-to-use BITE biotic disturbance scripts with ecological descriptions and references (also available in legacy single-page format under [BITE Example code](codeexamples.qmd)).
 
 
 

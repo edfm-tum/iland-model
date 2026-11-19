@@ -220,4 +220,165 @@ html.dark .hp_box, body.quarto-dark .hp_box {
   opacity: 0.95; /* Soften the pure white slightly for better blending */
 }
 
+/* BITE Zoo styles */
+.bite-zoo-agent-header {
+  margin-bottom: 1.75rem;
+}
+
+.bite-zoo-agent-header .quarto-title-breadcrumbs {
+  display: none !important;
+}
+
+.bite-zoo-back {
+  margin-bottom: 0.65rem;
+  font-size: 0.9rem;
+}
+
+.bite-zoo-back a {
+  color: var(--bs-secondary-color, #6c757d);
+  text-decoration: none;
+}
+
+.bite-zoo-back a:hover {
+  color: var(--bs-primary);
+  text-decoration: underline;
+}
+
+.bite-zoo-header-box {
+  background-color: var(--bs-card-bg, #ffffff);
+  border: 1px solid var(--bs-border-color, #dee2e6);
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+html.dark .bite-zoo-header-box, body.quarto-dark .bite-zoo-header-box {
+  background-color: #1a1a22;
+  border-color: #262630;
+}
+
+.bite-zoo-header-main {
+  padding: 1.25rem 1.4rem 1.05rem 1.4rem;
+}
+
+.bite-zoo-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.6rem 1.25rem;
+  flex-wrap: wrap;
+}
+
+.bite-zoo-header-top .quarto-title {
+  flex: 1 1 260px;
+}
+
+.bite-zoo-header-top h1.title {
+  margin: 0;
+  line-height: 1.2;
+}
+
+.bite-zoo-header-top .subtitle.lead {
+  margin: 0.25rem 0 0 0;
+  font-size: 1.05rem;
+  color: var(--bs-secondary-color, #5c6670);
+}
+
+.bite-zoo-header-top .quarto-categories {
+  margin-top: 0.2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.bite-zoo-header-desc {
+  margin: 0.85rem 0 0 0;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--bs-body-color);
+}
+
+.bite-zoo-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 2rem;
+  padding: 0.8rem 1.4rem;
+  background-color: var(--bs-tertiary-bg, #f8f9fa);
+  border-top: 1px solid var(--bs-border-color, #dee2e6);
+  font-size: 0.9rem;
+}
+
+html.dark .bite-zoo-meta, body.quarto-dark .bite-zoo-meta {
+  background-color: #16161d;
+  border-top-color: #262630;
+}
+
+.bite-zoo-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.bite-zoo-meta-label {
+  font-size: 0.78rem;
+  color: var(--bs-secondary-color, #6c757d);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.bite-zoo-meta-value {
+  font-weight: 500;
+}
+
+.bite-zoo-meta-value p {
+  margin: 0;
+}
+
+.bite-zoo-download {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+#zoo-listing .quarto-grid-item {
+  border: 1px solid var(--bs-border-color, rgba(0, 0, 0, 0.1));
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+#zoo-listing .quarto-grid-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.08);
+  border-color: var(--bs-primary);
+}
+
+html.dark #zoo-listing .quarto-grid-item, body.quarto-dark #zoo-listing .quarto-grid-item {
+  background-color: #1a1a22;
+  border-color: #262630;
+}
+
+#zoo-listing .quarto-grid-item .card-subtitle {
+  font-style: italic;
+  color: var(--bs-secondary-color, #6c757d);
+  margin-top: 0.15rem;
+  margin-bottom: 0.5rem;
+}
+
+#zoo-listing .quarto-grid-item .listing-categories {
+  margin-bottom: 0.5rem;
+}
+
+#zoo-listing .quarto-grid-item .card-other-values {
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--bs-border-color, rgba(0, 0, 0, 0.08));
+}
+
+html.dark #zoo-listing img[src$="placeholder.svg"],
+body.quarto-dark #zoo-listing img[src$="placeholder.svg"] {
+  filter: brightness(0.82) contrast(0.95);
+}
+
+
 

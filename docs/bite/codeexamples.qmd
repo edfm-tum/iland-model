@@ -2,6 +2,11 @@
 title: "Bite Code Examples"
 ---
 
+::: {.callout-tip}
+## Moved to the BITE Zoo
+These examples are now maintained in the new **[BITE Zoo](zoo/index.qmd)**, with individual agent pages, direct `.js` script downloads, and filtering by taxonomic group.
+:::
+
 # BITE Examples
 
 BITE examples is a collection of different biotic agents showcasing the various functionalities of BITE 

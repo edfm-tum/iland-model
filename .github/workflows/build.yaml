@@ -61,6 +61,7 @@ jobs:
         if: matrix.os != 'windows-latest'
         shell: bash
         run: |
+          set -o pipefail
           chmod +x ./build_iland.sh
           ./build_iland.sh 2>&1 | tee build_log.txt
 

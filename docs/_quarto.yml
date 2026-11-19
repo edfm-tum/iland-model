@@ -65,6 +65,8 @@ website:
             href: apidoc/index.qmd
           - text: "Bite Module"
             href: bite/index.qmd
+          - text: "BITE Zoo"
+            href: bite/zoo/index.qmd
           - text: "Scripting Overview"
             href: wiki/iland-scripting.qmd
     right:
@@ -293,7 +295,7 @@ website:
             - bite/biteimpact.qmd
             - bite/bitelifecycle.qmd
             - bite/biteoutput.qmd
-        - bite/codeexamples.qmd
+        - auto: "bite/zoo"
 
 format:
   html:

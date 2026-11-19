@@ -1,0 +1,6 @@
+filters:
+  - bite-zoo.lua
+template-partials:
+  - title-block.html
+resources:
+  - "*.js"

@@ -1,0 +1,53 @@
+---
+title: "Asian long-horned beetle"
+subtitle: "*Anoplophora glabripennis*"
+description: "Invasive stem-boring beetle coupled to iLand's Agent-Based Management (ABE) to trigger stand eradication harvests."
+categories: [Insects, Wood borer]
+author: "Juha Honkaniemi"
+date: 2021-04-01
+host: "Sycamore maple (acps, dbh ≥ 7.5 cm)"
+cell-size: "10 m"
+paper-doi: "10.1016/j.envsoft.2021.104977"
+---
+
+## Ecological Background
+
+The Asian long-horned beetle (*Anoplophora glabripennis*, ALB) is a wood-boring insect native to China and Korea that attacks the stems of multiple deciduous tree species and spreads internationally via wood packaging material (Haack et al., 1997; Eyre & Haack, 2017).
+
+While direct tree mortality in non-urban forest stands can be gradual on hosts with dbh ≥ 7.5 cm (Dodds & Orwig, 2011), eradication measures upon detection typically dominate stand-level tree removals (Nowak et al., 2001; Faccoli & Gatto, 2016).
+
+## Model Implementation
+
+ALB uses a leptokurtic dispersal kernel (`exp(-0.1478*sqrt(x))`, `maxDistance: 1000` m; Smith et al., 2001; Shatz et al., 2016) and colonizes 10 m cells containing Sycamore maple (`acps`) with dbh ≥ 7.5 cm. Without detailed population-dynamics data, `BiteBiomass` is omitted and annual mortality increases linearly from 0 to 2% over 10 years.
+
+To represent management eradication responses, `onSetup` loads a stand ID grid (`standId`), and `BiteImpact.onImpact` accumulates damage per stand via `ABELink()`. Once accumulated impact exceeds the detection threshold (3 years), `fmengine.runActivity(standId, 'disturbance_response')` triggers an [ABE](../../../wiki/abe.qmd) harvest activity across that stand.
+
+## Source Code
+
+::: {.panel-tabset}
+
+### BITE Agent (`alb_agent.js`)
+
+```{.javascript file="alb_agent.js"}
+```
+
+### ABE Response (`abe_response.js`)
+
+```{.javascript file="abe_response.js"}
+```
+
+:::
+
+## References
+
+- **Primary BITE paper:** Honkaniemi, J., Rammer, W., & Seidl, R. (2021). From mycelia to mastodons – a general approach for simulating biotic disturbances in forest ecosystems. *Environmental Modelling & Software*, 138, 104977. <https://doi.org/10.1016/j.envsoft.2021.104977>
+- Dodds, K. J., & Orwig, D. A. (2011). An invasive urban forest pest invades natural environments – Asian longhorned beetle in northeastern US hardwood forests. *Canadian Journal of Forest Research*, 41, 1729–1742.
+- Eyre, D., & Haack, R. A. (2017). Invasive cerambycid pests and biosecurity measures.
+- Faccoli, M., & Gatto, P. (2016). Analysis of costs and effectiveness of eradication measures against *Anoplophora* species.
+- Haack, R. A., et al. (1997). New York's battle with the Asian long-horned beetle. *Journal of Forestry*, 95, 11–15.
+- Haack, R. A., et al. (2009). Managing invasive populations of Asian longhorned beetle and citrus longhorned beetle. *Annual Review of Entomology*, 55, 521–546.
+- Hérard, F., et al. (2006). *Anoplophora* species in Europe: infestations and management processes. *EPPO Bulletin*, 36.
+- Hu, J., et al. (2009). Ecology and management of *Anoplophora glabripennis*.
+- Nowak, D. J., et al. (2001). Potential effect of *Anoplophora glabripennis* on urban trees in the United States. *Journal of Economic Entomology*, 94, 116–122.
+- Shatz, A. J., et al. (2016). Modeling invasive spread of *Anoplophora glabripennis*.
+- Smith, M. T., Bancroft, J., Li, G., Gao, R., & Teale, S. (2001). Dispersal of *Anoplophora glabripennis* (Cerambycidae). *Environmental Entomology*, 30, 1036–1040.

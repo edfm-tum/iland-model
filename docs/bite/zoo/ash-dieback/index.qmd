@@ -1,0 +1,41 @@
+---
+title: "Ash dieback"
+subtitle: "*Hymenoscyphus fraxineus*"
+description: "Invasive fungal pathogen parameterized without population dynamics, featuring 1% genetic host tree resistance."
+categories: [Fungi, Foliar pathogen]
+author: "Juha Honkaniemi"
+date: 2021-04-01
+host: "European ash (frex)"
+cell-size: "50 m"
+paper-doi: "10.1016/j.envsoft.2021.104977"
+---
+
+## Ecological Background
+
+*Hymenoscyphus fraxineus* is the causal agent of ash dieback, a non-native fungal disease that has severely affected European ash (*Fraxinus excelsior* L.) populations across Europe over the past three decades (Kowalski & Holdenrieder, 2009; McKinney et al., 2014; Pautasso et al., 2013). Environmental conditions and stand density influence epidemiology, with disease severity declining in low-density stands below 100 stems ha⁻¹ (Skovsgaard et al., 2017; Bakys et al., 2013).
+
+In infested stands, heavy defoliation (50–100% foliage loss) occurs on up to ~30% of mature host trees alongside high sapling mortality (Timmermann et al., 2017), while roughly 1% of ash trees display genetic resistance (Kjær et al., 2012; Wohlmuth et al., 2018).
+
+## Model Implementation
+
+Because quantitative agent population-dynamics data are limited, `ash_dieback` intentionally omits the `BiteBiomass` module and operates directly through `BiteLifeCycle`, `BiteDispersal`, `BiteColonization`, and `BiteImpact`. Spores spread via an inverse power-law dispersal kernel (`maxDistance: 1500` m; Grosdidier et al., 2018), while cell mortality checks whether host density falls below 100 stems ha⁻¹ after year 3.
+
+In `BiteImpact`, 1% host resistance is represented via `treeFilter: 'mod(id, 100)<>42'`, sparing 1% of ash trees from heavy crown defoliation while applying logistic mortality curves to ash saplings.
+
+## Source Code
+
+```{.javascript file="ash_dieback.js"}
+```
+
+## References
+
+- **Primary BITE paper:** Honkaniemi, J., Rammer, W., & Seidl, R. (2021). From mycelia to mastodons – a general approach for simulating biotic disturbances in forest ecosystems. *Environmental Modelling & Software*, 138, 104977. <https://doi.org/10.1016/j.envsoft.2021.104977>
+- Bakys, R., Vasaitis, R., & Skovsgaard, J. P. (2013). Patterns and severity of crown dieback in young even-aged stands of European ash. *Plant Pathology*, 62.
+- Grosdidier, M., Ioos, R., Husson, C., Cael, O., Scordia, T., & Marçais, B. (2018). Tracking the invasion: dispersal of *Hymenoscyphus fraxineus* airborne inoculum at different scales. *FEMS Microbiology Ecology*, 94.
+- Kjær, E. D., McKinney, L. V., Nielsen, L. R., Hansen, L. N., & Hansen, J. K. (2012). Adaptive potential of ash (*Fraxinus excelsior*) populations against the novel emerging pathogen *Hymenoscyphus pseudoalbidus*. *Evolutionary Applications*, 5, 219–228.
+- Kowalski, T., & Holdenrieder, O. (2009). Pathogenicity of *Chalara fraxinea*. *Forest Pathology*, 39, 1–7.
+- McKinney, L. V., et al. (2014). The ash dieback crisis: genetic variation in resistance can prove a long-term solution. *Plant Pathology*, 63.
+- Pautasso, M., et al. (2013). European ash (*Fraxinus excelsior*) dieback – a conservation biology challenge. *Biological Conservation*, 158, 37–49.
+- Skovsgaard, J. P., et al. (2017). Silvicultural strategies for ash dieback management.
+- Timmermann, V., et al. (2017). Ash dieback progression and crown defoliation trajectories.
+- Wohlmuth, A., et al. (2018). Genetic resistance to ash dieback in *Fraxinus excelsior*.

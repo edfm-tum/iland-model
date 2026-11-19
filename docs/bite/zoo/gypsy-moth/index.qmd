@@ -1,0 +1,40 @@
+---
+title: "Gypsy moth"
+subtitle: "*Lymantria dispar*"
+description: "Periodic oak defoliator exhibiting cyclic 8–12 year outbreaks driven by antagonist mortality and growing degree days."
+categories: [Insects, Defoliator]
+author: "Juha Honkaniemi"
+date: 2021-04-01
+host: "Common oak (quro)"
+cell-size: "10 m"
+paper-doi: "10.1016/j.envsoft.2021.104977"
+---
+
+## Ecological Background
+
+The European gypsy moth (*Lymantria dispar*) is a defoliator native to Europe where it causes substantial disturbance especially on oaks (McManus & Csóka, 2007). Introduced to North America in 1869, it became an invasive pest in northeastern oak forests (Elkinton & Liebhold, 1990).
+
+While adult females are poor dispersers, first-instar larvae balloon passively over short distances via wind (Hunter & Elkinton, 2000), complemented by human-aided long-distance transport in invaded ranges (Liebhold et al., 1992). Each larva consumes roughly 3–4 g of foliage during single-season development (Sharov & Colbert, 1996), with outbreaks typically lasting several years at 8–12 year intervals (Johnson et al., 2005).
+
+## Model Implementation
+
+Dispersal is approximated with a Gaussian kernel (`maxDistance: 50` m) parameterized from Elderd et al. (2013), and cell colonization requires at least 500 growing degree days (`GDD10 > 500`) alongside Common oak (`quro`).
+
+Periodic outbreak cyclicity is driven directly via `BiteLifeCycle` (`outbreakStart: 'rnd(8,12)'`, `outbreakDuration: 'rnd(2,4)'`). In `BiteBiomass`, both `growthRateFunction` and antagonist-induced `mortality` respond sigmoidally to `outbreakYears` (Lustig et al., 2017). Foliage consumption acts on both saplings and trees, removing foliage from shortest trees upward until annual demand (`agentImpact`) is met.
+
+## Source Code
+
+```{.javascript file="gypsy_moth.js"}
+```
+
+## References
+
+- **Primary BITE paper:** Honkaniemi, J., Rammer, W., & Seidl, R. (2021). From mycelia to mastodons – a general approach for simulating biotic disturbances in forest ecosystems. *Environmental Modelling & Software*, 138, 104977. <https://doi.org/10.1016/j.envsoft.2021.104977>
+- Elderd, B. D., Rehill, B. J., Haynes, K. J., & Dwyer, G. (2013). Induced plant defenses, host-pathogen interactions, and forest insect outbreaks. *PNAS*, 110, 14978–14983.
+- Elkinton, J. S., & Liebhold, A. M. (1990). Population dynamics of gypsy moth in North America. *Annual Review of Entomology*, 35, 571–596.
+- Hunter, A. F., & Elkinton, J. S. (2000). Effects of synchrony with host plant on populations of a spring-feeding lepidopteran. *Ecology*, 81, 1248–1261.
+- Johnson, D. M., et al. (2005). Space-time dynamics of gypsy moth outbreaks. *Ecology*, 86, 1791–1804.
+- Liebhold, A. M., Halverson, J. A., & Elmes, G. A. (1992). Gypsy moth invasion in North America: a quantitative analysis. *Journal of Biogeography*, 19, 513–520.
+- Lustig, A., et al. (2017). Population growth models for forest defoliators.
+- McManus, M., & Csóka, G. (2007). History and impact of gypsy moth in North America and comparison to recent outbreaks in Europe. *Acta Silvatica et Lignaria Hungarica*, 3, 47–64.
+- Sharov, A. A., & Colbert, J. J. (1996). Model of gypsy moth population dynamics.

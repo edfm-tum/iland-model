@@ -36,6 +36,7 @@ Build-QtProject "src/ilandc/build/release" "ilandc.pro"
 Build-QtProject "src/fonstudio/build/release" "fonstudio.pro"
 Build-QtProject "src/tests/build/release" "tests.pro"
 
+Copy-Item "libs/win/FreeImage.dll" "src/tests/build/release/release/" -Force
 Write-Host "Running unit tests..." -ForegroundColor Cyan
 & "src/tests/build/release/release/iland_tests.exe"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

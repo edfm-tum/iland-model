@@ -1,0 +1,101 @@
+$if(listing)$
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+$if(title)$
+<h1 class="title">$title$</h1>
+$endif$
+$if(subtitle)$
+<p class="subtitle lead">$subtitle$</p>
+$endif$
+$if(categories)$
+  $if(quarto-template-params.title-block-categories)$
+<div class="quarto-categories">
+  $for(categories)$
+  <div class="quarto-category">$categories$</div>
+  $endfor$
+</div>
+  $endif$
+$endif$
+</div>
+
+$if(hide-description)$
+$elseif(description)$
+<div>
+  <div class="description">
+    $description$
+  </div>
+</div>
+$endif$
+
+$title-metadata.html()$
+
+</header>
+$else$
+<header id="title-block-header" class="quarto-title-block default bite-zoo-agent-header">
+  <div class="bite-zoo-back">
+    <a href="../index.html">&larr; Back to BITE Zoo</a>
+  </div>
+  <div class="bite-zoo-header-box">
+    <div class="bite-zoo-header-main">
+      <div class="bite-zoo-header-top">
+        <div class="quarto-title">
+          $if(title)$
+          <h1 class="title">$title$</h1>
+          $endif$
+          $if(subtitle)$
+          <p class="subtitle lead">$subtitle$</p>
+          $endif$
+        </div>
+        $if(categories)$
+          $if(quarto-template-params.title-block-categories)$
+        <div class="quarto-categories">
+          $for(categories)$
+          <div class="quarto-category">$categories$</div>
+          $endfor$
+        </div>
+          $endif$
+        $endif$
+      </div>
+      $if(hide-description)$
+      $elseif(description)$
+      <div class="bite-zoo-header-desc description">
+        $description$
+      </div>
+      $endif$
+    </div>
+
+    <div class="bite-zoo-meta">
+      $if(host)$
+      <div class="bite-zoo-meta-item">
+        <span class="bite-zoo-meta-label">Host</span>
+        <span class="bite-zoo-meta-value">$host$</span>
+      </div>
+      $endif$
+      $if(cell-size)$
+      <div class="bite-zoo-meta-item">
+        <span class="bite-zoo-meta-label">Cell size</span>
+        <span class="bite-zoo-meta-value">$cell-size$</span>
+      </div>
+      $endif$
+      $if(by-author)$
+      <div class="bite-zoo-meta-item">
+        <span class="bite-zoo-meta-label">$labels.authors$</span>
+        <span class="bite-zoo-meta-value">$for(by-author)$$_title-meta-author.html()$$sep$, $endfor$</span>
+      </div>
+      $endif$
+      $if(date)$
+      <div class="bite-zoo-meta-item">
+        <span class="bite-zoo-meta-label">$labels.published$</span>
+        <span class="bite-zoo-meta-value">$date$</span>
+      </div>
+      $endif$
+      $if(paper-url)$
+      <div class="bite-zoo-meta-item">
+        <span class="bite-zoo-meta-label">Paper</span>
+        <span class="bite-zoo-meta-value"><a href="$paper-url$" target="_blank" rel="noopener">DOI <i class="bi bi-box-arrow-up-right"></i></a></span>
+      </div>
+      $endif$
+    </div>
+  </div>
+</header>
+$endif$
