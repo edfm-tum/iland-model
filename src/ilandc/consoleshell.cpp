@@ -27,6 +27,9 @@
 #include "model.h"
 #include "modelcontroller.h"
 #include "version.h"
+#ifdef ILAND_CUDA
+#include "../gpu/iland_gpu.h"
+#endif
 
 QTextStream *ConsoleShell::mLogStream = 0;
 bool ConsoleShell::mFlushLog = false;

@@ -26,6 +26,12 @@
 #include "species.h"
 #include "tree.h"
 #include "resourceunit.h"
+#ifdef ILAND_CUDA
+#include "../gpu/iland_gpu.h"
+#include <atomic>
+#include <vector>
+static std::atomic<bool> gpu_seed_failed{false}; // set after a GPU error: the CPU is used from then on
+#endif
 #ifdef ILAND_GUI
 #include <QtGui/QImage>
 #endif
@@ -751,6 +757,23 @@ void SeedDispersal::distributeSeeds(Grid<float> *seed_map)
     // source mode
 
     // *** seed distribution (Kernel + long distance dispersal) ***
+#ifdef ILAND_CUDA
+    // GPU path (non-torus): kernel convolution, long distance dispersal and the final scaling on
+    // the GPU. LDD uses the GPU's random numbers (seeded from iLand's generator), so the result
+    // is statistically equivalent to the CPU path, not identical.
+    if (!GlobalSettings::instance()->model()->settings().torusMode && !gpu_seed_failed && ilandgpu::enabled()) {
+        int n_rings = (!serotiny && !mLDDDensity.isEmpty()) ? mLDDDensity.size() : 0;
+        std::vector<float> density(mLDDDensity.begin(), mLDDDensity.end());
+        std::vector<float> distance(mLDDDistance.begin(), mLDDDistance.end());
+        uint64_t seed = (static_cast<uint64_t>(RandomGenerator::randInt()) << 32) | RandomGenerator::randInt();
+        if (ilandgpu::seedDispersal(sourcemap.begin(), mSeedMap.begin(), mSeedMap.sizeX(), mSeedMap.sizeY(),
+                                    mSeedMap.cellsize(), kernel.begin(), kernel.sizeX(), kernel.sizeY(), fec,
+                                    density.data(), distance.data(), n_rings, mLDDSeedlings / fec, seed))
+            return;
+        qWarning() << "GPU seed dispersal failed, continuing on the CPU:" << ilandgpu::lastError();
+        gpu_seed_failed = true;
+    }
+#endif
     if (GlobalSettings::instance()->model()->settings().torusMode==false) {
         // ** standard case (no torus) **
         for (float *src=sourcemap.begin(); src!=sourcemap.end(); ++src) {
