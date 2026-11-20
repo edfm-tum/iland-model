@@ -625,7 +625,15 @@ void SeedDispersal::clearSaplingMap()
         mSaplingSourceMap.initialize(0.f);
 }
 
+// Count of long-distance-dispersal pixels, only reported in the GUI's debug log. It is a
+// single global written by every species thread, so in the console build the increments
+// are compiled out: the threads otherwise queue for this one cache line.
 static int _debug_ldd=0;
+#ifdef ILAND_GUI
+#define COUNT_LDD() (_debug_ldd++)
+#else
+#define COUNT_LDD() ((void)0)
+#endif
 void SeedDispersal::execute()
 {
 #ifdef ILAND_GUI
@@ -774,7 +782,7 @@ void SeedDispersal::distributeSeeds(Grid<float> *seed_map)
                                        pt.y() + static_cast<int>(radius*sin(phi)));
                             if (mSeedMap.isIndexValid(ldd)) {
                                 float &val = mSeedMap.valueAtIndex(ldd);
-                                _debug_ldd++;
+                                COUNT_LDD();
                                 val += ldd_val;
                             }
                         }
@@ -826,7 +834,7 @@ void SeedDispersal::distributeSeeds(Grid<float> *seed_map)
 
                             if (mSeedMap.isIndexValid(torus_pos)) {
                                 float &val = mSeedMap.valueAtIndex(torus_pos);
-                                _debug_ldd++;
+                                COUNT_LDD();
                                 val += ldd_val;
                             }
                         }

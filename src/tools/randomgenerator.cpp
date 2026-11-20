@@ -113,6 +113,49 @@ inline void RGenerators::seed(unsigned int oneSeed)
 // static variables
 unsigned int RandomGenerator::mBuffer[RANDOMGENERATORSIZE+5];
 int RandomGenerator::mIndex = 0;
+thread_local int RandomGenerator::tIndex = 0;
+thread_local int RandomGenerator::tEpoch = -1;
+thread_local int RandomGenerator::tSlot = -1;
+thread_local int RandomGenerator::tLocalPos = RANDOMGENERATORLOCALSIZE;
+thread_local unsigned int RandomGenerator::tLocal[RANDOMGENERATORLOCALSIZE];
+alignas(64) std::atomic<int> RandomGenerator::mEpoch{0};
+std::atomic<int> RandomGenerator::mThreadSlots{0};
+static thread_local MTRand *tLocalGenerator = nullptr; // generator of a non-main thread (one per thread, kept for the thread's life)
+
+static inline unsigned long long splitmix64(unsigned long long x)
+{
+    x += 0x9E3779B97F4A7C15ULL;
+    x = (x ^ (x >> 30)) * 0xBF58476D1CE4E5B9ULL;
+    x = (x ^ (x >> 27)) * 0x94D049BB133111EBULL;
+    return x ^ (x >> 31);
+}
+
+void RandomGenerator::startEpoch(int epoch)
+{
+    tEpoch = epoch;
+    if (tSlot < 0)
+        tSlot = mThreadSlots.fetch_add(1, std::memory_order_relaxed); // first thread: slot 0
+    if (tSlot == 0) {
+        tIndex = 0; // the main thread reads the shared buffer from the start, as upstream
+        return;
+    }
+    // a non-main thread: own Mersenne Twister, seeded from the run's seed (the seed of the
+    // next shared refill), the thread's slot and the generation
+    unsigned long long key = (static_cast<unsigned long long>(mBuffer[RANDOMGENERATORSIZE+4]) << 32)
+                             ^ (static_cast<unsigned long long>(tSlot) << 16) ^ static_cast<unsigned long long>(epoch);
+    if (!tLocalGenerator)
+        tLocalGenerator = new MTRand(static_cast<MTRand::uint32>(splitmix64(key)));
+    else
+        tLocalGenerator->seed(static_cast<MTRand::uint32>(splitmix64(key)));
+    tLocalPos = RANDOMGENERATORLOCALSIZE; // refill on the next draw
+}
+
+void RandomGenerator::refillLocal()
+{
+    for (int i = 0; i < RANDOMGENERATORLOCALSIZE; ++i)
+        tLocal[i] = tLocalGenerator->randInt();
+    tLocalPos = 0;
+}
 int RandomGenerator::mRotationCount = RANDOMGENERATORROTATIONS + 1;
 int RandomGenerator::mRefillCounter = 0;
 RandomGenerator::ERandomGenerators RandomGenerator::mGeneratorType = RandomGenerator::ergFastRandom;
@@ -133,6 +176,7 @@ void RandomGenerator::refill() {
     mIndex = 0; // reset the index
     mRotationCount=0;
     mRefillCounter++;
+    mEpoch.fetch_add(1, std::memory_order_relaxed); // every thread restarts its stream
     }
 
     RGenerators gen;
