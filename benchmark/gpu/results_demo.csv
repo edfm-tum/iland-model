@@ -1,0 +1,7 @@
+tag,project,years,threads,seed,wall_s,model_s,light_apply_s,light_read_s,tree_growth_s,production_s,seed_dispersal_s,establishment_s,sapling_growth_s,modules_s,outputs_s,management_s,max_rss_mb,status,extra,executable,cpu,cores,date
+upstream,projectFile_bgd_baseline.xml,50,-1,1,132.08,121.404,7.047,0.589,7.85,2.567,20.472,25.535,9.468,30.094,15.576,,2220,ok,,ilandc_upstream,Intel Xeon Processor (Cascadelake),28,2026-11-21
+cpuopt,projectFile_bgd_baseline.xml,50,-1,1,95.95,84.502,9.126,0.534,2.044,4.499,4.984,4.886,2.209,38.595,15.218,,2217,ok,,ilandc_cpuopt,Intel Xeon Processor (Cascadelake),28,2026-11-21
+gpu,projectFile_bgd_baseline.xml,50,-1,1,91.59,79.988,6.552,0.346,2.465,4.87,0.973,5.376,2.362,39.439,15.316,,2409,ok,,ilandc_gpu,Intel Xeon Processor (Cascadelake),28,2026-11-21
+upstream,projectFile_bgd_baseline.xml,50,-1,2,127.94,116.647,6.497,0.677,6.736,2.358,17.352,24.764,8.803,31.76,15.212,,2226,ok,,ilandc_upstream,Intel Xeon Processor (Cascadelake),28,2026-11-21
+cpuopt,projectFile_bgd_baseline.xml,50,-1,2,96.32,84.757,8.2,0.615,2.282,3.593,5.876,5.223,2.086,39.188,15.174,,2219,ok,,ilandc_cpuopt,Intel Xeon Processor (Cascadelake),28,2026-11-21
+gpu,projectFile_bgd_baseline.xml,50,-1,2,87.43,75.918,6.629,0.385,2.547,3.908,0.913,5.257,1.996,36.189,15.57,,2455,ok,,ilandc_gpu,Intel Xeon Processor (Cascadelake),28,2026-11-21

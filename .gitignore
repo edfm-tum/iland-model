@@ -16,3 +16,4 @@ _site
 .obsidian/
 .Rhistory
 /docs/docs.Rproj
+.pixi/

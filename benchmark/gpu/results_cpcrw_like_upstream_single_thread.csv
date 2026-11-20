@@ -1,0 +1,7 @@
+tag,years,threads,seed,wall_s,model_s,light_apply_s,light_read_s,tree_growth_s,production_s,seed_dispersal_s,establishment_s,sapling_growth_s,outputs_s,management_s,fire_s,max_rss_mb,status,extra,executable,cpu,cores,date
+st_upstream,300,1,12,318.06,309.923,28.207,11.734,27.345,42.937,19.944,98.871,39.977,25.717,5.601,0.004,1921,ok,system.settings.multithreading=false,ilandc_upstream,Intel Xeon Processor (Cascadelake),28,2026-11-21
+st_upstream,300,1,13,323.61,315.491,29.125,12.135,27.312,42.95,19.813,100.21,42.297,25.979,5.617,,1918,ok,system.settings.multithreading=false,ilandc_upstream,Intel Xeon Processor (Cascadelake),28,2026-11-21
+st_upstream,300,1,11,326.39,318.438,29.601,12.209,27.311,43.042,19.953,101.108,42.282,26.411,6.421,,1918,ok,system.settings.multithreading=false,ilandc_upstream,Intel Xeon Processor (Cascadelake),28,2026-11-21
+st_upstream,300,1,16,326.78,318.498,29.572,12.307,27.653,42.794,19.988,101.079,42.806,26.273,5.86,,1919,ok,system.settings.multithreading=false,ilandc_upstream,Intel Xeon Processor (Cascadelake),28,2026-11-21
+st_upstream,300,1,14,442.62,434.532,42.564,19.936,55.372,43.508,23.512,100.768,48.51,69.14,21.071,0.828,2124,ok,system.settings.multithreading=false,ilandc_upstream,Intel Xeon Processor (Cascadelake),28,2026-11-21
+st_upstream,300,1,15,558.88,550.782,75.332,34.441,96.274,47.357,45.86,111.557,54.911,57.987,16.749,0.396,2105,ok,system.settings.multithreading=false,ilandc_upstream,Intel Xeon Processor (Cascadelake),28,2026-11-21
