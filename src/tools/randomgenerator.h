@@ -22,9 +22,11 @@
 #include <cstdlib>
 #include <math.h>
 #include <time.h>
+#include <atomic>
 
 #define RANDOMGENERATORSIZE 2000000
 #define RANDOMGENERATORROTATIONS 10
+#define RANDOMGENERATORLOCALSIZE 1024 // per-thread buffer of the non-main threads
 // a new set of numbers is generated for every 5*500000 = 2.500.000 numbers
 class RandomGenerator
 {
@@ -32,9 +34,9 @@ public:
     enum ERandomGenerators { ergMersenneTwister, ergWellRNG512, ergXORShift96, ergFastRandom };
     RandomGenerator() { seed(0); setGeneratorType(ergMersenneTwister); }
     /// set the type of the random generator that should be used.
-    static void setGeneratorType(const ERandomGenerators gen) { mGeneratorType = gen; mRotationCount=RANDOMGENERATORROTATIONS+1;mIndex=0;mRefillCounter=0; }
-    static void debugState(int &rIndex, int &rGeneration, int &rRefillCount) { rIndex = mIndex; rGeneration = mRotationCount; rRefillCount = mRefillCounter; }
-    static int debugNRandomNumbers() { return mIndex + RANDOMGENERATORSIZE*mRotationCount + (RANDOMGENERATORROTATIONS+1)*RANDOMGENERATORSIZE*mRefillCounter; }
+    static void setGeneratorType(const ERandomGenerators gen) { mGeneratorType = gen; mRotationCount=RANDOMGENERATORROTATIONS+1;mIndex=0;mRefillCounter=0; mEpoch.fetch_add(1, std::memory_order_relaxed); }
+    static void debugState(int &rIndex, int &rGeneration, int &rRefillCount) { rIndex = tIndex; rGeneration = mRotationCount; rRefillCount = mRefillCounter; }
+    static int debugNRandomNumbers() { return tIndex + RANDOMGENERATORSIZE*mRotationCount + (RANDOMGENERATORROTATIONS+1)*RANDOMGENERATORSIZE*mRefillCounter; }
     /// call this function to check if we need to create new random numbers.
     /// this function is not reentrant! (e.g. call every year in the model)
     static void checkGenerator() { if (mRotationCount>RANDOMGENERATORROTATIONS) { refill();  } }
@@ -51,9 +53,37 @@ public:
     static inline double randNorm( const double mean, const double stddev );
 
 private:
-    static inline unsigned long next() { ++mIndex; if (mIndex>RANDOMGENERATORSIZE) { mRotationCount++; mIndex=0; checkGenerator(); }  return mBuffer[mIndex]; }
+    // Threads do not share an index any more. Upstream, every call from every thread wrote the
+    // same global index, and with many threads (e.g. in Saplings::establishment) the threads spent
+    // most of their time waiting for that one cache line.
+    // - The first thread that draws numbers (the main thread, during setup) reads the shared
+    //   buffer exactly as before, so single-threaded runs draw the same sequence as upstream.
+    // - Every other thread has its own Mersenne Twister, seeded from the run's seed, the
+    //   thread's slot and the buffer generation (mEpoch), and keeps a small local buffer.
+    //   No numbers are shared between threads, and no shared state is written.
+    // mEpoch changes whenever the shared buffer is refilled or reset (new seed).
+    static inline unsigned long next() {
+        const int epoch = mEpoch.load(std::memory_order_relaxed);
+        if (tEpoch != epoch) startEpoch(epoch);
+        if (tSlot != 0) {
+            if (tLocalPos >= RANDOMGENERATORLOCALSIZE) refillLocal();
+            return tLocal[tLocalPos++];
+        }
+        ++tIndex;
+        if (tIndex>RANDOMGENERATORSIZE) { mRotationCount++; tIndex=0; checkGenerator(); }
+        return mBuffer[tIndex];
+    }
+    static void startEpoch(int epoch); ///< (re)start the calling thread's stream for buffer generation 'epoch'
+    static void refillLocal(); ///< fill the calling thread's local buffer from its own generator
     static unsigned int mBuffer[RANDOMGENERATORSIZE+5];
-    static int mIndex;
+    static int mIndex; ///< kept for the refill bookkeeping; the main thread reads with tIndex
+    static thread_local int tIndex;
+    static thread_local int tEpoch;
+    static thread_local int tSlot;
+    static thread_local int tLocalPos;
+    static thread_local unsigned int tLocal[RANDOMGENERATORLOCALSIZE];
+    alignas(64) static std::atomic<int> mEpoch;
+    static std::atomic<int> mThreadSlots;
     static int mRotationCount;
     static int mRefillCounter;
     static ERandomGenerators mGeneratorType;

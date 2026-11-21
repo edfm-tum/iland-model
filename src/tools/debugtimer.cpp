@@ -93,11 +93,12 @@ DebugTimer::DebugTimer(const QString &caption, bool silent)
     m_hideShort=true;
     m_caption = caption;
     if (!caption.isEmpty()) {
-        if (!mTimingList.contains(caption)) {
-            QMutexLocker locker(&timer_mutex);
-            if (!mTimingList.contains(caption))
-                mTimingList[caption]=0.;
-        }
+        // look up and insert under the lock: an unlocked contains() can read the hash while
+        // another thread inserts (and rehashes) it, e.g. the per-species seed dispersal threads
+        // creating their first timer at the same time in year 1
+        QMutexLocker locker(&timer_mutex);
+        if (!mTimingList.contains(caption))
+            mTimingList[caption]=0.;
     }
     start();
 

@@ -449,6 +449,33 @@ HEADERS += \
 
 RESOURCES += ../iland/res/iland.qrc
 
+# ===============================================================
+# Optional GPU (CUDA) build: qmake CONFIG+=cuda [CUDA_DIR=/usr/local/cuda] [CUDA_ARCH="-arch=sm_80"]
+# Runs the light competition and seed dispersal on an NVIDIA GPU (see ../gpu/iland_gpu.h).
+# The CUDA runtime is linked statically, so compute nodes only need the NVIDIA driver.
+# At runtime: the GPU is used if a device is present, unless ILAND_GPU=0.
+# ===============================================================
+cuda {
+    isEmpty(CUDA_DIR): CUDA_DIR = $$(CUDA_HOME)
+    isEmpty(CUDA_DIR): CUDA_DIR = /usr/local/cuda
+    # default: all major GPU generations; e.g. CUDA_ARCH="-arch=sm_80" for A100 only
+    isEmpty(CUDA_ARCH): CUDA_ARCH = -arch=all-major
+    DEFINES += ILAND_CUDA
+    SOURCES += ../core/gpulight.cpp
+    HEADERS += ../core/gpulight.h ../gpu/iland_gpu.h
+    CUDA_SOURCES = $$PWD/../gpu/iland_gpu.cu
+    cuda_compiler.input = CUDA_SOURCES
+    cuda_compiler.output = ${QMAKE_FILE_BASE}_cuda.o
+    # --fmad=false: no fused multiply-add, so float results round like the CPU code
+    cuda_compiler.commands = $$CUDA_DIR/bin/nvcc -O3 --fmad=false -std=c++17 $$CUDA_ARCH -Xcompiler -fPIC -c ${QMAKE_FILE_NAME} -o ${QMAKE_FILE_OUT}
+    cuda_compiler.dependency_type = TYPE_C
+    cuda_compiler.depends = $$PWD/../gpu/iland_gpu.h
+    cuda_compiler.variable_out = OBJECTS
+    QMAKE_EXTRA_COMPILERS += cuda_compiler
+    LIBS += -L$$CUDA_DIR/lib64 -lcudart_static -ldl -lrt -lpthread
+    message("CUDA build: $$CUDA_DIR $$CUDA_ARCH")
+}
+
 
 
 

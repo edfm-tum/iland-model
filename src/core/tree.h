@@ -145,6 +145,8 @@ public:
     // grid based light-concurrency functions
     void applyLIP(); ///< apply LightInfluencePattern onto the global grid
     void readLIF(); ///< calculate the lightResourceIndex with multiplicative approach
+    double lightSum() const; ///< raw light sum of readLIF() (no side effects)
+    void setLightResourceIndex(const double raw_sum); ///< LRI from the raw sum of readLIF() (or the GPU): relative height correction, cap at 1, add to the resource unit
     void heightGrid(); ///< calculate the height grid
 
     void applyLIP_torus(); ///< apply LightInfluencePattern on a closed 1ha area
@@ -249,6 +251,7 @@ private:
 
     // friends
     friend class TreeWrapper;
+    friend class GpuLight;
     friend class StandStatistics;
     friend class TreeOut;
     friend class TreeRemovedOut;

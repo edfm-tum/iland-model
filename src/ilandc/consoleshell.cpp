@@ -27,6 +27,9 @@
 #include "model.h"
 #include "modelcontroller.h"
 #include "version.h"
+#ifdef ILAND_CUDA
+#include "../gpu/iland_gpu.h"
+#endif
 
 QTextStream *ConsoleShell::mLogStream = 0;
 bool ConsoleShell::mFlushLog = false;
@@ -129,7 +132,13 @@ void ConsoleShell::run()
         qWarning() << "*** creating model...";
         qWarning() << "**************************************************";
 
+        // apply the debug output flags (e.g. 512 = per-year performance table), as the GUI does
+        GlobalSettings::instance()->setDebugOutput((int) GlobalSettings::instance()->settings().valueDouble("system.settings.debugOutput"));
+
         iland_model.create();
+#ifdef ILAND_CUDA
+        qWarning() << QString::fromStdString(ilandgpu::description());
+#endif
         if (iland_model.hasError()) {
             qWarning() << "!!!! ERROR !!!!";
             qWarning() << iland_model.lastError();

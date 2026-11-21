@@ -1,0 +1,14 @@
+# Build environment for the iLand console version (see build_ilandc.sh):
+#   pixi run --manifest-path src/gpu/pixi.toml src/gpu/build_ilandc.sh
+# The CUDA toolkit (nvcc) comes from the system (e.g. `module load cuda` on an HPC).
+[workspace]
+name = "iland-build"
+channels = ["conda-forge"]
+platforms = ["linux-64"]
+
+[dependencies]
+qt6-main = "6.8.*"     # iLand does not build with Qt 6.12 (moc error in bite/biteagent.h)
+freeimage = "*"
+make = "*"
+cxx-compiler = "*"
+sqlite = "*"

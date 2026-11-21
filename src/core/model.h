@@ -197,6 +197,14 @@ private:
     /// SVD States
     /// collection of all realized SVD states in the model
     SVDStates *mSVDStates;
+    // GPU light competition (only used in CUDA builds, see gpulight.h). Declared in every build,
+    // so the class layout is the same for code compiled with and without ILAND_CUDA (plugins).
+    class GpuLight *mGpuLight = nullptr; ///< created on first use
+    bool mGpuLightFailed = false; ///< set after a GPU error: the CPU is used from then on
+    bool mGpuLightActive = false; ///< true if this year's applyPattern() ran on the GPU
+public:
+    class GpuLight *gpuLight() const { return mGpuLight; }
+    friend class GpuLight; // uses initializeGrid() to check the GPU against the CPU
 };
 
 class Tree;

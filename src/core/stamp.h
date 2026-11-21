@@ -39,6 +39,7 @@ public:
     Stamp(const int size):m_data(NULL) { setup(size); }
     void setOffset(const int offset) { m_offset = offset; }
     static void setDistanceGrid(const Grid<float> *grid) { mDistanceGrid = grid; }
+    static const Grid<float> *distanceGrid() { return mDistanceGrid; } ///< used by the GPU light kernels
     int offset() const { return m_offset; } ///< delta between edge of the stamp and the logical center point (of the tree). e.g. a 5x5 stamp in an 8x8-grid has an offset from 2.
     int count() const { return m_size*m_size; } ///< count of pixels (rectangle)
     int size() const { return m_offset*2+1; } ///< logical size of the stamp

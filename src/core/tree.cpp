@@ -463,11 +463,15 @@ void Tree::heightGrid_torus()
   */
 void Tree::readLIF()
 {
-    if (!mStamp)
+    if (!mStamp || !mStamp->reader())
         return;
+    setLightResourceIndex(lightSum());
+}
+
+/// the light sum of readLIF() before any correction (no side effects); also used to check the GPU
+double Tree::lightSum() const
+{
     const Stamp *reader = mStamp->reader();
-    if (!reader)
-        return;
     QPoint pos_reader = mPositionIndex;
     const float outside_area_factor = 0.1f; //
 
@@ -509,7 +513,13 @@ void Tree::readLIF()
 
         }
     }
-    mLRI = static_cast<float>( sum );
+    return sum;
+}
+
+/// the end of readLIF(): also used by the GPU path, which computes the raw sum on the GPU
+void Tree::setLightResourceIndex(const double raw_sum)
+{
+    mLRI = static_cast<float>( raw_sum );
     // LRI correction...
     double hrel = mHeight / mHeightGrid->valueAtIndex(mPositionIndex.x()/cPxPerHeight, mPositionIndex.y()/cPxPerHeight).height;
     if (hrel<1.)
@@ -521,8 +531,6 @@ void Tree::readLIF()
 
     // Finally, add LRI of this Tree to the ResourceUnit!
     mRU->addWLA(mLeafArea, mLRI);
-
-    //qDebug() << "Tree #"<< id() << "value" << sum << "Impact" << mImpact;
 }
 
 /// Torus version of read stamp (glued edges)

@@ -58,6 +58,10 @@
 
 #include "forestmanagementengine.h"
 #include "biteengine.h"
+#ifdef ILAND_CUDA
+#include "gpulight.h"
+#include "../gpu/iland_gpu.h"
+#endif
 
 #include <QtCore>
 #include <QtXml>
@@ -145,6 +149,9 @@ Model::Model()
 Model::~Model()
 {
     clear();
+#ifdef ILAND_CUDA
+    delete mGpuLight;
+#endif
     GlobalSettings::instance()->setModel(nullptr);
 }
 
@@ -1063,6 +1070,18 @@ static void nc_applyPattern(ResourceUnit *unit)
 }
 
 /// multithreaded running function for LIP value extraction
+#ifdef ILAND_CUDA
+/// GPU path of readPattern: species-specific LRI correction and resource unit sums on the CPU
+static void nc_readPatternGpu(ResourceUnit *unit)
+{
+    try {
+        GlobalSettings::instance()->model()->gpuLight()->readPattern(unit);
+    } catch (const IException &e) {
+        GlobalSettings::instance()->model()->threadExec().throwError(e.message());
+    }
+}
+#endif
+
 static void nc_readPattern(ResourceUnit *unit)
 {
     QVector<Tree>::iterator tit;
@@ -1149,6 +1168,27 @@ void Model::applyPattern()
 {
 
     DebugTimer t("applyPattern()");
+#ifdef ILAND_CUDA
+    // GPU path: the GPU initialises the light grid, builds the height grid and applies and
+    // reads the patterns (see gpulight.h); the CPU only resets the height grid.
+    mGpuLightActive = false;
+    if (!mGpuLightFailed && !settings().torusMode && ilandgpu::enabled()) {
+        for (HeightGridValue *h=mHeightGrid->begin();h!=mHeightGrid->end();++h) {
+            h->resetCount();
+            h->height = cSapHeight;
+            h->clearStemHeight();
+        }
+        if (!mGpuLight)
+            mGpuLight = new GpuLight();
+        if (mGpuLight->applyPattern(this)) {
+            mGpuLightActive = true;
+            GlobalSettings::instance()->systemStatistics()->tApplyPattern+=t.elapsed();
+            return;
+        }
+        qWarning() << "GPU light competition failed, continuing on the CPU:" << ilandgpu::lastError();
+        mGpuLightFailed = true;
+    }
+#endif
     // intialize grids...
     initializeGrid();
 
@@ -1166,6 +1206,14 @@ void Model::applyPattern()
 void Model::readPattern()
 {
     DebugTimer t("readPattern()");
+#ifdef ILAND_CUDA
+    if (mGpuLightActive) {
+        // the raw light sums came from the GPU in applyPattern(); finish them per resource unit
+        threadRunner.run(nc_readPatternGpu);
+        GlobalSettings::instance()->systemStatistics()->tReadPattern+=t.elapsed();
+        return;
+    }
+#endif
     threadRunner.run(nc_readPattern);
     GlobalSettings::instance()->systemStatistics()->tReadPattern+=t.elapsed();
 
