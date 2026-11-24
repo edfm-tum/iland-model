@@ -507,7 +507,7 @@ void FMStand::notifyTreeRemoval(Tree *tree, int reason)
         // if we have an active salvage activity, then store
         mDisturbed += removed_volume;
         // check if we have an (active) salvage activity; both the activity flags and the stand flags need to be "enabled"
-        if (mSTP->salvageActivity() && mSTP->salvageActivity()->standFlags().enabled() && mSTP->salvageActivity()->standFlags(this).enabled() ) {
+        if (mSTP && mSTP->salvageActivity() && mSTP->salvageActivity()->standFlags().enabled() && mSTP->salvageActivity()->standFlags(this).enabled() ) {
             if (mSTP->salvageActivity()->evaluateRemove(tree)) {
                 mSalvaged += removed_volume;
                 tree->setIsHarvested(); // set the flag that the tree is removed from the forest
@@ -522,7 +522,7 @@ void FMStand::notifyTreeRemoval(Tree *tree, int reason)
 bool FMStand::notifyBarkBeetleAttack(double generations, int infested_px_per_ha)
 {
     // check if we have an (active) salvage activity; both the activity flags and the stand flags need to be "enabled"
-    if (mSTP->salvageActivity() && mSTP->salvageActivity()->standFlags().enabled() && mSTP->salvageActivity()->standFlags(this).enabled()) {
+    if (mSTP && mSTP->salvageActivity() && mSTP->salvageActivity()->standFlags().enabled() && mSTP->salvageActivity()->standFlags(this).enabled()) {
         return mSTP->salvageActivity()->barkbeetleAttack(this, generations, infested_px_per_ha);
     }
     return false;
