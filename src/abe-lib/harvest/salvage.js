@@ -96,7 +96,7 @@
 	   type: 'salvage', 
 	   schedule: opts.schedule,
 	   onExecute: onExecuteHandler,
-	   disturbanceCondition: opts.disturbanceCondition,
+	   disturbanceCondition: opts.salvageCondition,
 	   thresholdSplitStand: 10, // never split stands
 	   thresholdIgnoreDamage: opts.thresholdIgnoreDamage,
 	   thresholdClearStand: opts.thresholdReset,

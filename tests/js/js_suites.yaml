@@ -64,3 +64,22 @@ tests:
       modules.barkbeetle.enabled: true
       modules.barkbeetle.referenceClimate.tableName: climate_valley
       modules.barkbeetle.onAfterBarkbeetle: onBBDone()
+
+  - id: js_abe_salvage
+    description: "ABE ActSalvage regression: 10m mStandGrid height check, partial vs severe reset/clearcut, decadal plan-update reload, and abe-lib salvageCondition."
+    project: ../fixtures/bgd_mini/project_abe.xml
+    years: 11
+    script: test_abe_salvage.js
+    params:
+      model.management.enabled: true
+      model.management.file: noop_mgmt.js
+    assertions:
+      - name: salvage_clearcut_only_on_severe_stand
+        query: |
+          SELECT
+            COALESCE(SUM(CASE WHEN standid = 1 THEN volumeFinal ELSE 0 END), 0) AS s1_final,
+            COALESCE(SUM(CASE WHEN standid = 2 THEN volumeFinal ELSE 0 END), 0) AS s2_final,
+            COALESCE(SUM(CASE WHEN standid = 4 THEN volumeFinal ELSE 0 END), 0) AS s4_final,
+            COALESCE(SUM(CASE WHEN standid = 5 THEN volumeFinal ELSE 0 END), 0) AS s5_final
+          FROM abeStandRemoval
+        expect: "row['s1_final'] == 0 and row['s2_final'] > 0 and row['s4_final'] == 0 and row['s5_final'] == 0"

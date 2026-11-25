@@ -57,8 +57,10 @@ public:
     /// access the list of trees
     const QVector<QPair<Tree*, double> > trees() const { return mTrees; }
 
-    /// access to local grid (setup if necessary) - return a reference (no copy)
+    /// access to local grid (2m, setup if necessary) - return a reference (no copy)
     Grid<float> &localStandGrid() { prepareGrids(); return mLocalGrid; }
+    /// access to local 10m stand grid (setup if necessary) - return a reference (no copy)
+    FloatGrid &standGrid() { prepareGrids(); return mStandGrid; }
 
     static void addToScriptEngine(QJSEngine* engine);
 

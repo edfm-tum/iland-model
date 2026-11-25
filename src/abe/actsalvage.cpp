@@ -184,11 +184,13 @@ void ActSalvage::checkStandAfterDisturbance(FMStand *stand)
 {
     //
     FMTreeList *trees = ForestManagementEngine::instance()->scriptBridge()->treesObj();
+    trees->setStand(stand);
+    trees->loadAll();
     //trees->runGrid();
     trees->prepareLocalGrid(QStringLiteral("height"), QString());
 
     const int min_split_size = 50; // min size (100=1ha)
-    FloatGrid &grid = trees->localStandGrid();
+    FloatGrid &grid = trees->standGrid();
     static int no_split = 0;
     if (mDebugSplit)
         trees->exportStandGrid(QString("temp/height_%1.txt").arg(++no_split));
